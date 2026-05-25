@@ -1,0 +1,393 @@
+{
+  "chapter": "02-linear-structures/01-arrays",
+  "sweep": 2,
+  "pilot_approved": true,
+  "files": [
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/01-introduction.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 0,
+      "flags": 4
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/02-multidimensional.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 0,
+      "flags": 5
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/03-memorize.md",
+      "type": "CHAPTER_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 0,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/04-pattern-two-pointers/01-pattern.md",
+      "type": "PATTERN",
+      "status": "done",
+      "placeholders_inserted": 0,
+      "flags": 2
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/05-pattern-two-pointers-reduction/01-pattern.md",
+      "type": "PATTERN",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/06-pattern-two-pointers-subproblem/01-pattern.md",
+      "type": "PATTERN",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/07-pattern-simultaneous-traversal/01-pattern.md",
+      "type": "PATTERN",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/08-pattern-fixed-sliding-window/01-pattern.md",
+      "type": "PATTERN",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/09-pattern-variable-sliding-window/01-pattern.md",
+      "type": "PATTERN",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/10-pattern-interval-merging/01-pattern.md",
+      "type": "PATTERN",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/11-pattern-maximum-overlap/01-pattern.md",
+      "type": "PATTERN",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/04-pattern-two-pointers/02-problems/01-flip-characters.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 0,
+      "flags": 4
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/04-pattern-two-pointers/02-problems/02-palindrome-checker.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 0,
+      "flags": 4
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/04-pattern-two-pointers/02-problems/03-vowel-exchange.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 0,
+      "flags": 4
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/04-pattern-two-pointers/02-problems/04-reverse-words.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 5,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/04-pattern-two-pointers/02-problems/05-reverse-segments.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 5,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/04-pattern-two-pointers/02-problems/06-reverse-word-order.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 5,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/05-pattern-two-pointers-reduction/02-problems/01-two-sum.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 5,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/05-pattern-two-pointers-reduction/02-problems/02-target-limited-two-sum.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 5,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/05-pattern-two-pointers-reduction/02-problems/03-duplicate-aware-two-sum.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 5,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/05-pattern-two-pointers-reduction/02-problems/04-largest-container.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 5,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/06-pattern-two-pointers-subproblem/02-problems/01-k-rotations.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 7,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/06-pattern-two-pointers-subproblem/02-problems/02-three-sum.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 5,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/06-pattern-two-pointers-subproblem/02-problems/03-approximate-three-sum.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/06-pattern-two-pointers-subproblem/02-problems/04-four-sum.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 5,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/07-pattern-simultaneous-traversal/02-problems/01-subsequence-checker.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/07-pattern-simultaneous-traversal/02-problems/02-merge-sorted-arrays.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/07-pattern-simultaneous-traversal/02-problems/03-unique-intersections.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 4,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/07-pattern-simultaneous-traversal/02-problems/04-repeated-intersections.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 5,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/08-pattern-fixed-sliding-window/02-problems/01-subarray-size-equals-k.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 4,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/08-pattern-fixed-sliding-window/02-problems/02-maximum-ones.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 4,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/08-pattern-fixed-sliding-window/02-problems/03-negative-window.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 5,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/08-pattern-fixed-sliding-window/02-problems/04-even-odd-count.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 5,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/09-pattern-variable-sliding-window/02-problems/01-consecutive-ones.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/09-pattern-variable-sliding-window/02-problems/02-product-conundrum.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/09-pattern-variable-sliding-window/02-problems/03-maximum-subarray-sum.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/09-pattern-variable-sliding-window/02-problems/04-consecutive-ones-with-k-flips.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/10-pattern-interval-merging/02-problems/01-verify-schedule.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/10-pattern-interval-merging/02-problems/02-overlap-reduction.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/10-pattern-interval-merging/02-problems/03-employee-free-time.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/10-pattern-interval-merging/02-problems/04-insert-interval.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/11-pattern-maximum-overlap/02-problems/01-minimum-meeting-rooms.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/11-pattern-maximum-overlap/02-problems/02-remove-intervals.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/11-pattern-maximum-overlap/02-problems/03-busiest-interval.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/11-pattern-maximum-overlap/02-problems/04-peak-resource-requirement.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/04-pattern-two-pointers/03-memorize.md",
+      "type": "PATTERN_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 0,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/05-pattern-two-pointers-reduction/03-memorize.md",
+      "type": "PATTERN_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/06-pattern-two-pointers-subproblem/03-memorize.md",
+      "type": "PATTERN_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/07-pattern-simultaneous-traversal/03-memorize.md",
+      "type": "PATTERN_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/08-pattern-fixed-sliding-window/03-memorize.md",
+      "type": "PATTERN_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/09-pattern-variable-sliding-window/03-memorize.md",
+      "type": "PATTERN_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/10-pattern-interval-merging/03-memorize.md",
+      "type": "PATTERN_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/11-pattern-maximum-overlap/03-memorize.md",
+      "type": "PATTERN_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/13-pattern-synthesis.md",
+      "type": "PATTERN_SYNTHESIS",
+      "status": "done",
+      "placeholders_inserted": 0,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/01-arrays/12-design-a-dynamic-array/01-design-a-dynamic-array.md",
+      "type": "DESIGN",
+      "status": "done",
+      "placeholders_inserted": 0,
+      "flags": 0,
+      "skip_audit": true
+    }
+  ]
+}

@@ -2,22 +2,34 @@
 
 Recursive code crashes for reasons that look like dark magic — until you can name the four regions of memory every running program already lives in. This section builds that mental model, then turns it into a complete map of recursion: every running program is a building under construction, every function call is a tier of scaffolding, and every recursion pattern is just a different way of using that scaffold to build an answer.
 
-By the end of the seven lessons you'll be able to look at a fresh problem and (a) decide whether it's recursive, (b) classify it into one of four canonical patterns, and (c) write the code without thinking. You'll also have the prerequisites for dynamic programming and divide-and-conquer — the next two major topics in the algorithms section.
+## Chapters
 
-## Guides
-
-Read in order if you're learning the topic for the first time; jump directly to a named pattern for revision.
-
-- [Introduction to Memory Model](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-introduction-to-memory-model) — the four regions every process lives in, set up via the construction-site analogy used throughout the section.
-- [Nested Functions](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-nested-functions) — what's inside a stack frame, how nested calls grow and unwind, the three ways the stack can overflow.
-- [Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-recursion) — the ATM-queue intuition, base case + recursive relation, recursion trees, and what recursion costs in time and space.
-- [Pattern: Head Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-head-recursion) — descend silently, work on the way up. Four worked problems including factorial and reversing a queue.
-- [Pattern: Tail Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-tail-recursion) — work on the way down with an accumulator; tail-call optimisation across languages.
-- [Pattern: Multiple Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multiple-recursion) — branching call trees, exponential time, and the canonical "this is why memoisation exists" problem.
-- [Pattern: Multidimensional Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multidimensional-recursion) — 2D state spaces, multiple base-case boundaries, the bridge into dynamic programming.
-
-## Reading guide
-
-If you're already comfortable with stack memory and how function calls grow the stack, skim the Memory Model and Nested Functions lessons and start at the Recursion lesson. If you've written recursive code but never been able to predict its time/space cost on sight, the four pattern lessons (Head, Tail, Multiple, Multidimensional Recursion) are the heart of the section — they classify recursion problems by tree shape and give you the diagnostic questions to recognise each pattern.
-
-The four patterns build on each other. Head recursion (the Head Recursion lesson) is the foundation; tail recursion (the Tail Recursion lesson) flips the timing; multiple recursion (the Multiple Recursion lesson) adds branching; multidimensional recursion (the Multidimensional Recursion lesson) adds extra axes. Each lesson's transfer challenge pre-loads the next lesson — they're meant to be read in sequence.
+- [Introduction To Memory Model](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-introduction-to-memory-model)
+- [Nested Functions](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-nested-functions)
+- [Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-recursion)
+- [Memorize: Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-memorize)
+- [Pattern: Head Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-head-recursion-pattern)
+- [Forward Sequence](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-head-recursion-problems-forward-sequence)
+- [Calculate Factorial](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-head-recursion-problems-calculate-factorial)
+- [Sum of Digits](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-head-recursion-problems-sum-of-digits)
+- [Reverse a Queue](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-head-recursion-problems-reverse-a-queue)
+- [Memorize: Head Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-head-recursion-memorize)
+- [Pattern: Tail Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-tail-recursion-pattern)
+- [Reverse Sequence](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-tail-recursion-problems-reverse-sequence)
+- [Search Element](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-tail-recursion-problems-search-element)
+- [Is Palindrome](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-tail-recursion-problems-is-palindrome)
+- [Reverse a List](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-tail-recursion-problems-reverse-a-list)
+- [Memorize: Tail Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-tail-recursion-memorize)
+- [Pattern: Multiple Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multiple-recursion-pattern)
+- [Fibonacci Number](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multiple-recursion-problems-fibonacci-number)
+- [Zigzag Sequence](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multiple-recursion-problems-zigzag-sequence)
+- [Climb Stairs](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multiple-recursion-problems-climb-stairs)
+- [Catalan Number](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multiple-recursion-problems-catalan-number)
+- [Memorize: Multiple Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multiple-recursion-memorize)
+- [Pattern: Multidimensional Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multidimensional-recursion-pattern)
+- [Binomial Coefficient](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multidimensional-recursion-problems-binomial-coefficient)
+- [Lattice Paths](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multidimensional-recursion-problems-lattice-paths)
+- [Ackermann Function](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multidimensional-recursion-problems-ackermann-function)
+- [Egg Dropping](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multidimensional-recursion-problems-egg-dropping)
+- [Memorize: Multidimensional Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multidimensional-recursion-memorize)
+- [Pattern Synthesis: Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-synthesis)

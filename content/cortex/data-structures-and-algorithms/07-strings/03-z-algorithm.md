@@ -79,7 +79,7 @@ To find all occurrences of `P` in `T`:
 
 # Implementation
 
-```python run
+```python run viz=array viz-root=Z
 def z_array(S):
     n = len(S)
     Z = [0] * n
@@ -281,3 +281,25 @@ The Z-algorithm is the cleaner-looking sibling of KMP. Three patterns to interna
 1. **Z-array is a useful object on its own.** Beyond pattern matching, it answers periodicity, distinct-substring counting, and prefix-suffix-overlap questions cleanly.
 2. **The Z-box is the trick.** Maintain the rightmost confirmed prefix-match interval; reuse it via `min(r - i, Z[i - l])`. The amortisation gives `O(n)`.
 3. **Pattern match via concatenation.** `S = P + "$" + T` reduces matching to a Z-array computation. Sentinel choice matters; pick a character not in either string.
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->

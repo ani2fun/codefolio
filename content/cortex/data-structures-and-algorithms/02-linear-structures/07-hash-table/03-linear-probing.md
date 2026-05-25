@@ -1,3 +1,8 @@
+---
+title: "Linear Probing"
+summary: "<!-- TODO: summary -->"
+---
+
 # 3. Linear Probing
 
 ## The Hook
@@ -1342,7 +1347,7 @@ cons: Constraints {
 The full implementation. `getKeyAtIndex` is a one-liner: return the stored key if the slot is `OCCUPIED`, otherwise `-1` (covers both `EMPTY` and `DELETED` slots).
 
 
-```python run
+```python run viz=graph viz-root=table
 from enum import Enum
 from typing import List, Optional
 
@@ -1681,3 +1686,40 @@ Two takeaways to carry forward:
 > *Coming up — primary clustering is the bug, and the next two lessons are the cures. <strong>Quadratic probing</strong> jumps further with each probe (1, 4, 9, 16, ...) instead of one slot at a time, which spreads collisions across the array. <strong>Double hashing</strong> goes further still, using a <em>second</em> hash function to give each key its own probe rhythm. Both are subtle; both have edge cases that linear probing doesn't. Let's see them.*
 
 </details>
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
+<!--       Guidance: bulleted list of gotchas -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->
+
+<!-- TODO: Final Takeaway — missing, needs to be written -->
+<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->

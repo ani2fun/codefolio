@@ -168,7 +168,7 @@ The rebalance walks up from the double-black node, fixing four cases at each ste
 
 A working red-black tree is `~150 lines` of code per language even with care taken — significantly more than AVL. The full implementation below is insert-only for compactness; production-grade implementations also handle delete (the [Linux kernel's `lib/rbtree.c`](https://github.com/torvalds/linux/blob/master/lib/rbtree.c) is the reference).
 
-```python run
+```python run viz=binary-tree viz-root=root
 RED, BLACK = 0, 1
 
 class Node:
@@ -573,3 +573,25 @@ The red-black tree is the workhorse balanced BST of production code. Three patte
 1. **Five invariants, one machine.** Each rule is unmotivating in isolation; together they constrain the tree to height `2 log n`. The hardest insight is that *every* root-to-leaf path has the same black-height — that single rule does most of the work.
 2. **Insert is three cases; delete is four.** Insert's worst case: one rotation. Delete's worst case: three rotations. Both `O(1)` rotations per operation regardless of `n` — the key efficiency property over AVL.
 3. **You'll meet RB-trees in production all the time.** Java, C++, Linux, Nginx, Postgres GiST — read the source of `lib/rbtree.c` once and you'll spot the same shape everywhere. The fact that one structure with a single colour bit per node powers so much of computing is one of the quiet successes of the field.
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->

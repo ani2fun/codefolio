@@ -1,0 +1,547 @@
+{
+  "chapter": "03-trees/01-binary-tree",
+  "sweep": 2,
+  "pilot_approved": true,
+  "files": [
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/01-introduction-to-binary-trees.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/02-array-implementation-of-binary-trees.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/03-linked-list-implementation-of-binary-trees.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/04-recursive-traversals-in-binary-trees.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/05-iterative-traversals-in-binary-trees.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 11,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/06-constructing-a-binary-tree.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/07-insertion-in-binary-trees.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 11,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/08-memorize.md",
+      "type": "CHAPTER_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 0,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/09-pattern-preorder-traversal-stateless/01-pattern.md",
+      "type": "PATTERN",
+      "status": "done",
+      "placeholders_inserted": 12,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/10-pattern-preorder-traversal-stateful/01-pattern.md",
+      "type": "PATTERN",
+      "status": "done",
+      "placeholders_inserted": 12,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/11-pattern-postorder-traversal-stateless/01-pattern.md",
+      "type": "PATTERN",
+      "status": "done",
+      "placeholders_inserted": 12,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/12-pattern-postorder-traversal-stateful/01-pattern.md",
+      "type": "PATTERN",
+      "status": "done",
+      "placeholders_inserted": 12,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/13-pattern-root-to-leaf-path-stateless/01-pattern.md",
+      "type": "PATTERN",
+      "status": "done",
+      "placeholders_inserted": 12,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/14-pattern-root-to-leaf-path-stateful/01-pattern.md",
+      "type": "PATTERN",
+      "status": "done",
+      "placeholders_inserted": 12,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/15-pattern-level-order-traversal/01-pattern.md",
+      "type": "PATTERN",
+      "status": "done",
+      "placeholders_inserted": 12,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/16-pattern-level-order-traversal-columns/01-pattern.md",
+      "type": "PATTERN",
+      "status": "done",
+      "placeholders_inserted": 12,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/17-pattern-lowest-common-ancestor/01-pattern.md",
+      "type": "PATTERN",
+      "status": "done",
+      "placeholders_inserted": 12,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/18-pattern-simultaneous-traversal/01-pattern.md",
+      "type": "PATTERN",
+      "status": "done",
+      "placeholders_inserted": 12,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/09-pattern-preorder-traversal-stateless/02-problems/01-sum-of-path.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/09-pattern-preorder-traversal-stateless/02-problems/02-depth-assignment.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/09-pattern-preorder-traversal-stateless/02-problems/03-concatenated-path.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/09-pattern-preorder-traversal-stateless/02-problems/04-increasing-path.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/10-pattern-preorder-traversal-stateful/02-problems/01-duplicates-in-path.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/10-pattern-preorder-traversal-stateful/02-problems/02-second-minimum.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/10-pattern-preorder-traversal-stateful/02-problems/03-left-view.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/10-pattern-preorder-traversal-stateful/02-problems/04-right-view.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/11-pattern-postorder-traversal-stateless/02-problems/01-sum-of-leaves.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/11-pattern-postorder-traversal-stateless/02-problems/02-height-of-a-binary-tree.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/11-pattern-postorder-traversal-stateless/02-problems/03-maximum-root-to-leaf-path-sum.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/11-pattern-postorder-traversal-stateless/02-problems/04-is-it-a-full-binary-tree.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/11-pattern-postorder-traversal-stateless/02-problems/05-is-it-a-perfect-binary-tree.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/11-pattern-postorder-traversal-stateless/02-problems/06-collect-leaves-by-height.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/12-pattern-postorder-traversal-stateful/02-problems/01-diameter-of-tree.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/12-pattern-postorder-traversal-stateful/02-problems/02-descendants-sum-count.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/12-pattern-postorder-traversal-stateful/02-problems/03-distribute-coins.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/12-pattern-postorder-traversal-stateful/02-problems/04-most-frequent-subtree-sum.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/12-pattern-postorder-traversal-stateful/02-problems/05-longest-monotonic-path.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/12-pattern-postorder-traversal-stateful/02-problems/06-monotonic-subtree-count.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/12-pattern-postorder-traversal-stateful/02-problems/07-path-sum-count.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/13-pattern-root-to-leaf-path-stateless/02-problems/01-root-to-leaf-path-sum-check.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/13-pattern-root-to-leaf-path-stateless/02-problems/02-binary-summation-of-tree.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/13-pattern-root-to-leaf-path-stateless/02-problems/03-even-path.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/13-pattern-root-to-leaf-path-stateless/02-problems/04-odd-count.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/14-pattern-root-to-leaf-path-stateful/02-problems/01-root-to-leaf-paths-summing-to-target.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/14-pattern-root-to-leaf-path-stateful/02-problems/02-equal-evens-and-odds-paths.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/14-pattern-root-to-leaf-path-stateful/02-problems/03-duplicate-paths.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/14-pattern-root-to-leaf-path-stateful/02-problems/04-prefix-paths.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/15-pattern-level-order-traversal/02-problems/01-level-sum.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/15-pattern-level-order-traversal/02-problems/02-deepest-leaves-sum.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/15-pattern-level-order-traversal/02-problems/03-complete-binary-tree-check.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/15-pattern-level-order-traversal/02-problems/04-zigzag-traversal.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/15-pattern-level-order-traversal/02-problems/05-cousin-check.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/16-pattern-level-order-traversal-columns/02-problems/01-top-view.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/16-pattern-level-order-traversal-columns/02-problems/02-bottom-view.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/16-pattern-level-order-traversal-columns/02-problems/03-vertical-traversal.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/16-pattern-level-order-traversal-columns/02-problems/04-diagonal-traversal.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/17-pattern-lowest-common-ancestor/02-problems/01-lowest-common-ancestor.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/17-pattern-lowest-common-ancestor/02-problems/02-lca-with-existence-check.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/17-pattern-lowest-common-ancestor/02-problems/03-lca-of-n-random-nodes.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/17-pattern-lowest-common-ancestor/02-problems/04-lca-of-the-deepest-leaves.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/17-pattern-lowest-common-ancestor/02-problems/05-distance-between-two-nodes.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/18-pattern-simultaneous-traversal/02-problems/01-identical-trees.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/18-pattern-simultaneous-traversal/02-problems/02-symmetry-detection.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/18-pattern-simultaneous-traversal/02-problems/03-subtree-detection.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/18-pattern-simultaneous-traversal/02-problems/04-merge-trees.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/09-pattern-preorder-traversal-stateless/03-memorize.md",
+      "type": "PATTERN_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/10-pattern-preorder-traversal-stateful/03-memorize.md",
+      "type": "PATTERN_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/11-pattern-postorder-traversal-stateless/03-memorize.md",
+      "type": "PATTERN_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/12-pattern-postorder-traversal-stateful/03-memorize.md",
+      "type": "PATTERN_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/13-pattern-root-to-leaf-path-stateless/03-memorize.md",
+      "type": "PATTERN_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/14-pattern-root-to-leaf-path-stateful/03-memorize.md",
+      "type": "PATTERN_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/15-pattern-level-order-traversal/03-memorize.md",
+      "type": "PATTERN_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/16-pattern-level-order-traversal-columns/03-memorize.md",
+      "type": "PATTERN_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/17-pattern-lowest-common-ancestor/03-memorize.md",
+      "type": "PATTERN_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/18-pattern-simultaneous-traversal/03-memorize.md",
+      "type": "PATTERN_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/19-pattern-synthesis.md",
+      "type": "PATTERN_SYNTHESIS",
+      "status": "done",
+      "placeholders_inserted": 0,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/18-practice-mix-traversals.md",
+      "type": "PRACTICE",
+      "status": "done",
+      "placeholders_inserted": 0,
+      "flags": 0,
+      "skip_audit": true
+    }
+  ]
+}

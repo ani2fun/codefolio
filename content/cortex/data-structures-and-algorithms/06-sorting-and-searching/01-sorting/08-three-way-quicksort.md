@@ -1,3 +1,8 @@
+---
+title: "Three Way Quicksort"
+summary: "<!-- TODO: summary -->"
+---
+
 # 8. Three-Way Quicksort
 
 You ended the Quicksort lesson with a haunting demonstration: quicksort on `[5, 5, 5, 5, ..., 5]` runs in `O(n²)` time. Lomuto's two-way partition can't handle duplicates — the comparison `arr[i] < pivot` is never true for equal elements, so the partition becomes maximally unbalanced.
@@ -291,7 +296,7 @@ Three-way partition is Dutch National Flag with `pivot` instead of `1` as the mi
 We implement three functions: `partition` (three-way, returning the two boundary indices `i` and `j`), `quicksort` (the recursive driver), and `three_way_quick_sort` (the entry point that kicks off the recursion over the whole array). This version takes the **last element** `arr[right]` as the pivot; `partition` also handles a 0-or-1-element subarray directly with a single compare-and-swap.
 
 
-```python run
+```python run viz=array viz-root=arr
 from typing import List, Tuple
 
 class Solution:
@@ -631,3 +636,40 @@ Empirically, dual-pivot is ~10–15% faster than single-pivot quicksort on rando
 **You just understood why Java uses dual-pivot by default.** The natural next question is: would *triple*-pivot help? Empirical research says no — the per-partition cost grows faster than the balance benefit. Two pivots is the sweet spot, and the trick generalises only to the Dutch-flag-style three-way partition we've seen here.
 
 </details>
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: The Hook — missing, needs to be written -->
+<!--       Guidance: real-world story opening before any definition -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->
+
+<!-- TODO: Final Takeaway — missing, needs to be written -->
+<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->

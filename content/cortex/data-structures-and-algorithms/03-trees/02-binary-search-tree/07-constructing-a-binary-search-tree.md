@@ -1,3 +1,8 @@
+---
+title: "Constructing A Binary Search Tree"
+summary: "<!-- TODO: summary -->"
+---
+
 # 7. Constructing a Binary Search Tree
 
 ## The Hook
@@ -1092,3 +1097,40 @@ Two ideas worth banking:
 The next lesson finally puts our shiny new BST to work on a classic interview problem: the **Lowest Common Ancestor**. The BST property turns what would be an O(n) traversal in a generic binary tree into a one-pass O(h) descent.
 
 </details>
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
+<!--       Guidance: bulleted list of gotchas -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->
+
+<!-- TODO: Final Takeaway — missing, needs to be written -->
+<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->

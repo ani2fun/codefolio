@@ -1,3 +1,8 @@
+---
+title: "Longest Common Subsequence"
+summary: "<!-- TODO: summary -->"
+---
+
 # 3. Longest Common Subsequence
 
 You're using a diff tool. Two versions of a file slide side by side; lines that match are highlighted, lines that changed are flagged. The tool isn't comparing lines verbatim — it's finding the longest *sequence* of identical lines, in the same order, with arbitrary insertions and deletions allowed in between. That sequence is a longest common subsequence. The same algorithm finds the closest match for a misspelt word in a spell checker, aligns DNA strands in a genomics pipeline, and detects plagiarised paragraphs in essays.
@@ -211,7 +216,7 @@ flowchart TB
 
 ### The Solution
 
-```python run
+```python run viz=graph viz-root=memo
 from typing import List
 
 class Solution:
@@ -457,7 +462,7 @@ Output: 0                No characters in common
 
 
 
-```python run
+```python run viz=grid viz-root=dp
 from typing import List
 
 class Solution:
@@ -677,7 +682,7 @@ flowchart TB
 
 ### The Solution
 
-```python run
+```python run viz=grid viz-root=dp
 from typing import List, Set
 
 class Solution:
@@ -921,3 +926,40 @@ When the DP gives a *count* but you want the *witness*, backtrack through the ta
 It breaks. With adjacency required, a mismatch *immediately* breaks the running match — the cell becomes 0, not the max of two predecessors. The next lesson, **Longest Common Substring**, has a different recurrence that captures exactly this behaviour: `dp[i][j] = dp[i-1][j-1] + 1` if match, else **0** (not max).
 
 </details>
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: The Hook — missing, needs to be written -->
+<!--       Guidance: real-world story opening before any definition -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->
+
+<!-- TODO: Final Takeaway — missing, needs to be written -->
+<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->

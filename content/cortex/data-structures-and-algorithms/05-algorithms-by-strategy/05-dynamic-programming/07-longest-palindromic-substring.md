@@ -1,3 +1,8 @@
+---
+title: "Longest Palindromic Substring"
+summary: "<!-- TODO: summary -->"
+---
+
 # 7. Longest Palindromic Substring
 
 The previous lesson found the longest palindromic *subsequence* — characters that read the same backward, gaps allowed. **Substring** is the contiguous version: the palindrome must be a continuous slice of the original string. The two-character difference between "subsequence" and "substring" changes everything: now we need a *boolean* table — "is this slice a palindrome?" — and then the longest contiguous palindrome falls out.
@@ -162,7 +167,7 @@ Output: "geeksskeeg"
 Track the longest palindrome's length and start position as the table fills.
 
 
-```python run
+```python run viz=graph viz-root=is_palindrome
 from typing import List
 
 class Solution:
@@ -320,3 +325,37 @@ LPSubstr replaces LPS's "max length" DP with an "is it a palindrome?" boolean DP
 `cuts(i)` = minimum cuts needed for `s[0..i]`. If `s[0..i]` is already a palindrome, 0 cuts. Otherwise, try every split point `j`: `cuts(i) = 1 + cuts(j) + 0` if `s[j+1..i]` is palindromic. Take the min. The next lesson formalises this.
 
 </details>
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: The Hook — missing, needs to be written -->
+<!--       Guidance: real-world story opening before any definition -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->

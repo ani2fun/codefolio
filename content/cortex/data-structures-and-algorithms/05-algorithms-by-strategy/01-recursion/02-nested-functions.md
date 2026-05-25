@@ -1,3 +1,8 @@
+---
+title: "Nested Functions"
+summary: "<!-- TODO: summary -->"
+---
+
 # 2. Nested Functions
 
 You've written nested function calls a thousand times — `main` calls `parse`, `parse` calls `tokenize`, `tokenize` calls `peek`. The code is so ordinary you stopped noticing it. But what *exactly* happens at the moment of the call? Where do the arguments go? How does the program know where to come back to when the called function returns? And why is it that this same mechanism — the one that makes every program work — is the one that crashes the program when recursion goes too deep?
@@ -330,7 +335,7 @@ The classic offender is a giant fixed-size local array. C, C++, and Rust will ha
 The huge-frame case typically crashes immediately on the first call's entry; the deep-nesting case runs for milliseconds before tripping over its own pile of small frames. Both end with the same kernel signal, but the timing differs by orders of magnitude.
 
 
-```python run
+```python run viz=array viz-root=arr
 def main():
 
     # Huge local list, may cause
@@ -413,7 +418,7 @@ proc: "Reality — production crash" {
 In well-tested code, this is the most common cause of real-world stack overflow. It often appears not as an immediate crash but only when edge-case inputs push the depth or local-size beyond a threshold. The crash is intermittent. The frames look "fine." The fix is to either move data off the stack (heap allocation) or to flatten the recursion (iteration with an explicit stack data structure).
 
 
-```python run
+```python run viz=array viz-root=arr
 def function_c():
     arr = [0] * 10_000
     # some code
@@ -551,3 +556,40 @@ They return in reverse order: `count_down(0)` → `count_down(1)` → ... → `c
 **You just predicted the Recursion lesson's diagram of the recursion stack.** The next lesson formalises the two-piece structure (base case + recursive relation) that makes any function's call tree shape predictable.
 
 </details>
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: The Hook — missing, needs to be written -->
+<!--       Guidance: real-world story opening before any definition -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
+<!--       Guidance: bulleted list of gotchas -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->

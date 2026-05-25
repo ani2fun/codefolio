@@ -1,0 +1,134 @@
+{
+  "chapter": "03-trees/03-heap",
+  "sweep": 2,
+  "pilot_approved": true,
+  "files": [
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/03-heap/01-introduction-to-heaps.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 4,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/03-heap/02-array-implementation-of-heaps.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 11,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/03-heap/03-memorize.md",
+      "type": "CHAPTER_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 0,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/03-heap/04-pattern-top-k-elements/01-pattern.md",
+      "type": "PATTERN",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/03-heap/05-pattern-comparator/01-pattern.md",
+      "type": "PATTERN",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/03-heap/04-pattern-top-k-elements/02-problems/01-kth-largest-element.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/03-heap/04-pattern-top-k-elements/02-problems/02-kth-smallest-element.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/03-heap/04-pattern-top-k-elements/02-problems/03-k-range-sum.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/03-heap/04-pattern-top-k-elements/02-problems/04-k-sorted-array-sorting.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/03-heap/05-pattern-comparator/02-problems/01-k-most-frequent-elements.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/03-heap/05-pattern-comparator/02-problems/02-k-smallest-sum-pairs.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/03-heap/05-pattern-comparator/02-problems/03-k-closest-values.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/03-heap/05-pattern-comparator/02-problems/04-k-arrays-smallest-range.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/03-heap/05-pattern-comparator/02-problems/05-k-way-list-merge.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/03-heap/04-pattern-top-k-elements/03-memorize.md",
+      "type": "PATTERN_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/03-heap/05-pattern-comparator/03-memorize.md",
+      "type": "PATTERN_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/03-heap/07-pattern-synthesis.md",
+      "type": "PATTERN_SYNTHESIS",
+      "status": "done",
+      "placeholders_inserted": 0,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/03-heap/06-design-a-heap/01-design-a-heap.md",
+      "type": "DESIGN",
+      "status": "done",
+      "placeholders_inserted": 0,
+      "flags": 0,
+      "skip_audit": true
+    }
+  ]
+}

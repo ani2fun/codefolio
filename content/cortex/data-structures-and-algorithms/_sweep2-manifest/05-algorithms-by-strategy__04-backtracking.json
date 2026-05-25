@@ -1,0 +1,154 @@
+{
+  "chapter": "05-algorithms-by-strategy/04-backtracking",
+  "sweep": 2,
+  "pilot_approved": true,
+  "files": [
+    {
+      "path": "content/cortex/data-structures-and-algorithms/05-algorithms-by-strategy/04-backtracking/01-introduction-to-backtracking.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 11,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/05-algorithms-by-strategy/04-backtracking/02-memorize.md",
+      "type": "CHAPTER_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 0,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/05-algorithms-by-strategy/04-backtracking/03-pattern-unconditional-enumeration/01-pattern.md",
+      "type": "PATTERN",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/05-algorithms-by-strategy/04-backtracking/04-pattern-conditional-enumeration/01-pattern.md",
+      "type": "PATTERN",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/05-algorithms-by-strategy/04-backtracking/05-pattern-backtracking-search/01-pattern.md",
+      "type": "PATTERN",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/05-algorithms-by-strategy/04-backtracking/03-pattern-unconditional-enumeration/02-problems/01-unique-subsets.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/05-algorithms-by-strategy/04-backtracking/03-pattern-unconditional-enumeration/02-problems/02-case-transformations.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/05-algorithms-by-strategy/04-backtracking/03-pattern-unconditional-enumeration/02-problems/03-number-sequence.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/05-algorithms-by-strategy/04-backtracking/03-pattern-unconditional-enumeration/02-problems/04-phone-combinations.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/05-algorithms-by-strategy/04-backtracking/04-pattern-conditional-enumeration/02-problems/01-generate-parentheses.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/05-algorithms-by-strategy/04-backtracking/04-pattern-conditional-enumeration/02-problems/02-target-sum-combinations.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/05-algorithms-by-strategy/04-backtracking/04-pattern-conditional-enumeration/02-problems/03-generate-ip-addresses.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/05-algorithms-by-strategy/04-backtracking/04-pattern-conditional-enumeration/02-problems/04-string-permutations.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/05-algorithms-by-strategy/04-backtracking/05-pattern-backtracking-search/02-problems/01-rat-in-a-maze.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/05-algorithms-by-strategy/04-backtracking/05-pattern-backtracking-search/02-problems/02-word-quest.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/05-algorithms-by-strategy/04-backtracking/05-pattern-backtracking-search/02-problems/03-solve-n-queens.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/05-algorithms-by-strategy/04-backtracking/05-pattern-backtracking-search/02-problems/04-solve-sudoku.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/05-algorithms-by-strategy/04-backtracking/03-pattern-unconditional-enumeration/03-memorize.md",
+      "type": "PATTERN_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/05-algorithms-by-strategy/04-backtracking/04-pattern-conditional-enumeration/03-memorize.md",
+      "type": "PATTERN_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/05-algorithms-by-strategy/04-backtracking/05-pattern-backtracking-search/03-memorize.md",
+      "type": "PATTERN_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/05-algorithms-by-strategy/04-backtracking/06-pattern-synthesis.md",
+      "type": "PATTERN_SYNTHESIS",
+      "status": "done",
+      "placeholders_inserted": 0,
+      "flags": 0
+    }
+  ]
+}

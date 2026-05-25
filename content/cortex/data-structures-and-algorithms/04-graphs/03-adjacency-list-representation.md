@@ -1,3 +1,8 @@
+---
+title: "Adjacency List Representation"
+summary: "<!-- TODO: summary -->"
+---
+
 # 3. Adjacency list representation
 
 This lesson covers the **adjacency list** — the representation that fits the way most graphs in the real world actually look. By the end you'll know exactly why this is the default choice for graph problems, and you'll be able to convert freely between matrix and list whenever the problem demands it.
@@ -247,7 +252,7 @@ flowchart LR
 <p align="center"><strong>Two-step build. Each edge appends one entry to each of its two endpoint's lists.</strong></p>
 
 
-```python run
+```python run viz=graph viz-root=adj
 def create_graph(nodes, edges):
     # Create adjacency list
     adj = [[] for _ in range(nodes)]
@@ -350,7 +355,7 @@ list: "Weighted adjacency list" {
 <p align="center"><strong>Each inner list now stores <code>(neighbour, weight)</code> pairs. The graph structure is unchanged; we've simply enriched what every neighbour entry carries.</strong></p>
 
 
-```python run
+```python run viz=graph viz-root=adj
 """
  * Function to create graph
  * nodes: The number of nodes in the graph
@@ -486,7 +491,7 @@ approach2: "Approach 2: nodes as objects" {
 Here's the **node-as-object** approach in Python and Java — it's the more general one because it scales naturally as the per-node payload grows.
 
 
-```python run
+```python run viz=graph viz-root=graph
 class Node:
     def __init__(self, data = 0):
         self.data = data
@@ -689,7 +694,7 @@ That's literally it. No clever insight — just don't share references.
 
 ### The Solution
 
-```python run
+```python run viz=graph viz-root=adj_list
 from typing import List
 
 class Solution:
@@ -830,7 +835,7 @@ flowchart LR
 
 ### The Solution
 
-```python run
+```python run viz=graph viz-root=adj_list
 from typing import List
 
 class Solution:
@@ -972,7 +977,7 @@ flowchart LR
 
 ### The Solution
 
-```python run
+```python run viz=graph viz-root=adj_matrix
 from typing import List
 
 class Solution:
@@ -1093,3 +1098,43 @@ But what we've built is just **storage**. We haven't yet made the graph *do* any
 The factor between them is **~40 000×** — a perfect demonstration of why sparse graphs need adjacency lists.
 
 </details>
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: The Hook — missing, needs to be written -->
+<!--       Guidance: real-world story opening before any definition -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
+<!--       Guidance: bulleted list of gotchas -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->
+
+<!-- TODO: Final Takeaway — missing, needs to be written -->
+<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->

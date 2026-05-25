@@ -1,0 +1,31 @@
+{
+  "chapter": "03-trees/11-disjoint-set-union",
+  "sweep": 3,
+  "pilot_approved": false,
+  "units": [
+    {
+      "id": "03-trees/11-disjoint-set-union/lesson-01-introduction-to-disjoint-set-union",
+      "type": "LESSON_UNIT",
+      "files": [
+        "03-trees/11-disjoint-set-union/01-introduction-to-disjoint-set-union.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "03-trees/11-disjoint-set-union/chapter_memorize-02-memorize",
+      "type": "CHAPTER_MEMORIZE_UNIT",
+      "files": [
+        "03-trees/11-disjoint-set-union/02-memorize.md"
+      ],
+      "status": "pending",
+      "blocked_by": [
+        "03-trees/11-disjoint-set-union/lesson-01-introduction-to-disjoint-set-union"
+      ],
+      "todos_filled": 0,
+      "verify_flags": 0
+    }
+  ]
+}

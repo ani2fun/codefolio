@@ -108,7 +108,7 @@ flowchart TB
 
 A simple persistent BST in Python:
 
-```python run
+```python run viz=graph viz-root=node
 class Node:
     __slots__ = ("key", "left", "right")
     def __init__(self, key, left=None, right=None):
@@ -316,3 +316,28 @@ Persistent structures retain history while sharing structure. Three patterns to 
 3. **Functional languages get persistence "for free".** Immutability + structural sharing = persistence. The cost (the `log n` factor) is the trade-off; the benefit is implicit thread-safety and historical access.
 
 This concludes the Probabilistic and Advanced module. Six chapters covering skip lists, Bloom filters, Count-Min sketches, HyperLogLog, treaps, and persistent structures — the structures that earn their place when exact methods become too expensive or too rigid.
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->

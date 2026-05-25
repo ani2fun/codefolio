@@ -1,3 +1,8 @@
+---
+title: "Traversal In Singly Linked Lists"
+summary: "Walk a singly linked list by following `node.next` pointers from head until null. The O(n) loop that underpins every other linked-list operation — search, length, insert, delete, reverse."
+---
+
 # 2. Traversal in Singly Linked Lists
 
 ## The Hook
@@ -14,6 +19,17 @@ In this lesson you'll master the traversal loop that underpins **every other lin
 2. [Node expedition](#node-expedition)
 3. [Node search](#node-search)
 4. [Length of the list](#length-of-the-list)
+5. [Understanding the problem](#understanding-the-problem)
+6. [Supported operations](#supported-operations)
+7. [Internal mechanics](#internal-mechanics)
+8. [Working example](#working-example)
+9. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
+10. [Production reality](#production-reality)
+11. [Quiz](#quiz)
+12. [Practice ladder](#practice-ladder)
+13. [Further reading](#further-reading)
+14. [Cross-links](#cross-links)
+15. [Final takeaway](#final-takeaway)
 
 ***
 
@@ -674,11 +690,78 @@ public class Main {
 This is the painful part of linked lists: **there is no `.length` you can read in O(1)**. Every length query walks the entire list. That's why production linked-list implementations often cache a `size` field on the list object itself and update it on every insert/delete — trading a tiny bit of bookkeeping for O(1) size queries.
 
 </details>
-<details>
-<summary><h2>Final Takeaway</h2></summary>
+***
 
+# Understanding the Problem
 
-Three problems, three variants of the same five-line loop:
+A singly linked list scatters its nodes across memory and chains them with `.next` pointers. That layout buys cheap insertion and deletion — but it also takes away the one thing arrays gave you for free: a way to address any node by index. There is no `list[7]` because there is no contiguous block to do address arithmetic over.
+
+So the question every linked-list algorithm has to answer is: how do you *reach* a node you haven't been handed a reference to? You can't jump. You can't binary-search. You can only step.
+
+**Traversal** is that one step, repeated:
+
+- start at a known reference — almost always `head`
+- read or compare the current node
+- advance via `current = current.next`
+- stop when `current` is `null`
+
+To make this concrete: if a function needs the third node in `5 → 7 → 3 → 10`, it cannot ask for `list[2]`. It receives `head` (pointing at `5`), follows `head.next` to `7`, then `7.next` to `3`. Three node visits to reach index two. The same pattern, no matter what the operation looks like on the surface.
+
+So the key idea is: traversal is the *only* way to reach any node beyond the head — every other singly-linked-list operation (search, insert, delete, reverse, merge) is a traversal with a small twist in the loop body.
+
+---
+
+## Key Takeaway
+
+Without random access, every operation on a singly linked list begins by walking the chain. Master the walk first; everything else is bookkeeping inside the loop.
+
+***
+
+# Supported Operations
+
+Traversal is not an end in itself — it is the substrate for the operations a singly linked list actually exposes. The table below names them and pins down their cost so you can see, at a glance, which operations the structure gets right and which ones make you pay.
+
+| Operation | Time | Space | Why |
+|---|---|---|---|
+| **Access by index** `list[i]` | O(n) | O(1) | Must walk `i` `.next` hops — no address arithmetic |
+| **Search by value** | O(n) | O(1) | Walk and compare; no ordering or hashing assumed |
+| **Length** | O(n) | O(1) | Walk and count; no `.length` to read in O(1) unless cached |
+| **Insert at head** | O(1) | O(1) | Re-point `new_node.next = head; head = new_node` |
+| **Insert at tail** | O(n) | O(1) | Walk to the last node first, *unless* a `tail` pointer is cached |
+| **Insert after a known node** | O(1) | O(1) | Re-point two `.next` references; no shifting |
+| **Delete head** | O(1) | O(1) | `head = head.next` |
+| **Delete by value** | O(n) | O(1) | Walk to find the predecessor, then re-point one `.next` |
+| **Traversal (all nodes)** | O(n) | O(1) | The canonical loop — every other op is built on it |
+
+Two patterns explain the whole table.
+
+- **Anything that needs a reference to an arbitrary node is O(n)** — access, search, length, insert at tail without a cached pointer, delete by value.
+- **Anything that already holds the right reference is O(1)** — insert at head, insert after a known node, delete head, delete after a known node.
+
+To make this concrete: a stack on a singly linked list pushes and pops at the head — both O(1). A queue needs a head *and* a tail pointer to make both ends O(1), otherwise enqueue degrades to O(n).
+
+So the core insight is: a singly linked list is a "what you already hold" structure — you pay O(n) the moment you need to *find* a node, but everything you can do *at* a node is O(1).
+
+---
+
+## Key Takeaway
+
+The cost of any linked-list operation is the cost of getting to the right node, plus a constant for the pointer surgery itself. If you can avoid the walk by caching a pointer, you turn an O(n) operation into O(1).
+
+***
+
+# Internal Mechanics
+
+Every traversal collapses into the same three-line loop — and the loop only works because of the four invariants the singly linked list maintains across all of its nodes.
+
+The structural facts:
+
+- **`head`** is the single externally-held reference; lose it and the entire list is unreachable
+- every node holds a **value** field and a **`.next`** field
+- the last node — the **tail** — has `.next == null`; the `null` is the only out-of-band signal in the whole structure
+- a node's memory address has no relationship to its position in the chain — neighbours in the list may be far apart in memory
+
+Given those, the traversal algorithm only needs a single cursor — the visit step is whatever the calling algorithm needs to do at each node (print, compare, count, rewire):
 
 ```
 current = head
@@ -687,14 +770,174 @@ while current is not null:
     current = current.next
 ```
 
-Everything else in this course — every pattern, every interview problem — is **this loop with something clever plugged into the middle**. Internalise the skeleton. When you see a linked-list problem and panic, remember: you already know how to walk it. The only question is *what to do at each step*.
+To make this concrete: on `5 → 7 → 3 → 10`, the cursor takes the values `head`, `head.next`, `head.next.next`, `head.next.next.next`, then `null`. The loop runs four times — once per node — and stops on the fifth check. Total: O(n) time, O(1) extra space.
 
-> **Transfer Challenge:** Write a single function that returns **both** the length and the sum of all values in one pass. Why is this better than calling `length()` and then `sum()` separately?
->
-> <details><summary><strong>Solution hint</strong></summary>
->
-> Both need a full walk — calling them separately costs 2n hops. A combined walk costs n hops. Pass both accumulators as local variables; return a tuple `(length, sum)`. Same pattern extends to "return min, max, length, sum" in one pass.
->
-> </details>
+So the core insight is: the loop is correct because of the tail's `null` sentinel. Drop that invariant — corrupt a `.next`, or build a cycle — and the loop either crashes on a null dereference or runs forever.
 
-</details>
+### Why `null` is the only stop condition
+
+The cursor cannot know "how many nodes are left" because the structure does not store its own length. It can only ask the current node: *"is there a next one?"* The `null` in the tail's `.next` is the structure's way of saying *no*. That single bit of information is what makes the unbounded `while` loop terminate.
+
+### Recursive vs iterative form
+
+The same walk can be written recursively — `traverse(node.next)` after visiting `node`. It is shorter on paper, but it costs O(n) stack frames; on a list of a million nodes, a recursive walk will overflow the call stack in most runtimes. <!-- VERIFY: Python's default recursion limit is 1000; CPython does not have tail-call optimisation. --> The iterative form keeps space at O(1), so production code prefers it unless the recursion expresses something the iteration cannot.
+
+So the tradeoff is: recursion mirrors the structure beautifully and runs in O(n) time — but it pays for that beauty with O(n) stack space, which large inputs will not tolerate.
+
+---
+
+## Key Takeaway
+
+The whole linked-list world rests on three primitives: `head`, `.next`, and the tail's `null`. Internalise them and the loop writes itself.
+
+***
+
+# Working Example
+
+To make the loop concrete, walk it on a four-node list — `5 → 7 → 3 → 10` — and trace every variable on every iteration.
+
+Initial state, before the loop:
+
+| Step | `current` | `current.val` | `current.next` | Action |
+|---|---|---|---|---|
+| 0 — init | node(5) | 5 | node(7) | `current ← head` — enter the loop, condition holds |
+| 1 | node(5) | 5 | node(7) | visit 5; advance: `current ← current.next` |
+| 2 | node(7) | 7 | node(3) | visit 7; advance |
+| 3 | node(3) | 3 | node(10) | visit 3; advance |
+| 4 | node(10) | 10 | `null` | visit 10; advance: `current ← null` |
+| 5 — exit | `null` | — | — | condition fails; loop ends |
+
+Four visits, one extra check that fails, then exit. Five iterations of the `while` test for four nodes — that's the +1 the loop pays to *detect* the end.
+
+To make this concrete:
+
+- the cursor `current` is the only mutable variable — no counter, no index, no extra storage
+- the visit happens *before* the advance; reversing the order would skip the head
+- the loop exits because `node(10).next` is `null`, not because the cursor knows the list has four nodes
+
+So the key idea is: every linked-list algorithm you will write reuses this trace shape — different `visit()`, same `advance()`, same `null` exit.
+
+---
+
+## Key Takeaway
+
+One pointer, one `.next` advance, one `null` exit — and four real nodes get touched in O(n) time with O(1) space.
+
+***
+
+# Edge Cases and Pitfalls
+
+The traversal loop is five lines long and ships with a long list of small bugs. The list below catches the ones every reviewer eventually develops a reflex for.
+
+- **Empty list — `head` is `null`.** The loop's entry condition `current is not null` already handles this; the body never executes. The bug is forgetting to write the check and dereferencing `head.val` directly — `NullPointerException` in Java, `AttributeError` in Python.
+- **Single-node list.** The loop runs exactly once; `current.next` is `null` on the first iteration. Algorithms that compare adjacent pairs (`current.next.val`) must guard the `null` before reading further.
+- **Reading `current.next.val` without a null check.** If `current` is the tail, `current.next` is `null` and the dereference crashes. Inside the loop body, every step beyond `current` itself needs its own null check.
+- **Modifying `.next` mid-walk.** If the visit function rewires `current.next` (insert, delete, reverse), the loop loses its way unless you save the next reference *before* the modification: `next_ref = current.next; … rewire … ; current = next_ref`.
+- **Forgetting to advance.** Omitting `current = current.next` turns the loop into an infinite spin on the head node — the most common beginner bug, easy to spot only because the program hangs.
+- **Cycles.** If some node's `.next` points back into the chain (a programmer error, or a deliberate cycle in problems like cycle detection), the loop never terminates because no node satisfies `.next == null`. Fast-and-slow pointers detect this in O(n) time, O(1) space — covered in chapter 5.
+- **Lost head reference.** A function that mutates `head` (e.g. `head = head.next` to delete the first node) must `return` the new head; the caller's local variable still points at the original first node otherwise. This is the linked-list equivalent of pass-by-value vs pass-by-reference confusion.
+- **Off-by-one when counting hops.** "Walk to the kth node" means k advances, not k node visits. A list of length 5 has indices `0..4`; reaching index 3 from head requires three `.next` hops, not four.
+- **Stale cached length.** If you cache a `size` field on the list object for O(1) length queries, every insert and delete must update it — miss one and `length()` silently lies. <!-- VERIFY: most production linked-list implementations (Java's LinkedList) do cache a `size` field. -->
+
+***
+
+# Production Reality
+
+The "follow `.next` until null" walk shows up far beyond toy examples. The five places below put it on a load-bearing path.
+
+**[Linux kernel — `struct list_head`]** — uses **an intrusively-linked doubly linked list walked node-by-node** — because the kernel needs zero-allocation list discipline across thousands of subsystems, and the cost is dominated by the per-step pointer chase, not by indexing.
+
+The `list_for_each_entry` macro is a direct expansion of the traversal loop discussed in this lesson — initialise a cursor at the list head, advance via `cursor->next`, stop at the sentinel. Every process descriptor, every open file, every loadable module sits on at least one of these lists. Source: [include/linux/list.h](https://github.com/torvalds/linux/blob/master/include/linux/list.h).
+
+**[Java's `HashMap` collision chain]** — uses **a singly linked list (then a tree above 8 entries) for the entries that hash to the same bucket** — because the *expected* chain length is below 1, so an O(n) walk over the chain is effectively O(1) on the hot path.
+
+When a bucket has two or more entries, `get` and `put` walk the chain comparing keys until match or end. The walk is exactly the traversal in this lesson. Hot-path performance assumes the chain stays short; the tree threshold (`TREEIFY_THRESHOLD = 8`) exists to bound the worst case when a bad hash function packs a bucket. Source: [HashMap.java](https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/java/util/HashMap.java).
+
+**[Redis adlist]** — uses **a generic doubly linked list with head, tail, and length cached on the list object** — because most operations (`LRANGE`, `LPUSH`, list-iterator commands) only ever walk forward or backward from an end, and the cached length turns `LLEN` into O(1).
+
+The traversal loop is identical; the cached `len` is the optimisation called out in the previous section's table. Without it, `LLEN` would cost O(n) every call. Source: [adlist.c](https://github.com/redis/redis/blob/unstable/src/adlist.c).
+
+**[Garbage collectors — free lists]** — uses **a singly linked list of free memory blocks walked first-fit or best-fit on allocation** — because allocation is hot but the free list is typically short, and the walk fuses naturally with size-checking each block.
+
+When `malloc` (or a GC's small-object allocator) needs `n` bytes, it walks the free list looking for a block of at least that size. This is the traversal loop with a `size >= n` filter in the visit step. Source: [glibc malloc.c](https://github.com/bminor/glibc/blob/master/malloc/malloc.c).
+
+**[Web browsers — event listener chains]** — uses **a singly linked list of registered callbacks per event type, walked in registration order on dispatch** — because the dispatcher must call every listener in order and the list is rarely long enough for an array's contiguity win to matter.
+
+When a DOM event fires, the browser walks the linked list of listeners for that event type and invokes each one. The list is built incrementally over the page's lifetime; rebuilding an array on each `addEventListener` would dominate the operation's cost. <!-- VERIFY: Chrome's Blink uses a HeapVector for listener lists, not a linked list — list-based dispatchers are common in older or simpler engines. -->
+
+***
+
+# Quiz
+
+Force the answer to surface before reading the response — that is the test of whether the loop is internalised.
+
+**[Recall] Q: What condition stops the standard singly-linked-list traversal loop?**
+`current is null` — the tail node's `.next` is `null` by invariant, so the cursor eventually lands there and the `while` test fails.
+
+**[Recall] Q: What are the time and space complexities of traversing a list of `n` nodes?**
+O(n) time (each node visited once) and O(1) space (one cursor variable).
+
+**[Reasoning] Q: Why can't you access the `k`-th node of a singly linked list in O(1) like an array?**
+Nodes are scattered across memory and chained by pointers — no base address plus stride formula exists, so reaching index `k` requires `k` `.next` hops.
+
+**[Reasoning] Q: Why does the standard loop save `current.next` into a local variable when the visit step modifies pointers (insert, delete, reverse)?**
+The visit may rewire `current.next` away from the original successor; without a saved reference, the loop would advance into the wrong subgraph (or into `null`) and skip the rest of the list.
+
+**[Tradeoff] Q: When is the recursive form of traversal a worse choice than the iterative form, and why?**
+On any list long enough that O(n) stack frames matter — large production inputs — recursion risks a stack overflow because singly linked traversal is not tail-call-optimised in most runtimes (Python, default JVM). The iterative form keeps space at O(1).
+
+***
+
+# Practice Ladder
+
+Five problems, easiest first. Each one is the traversal loop with a small twist plugged into the visit step.
+
+| # | Problem | Pattern | Difficulty | Hint |
+|---|---------|---------|------------|------|
+| 1 | [Middle of the Linked List](https://leetcode.com/problems/middle-of-the-linked-list/) | [Fast and Slow Pointers](./10-pattern-fast-and-slow-pointers/02-problems/01-middle-node-search.md) | Easy | Two cursors; advance one by `.next`, the other by `.next.next`. When fast falls off the end, slow sits at the middle. One pass, `O(n)` time, `O(1)` space. |
+| 2 | [Reverse Linked List](https://leetcode.com/problems/reverse-linked-list/) | [Reversal](./07-pattern-reversal/02-problems/01-reverse-a-list.md) | Easy | Standard traversal with three cursors: `prev`, `current`, `next_ref`. On each step, flip `current.next` to `prev` *after* saving the original next. |
+| 3 | [Remove Nth Node From End of List](https://leetcode.com/problems/remove-nth-node-from-end-of-list/) | [Sliding Window Traversal](./09-pattern-sliding-window-traversal/02-problems/02-trim-nth-node.md) | Medium | Two cursors `n` nodes apart. Advance both until the lead falls off — the trailing one now points at the predecessor of the victim. One pass. |
+| 4 | [Linked List Cycle](https://leetcode.com/problems/linked-list-cycle/) | [Fast and Slow Pointers](./10-pattern-fast-and-slow-pointers/01-pattern.md) | Easy | Same traversal, two speeds. If a cycle exists, fast laps slow inside the loop; otherwise fast hits `null`. `O(n)` time, `O(1)` space — better than a hash set. |
+| 5 | [Palindrome Linked List](https://leetcode.com/problems/palindrome-linked-list/) | [Fast and Slow Pointers](./10-pattern-fast-and-slow-pointers/02-problems/04-palindrome-checker.md) | Easy | One pass to find the middle, reverse the back half, then walk both halves comparing values. Three traversals stacked — `O(n)` time, `O(1)` space. |
+
+Once these feel reflexive, you have rehearsed every variation the rest of the chapter will demand.
+
+***
+
+# Further Reading
+
+Curated paths in. The annotation tells you which to open first.
+
+- **[CLRS — Chapter 10.2: Linked Lists](https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/)**
+  ★ Essential — the canonical reference; covers singly, doubly, and circular variants with the same invariants used here.
+- **[Linus Torvalds — "Linked list cleanup" mailing list post](https://lkml.org/lkml/2006/6/17/49)**
+  ◆ Advanced — Torvalds explains why the kernel's intrusive doubly linked list avoids the special-case-the-head bug that beginners always write.
+- **[Sedgewick & Wayne — *Algorithms* (4th ed), §1.3](https://algs4.cs.princeton.edu/13stacks/)**
+  ★ Essential — stacks and queues built directly on the traversal primitive; the cleanest companion read after this lesson.
+- **[CPython `Lib/queue.py` — `SimpleQueue` and `_PySimpleQueue`](https://github.com/python/cpython/blob/main/Lib/queue.py)**
+  → Reference — a real-world linked-list-backed queue; instructive to read alongside the patterns in this chapter.
+- **[Java `LinkedList` source — `LinkedList.java`](https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/java/util/LinkedList.java)**
+  ◆ Advanced — the doubly linked list behind `java.util.LinkedList`; trace how `add`, `remove`, and `get` map back to the operations in the table above.
+
+***
+
+# Cross-Links
+
+**Prerequisites**
+
+- [Introduction to Singly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-introduction-to-singly-linked-lists) — the node, the `.next` pointer, and why `head` is the only externally-held reference.
+- [Introduction to Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-introduction) — the contrast that makes O(n) traversal feel painful: O(1) indexed access via address arithmetic.
+
+**What comes next**
+
+- [Insertion in Singly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-insertion-in-singly-linked-lists) — the first operation built on top of the traversal loop: walk to a position, then rewire two pointers.
+- [Deletion in Singly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-deletion-in-singly-linked-lists) — traversal again, this time to find the predecessor before unlinking the victim.
+- [Detecting a Cycle in Singly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-detecting-cycle-in-singly-linked-lists) — what happens when the `null` exit condition breaks, and how two cursors at different speeds fix it.
+
+***
+
+## Final Takeaway
+
+1. **Core mechanic:** start a cursor at `head`, do work, advance via `current = current.next`, and stop when `current` is `null` — that's traversal in singly linked lists, in O(n) time and O(1) space.
+2. **Dominant tradeoff:** you gain cheap pointer rewiring (insert and delete are O(1) once you hold the right reference) but give up O(1) random access — every operation that needs an arbitrary node pays O(n) to *find* it.
+3. **One thing to remember:** every other operation on a singly linked list — search, length, insert, delete, reverse, merge, cycle detection — is this loop with a different body; master the walk and the rest follows.

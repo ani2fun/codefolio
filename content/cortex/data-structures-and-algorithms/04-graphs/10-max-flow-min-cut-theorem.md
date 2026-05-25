@@ -1,3 +1,8 @@
+---
+title: "Max Flow Min Cut Theorem"
+summary: "<!-- TODO: summary -->"
+---
+
 # 10. Max-flow min-cut theorem
 
 This lesson teaches you to answer "given a network of pipes with capacities, what's the most water (or traffic, or data, or merchandise) we can push through it?" — and reveals the deep, beautiful theorem that links the answer to the **weakest link** in the network.
@@ -574,3 +579,40 @@ Run Ford-Fulkerson from `s` to `t`. The max-flow equals the maximum CPU-weighted
 This is one of dozens of problems where max-flow shows up disguised as something else.
 
 </details>
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: The Hook — missing, needs to be written -->
+<!--       Guidance: real-world story opening before any definition -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
+<!--       Guidance: bulleted list of gotchas -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->

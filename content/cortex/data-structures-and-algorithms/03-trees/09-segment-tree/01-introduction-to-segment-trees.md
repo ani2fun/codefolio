@@ -156,7 +156,7 @@ Both operations are `O(log n)`. The `lazy` array is touched at most `O(log n)` t
 
 # Implementation
 
-```python run
+```python run viz=array viz-root=tree
 class SegTree:
     def __init__(self, arr):
         self.n = len(arr)
@@ -451,3 +451,25 @@ A segment tree is a binary tree of pre-aggregated subarrays. Three patterns to i
 1. **Both queries and updates in O(log n).** That's the operating point a plain array (O(1) update, O(n) query) and prefix sum (O(1) query, O(n) update) can't reach.
 2. **Lazy propagation buys range updates.** Without lazy, range updates are O(n). With lazy, they're O(log n). Worth the extra `lazy` array and the extra `push` discipline.
 3. **The right tool for "lots of queries + lots of updates on the same array".** For pure queries on a static array, prefix sum or RMQ-via-sparse-table is faster (O(1) per query). For point updates only, Fenwick tree is simpler. Segment tree dominates when both query and update are frequent.
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->

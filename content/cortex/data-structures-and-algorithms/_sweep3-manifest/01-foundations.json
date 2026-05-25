@@ -1,0 +1,79 @@
+{
+  "chapter": "01-foundations",
+  "sweep": 3,
+  "pilot_approved": false,
+  "units": [
+    {
+      "id": "01-foundations/lesson-01-asymptotic-analysis",
+      "type": "LESSON_UNIT",
+      "files": [
+        "01-foundations/01-asymptotic-analysis.md"
+      ],
+      "status": "done",
+      "todos_filled": 6,
+      "verify_flags": 1,
+      "memorize_migrated": true
+    },
+    {
+      "id": "01-foundations/lesson-02-recurrence-relations-and-master-theorem",
+      "type": "LESSON_UNIT",
+      "files": [
+        "01-foundations/02-recurrence-relations-and-master-theorem.md"
+      ],
+      "status": "done",
+      "todos_filled": 6,
+      "verify_flags": 0,
+      "memorize_migrated": true
+    },
+    {
+      "id": "01-foundations/lesson-03-amortized-analysis",
+      "type": "LESSON_UNIT",
+      "files": [
+        "01-foundations/03-amortized-analysis.md"
+      ],
+      "status": "done",
+      "todos_filled": 6,
+      "verify_flags": 1,
+      "memorize_migrated": true
+    },
+    {
+      "id": "01-foundations/lesson-04-proof-techniques",
+      "type": "LESSON_UNIT",
+      "files": [
+        "01-foundations/04-proof-techniques.md"
+      ],
+      "status": "done",
+      "todos_filled": 6,
+      "verify_flags": 0,
+      "memorize_migrated": true
+    },
+    {
+      "id": "01-foundations/lesson-05-memory-model-and-cache",
+      "type": "LESSON_UNIT",
+      "files": [
+        "01-foundations/05-memory-model-and-cache.md"
+      ],
+      "status": "done",
+      "todos_filled": 6,
+      "verify_flags": 2,
+      "memorize_migrated": true
+    },
+    {
+      "id": "01-foundations/chapter_memorize-06-memorize",
+      "type": "CHAPTER_MEMORIZE_UNIT",
+      "files": [
+        "01-foundations/06-memorize.md"
+      ],
+      "status": "done",
+      "blocked_by": [
+        "01-foundations/lesson-01-asymptotic-analysis",
+        "01-foundations/lesson-02-recurrence-relations-and-master-theorem",
+        "01-foundations/lesson-03-amortized-analysis",
+        "01-foundations/lesson-04-proof-techniques",
+        "01-foundations/lesson-05-memory-model-and-cache"
+      ],
+      "todos_filled": 0,
+      "verify_flags": 0
+    }
+  ]
+}

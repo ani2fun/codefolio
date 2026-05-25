@@ -1,0 +1,21 @@
+{
+  "chapter": "03-trees/04-trie",
+  "sweep": 2,
+  "pilot_approved": true,
+  "files": [
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/04-trie/01-introduction-to-tries.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/04-trie/02-memorize.md",
+      "type": "CHAPTER_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 0,
+      "flags": 0
+    }
+  ]
+}

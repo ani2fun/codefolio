@@ -1,0 +1,31 @@
+{
+  "chapter": "03-trees/06-avl-tree",
+  "sweep": 3,
+  "pilot_approved": false,
+  "units": [
+    {
+      "id": "03-trees/06-avl-tree/lesson-01-introduction-to-avl-trees",
+      "type": "LESSON_UNIT",
+      "files": [
+        "03-trees/06-avl-tree/01-introduction-to-avl-trees.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "03-trees/06-avl-tree/chapter_memorize-02-memorize",
+      "type": "CHAPTER_MEMORIZE_UNIT",
+      "files": [
+        "03-trees/06-avl-tree/02-memorize.md"
+      ],
+      "status": "pending",
+      "blocked_by": [
+        "03-trees/06-avl-tree/lesson-01-introduction-to-avl-trees"
+      ],
+      "todos_filled": 0,
+      "verify_flags": 0
+    }
+  ]
+}

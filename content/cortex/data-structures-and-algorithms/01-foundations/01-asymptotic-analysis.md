@@ -32,9 +32,11 @@ This first lesson sets up the language: why we need it, what its symbols mean, h
 8. [A runnable demo: linear vs quadratic on real n](#a-runnable-demo)
 9. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
 10. [Production reality](#production-reality)
-11. [Practice ladder](#practice-ladder)
-12. [Cross-links](#cross-links)
-13. [Final takeaway](#final-takeaway)
+11. [Quiz](#quiz)
+12. [Practice ladder](#practice-ladder)
+13. [Further reading](#further-reading)
+14. [Cross-links](#cross-links)
+15. [Final takeaway](#final-takeaway)
 
 ***
 
@@ -364,7 +366,7 @@ Amortized is the trickiest and the most useful. It says "the *long-run* average 
 
 Reading about quadratic vs linear is one thing; *seeing it* is another. The code below implements the two `has_duplicate` functions from the opening section and times them on inputs of growing size. Run it for yourself — the gap between the two columns is the gap this chapter is teaching you to predict.
 
-```python run
+```python run viz=graph viz-root=items
 import time, random
 
 def has_duplicate_nested(items):
@@ -464,19 +466,50 @@ The bugs in *reasoning* about complexity are at least as common as bugs in code.
 
 # Production reality
 
-Asymptotic mistakes are the kind of bug that ships clean, passes tests, and only surfaces months later under load. The five below are the canonical ones.
+Asymptotic mistakes are the kind of bug that ships clean, passes tests, and only surfaces months later under load. The five below are the canonical ones — each one a system, the underlying pattern it touched, and the engineering tradeoff that made the difference between a feature and an incident.
 
-- **The N+1 query.** ORMs make it suspiciously easy to write code that looks like `for user in users: print(user.posts)` — and that issues one database query per user instead of one query for all of them. The runtime is `O(n)` *queries*, but each query has a network round-trip. For `n = 100`, that's 100 round-trips where one would do. Most ORMs ship a `prefetch_related` / `eager` mode specifically for this. Search any large codebase for the term "N+1" and you'll find a paper trail of incidents.
+**[Django, Rails, and every other ORM]** — uses **eager-fetch (`prefetch_related`, `includes`) to collapse N+1 query loops** — because one `O(n)` batch query beats `n` round-trip queries even when both are formally linear.
 
-- **Catastrophic regex backtracking.** Some regex engines (PCRE, Java's default, Python's `re`) use backtracking, and a regex like `(a+)+b` evaluated against `aaaaaaaaaaaaaaaaaaaaaaaaaaa!` runs in `O(2ⁿ)` time. This is the bug behind the [Cloudflare 2019 outage](https://blog.cloudflare.com/details-of-the-cloudflare-outage-on-july-2-2019/), the [Stack Overflow 2016 outage](https://stackstatus.tumblr.com/post/147710624694/outage-postmortem-july-20-2016), and many smaller ones. Mitigations: use a non-backtracking engine (RE2, Rust's `regex` crate), or audit suspicious regexes by hand.
+ORMs make it suspiciously easy to write code that looks like `for user in users: print(user.posts)` — and that issues one database query per user instead of one query for all of them. The runtime is `O(n)` *queries*, but each query has a network round-trip. For `n = 100`, that is 100 round-trips where one would do. Most ORMs ship a `prefetch_related` / `eager` mode specifically for this. Search any large codebase for the term "N+1" and you find a paper trail of incidents.
 
-- **List-of-lists `in` checks.** In Python, `x in some_list` is `O(n)`. Code like `for x in items: if x in already_processed: ...` where `already_processed` is a list and `items` has `n` elements ends up `O(n²)`. The fix — make `already_processed` a `set` — is one keystroke and turns it into `O(n)`. This is the single most common asymptotic bug in Python code I've seen in code review.
+**[Cloudflare, Stack Overflow, and Snort]** — uses **non-backtracking regex engines (RE2, Rust's `regex`) instead of PCRE-style ones** — because backtracking turns a regex like `(a+)+b` from `O(n)` into `O(2ⁿ)` on adversarial input.
 
-- **String concatenation in a loop.** In any language with immutable strings (Python, Java, JavaScript, C#), `s = s + new_chunk` allocates a new string on every iteration and copies the old one in. For `n` chunks, total work is `1 + 2 + 3 + … + n = O(n²)`. The fix — `StringBuilder` (Java, C#), `"".join(chunks)` (Python), or `let parts = []; parts.push(...); parts.join("")` (JS) — is fast because it allocates a single buffer of the right size.
+Some regex engines (PCRE, Java's default, Python's `re`) use backtracking, and a regex like `(a+)+b` evaluated against `aaaaaaaaaaaaaaaaaaaaaaaaaaa!` runs in `O(2ⁿ)` time. This is the bug behind the [Cloudflare 2019 outage](https://blog.cloudflare.com/details-of-the-cloudflare-outage-on-july-2-2019/), the [Stack Overflow 2016 outage](https://stackstatus.tumblr.com/post/147710624694/outage-postmortem-july-20-2016), and many smaller ones. Mitigations: use a non-backtracking engine (RE2, Rust's `regex` crate), or audit suspicious regexes by hand.
 
-- **The pre-React-Fiber reconciliation.** Until React 16, the diff algorithm for reconciling a virtual DOM tree was `O(n³)` in the tree size for the worst case. The team replaced it with a heuristic linear-time algorithm in the [Fiber rewrite](https://github.com/acdlite/react-fiber-architecture). Going from `O(n³)` to `O(n)` is one of the most consequential algorithmic changes in front-end history — and it shipped to billions of users without anyone but the team that wrote it noticing.
+**[CPython workloads at scale]** — uses **a `set` instead of a `list` for membership checks** — because `x in list` is `O(n)` while `x in set` is `O(1)` average.
+
+In Python, `x in some_list` is `O(n)`. Code like `for x in items: if x in already_processed: ...` where `already_processed` is a `list` and `items` has `n` elements ends up `O(n²)`. The fix — make `already_processed` a `set` — is one keystroke and turns it into `O(n)`. This is the single most common asymptotic bug in Python code I have seen in code review.
+
+**[Java, Python, JavaScript, C# build pipelines]** — uses **`StringBuilder` / `"".join()` / `Array.join()` instead of `+=` in a loop** — because immutable strings turn `n` chunks of concatenation into `O(n²)` allocation work.
+
+In any language with immutable strings, `s = s + new_chunk` allocates a new string on every iteration and copies the old one in. For `n` chunks, total work is `1 + 2 + 3 + … + n = O(n²)`. The fix — `StringBuilder` (Java, C#), `"".join(chunks)` (Python), or `let parts = []; parts.push(…); parts.join("")` (JS) — is fast because it allocates a single buffer of the right size.
+
+**[React 16 — the Fiber rewrite]** — uses **a heuristic `O(n)` linear-time diff instead of the optimal `O(n³)` tree-edit distance** — because for a virtual-DOM tree of realistic depth, an approximate linear pass beats a provably optimal cubic one every time.
+
+Until React 16, the diff algorithm for reconciling a virtual DOM tree was `O(n³)` in the tree size for the worst case. The team replaced it with a heuristic linear-time algorithm in the [Fiber rewrite](https://github.com/acdlite/react-fiber-architecture). Going from `O(n³)` to `O(n)` is one of the most consequential algorithmic changes in front-end history — and it shipped to billions of users without anyone but the team that wrote it noticing.
 
 > The pattern in all five: a senior engineer who *understood* the asymptotic profile saw the bug long before it shipped to prod. The vocabulary in this chapter is what lets you be that engineer.
+
+***
+
+# Quiz
+
+Test your grip before moving on. One answer per question; reveal only after you have committed to one.
+
+**[Recall] Q: What is the formal definition of `f(n) = O(g(n))`?**
+There exist positive constants `c` and `n₀` such that `f(n) ≤ c · g(n)` for all `n ≥ n₀`.
+
+**[Recall] Q: Order these from slowest-growing to fastest-growing: `O(n!)`, `O(2ⁿ)`, `O(n log n)`, `O(log n)`, `O(n²)`.**
+`O(log n) < O(n log n) < O(n²) < O(2ⁿ) < O(n!)`.
+
+**[Reasoning] Q: Why does `n² + 1000n + 10⁶` simplify to `O(n²)` even though `1000n` and `10⁶` look large?**
+Big-O measures asymptotic growth; for `n ≥ 1001`, `n² > 1000n + 10⁶`, and the gap only widens. The `n²` term dominates eventually, and only the dominant term survives the drop rule.
+
+**[Reasoning] Q: Why is hash-table lookup *not* truly `O(1)` in the worst case?**
+The average-case `O(1)` guarantee assumes a good hash and well-spread keys; with every key colliding into one bucket the lookup walks a chain of length `n`, giving `O(n)` worst case. An adversary who controls the keys (HashDoS) can force this.
+
+**[Tradeoff] Q: An algorithm is `O(n²)` and a sibling is `O(n log n)`. The expected `n` is `30`. Which would you pick, and why?**
+The `O(n²)` algorithm is the safer pick at `n = 30` *if* its constants are smaller. Asymptotic dominance is a large-`n` claim — for small `n`, constants and overhead can flip the ranking. Quicksort beating insertion sort below `n ≈ 50` is the canonical example. Benchmark at the real workload size.
 
 ***
 
@@ -484,7 +517,9 @@ Asymptotic mistakes are the kind of bug that ships clean, passes tests, and only
 
 Five problems, easiest first. Each one has a hint — try it without the hint first.
 
-1. **Eyeball the loop.** What's the asymptotic complexity of each of these in terms of `n = len(items)`?
+<!-- VERIFY: This Practice ladder keeps the original numbered-list structure because the four embedded code blocks were baselined inside list items; the spec's `# | Problem | Pattern | Difficulty | Hint` table would force a different block indentation and break the code-fence freeze. Pattern / Difficulty / Hint columns are inlined into each list item below. -->
+
+1. **Eyeball the loop.** *Pattern: Rule 1 — sequential adds, nested multiplies. Difficulty: Easy.* What's the asymptotic complexity of each of these in terms of `n = len(items)`?
    ```python
    def f(items):
        total = 0
@@ -502,7 +537,7 @@ Five problems, easiest first. Each one has a hint — try it without the hint fi
    ```
    > *Hint:* Rule 1 (sequential adds, nested multiplies). One has a single loop; the other has three nested loops.
 
-2. **Spot the asymptotic bug.** This Python function is supposed to deduplicate a list and return the result in input order. It does — but it's not `O(n)` like the author thought. Find the bug.
+2. **Spot the asymptotic bug.** *Pattern: list vs set membership. Difficulty: Easy.* This Python function is supposed to deduplicate a list and return the result in input order. It does — but it's not `O(n)` like the author thought. Find the bug.
    ```python
    def dedup(items):
        seen = []
@@ -515,7 +550,7 @@ Five problems, easiest first. Each one has a hint — try it without the hint fi
    ```
    > *Hint:* `x not in seen` on a list is not `O(1)`.
 
-3. **Refactor from `O(n²)` to `O(n)`.** Given a list of integers and a target, return the **two indices** that sum to the target.
+3. **Refactor from `O(n²)` to `O(n)`.** *Pattern: hash-map reduction. Difficulty: Easy.* Given a list of integers and a target, return the **two indices** that sum to the target. Equivalent LeetCode problem: [Two Sum](https://leetcode.com/problems/two-sum/).
    ```python
    def two_sum(nums, target):
        for i in range(len(nums)):
@@ -526,7 +561,7 @@ Five problems, easiest first. Each one has a hint — try it without the hint fi
    ```
    > *Hint:* a hash map keyed by value. As you scan, for each `x`, check whether `target - x` is already in the map.
 
-4. **Solve the recurrence.** What's the complexity of `mystery(n)`, given `T(n) = 2 · T(n/2) + n`?
+4. **Solve the recurrence.** *Pattern: Master theorem case 2. Difficulty: Medium.* What's the complexity of `mystery(n)`, given `T(n) = 2 · T(n/2) + n`?
    ```python
    def mystery(arr, lo, hi):
        if hi - lo <= 1: return arr[lo:hi]
@@ -538,7 +573,7 @@ Five problems, easiest first. Each one has a hint — try it without the hint fi
    ```
    > *Hint:* this is the recurrence for merge sort. The Master theorem (next chapter) gives the closed form. As an intuition: `log n` levels of recursion, `O(n)` work per level.
 
-5. **Choose between** the following implementations of "find the median of a stream":
+5. **Choose between** the following implementations of "find the median of a stream". *Pattern: total-cost composition. Difficulty: Hard.*
    - **A:** keep a sorted list; insert in sorted order each push (`O(n)` insert, `O(1)` median).
    - **B:** keep all values in a list; on every median query, sort and return the middle (`O(1)` insert, `O(n log n)` median).
    - **C:** keep two heaps (max-heap for lower half, min-heap for upper half) (`O(log n)` insert, `O(1)` median).
@@ -546,137 +581,46 @@ Five problems, easiest first. Each one has a hint — try it without the hint fi
    For a workload of `n` pushes and `n` median queries, which has the best total complexity? Now, for a workload of `n` pushes and only **one** median query at the end, which?
    > *Hint:* total cost = `n × insert + n × query` for the first; `n × insert + 1 × query` for the second. Plug in the per-operation costs. The answers differ.
 
-Once these feel automatic, you've internalised every move asymptotic analysis asks of you — and you're ready for the rest of the curriculum.
+Once these feel automatic, you have internalised every move asymptotic analysis asks of you — and you are ready for the rest of the curriculum.
 
 ***
 
-# Memorize
+# Further Reading
 
-The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. The vocabulary in this chapter is cited by every other chapter; recall that's instant pays back forever.
+Curated paths in, not a syllabus. Read in order of the annotation; come back for the rest when you need depth.
 
-## Quick recall
-
-Click any question to reveal the answer.
-
-<details>
-<summary><strong>Q:</strong> Definition of <code>f(n) = O(g(n))</code>?</summary>
-
-**A:** There exist positive constants `c` and `n₀` such that for all `n ≥ n₀`, `f(n) ≤ c · g(n)`.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Difference between <code>O</code>, <code>Θ</code>, <code>Ω</code>?</summary>
-
-**A:** `O` = upper bound. `Θ` = tight bound (both upper and lower). `Ω` = lower bound.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Is <code>n</code> in <code>O(n²)</code>?</summary>
-
-**A:** Yes. Big-O is an upper bound, not necessarily tight. `Θ(n)` would be the tight one.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Is <code>100n</code> in <code>O(n)</code>?</summary>
-
-**A:** Yes. Big-O hides constants. `100n` and `n` are in the same class.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Order from slowest to fastest growing: <code>O(n!)</code>, <code>O(2ⁿ)</code>, <code>O(n log n)</code>, <code>O(log n)</code>, <code>O(n²)</code>.</summary>
-
-**A:** `O(log n) < O(n log n) < O(n²) < O(2ⁿ) < O(n!)`.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Three rules for deriving complexity from straight-line code?</summary>
-
-**A:** Sequential statements **add**. Nested loops **multiply**. Recursive calls **solve to a recurrence**.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Closed form for <code>T(n) = 2T(n/2) + n</code>?</summary>
-
-**A:** `Θ(n log n)` — Master theorem case 2 (merge sort, balanced quicksort).
-
-</details>
-<details>
-<summary><strong>Q:</strong> Closed form for <code>T(n) = T(n/2) + 1</code>?</summary>
-
-**A:** `Θ(log n)` — binary search.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Worst, average, amortized — example of each in a hash table?</summary>
-
-**A:** Worst lookup = `O(n)` (every key collides into one bucket). Average = `O(1)` (good hash). Amortized insert = `O(1)` (resize amortises across many inserts).
-
-</details>
-<details>
-<summary><strong>Q:</strong> Rough operation counts at <code>n = 10⁶</code>?</summary>
-
-**A:** `O(log n)` ≈ 20. `O(n)` ≈ 10⁶. `O(n log n)` ≈ 2 × 10⁷ (~20 ms). `O(n²)` ≈ 10¹² (≈ 12 days).
-
-</details>
-
-## Code template
-
-```python
-# Eyeball-the-loop reference card.
-
-def f1(arr):                     # O(n)        — single loop, constant work each
-    for x in arr: do(x)
-
-def f2(arr):                     # O(n²)       — nested, both loops in arr
-    for x in arr:
-        for y in arr: do(x, y)
-
-def f3(arr):                     # O(n)        — sequential, NOT nested
-    for x in arr: do(x)
-    for y in arr: do(y)
-
-def f4(n):                       # O(log n)    — halving recursion, constant work
-    if n <= 1: return
-    f4(n // 2)
-
-def f5(n):                       # O(n log n)  — branch ×2, linear work per level
-    if n <= 1: return
-    f5(n // 2)
-    f5(n // 2)
-    do_linear_work(n)
-```
-
-## Pattern triggers
-
-- **Single loop over `n`** → `O(n)`
-- **Nested loop, both over `n`** → `O(n²)`
-- **Triple-nested loops over `n`** → `O(n³)`
-- **Halving recursion (binary search shape)** → `O(log n)`
-- **Branch-into-two recursion + linear merge** → `O(n log n)`
-- **Recursion that examines all subsets** → `O(2ⁿ)`
-- **Recursion that examines all permutations** → `O(n!)`
-- **String concat in a loop (immutable strings)** → `O(n²)` from hidden allocation; use a builder
-- **`x in some_list` inside an outer loop** → `O(n²)`; convert to a `set` for `O(n)`
-- **ORM query inside a `for user in users:` loop** → N+1 queries; eager-fetch
-- **Regex with `(a+)+` against `aaaa…!`** → `O(2ⁿ)` catastrophic backtracking
+- **[CLRS — Chapter 3: Growth of Functions](https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/)**
+  ★ Essential — the canonical formal treatment of `O`, `Θ`, `Ω`, and their little-letter siblings. The definitions every other source builds on.
+- **[Jon Bentley — *Programming Pearls*, Chapter 8: "Algorithm Design Techniques"](https://www.amazon.com/Programming-Pearls-2nd-Jon-Bentley/dp/0201657880)**
+  ★ Essential — the most readable walk-through of why an `O(n)` algorithm beats an `O(n²)` one in real engineering settings, with the maximum-subarray problem as the running example.
+- **[Tim Roughgarden — *Algorithms Illuminated*, Part 1, Chapter 2](http://www.algorithmsilluminated.org/)**
+  ◆ Advanced — a clearer derivation of Big-O than CLRS for first-time readers, with worked examples for every notation and the asymptotic ranking of common functions.
+- **[Robert Sedgewick & Kevin Wayne — *Algorithms* (4th ed.), Section 1.4: Analysis of Algorithms](https://algs4.cs.princeton.edu/14analysis/)**
+  ◆ Advanced — empirical-curve-fitting approach: how to measure a real algorithm's growth from timing data and check it matches the theoretical claim.
+- **[Stack Overflow — "What is a plain-English explanation of Big-O?"](https://stackoverflow.com/questions/487258/what-is-a-plain-english-explanation-of-big-o-notation)**
+  → Reference — community-curated answers in many flavours; useful as a fallback explainer when one phrasing fails to land.
+- **[Big-O Cheat Sheet](https://www.bigocheatsheet.com/)**
+  → Reference — the table of common data-structure and algorithm complexities; use it to confirm a derivation, not to memorise.
 
 ***
 
 # Cross-links
 
-- **Next in this module:** [Recurrence Relations and Master Theorem](/cortex/data-structures-and-algorithms/foundations-recurrence-relations-and-master-theorem) — *stub*; how to solve `T(n) = aT(n/b) + f(n)` without panic.
-- **Then:** [Amortized Analysis](/cortex/data-structures-and-algorithms/foundations-amortized-analysis) — *stub*; the formal techniques behind dynamic-array push and hash-table resize.
-- **Cited from every later chapter** — every "this operation is `O(log n)`" claim in the rest of the book leans on the vocabulary built here.
-- **First-real-use:** [Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-introduction) and [Hash Tables](/cortex/data-structures-and-algorithms/linear-structures-hash-table-introduction-to-hash-tables) — the first chapters whose complexity claims you should be able to derive.
+**Prerequisites**
+
+- None within this book — asymptotic analysis is the floor on which everything else stands. A working comfort with logarithms (especially `log₂`), exponents, and basic algebra is assumed.
+
+**What comes next**
+
+- [Recurrence Relations and Master Theorem](/cortex/data-structures-and-algorithms/foundations-recurrence-relations-and-master-theorem) — how to solve `T(n) = aT(n/b) + f(n)` without panic. The next page picks up where Rule 3 of *Deriving complexity from code* leaves off.
+- [Amortized Analysis](/cortex/data-structures-and-algorithms/foundations-amortized-analysis) — the formal techniques (aggregate, accounting, potential) behind dynamic-array push and hash-table resize. Promotes the *amortised* row of the Worst/Average/Amortised table to a full lesson.
+- [Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-introduction) — the first chapter whose complexity claims you derive rather than accept. Every `O(1)` and `O(n)` in arrays falls straight out of the vocabulary built here.
+- [Hash Tables](/cortex/data-structures-and-algorithms/linear-structures-hash-table-introduction-to-hash-tables) — the canonical worst-versus-average example; the chapter where "in which case?" becomes a habit.
 
 ***
 
 # Final Takeaway
 
-Asymptotic analysis is the vocabulary that turns "this code feels slow" into a checkable claim. The chapter's three patterns to internalise:
-
-1. **Drop constants and lower-order terms; keep the dominant term.** That single rule does most of the work. `n² + 1000n + 10⁶ = O(n²)` because for large enough `n` the `n²` part swamps everything else.
-2. **Sequential adds, nested multiplies, recursive solves.** These three rules let you derive the complexity of any straight-line code without a cheat-sheet. Recursion punts to the recurrence-relations chapter; everything else is loop-counting.
-3. **Always ask "in which case?"** Worst, average, and amortized are different claims. A hash table is `O(1)` average, `O(n)` worst. A dynamic array is `O(n)` worst on push, `O(1)` amortized. Mixing these up is how engineers ship surprises to production.
-
-Master those three moves and the rest of this curriculum — every claim about every data structure, every algorithm, every trade-off — falls into place.
+1. **Core mechanic:** count primitive steps as a function of `n`, find the dominant term, drop constants and lower-order terms, and pick the asymptotic notation (`O`, `Θ`, `Ω`) that tightens the claim as far as the proof allows.
+2. **Dominant tradeoff:** Big-O hides constants and lower-order detail — you gain a portable, machine-independent prediction of how runtime scales; you give up wall-clock precision at the small-`n` end and need a benchmark when constants matter.
+3. **One thing to remember:** every complexity claim must answer the question *"in which case?"* — worst, average, or amortised — because the same algorithm carries different Big-O labels per case and mixing them up is how engineers ship surprises to production.

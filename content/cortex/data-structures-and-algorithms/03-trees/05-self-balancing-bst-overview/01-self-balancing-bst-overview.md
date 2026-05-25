@@ -351,3 +351,31 @@ The naive BST is fast on random input and catastrophic on sorted input. Self-bal
 1. **The sorted-input cliff is real.** It happens by accident in production. Any BST you reach for in code that takes "the user's input keys" must be self-balancing. Plain BSTs belong in textbook exercises and unit tests for tree algorithms.
 2. **There's no single best self-balancing tree.** AVL is shallowest. RB-tree is the most common because it has the best mixed-workload behaviour and a small per-node overhead. B-tree is the only choice for on-disk. Skip list is the simplest concurrent option. Each has a niche; no single one wins.
 3. **The standard library has already chosen for you.** When in doubt, use what the standard library ships — RB-tree in Java, C++, Linux kernel; B-tree in Rust's stdlib; B+-tree in your database. The next chapters explain *why* each one looks the way it does.
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
+<!--       Guidance: bulleted list of gotchas -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->

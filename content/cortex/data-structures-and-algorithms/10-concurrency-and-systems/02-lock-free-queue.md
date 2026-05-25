@@ -187,3 +187,28 @@ The Michael-Scott queue is the canonical lock-free queue. Three patterns to inte
 1. **Two CASes per enqueue.** Link the new node, then advance tail. The second is best-effort; lagging tail is fixed by the next enqueuer.
 2. **Cooperative behaviour.** Both enqueuers and dequeuers help advance a lagging tail. Without this, preempted threads can stall the structure.
 3. **Memory reclamation is the hard part.** Lock-free in GCed languages: clean and easy. In C/C++/Rust: hazard pointers or epoch-based reclamation. Skipping reclamation entirely is a memory leak; doing it wrong is a use-after-free.
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->

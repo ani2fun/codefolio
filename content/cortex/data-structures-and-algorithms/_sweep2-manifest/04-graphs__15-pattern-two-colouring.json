@@ -1,0 +1,49 @@
+{
+  "chapter": "04-graphs/15-pattern-two-colouring",
+  "sweep": 2,
+  "pilot_approved": true,
+  "files": [
+    {
+      "path": "content/cortex/data-structures-and-algorithms/04-graphs/15-pattern-two-colouring/01-pattern.md",
+      "type": "PATTERN",
+      "status": "done",
+      "placeholders_inserted": 11,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/04-graphs/15-pattern-two-colouring/02-problems/01-two-colourable.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/04-graphs/15-pattern-two-colouring/02-problems/02-dislike-pairs.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/04-graphs/15-pattern-two-colouring/02-problems/03-colour-repair.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/04-graphs/15-pattern-two-colouring/02-problems/04-group-colourable.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/04-graphs/15-pattern-two-colouring/03-memorize.md",
+      "type": "PATTERN_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    }
+  ]
+}

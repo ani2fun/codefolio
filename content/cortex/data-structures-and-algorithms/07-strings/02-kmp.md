@@ -75,7 +75,7 @@ The intuition: `pi[i]` tells you, "if you've matched `P[0..i]` against `T[0..n]`
 
 # Implementation
 
-```python run
+```python run viz=array viz-root=pi
 def build_failure(P):
     m = len(P)
     pi = [0] * m
@@ -316,3 +316,25 @@ KMP is the canonical linear-time string matcher. Three patterns to internalise:
 1. **The failure function is the algorithm's brain.** Once you've internalised "how much prefix is also suffix", every operation in KMP makes sense.
 2. **Linear time via amortisation.** Both the failure-function build and the matching loop are `O(m)` and `O(n)` respectively because the `while` loops can only decrease `j` (or `k`), bounded by the total increments.
 3. **Beats naive on patterns with internal repetition.** For random patterns, naive is usually fast enough. KMP's wins are on adversarial-shaped or repetitive patterns — common in DNA, log files, and compressed text.
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->

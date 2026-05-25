@@ -231,7 +231,7 @@ Delete can require up to `O(log n)` rotations because the rebalance may propagat
 
 # Implementation
 
-```python run
+```python run viz=binary-tree viz-root=root
 class Node:
     __slots__ = ("key", "left", "right", "height")
     def __init__(self, key):
@@ -519,3 +519,25 @@ AVL trees are the strictest self-balancing BST: every node has balance factor �
 1. **Four cases, two rotations.** LL and RR are single rotations. LR and RL are double rotations that first transform into LL or RR. Memorise the four-case decision once; everything else follows.
 2. **Rotations are local.** A rotation touches three pointers and updates two heights. It's `O(1)` work, no matter how big the subtree. The recursion stack does the rest.
 3. **AVL beats RB on reads, loses on writes.** When you can pick — and you usually can't, because RB ships with the standard library — AVL is the right call for read-heavy in-memory indexes. For everything else, RB-tree.
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->

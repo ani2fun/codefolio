@@ -1,3 +1,8 @@
+---
+title: "Knapsack Applications"
+summary: "<!-- TODO: summary -->"
+---
+
 # 11. Knapsack Applications
 
 The previous lesson built the knapsack family — three recurrence shapes that decide what to take from a list of items under a capacity budget. The astonishing thing isn't the family itself; it's how *many* ostensibly unrelated problems reduce to it. A vending machine making change with the fewest coins? Unbounded knapsack with a min-aggregator. Cutting a steel rod into pieces to maximise revenue? Unbounded knapsack where the "items" are cut lengths. Deciding whether a multiset of integers contains a subset summing to a target? 0/1 knapsack, boolean version. Counting how many distinct ways to make change with unlimited coins? Unbounded knapsack with a sum-aggregator.
@@ -83,7 +88,7 @@ Two things only: **values disappeared** (we don't measure quality, only feasibil
 
 ### The Solution
 
-```python run
+```python run viz=array viz-root=dp
 from typing import List
 
 class Solution:
@@ -260,7 +265,7 @@ cuts: "Length 4 rod, prices = [1, 5, 8, 9]" {
 
 ### The Solution
 
-```python run
+```python run viz=array viz-root=dp
 from typing import List
 
 class Solution:
@@ -413,7 +418,7 @@ The unreachable case is the key new wrinkle. Carry an "infinity" sentinel (`sys.
 
 ### The Solution
 
-```python run
+```python run viz=array viz-root=dp
 from typing import List
 import sys
 
@@ -609,7 +614,7 @@ Base case: `dp[0] = 1` (the empty combination is one way to make 0).
 
 ### The Solution
 
-```python run
+```python run viz=array viz-root=dp
 from typing import List
 
 class Solution:
@@ -740,3 +745,40 @@ The pattern: pick a state-space dimension that captures "how much budget remains
 `dp[i][j]` = max value the player to move can guarantee from the slice `arr[i..j]`. The recurrence flips between maximising your gain and minimising the opponent's freedom: `dp[i][j] = max(arr[i] - dp[i+1][j], arr[j] - dp[i][j-1])`. The "− dp(...)" is what makes it adversarial — the opponent's optimum eats into your future. The next lesson formalises this as the **Optimal Strategy** problem (game-theoretic DP).
 
 </details>
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: The Hook — missing, needs to be written -->
+<!--       Guidance: real-world story opening before any definition -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
+<!--       Guidance: bulleted list of gotchas -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->

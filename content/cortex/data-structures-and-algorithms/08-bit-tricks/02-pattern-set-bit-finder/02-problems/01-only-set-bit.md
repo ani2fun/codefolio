@@ -1,0 +1,146 @@
+---
+title: "Only Set Bit"
+summary: "Given a 32-bit integer num, find the position (1-indexed) of the only set bit. If num has more than one set bit, return -1."
+prereqs:
+  - 02-pattern-set-bit-finder/01-pattern
+difficulty: easy
+---
+
+# Only Set Bit
+
+## The Problem
+
+Given a 32-bit integer `num`, find the position (1-indexed) of the only set bit. If `num` has more than one set bit, return `-1`.
+
+```
+Input:  num = 16
+Output: 5                    Binary 0001 0000 — only bit 5 is set
+
+Input:  num = 2
+Output: 2                    Binary 0010
+
+Input:  num = 10
+Output: -1                   Binary 1010 — two set bits
+```
+
+<details>
+<summary><h2>The Recurrence</h2></summary>
+
+
+Two steps:
+
+1. **Validate**: `(num & (num - 1)) != 0` ⇒ more than one set bit ⇒ return `-1`.
+2. **Find position**: take `log₂(num) + 1`. (For a power of 2, `log₂` is an integer; the +1 converts to 1-indexing.)
+
+> *Pause. Why does step 1 reject zero correctly?*
+
+For `num = 0`, `num - 1` wraps to `-1` (or all-1s in two's-complement), so `num & (num - 1) = 0`. The first test passes — it thinks zero has "≤ 1 set bit" (true). Then `log₂(0)` is undefined. Most implementations either special-case `num == 0` or rely on the platform's `log` returning `-inf` and the conversion landing somewhere harmless. The C++ original assumes `num > 0` per the problem; we'll guard explicitly here.
+
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
+
+### The Solution
+
+```python run
+import math
+
+class Solution:
+    def only_set_bit(self, num: int) -> int:
+
+        # Check if num is not a power of 2 (has more than one set bit)
+        if num & (num - 1):
+
+            # Return -1 if num is not a power of 2
+            return -1
+
+        # Calculate the position of the set bit by taking the base-2
+        # logarithm of num and adding 1
+        return int(math.log2(num) + 1)
+
+
+# Examples from the problem statement
+print(Solution().only_set_bit(16))    # 5
+print(Solution().only_set_bit(2))     # 2
+print(Solution().only_set_bit(10))    # -1
+
+# Edge cases
+print(Solution().only_set_bit(1))     # 1
+print(Solution().only_set_bit(4))     # 3
+print(Solution().only_set_bit(8))     # 4
+print(Solution().only_set_bit(7))     # -1
+print(Solution().only_set_bit(3))     # -1
+```
+
+```java run
+public class Main {
+    static class Solution {
+        public int onlySetBit(int num) {
+
+            // Check if num is not a power of 2 (has more than one set bit)
+            if ((num & (num - 1)) != 0) {
+
+                // Return -1 if num is not a power of 2
+                return -1;
+            }
+
+            // Calculate the position of the set bit by taking the base-2
+            // logarithm of num and adding 1
+            return (int) (Math.log(num) / Math.log(2)) + 1;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().onlySetBit(16));    // 5
+        System.out.println(new Solution().onlySetBit(2));     // 2
+        System.out.println(new Solution().onlySetBit(10));    // -1
+
+        // Edge cases
+        System.out.println(new Solution().onlySetBit(1));     // 1
+        System.out.println(new Solution().onlySetBit(4));     // 3
+        System.out.println(new Solution().onlySetBit(8));     // 4
+        System.out.println(new Solution().onlySetBit(7));     // -1
+        System.out.println(new Solution().onlySetBit(3));     // -1
+    }
+}
+```
+
+### Complexity
+
+| Aspect | Cost |
+|---|---|
+| Time | `O(1)` — constant-time bitwise check + log |
+| Space | `O(1)` |
+
+</details>
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Examples — missing, needs to be written -->
+<!--       Guidance: min 3 examples: basic / variant / edge -->
+
+<!-- TODO: Intuition — missing, needs to be written -->
+<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
+
+<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
+<!--       Guidance: REQUIRED, never optional -->
+<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
+<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
+
+<!-- TODO: Approach — missing, needs to be written -->
+<!--       Guidance: numbered steps, no code -->
+
+<!-- TODO: Dry Run — missing, needs to be written -->
+<!--       Guidance: walk through a small example step by step -->
+
+<!-- TODO: Complexity Analysis — missing, needs to be written -->
+<!--       Guidance: table: time / space / why -->
+
+<!-- TODO: Edge Cases — missing, needs to be written -->
+<!--       Guidance: table, min 5 rows -->
+
+<!-- TODO: Key Takeaway — missing, needs to be written -->
+<!--       Guidance: 1–2 sentences -->

@@ -242,3 +242,28 @@ LSM trees are the write-optimised storage primitive of the modern era. Three pat
 1. **Sequential writes, periodic merge.** All writes go into a memtable and a WAL; flushes produce immutable SSTables; compaction merges them. Disk I/O is sequential, never random.
 2. **Read amplification is the cost.** Reads check the memtable plus all SSTables. Bloom filters mitigate; compaction strategy controls how aggressively SSTables are merged.
 3. **The trade-off triangle.** Read, update, and memory amplifications are constrained by the RUM conjecture. LSM minimises update amplification at the cost of the others. B-trees do the opposite. Pick by workload.
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->

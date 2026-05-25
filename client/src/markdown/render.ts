@@ -470,10 +470,12 @@ interface RunnableTabNode {
   languageLabel: string;
   source: string;
   runnable: boolean;
-  // `viz=<layout>` / `viz-root=<var>` from the fence info string — set only on a
-  // Python tab, opting it into the trace-driven "Visualise" button (ADR-0018).
+  // `viz=<layout>` / `viz-root=<var>` / `viz-case=<n>` from the fence info string
+  // — set only on a Python tab, opting it into the trace-driven "Visualise" button
+  // (ADR-0018).
   viz?: string;
   vizRoot?: string;
+  vizCase?: string;
 }
 
 // True when a code fence should join a tab group. Runnable languages still
@@ -519,6 +521,7 @@ const remarkGroupRunnable: Plugin<[], Root> = () => (tree) => {
             runnable: lang.runnable,
             viz: isPy ? (parseMetaKv(sMeta, "viz") ?? undefined) : undefined,
             vizRoot: isPy ? (parseMetaKv(sMeta, "viz-root") ?? undefined) : undefined,
+            vizCase: isPy ? (parseMetaKv(sMeta, "viz-case") ?? undefined) : undefined,
           });
           j++;
         }
@@ -748,6 +751,7 @@ const codeHandler = (state: State, node: Code): Element | undefined => {
       const isPy = /^python/i.test(node.lang);
       const viz = isPy ? parseMetaKv(meta, "viz") : null;
       const vizRoot = isPy ? parseMetaKv(meta, "viz-root") : null;
+      const vizCase = isPy ? parseMetaKv(meta, "viz-case") : null;
       const properties: Record<string, string | string[]> = {
         className: ["runnable-code"],
         "data-lang": node.lang,
@@ -756,6 +760,7 @@ const codeHandler = (state: State, node: Code): Element | undefined => {
       };
       if (viz) properties["data-viz"] = viz;
       if (vizRoot) properties["data-viz-root"] = vizRoot;
+      if (vizCase) properties["data-viz-case"] = vizCase;
       return {
         type: "element",
         tagName: "div",

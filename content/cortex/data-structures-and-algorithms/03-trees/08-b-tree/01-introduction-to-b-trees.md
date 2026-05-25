@@ -232,7 +232,7 @@ Postgres, MySQL, SQL Server, Oracle, MongoDB — all use B+-trees for primary in
 
 A working B-tree implementation is enough code that I'll give a representative Python and Java pair. The C/Scala variants follow the same structure.
 
-```python run
+```python run viz=graph viz-root=tree
 T = 3  # minimum degree; max keys per node = 2T - 1, min = T - 1 (except root)
 
 class BNode:
@@ -581,3 +581,25 @@ The B-tree is the I/O-aware self-balancing tree. Three patterns to internalise:
 1. **Fanout matches storage geometry.** Memory: order ~16 (fits in cache). Disk: order ~200-1000 (fits in a page). LSM-trees and other modern alternatives play with this same parameter.
 2. **The tree grows from the top.** Splits propagate up the tree; only a root-split increases height. This is what guarantees all leaves stay at the same depth without rebalancing complexity.
 3. **B+-trees beat B-trees in production.** Internal-only routing keys means higher fanout; linked leaves means cheap range queries; sequential scans are O(n) on the leaf chain. Every database you'll ever use has chosen B+-tree for these reasons.
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->

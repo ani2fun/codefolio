@@ -1,3 +1,8 @@
+---
+title: "Counting Sort"
+summary: "<!-- TODO: summary -->"
+---
+
 # 5. Counting Sort
 
 You're a teacher with thousands of answer sheets, each scored from 0 to 100, that need sorting by score. You could use insertion sort, selection sort, or any of the comparison-based sorts from the previous lessons — but they'd all do millions of comparisons. **There's a faster way that doesn't compare any two scores against each other.** Just count how many sheets got each score (0, 1, 2, ..., 100), then walk through the score range in order and pull out the right number of sheets at each score. The total work is proportional to *the number of sheets plus the range of scores* — not `n log n`, not `n²`. **Linear time when the range is small.**
@@ -365,7 +370,7 @@ Counting sort is stable because phase 3 walks the input in reverse and uses post
 # Implementation
 
 
-```python run
+```python run viz=array viz-root=arr
 from typing import List
 
 class Solution:
@@ -571,7 +576,7 @@ The next algorithm — quicksort — returns to the comparison-sort family but g
 <details>
 <summary><strong>Answer — open after you've thought about it</strong></summary>
 
-```python run
+```python run viz=array viz-root=arr
 class Solution:
     def counting_sort_general(self, arr):
         if not arr: return []
@@ -596,3 +601,40 @@ print(Solution().counting_sort_general([3, -2, 7, -1, 0, 3]))   # [-2, -1, 0, 3,
 Time: still `O(n + k)` where `k = max - min`. Space: `O(n + k)`. Same big-O, but `k` is now the *range size*, not the maximum value. **You just generalised counting sort to any bounded integer range.** The same offset trick is used inside radix sort to handle signed integers.
 
 </details>
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: The Hook — missing, needs to be written -->
+<!--       Guidance: real-world story opening before any definition -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->
+
+<!-- TODO: Final Takeaway — missing, needs to be written -->
+<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->

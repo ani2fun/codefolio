@@ -1,0 +1,49 @@
+{
+  "chapter": "10-concurrency-and-systems",
+  "sweep": 2,
+  "pilot_approved": true,
+  "files": [
+    {
+      "path": "content/cortex/data-structures-and-algorithms/10-concurrency-and-systems/01-cas-and-atomics.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 7,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/10-concurrency-and-systems/02-lock-free-queue.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 7,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/10-concurrency-and-systems/03-concurrent-hash-map.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 7,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/10-concurrency-and-systems/04-rcu-and-hazard-pointers.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 7,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/10-concurrency-and-systems/05-distributed-data-structures-teaser.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 8,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/10-concurrency-and-systems/06-memorize.md",
+      "type": "CHAPTER_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 0,
+      "flags": 0
+    }
+  ]
+}

@@ -166,7 +166,7 @@ LL/SC also avoids ABA inherently — the SC fails if the cache line was touched 
 
 Lock-free counter increment:
 
-```python run
+```python run viz=graph viz-root=lock
 import threading
 
 class AtomicCounter:
@@ -345,3 +345,28 @@ CAS is the foundation of lock-free programming. Three patterns to internalise:
 1. **Read, compute, retry on failure.** The CAS-loop pattern is the universal idiom for lock-free updates.
 2. **Memory ordering is real.** `relaxed` for independent counters, `acq_rel` for synchronisation, `seq_cst` when you need a global order. The wrong choice is a bug that surfaces only on weak-memory hardware.
 3. **ABA is the lock-free programmer's tax.** Tagged pointers, hazard pointers, RCU — pick a strategy, document it, test it. Pointer CAS without ABA mitigation is almost always a bug.
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->

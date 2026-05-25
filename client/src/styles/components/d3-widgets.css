@@ -658,12 +658,25 @@
     .viz-graph__svg {
         @apply block h-auto max-w-full;
     }
-    /* Edges — straight parent→child lines; D3 sets the path `d` per step. */
+    /* Edges — straight parent→child lines; D3 sets the path `d` per step. Calm by
+       default (muted, thin); colour is reserved for pointers. The stroke / width
+       transitions ease the brief cursor-traversal tint in and back out. */
     .viz-graph__edge {
         stroke: var(--color-fg-muted, #94a3b8);
         stroke-width: 1.75;
         fill: none;
-        transition: opacity 200ms ease;
+        transition: opacity 200ms ease, stroke 260ms ease, stroke-width 260ms ease;
+    }
+    /* A cursor crossed this edge this step — D3 sets the inline stroke to the
+       cursor's role colour; this just thickens it so the traversal reads. */
+    .viz-graph__edge--traversed {
+        stroke-width: 2.75;
+    }
+    /* Arrowhead — `context-stroke` makes it follow its edge's stroke, so a
+       traversal-tinted edge gets a tinted head too; muted fallback otherwise. */
+    .viz-graph__arrowhead path {
+        fill: var(--color-fg-muted, #94a3b8);
+        fill: context-stroke;
     }
     /* Pointer-name label sitting on an edge (left / right / next / …). A card-
        coloured stroke halo (paint-order draws stroke first) keeps the edge line
@@ -722,6 +735,23 @@
         stroke: rgba(16, 185, 129, 0.85);
         stroke-width: 2.25;
     }
+    /* Transient-state adornment ring — a halo just outside the node circle, on its
+       own element so the changed-flash / removed-fade layers cleanly over the
+       persistent --cursor / --new circle tint. Transparent until a state lights it. */
+    .viz-graph__node-ring {
+        fill: none;
+        stroke: transparent;
+        stroke-width: 2.5;
+        transition: stroke 240ms ease;
+    }
+    /* Display value changed vs. the previous step — a one-step amber ring. */
+    .viz-graph__node--changed .viz-graph__node-ring {
+        stroke: #f59e0b;
+    }
+    /* Gone since the previous step — a red ring; the renderer also fades the node. */
+    .viz-graph__node--removed .viz-graph__node-ring {
+        stroke: #ef4444;
+    }
     .viz-graph__caption {
         @apply mt-3 text-center text-sm text-foreground min-h-[1.25rem];
     }
@@ -775,6 +805,14 @@
         border-radius: 50%;
         background: rgba(16, 185, 129, 0.12);
         border: 1.5px solid rgba(16, 185, 129, 0.85);
+    }
+    .viz-graph__legend-swatch--changed {
+        border-radius: 50%;
+        border: 2px solid #f59e0b;
+    }
+    .viz-graph__legend-swatch--removed {
+        border-radius: 50%;
+        border: 2px solid #ef4444;
     }
     .viz-graph__legend-swatch--pointer {
         font-size: 15px;

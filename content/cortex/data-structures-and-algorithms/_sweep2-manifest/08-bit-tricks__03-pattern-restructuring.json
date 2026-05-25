@@ -1,0 +1,35 @@
+{
+  "chapter": "08-bit-tricks/03-pattern-restructuring",
+  "sweep": 2,
+  "pilot_approved": true,
+  "files": [
+    {
+      "path": "content/cortex/data-structures-and-algorithms/08-bit-tricks/03-pattern-restructuring/01-pattern.md",
+      "type": "PATTERN",
+      "status": "done",
+      "placeholders_inserted": 12,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/08-bit-tricks/03-pattern-restructuring/02-problems/01-reverse-bits.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 8,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/08-bit-tricks/03-pattern-restructuring/02-problems/02-circular-shift-bits.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 8,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/08-bit-tricks/03-pattern-restructuring/03-memorize.md",
+      "type": "PATTERN_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    }
+  ]
+}

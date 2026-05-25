@@ -1,3 +1,8 @@
+---
+title: "Traversing A Graph"
+summary: "<!-- TODO: summary -->"
+---
+
 # 4. Traversing a graph
 
 This lesson teaches the **two fundamental ways to walk every node of a graph** — depth-first and breadth-first traversal. Together, these two patterns are the foundation of essentially every advanced graph algorithm you'll meet later.
@@ -202,7 +207,7 @@ If your guess matched: you've internalised "go deep first". If not, trace it onc
 We assume the graph is given as an adjacency list `graph` where `graph[i]` is the list of neighbours of node `i`. Nodes are integers `0..N-1`.
 
 
-```python run
+```python run viz=graph viz-root=graph
 from typing import List, Set
 
 class Solution:
@@ -517,7 +522,7 @@ For *this* graph, DFS and BFS happen to agree because each node has at most one 
 # BFS Implementation
 
 
-```python run
+```python run viz=graph viz-root=graph
 from queue import Queue
 from typing import List, Set
 
@@ -816,3 +821,40 @@ But there's a different kind of graph we haven't talked about yet — one that's
 DFS recursion with default Python (~1KB per frame) would overflow at depth ~1000. Pick **BFS** — the queue lives on the heap, no stack-depth concern. Alternatively, convert DFS to **iterative DFS** with your own explicit stack on the heap — same algorithm, no recursion, no stack overflow. Most production graph code uses iterative DFS for exactly this reason.
 
 </details>
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: The Hook — missing, needs to be written -->
+<!--       Guidance: real-world story opening before any definition -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
+<!--       Guidance: bulleted list of gotchas -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->

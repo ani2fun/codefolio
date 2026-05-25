@@ -2,32 +2,43 @@
 
 Searching is the silent foundation under most algorithms in this course — and binary search is the silent foundation under searching. Eleven lessons cover binary search and its variants: lower bound, upper bound, 2D matrix searches, sorted-rotated arrays, plus five **pattern lessons** that generalise the algorithm to predicate-based searches over numeric ranges.
 
-The section progresses from concrete to abstract: the first three lessons (Binary Search, Lower Bound, Upper Bound) cover the three primitive 1D variants. The next three (2D Binary Search, Staircase Search, Sorted Rotated Array) lift to 2D matrices and broken-input scenarios. The five pattern lessons (Binary Search Pattern, Lower Bound Pattern, Upper Bound Pattern, Minimum Predicate Search, Maximum Predicate Search) round it out — each with four worked problems showing how to recognise and apply binary-search-style algorithms in scenarios that don't initially look like searches.
+## Chapters
 
-## Guides
-
-Read in order if you're learning binary search for the first time; jump directly to a named pattern for revision.
-
-- [Binary Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-binary-search) — the foundation. `O(log n)` lookup of a target in a sorted array.
-- [Lower Bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-lower-bound) — first index `≥ target`. The "where would I insert this?" primitive.
-- [Upper Bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-upper-bound) — first index `> target`. With lower bound, enables count-occurrences in `O(log n)`.
-- [2D Binary Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-2d-binary-search) — searches a row-major-sorted matrix in `O(log(N·M))` via index flattening.
-- [Staircase Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-staircase-search) — searches a row-and-column-sorted matrix in `O(N + M)` via corner walk.
-- [Sorted Rotated Array](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-sorted-rotated-array) — finds min and target in a rotated sorted array. Two `O(log n)` algorithms.
-- [Pattern: Binary Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-binary-search) — direct binary search applications: recovery, descending arrays, multi-row matrices, intersection.
-- [Pattern: Lower Bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-lower-bound) — insertion position, first-and-last range, closest element, k-closest window.
-- [Pattern: Upper Bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-upper-bound) — count threshold, first-positive, ceiling, breaking index.
-- [Pattern: Minimum Predicate Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search) — binary search on the *answer*. Speed, penalty, capacity, completion-time problems.
-- [Pattern: Maximum Predicate Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-maximum-predicate-search) — the dual: square root, staircase, ribbon length, water equalisation.
-
-## Reading guide
-
-The 11 lessons break naturally into three groups:
-
-1. **Primitives (Binary Search, Lower Bound, Upper Bound)** — the three variants you'll use directly in 90% of search problems.
-2. **2D and broken-input (2D Binary Search, Staircase Search, Sorted Rotated Array)** — extending binary search to matrices and rotated arrays. Each requires one structural twist on the primitive.
-3. **Pattern lessons (Binary Search Pattern, Lower Bound Pattern, Upper Bound Pattern, Minimum and Maximum Predicate Search)** — abstracting binary search to recognise it across problem domains. The first three pattern lessons directly apply the primitives; the two predicate-search lessons generalise to "binary search on the answer" with custom predicates.
-
-If you're already comfortable with binary search, skim the Binary Search lesson and start at the Lower Bound lesson. The pattern lessons reuse the three primitives (Binary Search, Lower Bound, Upper Bound) heavily — read them first.
-
-Each lesson's transfer challenge pre-loads the next lesson, so reading in sequence is the smoothest path.
+- [Binary Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-binary-search)
+- [Lower Bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-lower-bound)
+- [Upper Bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-upper-bound)
+- [2D Binary Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-2d-binary-search)
+- [Staircase Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-staircase-search)
+- [Sorted Rotated Array](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-sorted-rotated-array)
+- [Memorize: Searching](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-memorize)
+- [Pattern: Binary Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-binary-search-pattern)
+- [Recovery Validation](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-binary-search-problems-recovery-validation)
+- [Reverse Binary Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-binary-search-problems-reverse-binary-search)
+- [Minimum Shared Element](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-binary-search-problems-minimum-shared-element)
+- [Intersecting Elements](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-binary-search-problems-intersecting-elements)
+- [Memorize: Binary Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-binary-search-memorize)
+- [Pattern: Lower Bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-lower-bound-pattern)
+- [Search Insert Position](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-lower-bound-problems-search-insert-position)
+- [First and Last Position](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-lower-bound-problems-first-and-last-position)
+- [Closest Element](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-lower-bound-problems-closest-element)
+- [K Closest Elements](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-lower-bound-problems-k-closest-elements)
+- [Memorize: Lower Bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-lower-bound-memorize)
+- [Pattern: Upper Bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-upper-bound-pattern)
+- [Limit Count](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-upper-bound-problems-limit-count)
+- [Positive Index](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-upper-bound-problems-positive-index)
+- [Ceiling Index](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-upper-bound-problems-ceiling-index)
+- [Breaking Index](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-upper-bound-problems-breaking-index)
+- [Memorize: Upper Bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-upper-bound-memorize)
+- [Pattern: Minimum Predicate Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search-pattern)
+- [Punctual Arrival Speed](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search-problems-punctual-arrival-speed)
+- [Penalty With Balls](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search-problems-penalty-with-balls)
+- [Minimum Shipping Capacity](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search-problems-minimum-shipping-capacity)
+- [Trip Completion Frenzy](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search-problems-trip-completion-frenzy)
+- [Memorize: Minimum Predicate Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search-memorize)
+- [Pattern: Maximum Predicate Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-maximum-predicate-search-pattern)
+- [Calculate Square Root](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-maximum-predicate-search-problems-calculate-square-root)
+- [Build Staircase](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-maximum-predicate-search-problems-build-staircase)
+- [K Ribbons](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-maximum-predicate-search-problems-k-ribbons)
+- [Equalise Water](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-maximum-predicate-search-problems-equalise-water)
+- [Memorize: Maximum Predicate Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-maximum-predicate-search-memorize)
+- [Pattern Synthesis: Searching](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-synthesis)

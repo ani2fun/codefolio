@@ -116,7 +116,7 @@ The "frontier" is a min-heap (priority queue) keyed by edge weight. Each iterati
 
 # Implementation
 
-```python run
+```python run viz=graph viz-root=adj
 import heapq
 
 # Kruskal with DSU
@@ -415,3 +415,25 @@ The MST is the cheapest way to connect everything. Three patterns to internalise
 1. **The cut property is the engine.** "Cheapest crossing edge is in some MST." Kruskal applies it greedily across edges; Prim applies it incrementally from a tree. Both work because of the same theorem.
 2. **DSU + sort = Kruskal; heap + frontier = Prim.** The two algorithms decompose neatly into prerequisite data structures. If you can implement those, you can implement either MST algorithm in 20 lines.
 3. **MST is one of the rare non-trivial polynomial-time problems** that's both fundamental and easy to get right. Once you have the cut property, every line of code follows.
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->

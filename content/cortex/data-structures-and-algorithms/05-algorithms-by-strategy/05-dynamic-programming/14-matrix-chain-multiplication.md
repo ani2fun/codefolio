@@ -1,3 +1,8 @@
+---
+title: "Matrix Chain Multiplication"
+summary: "<!-- TODO: summary -->"
+---
+
 # 14. Matrix Chain Multiplication
 
 You have to multiply four matrices: `A · B · C · D`, where `A` is 10×30, `B` is 30×5, `C` is 5×60, and `D` is 60×8. Matrix multiplication is *associative* — every parenthesisation gives the same final matrix — but the cost varies wildly. Multiplying as `((A·B)·C)·D` costs `10·30·5 + 10·5·60 + 10·60·8 = 1500 + 3000 + 4800 = 9300` scalar multiplications. Multiplying as `A·((B·C)·D)` costs `30·5·60 + 30·60·8 + 10·30·8 = 9000 + 14400 + 2400 = 25800`. Same answer, almost three times the work. For chains of 10+ matrices the gap can be 100× or worse — and it's why every numerical-linear-algebra library cares about parenthesisation order.
@@ -214,7 +219,7 @@ The problem says "minimum cost." Each split point gives a candidate cost; the op
 Bottom-up tabulation, length-first. The dimensions array is 1-indexed in spirit (matrix `i` has shape `dimensions[i-1] × dimensions[i]`); we keep that convention so the recurrence reads cleanly.
 
 
-```python run
+```python run viz=graph viz-root=dp
 from typing import List
 import sys
 
@@ -406,3 +411,40 @@ Matrix chain multiplication is the canonical **split-point interval DP for minim
 The pattern: 2D state `dp[i][j]` keyed on prefix lengths of two strings, with cases on whether the last characters match and three (or more) "operations" — match/skip/substitute — that reduce to smaller prefixes. Some variants maximise (LCS); some minimise (edit distance); some count contiguous matches (LCSubstr). The next lesson formalises this as the **edit-distance pattern** — a meta-template for sequence-comparison DPs.
 
 </details>
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: The Hook — missing, needs to be written -->
+<!--       Guidance: real-world story opening before any definition -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->
+
+<!-- TODO: Final Takeaway — missing, needs to be written -->
+<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->

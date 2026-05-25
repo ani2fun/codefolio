@@ -1,3 +1,8 @@
+---
+title: "Introduction To Hash Tables"
+summary: "<!-- TODO: summary -->"
+---
+
 # 1. Introduction to Hash Tables
 
 ## The Hook
@@ -905,3 +910,31 @@ The two great families:
 We'll spend the rest of the section dissecting both. For each, we'll see how it changes insertion, what it means for search probes, what tricky issue deletion creates, and what kind of input data each one shines or stumbles on.
 
 > *What's next* — In the next lesson we'll dive into **separate chaining**: the simpler of the two families, and a deeply intuitive one. We'll meet the linked-list-per-slot trick, build it from scratch, watch it gracefully absorb collision after collision, and then push it until it breaks. Once you've seen separate chaining clearly, open addressing will read like a clever optimization on the same theme.
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
+<!--       Guidance: bulleted list of gotchas -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->
+
+<!-- TODO: Final Takeaway — missing, needs to be written -->
+<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->

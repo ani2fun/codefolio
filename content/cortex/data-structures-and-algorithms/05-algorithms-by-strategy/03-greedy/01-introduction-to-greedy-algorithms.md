@@ -132,7 +132,7 @@ Used in production for: data compression (DEFLATE/gzip uses static Huffman table
 
 # Implementation
 
-```python run
+```python run viz=array viz-root=root
 def activity_selection(activities):
     activities = sorted(activities, key=lambda a: a[1])
     selected = []
@@ -407,3 +407,25 @@ Greedy: locally-optimal choice, every step. Three patterns to internalise:
 1. **The greedy-choice property is rare.** Most optimisation problems *don't* have it; greedy gives a wrong answer. Always look for the property explicitly — and if you can't find it, switch to DP.
 2. **The exchange argument is the proof.** Either show "greedy stays ahead" or "any optimum can be transformed into greedy". Without this, your algorithm is unproven.
 3. **Greedy code is short.** When greedy works, the implementation is usually `O(n log n)` (one sort + one scan) or simpler. The complexity of greedy lives in the *proof*, not the code.
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->

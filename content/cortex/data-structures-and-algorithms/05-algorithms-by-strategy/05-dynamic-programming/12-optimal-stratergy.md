@@ -1,3 +1,8 @@
+---
+title: "Optimal Stratergy"
+summary: "<!-- TODO: summary -->"
+---
+
 # 12. Optimal Game Strategy
 
 A row of coins sits between you and an opponent. Each turn, the player to move picks a coin — but only from either *end* of the row. Whoever ends up with the higher total wins. Both of you play optimally — every move you make assumes the opponent will respond with their best counter. The question isn't "what's the maximum you could get if the opponent plays badly?" — it's "what's the maximum you can *guarantee*, no matter how cleverly the opponent plays?"
@@ -193,7 +198,7 @@ Output: 8                    You take the larger end
 Bottom-up tabulation, length-first. We use Formulation A (explicit opponent min).
 
 
-```python run
+```python run viz=grid viz-root=dp
 from typing import List
 
 class Solution:
@@ -328,3 +333,37 @@ Optimal strategy is interval DP at heart — fill the `(i, j)` table by length, 
 The decision dimension shifts from "left vs right end" to "split point inside the range" — for each operator position `k`, recurse on `[i..k-1]` and `[k+1..j]`. The aggregator is *sum* (count combinations across all split points) instead of max, and you carry both `T[i][j]` and `F[i][j]` because combining sub-results depends on whether each side is true or false. The next lesson formalises this as **Boolean Parenthesisation**.
 
 </details>
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: The Hook — missing, needs to be written -->
+<!--       Guidance: real-world story opening before any definition -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->

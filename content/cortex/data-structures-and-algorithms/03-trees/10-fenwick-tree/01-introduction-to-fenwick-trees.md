@@ -129,7 +129,7 @@ For `i = 5` (binary `101`), the walk visits `5, 6, 8, 16, …`: add 1, then 2, t
 
 # Implementation
 
-```python run
+```python run viz=array viz-root=arr
 class Fenwick:
     def __init__(self, n):
         self.n = n
@@ -353,3 +353,25 @@ The Fenwick tree is the one-trick wonder of competitive programming. Three patte
 1. **`i & (-i)` is the whole structure.** That single bit-trick is what turns the implicit tree into a flat array. Once you've internalised the trick, the algorithm is six lines.
 2. **Restricted to invertible operations.** Sum, XOR, product modulo a prime work. Min, max, GCD don't. For non-invertible operations, use a segment tree.
 3. **Half the cost of a segment tree.** Half the memory (`n` instead of `4n`), half the constant factor in operations (no recursion, simpler memory access pattern), an order of magnitude less code. When the problem fits, the BIT wins.
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->

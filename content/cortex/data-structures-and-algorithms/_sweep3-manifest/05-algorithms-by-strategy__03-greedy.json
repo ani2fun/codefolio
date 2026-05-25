@@ -1,0 +1,31 @@
+{
+  "chapter": "05-algorithms-by-strategy/03-greedy",
+  "sweep": 3,
+  "pilot_approved": false,
+  "units": [
+    {
+      "id": "05-algorithms-by-strategy/03-greedy/lesson-01-introduction-to-greedy-algorithms",
+      "type": "LESSON_UNIT",
+      "files": [
+        "05-algorithms-by-strategy/03-greedy/01-introduction-to-greedy-algorithms.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "05-algorithms-by-strategy/03-greedy/chapter_memorize-02-memorize",
+      "type": "CHAPTER_MEMORIZE_UNIT",
+      "files": [
+        "05-algorithms-by-strategy/03-greedy/02-memorize.md"
+      ],
+      "status": "pending",
+      "blocked_by": [
+        "05-algorithms-by-strategy/03-greedy/lesson-01-introduction-to-greedy-algorithms"
+      ],
+      "todos_filled": 0,
+      "verify_flags": 0
+    }
+  ]
+}

@@ -1,3 +1,8 @@
+---
+title: "Adjacency Matrix Representation"
+summary: "<!-- TODO: summary -->"
+---
+
 # 2. Adjacency matrix representation
 
 This lesson introduces the **adjacency matrix** — the most compact, fastest-to-query, and (sometimes) most wasteful way to put a graph into memory. By the end you'll know exactly when to reach for it and when to run from it.
@@ -264,7 +269,7 @@ flowchart LR
 Here's the same algorithm in Python and Java. Pick whichever you read most fluently — the logic is identical across both of them.
 
 
-```python run
+```python run viz=graph viz-root=matrix
 def create_graph(nodes, edges):
     # Create adjacency matrix
     adj = [[False] * nodes for _ in range(nodes)]
@@ -409,7 +414,7 @@ matrix: "Weighted adjacency matrix (sentinel = -1)" {
 The implementation is almost identical to the boolean version — swap `bool` for `int` and the sentinel for `-1`.
 
 
-```python run
+```python run viz=graph viz-root=matrix
 """
  * Function to create graph
  * nodes: The number of nodes in the graph
@@ -564,7 +569,7 @@ The two-array trick is the standard pattern. Storing node data inside the matrix
 Here's a small example that builds both arrays together.
 
 
-```python run
+```python run viz=graph viz-root=adj
 """
  * Function to create graph
  * nodes[in]: A list node data
@@ -732,3 +737,40 @@ An adjacency matrix is the *most concrete* graph representation: every possible 
 You now know what an adjacency matrix is, how to build one, how to extend it for weighted edges and node data, and the trade-offs that decide when to pick it. Next up: the **adjacency list**, which makes the opposite trade — slower edge lookup but linear-in-edges memory — and is the right default for almost everything else.
 
 > **Transfer challenge.** You're modelling a chess engine. Every position is a node; every legal move from position A to position B is a directed edge. Estimate `N` (positions) and `E` (legal moves out of each). Would you store this as an adjacency matrix? Why or why not? *(Hint: chess has roughly 10⁴⁰ legal positions but only ~30 legal moves per position — does that smell sparse or dense?)*
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: The Hook — missing, needs to be written -->
+<!--       Guidance: real-world story opening before any definition -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
+<!--       Guidance: bulleted list of gotchas -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->

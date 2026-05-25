@@ -1,4 +1,25 @@
+---
+title: "Multidimensional"
+summary: "The N-dimensional generalisation of the array — same contiguous buffer, same constant-time address arithmetic, one stride per dimension. Row-major versus column-major decides which loop order is cache-friendly."
+prereqs:
+  - 02-linear-structures/01-arrays/01-introduction
+---
+
 # 2. Multidimensional arrays
+
+## The Hook
+
+A machine-learning engineer trains a convolutional network on the ImageNet dataset — 1.2 million 224 × 224 RGB images. Every image is a 3D tensor of shape `(3, 224, 224)`; the whole batch is a 4D tensor of shape `(batch_size, 3, 224, 224)`. The training loop streams these tensors through a GPU at tens of thousands of images per second. Nobody writes a four-deep loop. Nobody pays a pointer hop per pixel. The library multiplies four indices by four strides, adds them to a base address, and reads one byte.
+
+That is the entire trick. A multidimensional array is a single contiguous buffer with a small `(stride_0, stride_1, …, stride_{d−1})` descriptor on the side. The `i × stride` rule from the 1D case extends without fuss: `address = base + Σ index_k × stride_k`. One multiplication and one addition per dimension, computed at compile time when the shape is known, computed in a few cycles at run time when it is not. The cost of a 4D lookup is *four* multiplies and *four* adds — still `O(1)` because the dimension count is a constant, not a function of the data.
+
+The catch — and it is a real one — is that contiguous storage has a *direction*. Every row of a 2D array lives next to its neighbour, but every column is scattered. Iterating row-then-column walks consecutive bytes; iterating column-then-row jumps a full row's width each step. The Big-O is identical. The wall-clock can differ by ten times. Row-major versus column-major is not a notation choice — it is the choice that decides whether the cache helps you or fights you.
+
+This lesson generalises the contiguous-block, `base + offset` model from one dimension to N. It defines what a *dimension* is. It builds the address formula from the ground up. It shows what the loop order does to the cache. And it ends with the two canonical traversals — row-major and column-major — back-to-back, so the difference is impossible to miss.
+
+> 🖼 Diagram — TODO: visual illustrating the hook's real-world scenario
+
+---
 
 This section extends the array model to grids and matrix-like structures while introducing row-major and column-major traversal.
 
@@ -15,6 +36,13 @@ This section extends the array model to grids and matrix-like structures while i
 9. [Understanding column major order](#understanding-column-major-order)
 10. [Example of column major](#example-of-column-major-order)
 11. [Column major traversal](#column-major-traversal)
+12. [Working example](#working-example)
+13. [Production reality](#production-reality)
+14. [Quiz](#quiz)
+15. [Practice ladder](#practice-ladder)
+16. [Further reading](#further-reading)
+17. [Cross-links](#cross-links)
+18. [Final takeaway](#final-takeaway)
 
 ***
 
@@ -32,6 +60,7 @@ We'll build on the student ages example from before. This time, consider a scena
 
 The natural first instinct: create four separate integer arrays of size 60, one per class.
 
+> 🖼 Diagram — Four separately-named arrays — one per class — each storing 60 student ages.
 ```d2
 school: {
   grid-rows: 4
@@ -58,6 +87,7 @@ Four classes, four arrays. Manageable — barely.
 
 This approach works for a small number of classes, but what if there were **12 classes** instead of four? We'd need 12 separate arrays. While this technically solves the problem, storing and managing so many arrays across multiple variables would be cumbersome. This would bring us back to square one and undermine the very purpose of using arrays.
 
+> 🖼 Diagram — Creating 12 arrays to store the ages of students in 12 classes — one per variable.
 ```d2
 school: {
   grid-rows: 2
@@ -131,6 +161,7 @@ Think of a **dimension** as an axis of organisation.
 
 The moment you add a second axis, you get a grid — and a grid is exactly the right structure for data that has a natural "rows and columns" shape: classes and students, pixels on a screen, cells in a spreadsheet, entries in a matrix.
 
+> 🖼 Diagram — 1D array needs one index. 2D array needs two indices — one for the row, one for the column.
 ```d2
 direction: right
 
@@ -174,6 +205,7 @@ A 2D array is defined by two numbers:
 - **Number of rows** — how many groups (e.g. classes)
 - **Number of columns** — how many items per group (e.g. students per class)
 
+> 🖼 Diagram — A 2D array with 4 rows and 5 columns. Total elements = 4 × 5 = 20.
 ```d2
 grid: "4 × 5 grid" {
   grid-rows: 4
@@ -213,6 +245,7 @@ The **total number of elements** in a 2D array is always:
 
 Remember the school with 4 classes and 60 students each? Instead of 4 separate arrays, we define a single 2D array:
 
+> 🖼 Diagram — A 4 × 60 two-dimensional array replacing four separate arrays.
 ```d2
 ages: "ages — 4 rows (classes), 60 columns (students)" {
   grid-rows: 4
@@ -249,6 +282,7 @@ array[row_index][column_index]
 - **First index** → which row (which class)
 - **Second index** → which column (which student in that class)
 
+> 🖼 Diagram — Two indices locate a single element: first selects the row, second selects the column.
 ```mermaid
 ---
 config:
@@ -371,6 +405,7 @@ Here's what each looks like logically:
 
 **Single-dimension array** — a flat row of values, accessed with one index:
 
+> 🖼 Diagram — Single-dimension array — one row of elements, one index to access any element.
 ```d2
 direction: right
 
@@ -393,6 +428,7 @@ size -> arr: "" {style.stroke-dash: 3}
 
 **Two-dimensional array** — a grid of rows and columns, accessed with two indices `[row][col]`:
 
+> 🖼 Diagram — Two-dimensional array — a grid of size2 rows × size1 columns.
 ```d2
 grid: {
   grid-rows: 4
@@ -420,6 +456,7 @@ grid: {
 
 **Three-dimensional array** — a stack of 2D grids (layers), accessed with three indices `[layer][row][col]`:
 
+> 🖼 Diagram — Three-dimensional array — size3 layers, each a full size2 × size1 two-dimensional grid.
 ```d2
 direction: right
 
@@ -479,6 +516,7 @@ To understand how multidimensional arrays are useful and what a dimension repres
 
 Instead of storing each student's age in a separate variable, we can use a regular (one-dimensional) array to store all this data under a single variable. The size of the array is equal to the number of students in the class (`size1`).
 
+> 🖼 Diagram — Storing the age of students in a single class in a single-dimension array.
 ```d2
 direction: right
 
@@ -514,6 +552,7 @@ The idea: create an array of arrays where
 - the **inner array** stores the ages of all students in one class (size `size1`)
 - the **outer array** is a collection of those inner arrays, one per class (size `size2`)
 
+> 🖼 Diagram — Storing the age of students in all classes in a two-dimensional array.
 ```d2
 direction: right
 
@@ -565,6 +604,7 @@ Instead of creating multiple 2D arrays (one per school), we create a single **th
 - Each item is a 2D array of size `size2` (classes)
 - Each item inside that is a 1D array of size `size1` (students per class)
 
+> 🖼 Diagram — Storing the age of students across all classes in all schools in a three-dimensional array.
 ```d2
 direction: right
 
@@ -644,6 +684,7 @@ A 2D array supports the same four operations as a 1D array — **create, access,
 
 Almost all major programming languages support adding more dimensions to a regular array in one form or another. Since a multidimensional array is just an array, it has a **fixed size** that cannot be modified after creation. All data items in the array must be of the **same data type**.
 
+> 🖼 Diagram — Creating a multidimensional array of fixed size and datatype.
 ```d2
 arr: {
   grid-rows: 3
@@ -735,6 +776,7 @@ public class Main {
 
 We can access data items in a multidimensional array just like a regular array — using the subscript operator `[]` and an index. Since every data item in a multidimensional array is itself an array, we **chain the subscript operator** to drill into each dimension. We keep chaining until we reach a non-array data item.
 
+> 🖼 Diagram — Multidimensional array elements can be accessed using indices for all dimensions.
 ```d2
 arr: {
   grid-rows: 3
@@ -839,6 +881,7 @@ public class Main {
 
 We can modify data items in a multidimensional array in place, just like a regular array. Chain the subscript operator as many times as there are dimensions to reach the target element, then assign the new value on the right-hand side.
 
+> 🖼 Diagram — Multidimensional array elements can be modified using indices for all dimensions (highlighted = being updated).
 ```d2
 arr: {
   grid-rows: 3
@@ -944,6 +987,7 @@ To traverse a multidimensional array, we need **nested loops** — one loop for 
 
 <div class="d2-slides" data-caption="Step through nested-loop traversal of a 2 × 3 array — use ◀ ▶ to advance frame-by-frame.">
 
+> 🖼 Diagram — TODO: add caption
 ```d2
 arr: "Ready to traverse the 2 × 3 array" {
   grid-rows: 2
@@ -969,6 +1013,7 @@ arr: "Ready to traverse the 2 × 3 array" {
 }
 ```
 
+> 🖼 Diagram — TODO: add caption
 ```d2
 direction: right
 
@@ -1002,6 +1047,7 @@ arr: "Visit arr[0][0]" {
 }
 ```
 
+> 🖼 Diagram — TODO: add caption
 ```d2
 direction: right
 
@@ -1035,6 +1081,7 @@ arr: "Visit arr[0][1]" {
 }
 ```
 
+> 🖼 Diagram — TODO: add caption
 ```d2
 direction: right
 
@@ -1068,6 +1115,7 @@ arr: "Visit arr[0][2]" {
 }
 ```
 
+> 🖼 Diagram — TODO: add caption
 ```d2
 direction: right
 
@@ -1103,6 +1151,7 @@ arr: "Visit arr[1][0]" {
 }
 ```
 
+> 🖼 Diagram — TODO: add caption
 ```d2
 direction: right
 
@@ -1136,6 +1185,7 @@ arr: "Visit arr[1][1]" {
 }
 ```
 
+> 🖼 Diagram — TODO: add caption
 ```d2
 direction: right
 
@@ -1173,6 +1223,7 @@ arr: "Traversal complete — visited all 6 cells" {
 
 </div>
 
+> 🖼 Diagram — Traversing a 2D array requires two nested loops — one per dimension.
 ```mermaid
 ---
 config:
@@ -1334,6 +1385,7 @@ Let us revisit our memory model before diving deeper into how multidimensional a
 
 Memory is logically organized in RAM as a **linear/single-dimensional** sequence of blocks. Every block has a unique identifier that serves as its address and can be used to locate it in memory. Data in memory can only be accessed if its address is known.
 
+> 🖼 Diagram — Memory is a linear sequence of 1-byte blocks; each block's position number is its address. Highlighted block sits at address = 3.
 ```d2
 mem: "Linear memory" {
   grid-rows: 2
@@ -1366,6 +1418,7 @@ mem.a3.style.stroke: "#d97706"
 
 Remember, computer memory is organized as a one-dimensional, linear sequence of blocks, so multidimensional arrays cannot be stored directly. To represent an N-dimensional array in memory, we must map it onto a one-dimensional array.
 
+> 🖼 Diagram — Multidimensional arrays have to be mapped to a single-dimensional memory
 ```d2
 direction: right
 
@@ -1446,6 +1499,7 @@ Languages like **C, C++, Objective-C, Python, Java, and Go** all store their mul
 
 Let's make this concrete. Take a 3×4 array (3 rows, 4 columns). Logically it looks like a table:
 
+> 🖼 Diagram — The logical 2D view — 3 rows, 4 columns, 12 elements.
 ```d2
 grid: {
   grid-rows: 3
@@ -1469,6 +1523,7 @@ grid: {
 
 In memory there are no rows or columns — only one long ribbon of slots. Row-major order places these elements into that ribbon **one full row at a time**:
 
+> 🖼 Diagram — Generic representation of a two-dimensional array in row-major order in memory — Row 0 is placed first, Row 1 immediately after, then Row 2. Rows sit back-to-back.
 ```d2
 direction: right
 
@@ -1525,6 +1580,7 @@ Think of it like an odometer. The rightmost digit (lowest dimension) ticks up on
 
 For a **3 × 4** array (D2=3, D1=4), the indices progress like this:
 
+> 🖼 Diagram — Row major order lays out elements by moving the lowest dimension the fastest — I₁ (column) races through 0→1→2→3, then I₂ (row) increments by one.
 ```mermaid
 ---
 config:
@@ -1645,6 +1701,7 @@ offset  = i × D1 + j
 address = base_address + (i × num_cols + j) × element_size
 ```
 
+> 🖼 Diagram — Calculating the base address of the value at (I₂, I₁) — skip whole rows, then step into the target row.
 ```mermaid
 ---
 config:
@@ -1735,7 +1792,7 @@ Offset 7 points to `arr[1][3] = 80` — completely the wrong element.
 
 ---
 
-## Key Takeaways
+## Key Takeaway
 
 | Concept | Summary |
 |---|---|
@@ -1768,6 +1825,7 @@ Consider a 3D integer array with these dimensions:
 
 Think of it as **2 layers**, each layer being a **2×3 grid**. The logical representation looks like this:
 
+> 🖼 Diagram — Logical representation of the 3D array (D₃=2, D₂=2, D₁=3) — 2 layers, each a 2×3 grid, totalling 12 elements.
 ```d2
 L0: "Layer 0  ── D₃ = 0" {
   R00: "D₂ = 0" {
@@ -1819,6 +1877,7 @@ Think of the three indices as an odometer with three digits. The rightmost digit
 
 The complete traversal order looks like this:
 
+> 🖼 Diagram — The lowest dimension D₁ moves the fastest in row-major order — it completes a full sweep before D₂ ticks up, and D₂ completes a full sweep before D₃ ticks up.
 ```mermaid
 ---
 config:
@@ -1886,6 +1945,7 @@ address = 2 + k × 4
 
 Here is exactly what the array looks like in memory, laid out slot by slot:
 
+> 🖼 Diagram — Row-major layout in memory — 12 elements, base address 2, each element 4 bytes wide. Each address row sits directly under its index row, so reading down a column gives the (index, address) pair for one element.
 ```d2
 mem: {
   grid-rows: 4
@@ -1985,6 +2045,7 @@ Each term in the offset formula represents one "level" of skipping:
 
 Let's work through both examples:
 
+> 🖼 Diagram — Calculating the base address for array[0][0][2] (offset 2, address 10) and array[1][1][2] (offset 11, address 46) using the subscript operator formula.
 ```mermaid
 ---
 config:
@@ -2074,6 +2135,7 @@ The language already knows two things:
 
 It simply reads `element_size` consecutive bytes starting at that address and interprets the bit pattern as the stored datatype:
 
+> 🖼 Diagram — Dereferencing — once the address is known, the language reads element_size bytes starting there and interprets them according to the stored datatype.
 ```mermaid
 ---
 config:
@@ -2101,7 +2163,7 @@ The same mechanism works for any datatype — `float`, `double`, `char`, or even
 
 ---
 
-## Key Takeaways
+## Key Takeaway
 
 - A 3D array `D₃ × D₂ × D₁` is flattened layer by layer, row by row, column by column
 - **D₁ (innermost) moves fastest; D₃ (outermost) moves slowest** — same odometer rule for any N dimensions
@@ -2165,6 +2227,7 @@ Row-major traversal is exactly the path your eye naturally takes when reading a 
 
 More importantly, this is the **same order elements are stored in memory** for row-major languages. Traversing in this order means every access hits the next slot in memory — no jumping, no cache misses. It's the fastest possible way to touch every element.
 
+> 🖼 Diagram — Row-major traversal of a 3×3 matrix — finish each row completely before dropping to the next.
 ```mermaid
 ---
 config:
@@ -2195,6 +2258,7 @@ flowchart LR
 
 The collected output is a flat 1D list of all elements in visit order:
 
+> 🖼 Diagram — Output — all 9 elements in row-major order, as a flat list.
 ```d2
 out: {
   grid-columns: 9
@@ -2224,6 +2288,7 @@ The key observation is simple:
 
 That's it. The outer loop picks a row, the inner loop walks across every column in that row. Append each element as you go.
 
+> 🖼 Diagram — Algorithm flow — the inner loop exhausts all columns before the outer loop advances to the next row.
 ```mermaid
 ---
 config:
@@ -2446,6 +2511,7 @@ The 2D grid is identical. The only thing that changes is **which elements end up
 
 Here's the same 3×4 logical grid:
 
+> 🖼 Diagram — The logical 2D view — same 3×4 grid as before. What changes is the memory layout below.
 ```d2
 grid: {
   grid-rows: 3
@@ -2493,6 +2559,7 @@ grid: {
 
 In column-major order, this is flattened **one complete column at a time** — top to bottom within each column:
 
+> 🖼 Diagram — Generic representation of the 2D array in column-major order in memory — Column 0 is placed first (top to bottom), then Column 1, then Column 2, then Column 3.
 ```d2
 direction: right
 
@@ -2546,6 +2613,7 @@ This is the exact reverse of row-major (where D₁ moves fastest). Think of it a
 
 For the 3×4 array (D₂=3, D₁=4), the indices progress like this:
 
+> 🖼 Diagram — Column-major order lays out elements by moving the highest dimension the fastest — D₂ (row index) races 0→1→2 within each column; D₁ (column index) only increments when the column is exhausted.
 ```mermaid
 ---
 config:
@@ -2629,6 +2697,7 @@ The structure is symmetric. Row-major uses `num_cols` as the stride; column-majo
 
 Let's find `arr[1][2]` in our 3×4 array (`base_address = 1000`, `element_size = 4` bytes, `num_rows = 3`):
 
+> 🖼 Diagram — Calculating the base address of arr[1][2] in column-major order — skip 2 complete columns (6 elements), then step 1 into the current column.
 ```mermaid
 ---
 config:
@@ -2729,7 +2798,7 @@ In the previous lesson you saw that row-major traversal is cache-friendly in row
 
 ---
 
-## Key Takeaways
+## Key Takeaway
 
 | Concept | Row-Major | Column-Major |
 |---|---|---|
@@ -2762,6 +2831,7 @@ Now that you understand how column-major order works conceptually, let's make it
 
 The logical shape hasn't changed — 2 layers, each a 2×3 grid. Only the way it's serialised into memory is different.
 
+> 🖼 Diagram — Logical representation of the 3D array (D₃=2, D₂=2, D₁=3) — 2 layers, each a 2×3 grid, 12 elements total. The logical shape is identical to the row-major example.
 ```d2
 L0: "Layer 0  ── D₃ = 0" {
   R00: "D₂ = 0" {
@@ -2811,6 +2881,7 @@ Column-major rule:
 
 Think of it as a counter where the leftmost digit ticks fastest. D₃ sprints through 0→1, then D₂ increments, D₃ resets and sprints again. D₁ only changes when both D₂ and D₃ have completed full cycles.
 
+> 🖼 Diagram — The highest dimension D₃ moves the fastest in column-major order — D₃ races 0→1 at every step; D₂ only increments after D₃ overflows; D₁ (lowest) only increments last of all.
 ```mermaid
 ---
 config:
@@ -2882,6 +2953,7 @@ The same 12 elements — entirely different order.
 
 With `base_address = 2` and `element_size = 4` bytes (integers), here is the column-major physical layout:
 
+> 🖼 Diagram — Column-major layout in memory — base address 2, element size 4 bytes. Adjacent slots differ only in their D₃ index (0↔1 flip in every neighbouring pair) — that's the signature of D₃ moving fastest.
 ```d2
 mem: {
   grid-rows: 4
@@ -2983,6 +3055,7 @@ offset = I₁ × (D₂ × D₃)  +  I₂ × D₃  +  I₃
 
 Let's compute both elements from the problem statement:
 
+> 🖼 Diagram — Calculating the base address for array[0][0][2] (offset 8, address 34) and array[1][1][2] (offset 11, address 46) using the column-major subscript operator formula.
 ```mermaid
 ---
 config:
@@ -3076,6 +3149,7 @@ public class Main {
 
 Once the address is resolved, the final step — dereferencing — is identical in both orderings. The language reads `element_size` bytes from the resolved address and interprets them as the stored type.
 
+> 🖼 Diagram — Dereferencing is storage-order agnostic — once the address is known, the language reads element_size bytes from that point and interprets them as the declared type, regardless of whether the array is row-major or column-major.
 ```mermaid
 ---
 config:
@@ -3109,7 +3183,7 @@ As a programmer, you write `array[i][j]` the same way for both orderings — but
 
 ---
 
-## Key Takeaways
+## Key Takeaway
 
 - Column-major serialises the same 3D array in a completely different order to row-major
 - **D₃ (highest) moves fastest; D₁ (lowest) moves slowest** — the exact reverse of row-major
@@ -3175,6 +3249,7 @@ In row-major traversal, the column index (`j`) was in the inner loop — it move
 
 The outer loop picks a column. The inner loop walks from the top of that column to the bottom, collecting every element. Then the outer loop advances to the next column.
 
+> 🖼 Diagram — Column-major traversal of a 3×3 matrix — drain each column top to bottom before moving to the next column.
 ```mermaid
 ---
 config:
@@ -3205,6 +3280,7 @@ flowchart TB
 
 Visit order annotated directly on the grid:
 
+> 🖼 Diagram — Visit order in column-major traversal — each value sits directly above its visit-order label. The column index changes once every 3 visits; the row index changes on every visit.
 ```d2
 grid: {
   grid-rows: 6
@@ -3235,6 +3311,7 @@ grid: {
 
 The collected output:
 
+> 🖼 Diagram — Output — all 9 elements in column-major order as a flat list. Compare with row-major: [1, 2, 3, 4, 5, 6, 7, 8, 9].
 ```d2
 out: {
   grid-columns: 9
@@ -3258,6 +3335,7 @@ out: {
 <summary><h2>The Approach</h2></summary>
 
 
+> 🖼 Diagram — Algorithm flow — the inner loop exhausts all rows in the current column before the outer loop advances to the next column.
 ```mermaid
 ---
 config:
@@ -3491,3 +3569,122 @@ The output list holds all elements. If you're processing without storing, it's O
 Column-major traversal is row-major traversal with the two loop variables swapped: `col` goes outer (slow), `row` goes inner (fast). The algorithm, complexity, and guard clauses are identical — only the access order changes. And in a row-major language like Python, that one swap is enough to turn every access into a cache miss on large matrices.
 
 </details>
+
+***
+
+# Working Example
+
+This lesson has already walked the address formula end-to-end three times — twice in detail. Rather than repeat a fourth example, read these as the canonical worked cases:
+
+- **2D row-major, `3 × 4` int array, `arr[2][1]`** — built up step by step under [Worked Example](#worked-example) in *Accessing Elements — The Address Formula*. Shows `address = base + (i × num_cols + j) × element_size` with concrete numbers (base `1000`, 4-byte ints, offset `9`, final address `1036`).
+- **3D row-major, `2 × 2 × 3` int array, every element** — printed in full under [Example of Row Major Order](#example-of-row-major-order). Loop nesting matches storage order; offset increments by exactly `1` per step; the table maps each `(i₁, i₂, i₃)` to its offset and address.
+- **3D column-major, same `2 × 2 × 3` array** — recomputed under [Example of Column Major Order](#example-of-column-major-order). Same indices, different formula, different offsets — side-by-side with the row-major output so the *direction* of the contiguity is impossible to miss.
+
+The point of revisiting them as a set: the algorithm is identical across 2D and 3D and N-D. Only the number of stride terms in `Σ index_k × stride_k` changes. If you can do the 3D case from the row-major walkthrough, the 4D and 5D tensors that power machine-learning frameworks are the same arithmetic with two more terms.
+
+***
+
+# Production Reality
+
+Multidimensional arrays — and the stride descriptor that powers them — are the storage shape behind every numeric workload that matters. The six places below are worth knowing by name.
+
+**[NumPy `ndarray`]** — uses **a single contiguous buffer with an N-tuple of strides** — because random-axis indexing, slicing, and broadcasting all reduce to one address computation.
+
+The entire NumPy stack — Pandas columns, scikit-learn models, every PyTorch CPU tensor — is one contiguous block of memory plus a `(shape, strides, dtype)` descriptor. Slicing changes the strides without copying data. Transposing swaps two strides without touching a byte. Iterating in cache-friendly order is the user's job: `arr.flags['C_CONTIGUOUS']` tells you which way the buffer runs. Source: [arrayobject.c](https://github.com/numpy/numpy/blob/main/numpy/_core/src/multiarray/arrayobject.c).
+
+**[PyTorch / TensorFlow tensors]** — uses **the NumPy stride model, generalised to GPU memory** — because GPUs need the same `O(1)` address arithmetic for every kernel launch.
+
+A 4D `(batch, channel, height, width)` tensor lives as one buffer on device memory; the kernel computes `base + n × s_n + c × s_c + h × s_h + w × s_w` per thread. Reshape and transpose ops manipulate strides without copying — the famous "view vs copy" distinction in PyTorch is exactly this. Source: [PyTorch TensorImpl.h](https://github.com/pytorch/pytorch/blob/main/c10/core/TensorImpl.h).
+
+**[Image and video pixel buffers]** — uses **a 2D or 3D row-major byte array, sometimes padded for SIMD alignment** — because every codec, every filter, every blit walks pixels in scanline order.
+
+A 1920 × 1080 RGB frame is a flat 6.2 MB buffer with stride `1920 × 3` between rows. The display controller reads it scanline by scanline; H.264 decode writes it the same way. The padding between scanlines (the *pitch*, often larger than `width × bytes_per_pixel`) exists so each row starts on a SIMD-aligned address. Source: [FFmpeg `AVFrame` documentation](https://ffmpeg.org/doxygen/trunk/structAVFrame.html).
+
+**[Game engine `Octree` and grid colliders]** — uses **a fixed 3D array of cells indexed by `(x, y, z)`** — because a one-step lookup beats any tree traversal for a fixed-resolution world.
+
+Unity's voxel grids, Minecraft's chunk format, every navmesh tile: a 3D array indexed by integer coordinates is the data structure under the hood. Modifying one cell is one memory write; testing "what's at `(12, 4, 9)`" is `O(1)`. Trees layer on top only when the world is sparse enough that the grid would waste memory. Source: [Minecraft chunk format on the Minecraft Wiki](https://minecraft.wiki/w/Region_file_format).
+
+**[BLAS and LAPACK numerical libraries]** — uses **column-major 2D arrays with a leading-dimension stride** — because they predate C and inherited Fortran's storage convention.
+
+Every matrix multiplication and linear-solve kernel under SciPy, R, MATLAB, and Julia eventually calls into a BLAS routine that expects column-major data. The `ld` (leading dimension) parameter every BLAS function takes is the stride between successive columns — exactly the multidimensional address formula in API form. Mixing layouts is a constant source of bugs; the `order='F'` kwarg in NumPy exists specifically to interoperate. Source: [BLAS Quick Reference Guide](https://www.netlib.org/lapack/lug/node145.html).
+
+**[Spreadsheet engines (Excel, Google Sheets)]** — uses **a sparse 2D grid keyed by `(row, column)`** — because dense allocation of a million × sixteen-thousand cells would burn 16 GB for one mostly-empty sheet.
+
+Excel's `(row, col)` cell addressing is the 2D array API; the storage underneath is a sparse map because most cells are empty. The compromise lets formulas reference `A1:Z100` with the same `O(1)` access feel of a dense array while paying for only the cells that exist. Source: [LibreOffice Calc storage architecture](https://docs.libreoffice.org/sc.html).
+
+***
+
+# Quiz
+
+Test your grip before moving on. One answer per question; reveal only after you have committed to one.
+
+**[Recall] Q: For a row-major 2D `int` array with base `1000`, `4` columns, and `4`-byte ints, what is the address of `arr[2][1]`?**
+`1000 + (2 × 4 + 1) × 4 = 1036`.
+
+**[Recall] Q: In a row-major layout, which two indices are adjacent in memory: `arr[i][j]` and `arr[i+1][j]`, or `arr[i][j]` and `arr[i][j+1]`?**
+`arr[i][j]` and `arr[i][j+1]` — the column index changes fastest in row-major storage.
+
+**[Reasoning] Q: Why does the address formula for a row-major 2D array multiply the row index by `num_cols` and not by `num_rows`?**
+Each row stores `num_cols` elements, so skipping one full row jumps `num_cols` cells; the multiplier is the length of the contiguous span you are stepping over, which for row-major is the row width.
+
+**[Reasoning] Q: For the same 2D array, why is `for r: for c: arr[r][c]` fast in Python and slow in Fortran?**
+Python is row-major, so `arr[r][c]` and `arr[r][c+1]` sit next to each other — the inner loop walks adjacent bytes and the prefetcher keeps up; Fortran is column-major, so the same loop jumps a full column between accesses and every step is a likely cache miss.
+
+**[Tradeoff] Q: You profile a 10000 × 10000 matrix-vector multiply and find it runs `8×` faster after swapping two loops. Which trade-off does this reveal about multidimensional arrays?**
+The Big-O is fixed by the algorithm, but cache locality is set by the loop order; multidimensional arrays force you to match iteration direction to storage direction, and getting it wrong costs a constant factor large enough to dominate the wall-clock cost.
+
+***
+
+# Practice Ladder
+
+Five problems, easiest first. Try each unaided; hit the hint only after ten minutes stuck; don't peek at solutions until you've made the array *do something* in code.
+
+| # | Problem | Pattern | Difficulty | Hint |
+|---|---------|---------|------------|------|
+| 1 | [Spiral Matrix](https://leetcode.com/problems/spiral-matrix/) | Matrix traversal | Medium | Maintain four boundaries (`top`, `bottom`, `left`, `right`) and walk one edge at a time; after each edge, shrink the corresponding boundary inward. |
+| 2 | [Rotate Image](https://leetcode.com/problems/rotate-image/) | In-place 2D ops | Medium | Transpose first (swap `arr[i][j]` with `arr[j][i]` for `i < j`), then reverse each row. Two `O(n²)` passes, `O(1)` space. |
+| 3 | [Set Matrix Zeroes](https://leetcode.com/problems/set-matrix-zeroes/) | Marker rows/cols | Medium | Use the first row and first column as zero-flags; handle them last to avoid clobbering yourself. `O(1)` extra space. |
+| 4 | [Number of Islands](https://leetcode.com/problems/number-of-islands/) | Grid BFS/DFS | Medium | Scan the grid; when you hit a `1`, flood-fill it to `0` and increment the count. The 2D array is the implicit adjacency structure. |
+| 5 | [Word Search](https://leetcode.com/problems/word-search/) | Grid backtracking | Medium | DFS from every cell that matches `word[0]`; mark visited cells temporarily; restore on backtrack. The grid layout enables `O(1)` neighbour lookup. |
+
+These problems force you to combine the address-arithmetic model with directional walks (spiral, transpose, neighbour iteration). Once they feel automatic, you have internalised every 2D-grid move the rest of the book will ask of you.
+
+***
+
+# Further Reading
+
+Curated paths in, not a syllabus. Read in order of the annotation; come back for the rest when you need depth.
+
+- **[NumPy: Multidimensional Array Internals](https://numpy.org/doc/stable/dev/internals.html)**
+  ★ Essential — the canonical description of strides, dtypes, and views in the structure that defined the modern interface to multidimensional arrays.
+- **[Eli Bendersky — "Memory layout of multi-dimensional arrays"](https://eli.thegreenplace.net/2015/memory-layout-of-multi-dimensional-arrays)**
+  ★ Essential — clearest single article on row-major versus column-major; works through stride formulas with diagrams.
+- **[Ulrich Drepper — "What Every Programmer Should Know About Memory"](https://people.freebsd.org/~lstewart/articles/cpumemory.pdf)**
+  ◆ Advanced — Sections 3 and 6 cover cache behaviour for strided access patterns; explains *why* the column-major flip costs `5–10×` at the hardware level.
+- **[Intel Optimization Reference Manual — Cache and Memory Subsystem](https://www.intel.com/content/www/us/en/docs/intel-64-ia-32-architectures-optimization-manual.html)**
+  → Reference — the definitive source for cache line sizes, prefetch behaviour, and stride-sensitive performance on x86 hardware.
+- **[NumPy `stride_tricks` documentation](https://numpy.org/doc/stable/reference/routines.array-manipulation.html#kind-of-like-zip)**
+  ◆ Advanced — how to construct custom views into a buffer by manipulating strides directly; the moving-window trick that powers `as_strided`.
+
+***
+
+# Cross-Links
+
+**Prerequisites**
+
+- [Introduction to Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-introduction) — the 1D contiguous-block model and `address = base + size × index` that this lesson generalises.
+- [Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis) — why `O(m × n)` and `O(1)` per access are the right way to talk about multidimensional cost.
+
+**What comes next**
+
+- [Two Pointers](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers) — the first 1D pattern; the simplest place to feel why contiguous storage makes pointer walks free.
+- [Fixed Sliding Window](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-fixed-sliding-window) — extends the linear walk to a windowed `O(1)`-update view of the array.
+- [Hash Tables](/cortex/data-structures-and-algorithms/linear-structures-hash-table-introduction-to-hash-tables) — the next structure, built on a 1D array of buckets; the next place address arithmetic powers `O(1)` lookup.
+
+***
+
+## Final Takeaway
+
+1. **Core mechanic:** a multidimensional array is one contiguous buffer addressed by `address = base + Σ index_k × stride_k`, where each stride is the product of the inner dimensions' sizes.
+2. **Dominant tradeoff:** you gain `O(1)` access to any cell of any rank and the same cache-friendliness as 1D — but only if the loop order matches the storage order; mismatch it and the wall-clock cost can blow up `5–10×` while the Big-O stays put.
+3. **One thing to remember:** *row-major versus column-major decides which loop is the inner loop.* In row-major (C, Python, Java, NumPy default), the rightmost index varies fastest; in column-major (Fortran, MATLAB, BLAS), it is the leftmost.

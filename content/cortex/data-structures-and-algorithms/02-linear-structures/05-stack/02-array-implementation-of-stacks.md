@@ -1,3 +1,8 @@
+---
+title: "Array Implementation Of Stacks"
+summary: "<!-- TODO: summary -->"
+---
+
 # 2. Array Implementation of Stacks
 
 ## The Hook
@@ -182,7 +187,7 @@ cls: "Stack class" {
 ## Stack class — skeleton
 
 
-```python run
+```python run viz=array viz-root=arr
 class Stack:
     def __init__(self, capacity: int):
         self.capacity = capacity
@@ -787,7 +792,7 @@ flowchart LR
 
 ### Implementation
 
-```python run
+```python run viz=array viz-root=arr
 class Stack:
     def __init__(self, c): self.capacity, self.arr, self.top_idx = c, [0]*c, -1
     def empty(self): return self.top_idx == -1
@@ -865,7 +870,7 @@ Implement a `Stack` class with the operations from this lesson, backed by an arr
 The full implementation is exactly what we built incrementally above, in Python and Java.
 
 
-```python run
+```python run viz=array viz-root=arr
 from typing import Optional, List, Any
 
 class Stack:
@@ -1114,7 +1119,7 @@ Initial sentinels:
 
 
 
-```python run
+```python run viz=array viz-root=arr
 from typing import List
 
 class TwoStack:
@@ -1350,3 +1355,40 @@ Three lessons:
 > *Coming up — the **linked-list implementation**. The trade-off flips: no fixed capacity (push never fails for "full"), no resize cost ever, but every node is its own allocation and the memory layout is whatever the heap gives you. The same five operations, the same complexities, but a different set of trade-offs and a different "default choice" for different use cases.*
 
 </details>
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
+<!--       Guidance: bulleted list of gotchas -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->
+
+<!-- TODO: Final Takeaway — missing, needs to be written -->
+<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->

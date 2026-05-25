@@ -1,0 +1,292 @@
+{
+  "chapter": "03-trees/01-binary-tree",
+  "sweep": 3,
+  "pilot_approved": false,
+  "units": [
+    {
+      "id": "03-trees/01-binary-tree/lesson-01-introduction-to-binary-trees",
+      "type": "LESSON_UNIT",
+      "files": [
+        "03-trees/01-binary-tree/01-introduction-to-binary-trees.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "03-trees/01-binary-tree/lesson-02-array-implementation-of-binary-trees",
+      "type": "LESSON_UNIT",
+      "files": [
+        "03-trees/01-binary-tree/02-array-implementation-of-binary-trees.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "03-trees/01-binary-tree/lesson-03-linked-list-implementation-of-binary-trees",
+      "type": "LESSON_UNIT",
+      "files": [
+        "03-trees/01-binary-tree/03-linked-list-implementation-of-binary-trees.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "03-trees/01-binary-tree/lesson-04-recursive-traversals-in-binary-trees",
+      "type": "LESSON_UNIT",
+      "files": [
+        "03-trees/01-binary-tree/04-recursive-traversals-in-binary-trees.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "03-trees/01-binary-tree/lesson-05-iterative-traversals-in-binary-trees",
+      "type": "LESSON_UNIT",
+      "files": [
+        "03-trees/01-binary-tree/05-iterative-traversals-in-binary-trees.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "03-trees/01-binary-tree/lesson-06-constructing-a-binary-tree",
+      "type": "LESSON_UNIT",
+      "files": [
+        "03-trees/01-binary-tree/06-constructing-a-binary-tree.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "03-trees/01-binary-tree/lesson-07-insertion-in-binary-trees",
+      "type": "LESSON_UNIT",
+      "files": [
+        "03-trees/01-binary-tree/07-insertion-in-binary-trees.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "03-trees/01-binary-tree/chapter_memorize-08-memorize",
+      "type": "CHAPTER_MEMORIZE_UNIT",
+      "files": [
+        "03-trees/01-binary-tree/08-memorize.md"
+      ],
+      "status": "pending",
+      "blocked_by": [
+        "03-trees/01-binary-tree/lesson-01-introduction-to-binary-trees",
+        "03-trees/01-binary-tree/lesson-02-array-implementation-of-binary-trees",
+        "03-trees/01-binary-tree/lesson-03-linked-list-implementation-of-binary-trees",
+        "03-trees/01-binary-tree/lesson-04-recursive-traversals-in-binary-trees",
+        "03-trees/01-binary-tree/lesson-05-iterative-traversals-in-binary-trees",
+        "03-trees/01-binary-tree/lesson-06-constructing-a-binary-tree",
+        "03-trees/01-binary-tree/lesson-07-insertion-in-binary-trees"
+      ],
+      "todos_filled": 0,
+      "verify_flags": 0
+    },
+    {
+      "id": "03-trees/01-binary-tree/pattern-09-pattern-preorder-traversal-stateless",
+      "type": "PATTERN_UNIT",
+      "files": [
+        "03-trees/01-binary-tree/09-pattern-preorder-traversal-stateless/01-pattern.md",
+        "03-trees/01-binary-tree/09-pattern-preorder-traversal-stateless/02-problems/01-sum-of-path.md",
+        "03-trees/01-binary-tree/09-pattern-preorder-traversal-stateless/02-problems/02-depth-assignment.md",
+        "03-trees/01-binary-tree/09-pattern-preorder-traversal-stateless/02-problems/03-concatenated-path.md",
+        "03-trees/01-binary-tree/09-pattern-preorder-traversal-stateless/02-problems/04-increasing-path.md",
+        "03-trees/01-binary-tree/09-pattern-preorder-traversal-stateless/03-memorize.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "03-trees/01-binary-tree/pattern-10-pattern-preorder-traversal-stateful",
+      "type": "PATTERN_UNIT",
+      "files": [
+        "03-trees/01-binary-tree/10-pattern-preorder-traversal-stateful/01-pattern.md",
+        "03-trees/01-binary-tree/10-pattern-preorder-traversal-stateful/02-problems/01-duplicates-in-path.md",
+        "03-trees/01-binary-tree/10-pattern-preorder-traversal-stateful/02-problems/02-second-minimum.md",
+        "03-trees/01-binary-tree/10-pattern-preorder-traversal-stateful/02-problems/03-left-view.md",
+        "03-trees/01-binary-tree/10-pattern-preorder-traversal-stateful/02-problems/04-right-view.md",
+        "03-trees/01-binary-tree/10-pattern-preorder-traversal-stateful/03-memorize.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "03-trees/01-binary-tree/pattern-11-pattern-postorder-traversal-stateless",
+      "type": "PATTERN_UNIT",
+      "files": [
+        "03-trees/01-binary-tree/11-pattern-postorder-traversal-stateless/01-pattern.md",
+        "03-trees/01-binary-tree/11-pattern-postorder-traversal-stateless/02-problems/01-sum-of-leaves.md",
+        "03-trees/01-binary-tree/11-pattern-postorder-traversal-stateless/02-problems/02-height-of-a-binary-tree.md",
+        "03-trees/01-binary-tree/11-pattern-postorder-traversal-stateless/02-problems/03-maximum-root-to-leaf-path-sum.md",
+        "03-trees/01-binary-tree/11-pattern-postorder-traversal-stateless/02-problems/04-is-it-a-full-binary-tree.md",
+        "03-trees/01-binary-tree/11-pattern-postorder-traversal-stateless/02-problems/05-is-it-a-perfect-binary-tree.md",
+        "03-trees/01-binary-tree/11-pattern-postorder-traversal-stateless/02-problems/06-collect-leaves-by-height.md",
+        "03-trees/01-binary-tree/11-pattern-postorder-traversal-stateless/03-memorize.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "03-trees/01-binary-tree/pattern-12-pattern-postorder-traversal-stateful",
+      "type": "PATTERN_UNIT",
+      "files": [
+        "03-trees/01-binary-tree/12-pattern-postorder-traversal-stateful/01-pattern.md",
+        "03-trees/01-binary-tree/12-pattern-postorder-traversal-stateful/02-problems/01-diameter-of-tree.md",
+        "03-trees/01-binary-tree/12-pattern-postorder-traversal-stateful/02-problems/02-descendants-sum-count.md",
+        "03-trees/01-binary-tree/12-pattern-postorder-traversal-stateful/02-problems/03-distribute-coins.md",
+        "03-trees/01-binary-tree/12-pattern-postorder-traversal-stateful/02-problems/04-most-frequent-subtree-sum.md",
+        "03-trees/01-binary-tree/12-pattern-postorder-traversal-stateful/02-problems/05-longest-monotonic-path.md",
+        "03-trees/01-binary-tree/12-pattern-postorder-traversal-stateful/02-problems/06-monotonic-subtree-count.md",
+        "03-trees/01-binary-tree/12-pattern-postorder-traversal-stateful/02-problems/07-path-sum-count.md",
+        "03-trees/01-binary-tree/12-pattern-postorder-traversal-stateful/03-memorize.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "03-trees/01-binary-tree/pattern-13-pattern-root-to-leaf-path-stateless",
+      "type": "PATTERN_UNIT",
+      "files": [
+        "03-trees/01-binary-tree/13-pattern-root-to-leaf-path-stateless/01-pattern.md",
+        "03-trees/01-binary-tree/13-pattern-root-to-leaf-path-stateless/02-problems/01-root-to-leaf-path-sum-check.md",
+        "03-trees/01-binary-tree/13-pattern-root-to-leaf-path-stateless/02-problems/02-binary-summation-of-tree.md",
+        "03-trees/01-binary-tree/13-pattern-root-to-leaf-path-stateless/02-problems/03-even-path.md",
+        "03-trees/01-binary-tree/13-pattern-root-to-leaf-path-stateless/02-problems/04-odd-count.md",
+        "03-trees/01-binary-tree/13-pattern-root-to-leaf-path-stateless/03-memorize.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "03-trees/01-binary-tree/pattern-14-pattern-root-to-leaf-path-stateful",
+      "type": "PATTERN_UNIT",
+      "files": [
+        "03-trees/01-binary-tree/14-pattern-root-to-leaf-path-stateful/01-pattern.md",
+        "03-trees/01-binary-tree/14-pattern-root-to-leaf-path-stateful/02-problems/01-root-to-leaf-paths-summing-to-target.md",
+        "03-trees/01-binary-tree/14-pattern-root-to-leaf-path-stateful/02-problems/02-equal-evens-and-odds-paths.md",
+        "03-trees/01-binary-tree/14-pattern-root-to-leaf-path-stateful/02-problems/03-duplicate-paths.md",
+        "03-trees/01-binary-tree/14-pattern-root-to-leaf-path-stateful/02-problems/04-prefix-paths.md",
+        "03-trees/01-binary-tree/14-pattern-root-to-leaf-path-stateful/03-memorize.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "03-trees/01-binary-tree/pattern-15-pattern-level-order-traversal",
+      "type": "PATTERN_UNIT",
+      "files": [
+        "03-trees/01-binary-tree/15-pattern-level-order-traversal/01-pattern.md",
+        "03-trees/01-binary-tree/15-pattern-level-order-traversal/02-problems/01-level-sum.md",
+        "03-trees/01-binary-tree/15-pattern-level-order-traversal/02-problems/02-deepest-leaves-sum.md",
+        "03-trees/01-binary-tree/15-pattern-level-order-traversal/02-problems/03-complete-binary-tree-check.md",
+        "03-trees/01-binary-tree/15-pattern-level-order-traversal/02-problems/04-zigzag-traversal.md",
+        "03-trees/01-binary-tree/15-pattern-level-order-traversal/02-problems/05-cousin-check.md",
+        "03-trees/01-binary-tree/15-pattern-level-order-traversal/03-memorize.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "03-trees/01-binary-tree/pattern-16-pattern-level-order-traversal-columns",
+      "type": "PATTERN_UNIT",
+      "files": [
+        "03-trees/01-binary-tree/16-pattern-level-order-traversal-columns/01-pattern.md",
+        "03-trees/01-binary-tree/16-pattern-level-order-traversal-columns/02-problems/01-top-view.md",
+        "03-trees/01-binary-tree/16-pattern-level-order-traversal-columns/02-problems/02-bottom-view.md",
+        "03-trees/01-binary-tree/16-pattern-level-order-traversal-columns/02-problems/03-vertical-traversal.md",
+        "03-trees/01-binary-tree/16-pattern-level-order-traversal-columns/02-problems/04-diagonal-traversal.md",
+        "03-trees/01-binary-tree/16-pattern-level-order-traversal-columns/03-memorize.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "03-trees/01-binary-tree/pattern-17-pattern-lowest-common-ancestor",
+      "type": "PATTERN_UNIT",
+      "files": [
+        "03-trees/01-binary-tree/17-pattern-lowest-common-ancestor/01-pattern.md",
+        "03-trees/01-binary-tree/17-pattern-lowest-common-ancestor/02-problems/01-lowest-common-ancestor.md",
+        "03-trees/01-binary-tree/17-pattern-lowest-common-ancestor/02-problems/02-lca-with-existence-check.md",
+        "03-trees/01-binary-tree/17-pattern-lowest-common-ancestor/02-problems/03-lca-of-n-random-nodes.md",
+        "03-trees/01-binary-tree/17-pattern-lowest-common-ancestor/02-problems/04-lca-of-the-deepest-leaves.md",
+        "03-trees/01-binary-tree/17-pattern-lowest-common-ancestor/02-problems/05-distance-between-two-nodes.md",
+        "03-trees/01-binary-tree/17-pattern-lowest-common-ancestor/03-memorize.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "03-trees/01-binary-tree/pattern-18-pattern-simultaneous-traversal",
+      "type": "PATTERN_UNIT",
+      "files": [
+        "03-trees/01-binary-tree/18-pattern-simultaneous-traversal/01-pattern.md",
+        "03-trees/01-binary-tree/18-pattern-simultaneous-traversal/02-problems/01-identical-trees.md",
+        "03-trees/01-binary-tree/18-pattern-simultaneous-traversal/02-problems/02-symmetry-detection.md",
+        "03-trees/01-binary-tree/18-pattern-simultaneous-traversal/02-problems/03-subtree-detection.md",
+        "03-trees/01-binary-tree/18-pattern-simultaneous-traversal/02-problems/04-merge-trees.md",
+        "03-trees/01-binary-tree/18-pattern-simultaneous-traversal/03-memorize.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "03-trees/01-binary-tree/synthesis-19-pattern-synthesis",
+      "type": "SYNTHESIS_UNIT",
+      "files": [
+        "03-trees/01-binary-tree/19-pattern-synthesis.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "03-trees/01-binary-tree/standalone-18-practice-mix-traversals",
+      "type": "STANDALONE",
+      "files": [
+        "03-trees/01-binary-tree/18-practice-mix-traversals.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    }
+  ]
+}

@@ -1,3 +1,8 @@
+---
+title: "2D Binary Search"
+summary: "<!-- TODO: summary -->"
+---
+
 # 4. 2D Binary Search
 
 A spreadsheet of student scores: rows for students (sorted by ID), columns for assignments. The grader wants to find score `X`. Linear scan: `O(rows × cols)`. We just spent three lessons learning that for sorted *1D* arrays, binary search drops the cost to `O(log n)`. Can we apply binary search to a *2D* matrix and get `O(log(rows × cols))`?
@@ -153,7 +158,7 @@ The flattened-index trick: `mid → (mid / M, mid % M)`. Binary search the index
 # Implementation
 
 
-```python run
+```python run viz=array viz-root=matrix
 from typing import List
 
 class Solution:
@@ -370,3 +375,40 @@ The column-sorted-row-sorted-but-not-row-major-sorted matrix needs a different a
 **You just identified the structural difference between the two 2D search algorithms.**
 
 </details>
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: The Hook — missing, needs to be written -->
+<!--       Guidance: real-world story opening before any definition -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->
+
+<!-- TODO: Final Takeaway — missing, needs to be written -->
+<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->

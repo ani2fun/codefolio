@@ -246,3 +246,28 @@ Memory reclamation in lock-free code requires deliberate strategies. Three patte
 1. **GC solves this trivially in Java/Go; C/C++/Rust need explicit strategies.** Pick RCU for read-mostly, hazard pointers for mixed workloads.
 2. **The "free immediately" mistake is a use-after-free.** Lock-free structures *defer* freeing; the only question is by how long and via what mechanism.
 3. **The Linux kernel is the textbook example.** RCU is one of the kernel's most distinctive features. Reading its docs and source teaches you concurrent programming the way nothing else does.
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->

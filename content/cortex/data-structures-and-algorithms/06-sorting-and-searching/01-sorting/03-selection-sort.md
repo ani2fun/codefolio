@@ -1,3 +1,8 @@
+---
+title: "Selection Sort"
+summary: "<!-- TODO: summary -->"
+---
+
 # 3. Selection Sort
 
 Bubble sort moves elements *one position at a time*. Every misplaced element does its own slow walk to its correct spot, swap by swap. The result: `O(n²)` swaps in the worst case. **Selection sort fixes this with one observation: instead of bubbling, just scan the whole unsorted region, find the minimum, and put it directly in place.** One swap per pass. Same `O(n²)` comparisons, but `O(n)` swaps total.
@@ -201,7 +206,7 @@ The loop bounds — `i < n - 1` and `j ∈ [i + 1, n - 1]` — are exactly what'
 # Implementation
 
 
-```python run
+```python run viz=array viz-root=arr
 from typing import List
 
 class Solution:
@@ -458,7 +463,7 @@ Output: [1, 2, 3, 4, 5, 6]   (already sorted, but selection sort still runs all 
 The implementation is identical to the version above. Run it against a spread of inputs — duplicates, reverse-sorted, already-sorted, empty, single-element — to confirm it sorts every case in place.
 
 
-```python run
+```python run viz=array viz-root=arr
 from typing import List
 
 class Solution:
@@ -603,7 +608,7 @@ You came in with bubble sort as your only sorting tool. You're leaving with two 
 <details>
 <summary><strong>Answer — open after you've written it</strong></summary>
 
-```python run
+```python run viz=array viz-root=arr
 class Solution:
     def k_smallest(self, arr, k):
         n = len(arr)
@@ -624,3 +629,40 @@ The change: stop the outer loop after `k` passes instead of `n - 1`. Time comple
 This is the seed of the **Quickselect pattern** in the Quickselect lesson — except quickselect achieves `O(n)` on average instead of `O(n*k)`. **You just rediscovered partial sorting.** Real-world libraries (`numpy.partition`, `std::nth_element`) implement fast versions of exactly this.
 
 </details>
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: The Hook — missing, needs to be written -->
+<!--       Guidance: real-world story opening before any definition -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->
+
+<!-- TODO: Final Takeaway — missing, needs to be written -->
+<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->

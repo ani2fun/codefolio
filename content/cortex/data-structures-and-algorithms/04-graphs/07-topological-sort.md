@@ -1,3 +1,8 @@
+---
+title: "Topological Sort"
+summary: "<!-- TODO: summary -->"
+---
+
 # 7. Topological sort
 
 This lesson teaches you the algorithm that runs your **package manager**, your **build system**, your **task scheduler**, and your **course planner** — all of them are special cases of the same procedure: **topological sort**.
@@ -225,7 +230,7 @@ Starting at 4 first: DFS(4) → DFS(1) → finish 1 → finish 4. List = `[1, 4]
 We assume the input is a DAG; if you can't make that assumption, jump to the next section.
 
 
-```python run
+```python run viz=graph viz-root=graph
 from typing import List, Set
 
 class Solution:
@@ -434,7 +439,7 @@ The fix is mechanical: **fuse last lesson's directed-cycle check into the DFS**.
 The integration is clean: the same single DFS does both jobs in one pass — detects the cycle *and* builds the (potential) topological order. If a cycle is found, throw the partial result away.
 
 
-```python run
+```python run viz=graph viz-root=graph
 from typing import List, Set
 
 class Solution:
@@ -679,3 +684,40 @@ Use **Kahn's algorithm** (BFS-based topo sort). The set of nodes with indegree 0
 This converts a topological sort from a flat list into a level-by-level partition — exactly what real schedulers (Airflow's DAG executor, for instance) compute.
 
 </details>
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: The Hook — missing, needs to be written -->
+<!--       Guidance: real-world story opening before any definition -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
+<!--       Guidance: bulleted list of gotchas -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->

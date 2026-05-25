@@ -315,3 +315,25 @@ Divide-and-conquer turns `O(n²)` into `O(n log n)` (or even `O(n^1.585)`) by tr
 1. **Three steps, every time.** Divide, conquer, combine. The shape is identical; only the choice of `a`, `b`, and `f(n)` changes.
 2. **The combine step is where most thought goes.** The recursion is mechanical; the "merge two halves correctly" or "handle the cross-midpoint case" is where bugs live.
 3. **Master theorem closes the analysis.** Once the recurrence is in standard form, the closed-form complexity is one substitution away. No excuse for "I think this is `O(n log n)` but I'm not sure".
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->

@@ -1,0 +1,182 @@
+{
+  "chapter": "06-sorting-and-searching/02-searching",
+  "sweep": 3,
+  "pilot_approved": false,
+  "units": [
+    {
+      "id": "06-sorting-and-searching/02-searching/lesson-01-binary-search",
+      "type": "LESSON_UNIT",
+      "files": [
+        "06-sorting-and-searching/02-searching/01-binary-search.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "06-sorting-and-searching/02-searching/lesson-02-lower-bound",
+      "type": "LESSON_UNIT",
+      "files": [
+        "06-sorting-and-searching/02-searching/02-lower-bound.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "06-sorting-and-searching/02-searching/lesson-03-upper-bound",
+      "type": "LESSON_UNIT",
+      "files": [
+        "06-sorting-and-searching/02-searching/03-upper-bound.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "06-sorting-and-searching/02-searching/lesson-04-2d-binary-search",
+      "type": "LESSON_UNIT",
+      "files": [
+        "06-sorting-and-searching/02-searching/04-2d-binary-search.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "06-sorting-and-searching/02-searching/lesson-05-staircase-search",
+      "type": "LESSON_UNIT",
+      "files": [
+        "06-sorting-and-searching/02-searching/05-staircase-search.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "06-sorting-and-searching/02-searching/lesson-06-sorted-rotated-array",
+      "type": "LESSON_UNIT",
+      "files": [
+        "06-sorting-and-searching/02-searching/06-sorted-rotated-array.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "06-sorting-and-searching/02-searching/chapter_memorize-07-memorize",
+      "type": "CHAPTER_MEMORIZE_UNIT",
+      "files": [
+        "06-sorting-and-searching/02-searching/07-memorize.md"
+      ],
+      "status": "pending",
+      "blocked_by": [
+        "06-sorting-and-searching/02-searching/lesson-01-binary-search",
+        "06-sorting-and-searching/02-searching/lesson-02-lower-bound",
+        "06-sorting-and-searching/02-searching/lesson-03-upper-bound",
+        "06-sorting-and-searching/02-searching/lesson-04-2d-binary-search",
+        "06-sorting-and-searching/02-searching/lesson-05-staircase-search",
+        "06-sorting-and-searching/02-searching/lesson-06-sorted-rotated-array"
+      ],
+      "todos_filled": 0,
+      "verify_flags": 0
+    },
+    {
+      "id": "06-sorting-and-searching/02-searching/pattern-08-pattern-binary-search",
+      "type": "PATTERN_UNIT",
+      "files": [
+        "06-sorting-and-searching/02-searching/08-pattern-binary-search/01-pattern.md",
+        "06-sorting-and-searching/02-searching/08-pattern-binary-search/02-problems/01-recovery-validation.md",
+        "06-sorting-and-searching/02-searching/08-pattern-binary-search/02-problems/02-reverse-binary-search.md",
+        "06-sorting-and-searching/02-searching/08-pattern-binary-search/02-problems/03-minimum-shared-element.md",
+        "06-sorting-and-searching/02-searching/08-pattern-binary-search/02-problems/04-intersecting-elements.md",
+        "06-sorting-and-searching/02-searching/08-pattern-binary-search/03-memorize.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "06-sorting-and-searching/02-searching/pattern-09-pattern-lower-bound",
+      "type": "PATTERN_UNIT",
+      "files": [
+        "06-sorting-and-searching/02-searching/09-pattern-lower-bound/01-pattern.md",
+        "06-sorting-and-searching/02-searching/09-pattern-lower-bound/02-problems/01-search-insert-position.md",
+        "06-sorting-and-searching/02-searching/09-pattern-lower-bound/02-problems/02-first-and-last-position.md",
+        "06-sorting-and-searching/02-searching/09-pattern-lower-bound/02-problems/03-closest-element.md",
+        "06-sorting-and-searching/02-searching/09-pattern-lower-bound/02-problems/04-k-closest-elements.md",
+        "06-sorting-and-searching/02-searching/09-pattern-lower-bound/03-memorize.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "06-sorting-and-searching/02-searching/pattern-10-pattern-upper-bound",
+      "type": "PATTERN_UNIT",
+      "files": [
+        "06-sorting-and-searching/02-searching/10-pattern-upper-bound/01-pattern.md",
+        "06-sorting-and-searching/02-searching/10-pattern-upper-bound/02-problems/01-limit-count.md",
+        "06-sorting-and-searching/02-searching/10-pattern-upper-bound/02-problems/02-positive-index.md",
+        "06-sorting-and-searching/02-searching/10-pattern-upper-bound/02-problems/03-ceiling-index.md",
+        "06-sorting-and-searching/02-searching/10-pattern-upper-bound/02-problems/04-breaking-index.md",
+        "06-sorting-and-searching/02-searching/10-pattern-upper-bound/03-memorize.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "06-sorting-and-searching/02-searching/pattern-11-pattern-minimum-predicate-search",
+      "type": "PATTERN_UNIT",
+      "files": [
+        "06-sorting-and-searching/02-searching/11-pattern-minimum-predicate-search/01-pattern.md",
+        "06-sorting-and-searching/02-searching/11-pattern-minimum-predicate-search/02-problems/01-punctual-arrival-speed.md",
+        "06-sorting-and-searching/02-searching/11-pattern-minimum-predicate-search/02-problems/02-penalty-with-balls.md",
+        "06-sorting-and-searching/02-searching/11-pattern-minimum-predicate-search/02-problems/03-minimum-shipping-capacity.md",
+        "06-sorting-and-searching/02-searching/11-pattern-minimum-predicate-search/02-problems/04-trip-completion-frenzy.md",
+        "06-sorting-and-searching/02-searching/11-pattern-minimum-predicate-search/03-memorize.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "06-sorting-and-searching/02-searching/pattern-12-pattern-maximum-predicate-search",
+      "type": "PATTERN_UNIT",
+      "files": [
+        "06-sorting-and-searching/02-searching/12-pattern-maximum-predicate-search/01-pattern.md",
+        "06-sorting-and-searching/02-searching/12-pattern-maximum-predicate-search/02-problems/01-calculate-square-root.md",
+        "06-sorting-and-searching/02-searching/12-pattern-maximum-predicate-search/02-problems/02-build-staircase.md",
+        "06-sorting-and-searching/02-searching/12-pattern-maximum-predicate-search/02-problems/03-k-ribbons.md",
+        "06-sorting-and-searching/02-searching/12-pattern-maximum-predicate-search/02-problems/04-equalise-water.md",
+        "06-sorting-and-searching/02-searching/12-pattern-maximum-predicate-search/03-memorize.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "06-sorting-and-searching/02-searching/synthesis-13-pattern-synthesis",
+      "type": "SYNTHESIS_UNIT",
+      "files": [
+        "06-sorting-and-searching/02-searching/13-pattern-synthesis.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    }
+  ]
+}

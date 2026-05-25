@@ -77,7 +77,7 @@ For an alternative with more variance but better practical accuracy, "Conservati
 
 # Implementation
 
-```python run
+```python run viz=grid viz-root=table
 import hashlib
 
 class CountMinSketch:
@@ -302,3 +302,28 @@ Count-Min Sketch is the streaming frequency estimator. Three patterns to interna
 1. **Sublinear memory regardless of distinct items.** `d × w` cells; doesn't grow with stream cardinality.
 2. **Overestimation only.** The "min over d rows" gives the tightest upper bound. Underestimation is impossible.
 3. **The standard pair with Bloom filters.** Bloom: "is X in the set?". CMS: "how often is X in the stream?". Both probabilistic, both production-deployed, both tunable to your error budget.
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->

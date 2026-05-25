@@ -1,0 +1,303 @@
+{
+  "sweep": 3,
+  "created": "2026-05-25",
+  "pilot_approved": true,
+  "total_units": 261,
+  "completed_units": 34,
+  "chapters": [
+    {
+      "path": "01-foundations",
+      "shard": "01-foundations.json",
+      "units": 6,
+      "done": 6,
+      "status": "done"
+    },
+    {
+      "path": "02-linear-structures/01-arrays",
+      "shard": "02-linear-structures__01-arrays.json",
+      "units": 13,
+      "done": 13,
+      "status": "done"
+    },
+    {
+      "path": "02-linear-structures/03-singly-linked-list",
+      "shard": "02-linear-structures__03-singly-linked-list.json",
+      "units": 15,
+      "done": 15,
+      "status": "done"
+    },
+    {
+      "path": "02-linear-structures/04-doubly-linked-list",
+      "shard": "02-linear-structures__04-doubly-linked-list.json",
+      "units": 11,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "02-linear-structures/05-stack",
+      "shard": "02-linear-structures__05-stack.json",
+      "units": 14,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "02-linear-structures/06-queue",
+      "shard": "02-linear-structures__06-queue.json",
+      "units": 5,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "02-linear-structures/07-hash-table",
+      "shard": "02-linear-structures__07-hash-table.json",
+      "units": 13,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "03-trees/01-binary-tree",
+      "shard": "03-trees__01-binary-tree.json",
+      "units": 20,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "03-trees/02-binary-search-tree",
+      "shard": "03-trees__02-binary-search-tree.json",
+      "units": 15,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "03-trees/03-heap",
+      "shard": "03-trees__03-heap.json",
+      "units": 7,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "03-trees/04-trie",
+      "shard": "03-trees__04-trie.json",
+      "units": 2,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "03-trees/05-self-balancing-bst-overview",
+      "shard": "03-trees__05-self-balancing-bst-overview.json",
+      "units": 2,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "03-trees/06-avl-tree",
+      "shard": "03-trees__06-avl-tree.json",
+      "units": 2,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "03-trees/07-red-black-tree",
+      "shard": "03-trees__07-red-black-tree.json",
+      "units": 2,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "03-trees/08-b-tree",
+      "shard": "03-trees__08-b-tree.json",
+      "units": 2,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "03-trees/09-segment-tree",
+      "shard": "03-trees__09-segment-tree.json",
+      "units": 2,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "03-trees/10-fenwick-tree",
+      "shard": "03-trees__10-fenwick-tree.json",
+      "units": 2,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "03-trees/11-disjoint-set-union",
+      "shard": "03-trees__11-disjoint-set-union.json",
+      "units": 2,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "04-graphs",
+      "shard": "04-graphs.json",
+      "units": 17,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "04-graphs/13-pattern-depth-first-search",
+      "shard": "04-graphs__13-pattern-depth-first-search.json",
+      "units": 1,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "04-graphs/14-pattern-connected-components",
+      "shard": "04-graphs__14-pattern-connected-components.json",
+      "units": 1,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "04-graphs/15-pattern-two-colouring",
+      "shard": "04-graphs__15-pattern-two-colouring.json",
+      "units": 1,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "04-graphs/16-pattern-shortest-path-breadth-first-search",
+      "shard": "04-graphs__16-pattern-shortest-path-breadth-first-search.json",
+      "units": 1,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "04-graphs/17-pattern-shortest-path-dijkstra",
+      "shard": "04-graphs__17-pattern-shortest-path-dijkstra.json",
+      "units": 1,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "05-algorithms-by-strategy/01-recursion",
+      "shard": "05-algorithms-by-strategy__01-recursion.json",
+      "units": 9,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "05-algorithms-by-strategy/02-divide-and-conquer",
+      "shard": "05-algorithms-by-strategy__02-divide-and-conquer.json",
+      "units": 2,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "05-algorithms-by-strategy/03-greedy",
+      "shard": "05-algorithms-by-strategy__03-greedy.json",
+      "units": 2,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "05-algorithms-by-strategy/04-backtracking",
+      "shard": "05-algorithms-by-strategy__04-backtracking.json",
+      "units": 6,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "05-algorithms-by-strategy/05-dynamic-programming",
+      "shard": "05-algorithms-by-strategy__05-dynamic-programming.json",
+      "units": 21,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "05-algorithms-by-strategy/06-randomized-algorithms",
+      "shard": "05-algorithms-by-strategy__06-randomized-algorithms.json",
+      "units": 2,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "06-sorting-and-searching/01-sorting",
+      "shard": "06-sorting-and-searching__01-sorting.json",
+      "units": 14,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "06-sorting-and-searching/02-searching",
+      "shard": "06-sorting-and-searching__02-searching.json",
+      "units": 13,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "07-strings",
+      "shard": "07-strings.json",
+      "units": 9,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "08-bit-tricks/01-pattern-kth-bit",
+      "shard": "08-bit-tricks__01-pattern-kth-bit.json",
+      "units": 1,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "08-bit-tricks/02-pattern-set-bit-finder",
+      "shard": "08-bit-tricks__02-pattern-set-bit-finder.json",
+      "units": 1,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "08-bit-tricks/03-pattern-restructuring",
+      "shard": "08-bit-tricks__03-pattern-restructuring.json",
+      "units": 1,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "08-bit-tricks/04-pattern-xor",
+      "shard": "08-bit-tricks__04-pattern-xor.json",
+      "units": 1,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "08-bit-tricks/05-pattern-bitmasking",
+      "shard": "08-bit-tricks__05-pattern-bitmasking.json",
+      "units": 1,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "08-bit-tricks/06-pattern-applications",
+      "shard": "08-bit-tricks__06-pattern-applications.json",
+      "units": 1,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "09-probabilistic-and-advanced",
+      "shard": "09-probabilistic-and-advanced.json",
+      "units": 7,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "10-concurrency-and-systems",
+      "shard": "10-concurrency-and-systems.json",
+      "units": 6,
+      "done": 0,
+      "status": "pending"
+    },
+    {
+      "path": "11-dsa-in-real-systems",
+      "shard": "11-dsa-in-real-systems.json",
+      "units": 7,
+      "done": 0,
+      "status": "pending"
+    }
+  ]
+}

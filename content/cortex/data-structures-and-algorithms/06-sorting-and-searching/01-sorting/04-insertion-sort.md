@@ -1,3 +1,8 @@
+---
+title: "Insertion Sort"
+summary: "<!-- TODO: summary -->"
+---
+
 # 4. Insertion Sort
 
 You're holding a hand of playing cards, picked up one at a time. After grabbing the third card, you don't sort the whole hand — you just slide that one card into its right spot among the two you already had sorted. Pick up the fourth card; slide it in. Pick up the fifth; slide it in. By the time you've picked up all the cards, your hand is sorted, and you never did a "full sort" — you just inserted each new card where it belonged.
@@ -205,7 +210,7 @@ Insertion sort is `O(n²)` in the worst case but wins on best case (`O(n)`), ada
 The algorithm uses two nested loops: an outer loop that picks the next "key" from the unsorted suffix, and an inner loop that shifts larger elements right until the key's correct position is found.
 
 
-```python run
+```python run viz=array viz-root=arr
 from typing import List
 
 class Solution:
@@ -395,7 +400,7 @@ Output: [1, 2, 3, 4, 5, 6]   (already sorted, runs in O(n))
 The implementation matches the version above; reproduced below for completeness.
 
 
-```python run
+```python run viz=array viz-root=arr
 from typing import List
 
 class Solution:
@@ -548,7 +553,7 @@ Binary insertion sort uses binary search to find the insertion point in `O(log i
 
 But the *shifts* are still `O(n²)` — finding the insertion point doesn't help you avoid moving all the larger elements one position right. Total time stays `O(n²)`.
 
-```python run
+```python run viz=array viz-root=arr
 import bisect
 class Solution:
     def binary_insertion_sort(self, arr):
@@ -562,3 +567,40 @@ class Solution:
 This is the small but real reason `O(n log n)` algorithms (merge sort, quicksort) win for large inputs: they avoid the `O(n²)` shift cost by structurally rearranging the data, not by linear shuffling. **You just hit the wall that motivates divide-and-conquer.**
 
 </details>
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: The Hook — missing, needs to be written -->
+<!--       Guidance: real-world story opening before any definition -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->
+
+<!-- TODO: Final Takeaway — missing, needs to be written -->
+<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->

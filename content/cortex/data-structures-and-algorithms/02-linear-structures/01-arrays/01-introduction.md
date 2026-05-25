@@ -19,6 +19,8 @@ The array is the one data structure your CPU loves most. It is the storage shape
 
 This first lesson sets up the language: how memory actually works, why a single contiguous block is more useful than a hundred named variables, the operations every array supports, and the address-arithmetic formula that makes random access free. By the end, you should be able to predict — for any code that touches an array — whether it'll fly or crawl.
 
+> 🖼 Diagram — TODO: visual illustrating the hook's real-world scenario
+
 ---
 
 ## Table of contents
@@ -32,9 +34,10 @@ This first lesson sets up the language: how memory actually works, why a single 
 7. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
 8. [Production reality](#production-reality)
 9. [Practice ladder](#practice-ladder)
-10. [Memorize](#memorize)
-11. [Cross-links](#cross-links)
-12. [Final takeaway](#final-takeaway)
+10. [Quiz](#quiz)
+11. [Further reading](#further-reading)
+12. [Cross-links](#cross-links)
+13. [Final takeaway](#final-takeaway)
 
 ***
 
@@ -52,6 +55,7 @@ Let's start with a concrete example. You ask the CPU to compute `10 + 6`. It doe
 
 But here's the real question: **where does `16` go?**
 
+> 🖼 Diagram — The CPU can add two numbers and produce the result — but where is that result stored?
 ```mermaid
 ---
 config:
@@ -75,6 +79,7 @@ The CPU uses tiny internal slots called **registers** to hold values during comp
 
 RAM is its own chip on your motherboard. It doesn't compute anything — that's the CPU's job. Its entire purpose is to **store data** so it can be retrieved and updated later.
 
+> 🖼 Diagram — CPU computes. RAM stores. They are two separate chips on your motherboard.
 ```d2
 direction: right
 
@@ -124,6 +129,7 @@ The mental model is dead simple:
 
 > Imagine memory as a **long chain of numbered boxes**, starting at `0` and ending at `n - 1`, where `n` is the total number of boxes. That's it. This picture covers 99% of what you need when writing software.
 
+> 🖼 Diagram — Memory can be visualized as a linear sequence of numbered blocks.
 ```d2
 mem: Memory {
   grid-columns: 8
@@ -162,6 +168,7 @@ Storing data is easy. But how do you *find* it again?
 
 Each byte has a unique identifier based on its position — its **address**. It's just the index of the box, counting from 0.
 
+> 🖼 Diagram — Each cell is 1 byte (8 bits); its position number is its address. Highlighted cell sits at address = 3.
 ```d2
 mem: Memory {
   grid-columns: 6
@@ -197,6 +204,7 @@ When you run a program:
 3. The CPU reads instructions from memory **sequentially**, starting at the first address
 4. As it executes, the CPU reads data from memory, processes it, and writes results back
 
+> 🖼 Diagram — The CPU and memory are in constant conversation during execution.
 ```mermaid
 ---
 config:
@@ -248,7 +256,7 @@ But there's still a question we haven't answered: when you write `array[3]`, wha
 
 ---
 
-## Key Takeaways
+## Key Takeaway
 
 - RAM is a storage chip; the CPU is a computation chip — they're separate and work together
 - Everything in memory is stored as **binary (0s and 1s)**
@@ -267,6 +275,7 @@ When writing a program, we often need to store a **collection of related data it
 
 If there are only a few students, storing them in separate variables feels fine:
 
+> 🖼 Diagram — Using variables to store the ages of 3 students.
 ```d2
 students: {
   grid-columns: 3
@@ -283,6 +292,7 @@ Easy enough. Three students, three variables. Done.
 
 But what happens when the class has **hundreds of students**? Now you need hundreds of variables:
 
+> 🖼 Diagram — Using variables to store ages of 108 students.
 ```d2
 students: {
   grid-rows: 4
@@ -370,6 +380,7 @@ Let's break that definition down:
 
 Visually, an array looks like a row of labelled boxes, all the same size, sitting side by side:
 
+> 🖼 Diagram — An array data structure.
 ```d2
 direction: right
 
@@ -411,6 +422,7 @@ ageStudent3 = 13
 
 You create **one** array that holds all the ages:
 
+> 🖼 Diagram — Storing the ages of students in a class in an array.
 ```d2
 ages: ages {
   grid-columns: 7
@@ -462,6 +474,7 @@ Now that we know the logical representation of an array, let's examine how to **
 
 The syntax and rules for creating an array depend on the programming language. An array with a fixed size cannot be modified after creation, and all data items in an array must be of the same type.
 
+> 🖼 Diagram — Creating an array of fixed size and datatype.
 ```d2
 arr: array {
   grid-columns: 5
@@ -534,6 +547,7 @@ An array is a collection of data items stored in **contiguous memory**. This lay
 >
 > Array indices represent an element's **relative** position from the array's beginning. The first element is 0 steps away from the start, the second is 1 step away, and so on. This is not a convention — it's a direct reflection of how address arithmetic works in memory.
 
+> 🖼 Diagram — Array elements are accessed via their indices.
 ```d2
 arr: array {
   grid-rows: 2
@@ -593,6 +607,7 @@ public class Main {
 
 Elements in an array can be modified in place, just like variables. To update a value, use `array[index]` on the left side of the assignment operator.
 
+> 🖼 Diagram — Array elements can be modified via their indices (highlighted = being updated).
 ```d2
 arr: array {
   grid-rows: 2
@@ -664,6 +679,7 @@ Traversal is one of the most common operations on an array. It is the **only** w
 
 The pointer starts at index `0` and steps forward one cell at a time until it reaches the end:
 
+> ▶ Interactive Diagram — Traversing an array using a loop control variable index. Use Prev/Next/Play to step through.
 ```d3 widget=array-traversal
 {
   "items": ["1", "2", "3", "4", "5"],
@@ -795,6 +811,7 @@ Array elements are accessed using indices because arrays are stored **contiguous
 
 Memory in RAM is logically organized as a sequence of blocks, each **1 byte (8 bits)** long. Every block has a unique identifier — its **address** — which is simply its relative position from the start (starting from 0).
 
+> 🖼 Diagram — Memory is logically organized as a linear sequence of byte-sized cells. Highlighted cell sits at address = 3.
 ```d2
 mem: Memory {
   grid-columns: 8
@@ -826,6 +843,7 @@ The address of the memory block where an array starts is called the array's **ba
 
 Here's what an array of 5 integers looks like in memory, with a base address of `2` and each `int` occupying **4 bytes**:
 
+> 🖼 Diagram — Structure of an array in memory — base address = 2, each int spans 4 bytes. The first element starts at the base address (highlighted).
 ```d2
 arr: array {
   grid-rows: 3
@@ -943,6 +961,7 @@ Now that we know how an array is stored in memory, let's walk through a **comple
 
 Given below is the logical representation of an integer array with 5 data items:
 
+> 🖼 Diagram — Logical representation of an integer array with 5 data items.
 ```d2
 direction: right
 
@@ -971,6 +990,7 @@ decl -> arr: logical representation
 
 We map the array into memory starting at **base address 2**. Because this is an integer array, we consider the size of each data item to be **4 bytes** for this example.
 
+> 🖼 Diagram — An array of 5 integers mapped into continuous memory starting at address 2 (highlighted = base).
 ```d2
 arr: array {
   grid-rows: 3
@@ -1008,6 +1028,7 @@ When we write `array[2]` or `array[3]`, the program uses the formula we learned 
 
 The program already knows the base address and the size of the data type — this is all it needs. Let's see it in action for two accesses:
 
+> 🖼 Diagram — Calculating the address for array[2] and array[3] using the subscript operator.
 ```d2
 c2: |md
   **array[2]**<br/>`2 + (2 × 4) = 10`
@@ -1051,6 +1072,7 @@ The program knows the type of data stored in the array (integer, in our case). S
 
 > **Dereferencing:** Accessing the value stored at the memory address held by a pointer. The pointer's data type determines how many bytes to read and how to interpret them.
 
+> 🖼 Diagram — Dereferencing: reading the value at the calculated address using the datatype to determine how many bytes to interpret.
 ```d2
 direction: right
 
@@ -1073,6 +1095,7 @@ a3 -> v4: read 4 bytes at addr 14
 
 Here's the full sequence of what happens every time you write `array[i]`:
 
+> 🖼 Diagram — The full pipeline for a single array element access.
 ```mermaid
 ---
 config:
@@ -1155,182 +1178,105 @@ The array is the simplest data structure in this book and somehow ships with the
 
 # Production Reality
 
-The array's range goes from "the smallest helper inside a leetcode solution" to "the storage layer of every database in the world". The five places below are worth knowing by name.
+The array's range goes from "the smallest helper inside a leetcode solution" to "the storage layer of every database in the world". The six places below are worth knowing by name.
 
-- **NumPy's `ndarray`** ([source](https://github.com/numpy/numpy/blob/main/numpy/_core/src/multiarray/arrayobject.c)) — the workhorse of scientific computing. A single contiguous C array with a *strides* descriptor on top, so multi-dimensional indexing, slicing, and broadcasting all reduce to address-arithmetic in C with no Python overhead per element. Every PyTorch tensor, every Pandas column, every scikit-learn model parameter is a NumPy array under the hood. The reason "`for x in array: process(x)` is slow but `np.process(array)` is fast" is exactly this: vectorised ops walk the contiguous buffer in tight C; Python loops pay an interpreter dispatch per element.
-- **Redis ziplist / listpack** ([listpack.c](https://github.com/redis/redis/blob/unstable/src/listpack.c)) — small Redis lists, hashes, and sorted sets are stored as a single packed array of variable-length entries instead of a real linked list / hash table. Below ~128 entries, the cache wins of the array layout beat the asymptotic wins of the "proper" structure. The threshold (`list-max-listpack-size`, `hash-max-listpack-entries`) is configurable — Redis literally chooses the array form for the small case and switches structure when it grows.
-- **Postgres B-tree pages** ([nbtsearch.c](https://github.com/postgres/postgres/blob/master/src/backend/access/nbtree/nbtsearch.c)) — every page in the index is a fixed-size buffer (8 KB by default) containing a sorted *array* of `(key, tuple-pointer)` entries, with binary search inside the page. Walking the B-tree is a chain of array binary-searches, one per level. The page-as-array model is what makes a database index lookup feel instant on tables of a billion rows.
-- **The Linux VFS dispatch table** (`struct file_operations` — [include/linux/fs.h](https://github.com/torvalds/linux/blob/master/include/linux/fs.h)) — a fixed array of function pointers (`open`, `read`, `write`, `llseek`, …). Every `read()` syscall does a one-step pointer-array lookup to find the right driver function. Same trick used by every C++ vtable, every COM interface, every JVM virtual-method dispatch — under the hood, it's an array of pointers.
-- **LMAX Disruptor / ring buffers in trading systems** ([disruptor design paper](https://lmax-exchange.github.io/disruptor/disruptor.html)) — high-throughput message-passing inside a single process uses a pre-allocated array as a ring buffer, with reader/writer cursors held as atomic integers. No allocations on the hot path; cache-line-aligned slots; no contention except where it's mathematically necessary. The reason it can do six million messages per second per thread is *not* a clever algorithm; it's the absence of allocator calls and pointer-chasing.
-- **Java's `HashMap` bucket table** ([HashMap.java](https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/java/util/HashMap.java)) — the `Node<K,V>[] table` field is just an array. The map "is" a hash table because of how the array is *used*; the underlying storage is the same primitive we've been discussing. Same story for Python's dict (a hash table backed by an array of `PyDictKeyEntry`), Go's map, every standard library on every platform.
+**[NumPy's `ndarray`]** — uses **a contiguous C buffer with a strides descriptor** — because vectorised math needs zero per-element interpreter overhead.
+
+A single contiguous C array sits under every multi-dimensional shape, with a *strides* descriptor on top so indexing, slicing, and broadcasting all reduce to address arithmetic. Every PyTorch tensor, every Pandas column, every scikit-learn model parameter ultimately bottoms out here. The reason `for x in array: process(x)` is slow but `np.process(array)` is fast is exactly this: vectorised ops walk the contiguous buffer in tight C; Python loops pay an interpreter dispatch per element. Source: [arrayobject.c](https://github.com/numpy/numpy/blob/main/numpy/_core/src/multiarray/arrayobject.c).
+
+**[Redis ziplist / listpack]** — uses **a packed array of variable-length entries** — because the cache wins of contiguous memory beat asymptotic wins below ~128 entries.
+
+Small Redis lists, hashes, and sorted sets are stored as one packed array instead of a real linked list or hash table. Below the configured threshold (`list-max-listpack-size`, `hash-max-listpack-entries`), the cache locality of the array form wins outright. Redis literally chooses the array layout for the small case and switches structure only when it grows past the threshold. Source: [listpack.c](https://github.com/redis/redis/blob/unstable/src/listpack.c).
+
+**[Postgres B-tree pages]** — uses **a sorted array of `(key, tuple-pointer)` entries per page** — because binary search over a cache-friendly buffer beats pointer-chasing per node.
+
+Every page in the index is a fixed-size buffer (8 KB by default) holding a sorted array of entries, with binary search inside the page. Walking the B-tree becomes a chain of array binary searches, one per level. The page-as-array model is what makes an index lookup feel instant on tables of a billion rows. Source: [nbtsearch.c](https://github.com/postgres/postgres/blob/master/src/backend/access/nbtree/nbtsearch.c).
+
+**[The Linux VFS dispatch table]** — uses **a fixed array of function pointers** — because a one-step indexed lookup is the fastest possible polymorphic dispatch.
+
+`struct file_operations` is an array of function pointers — `open`, `read`, `write`, `llseek`, and the rest. Every `read()` syscall does a one-step pointer-array lookup to find the right driver function. The same trick powers every C++ vtable, every COM interface, every JVM virtual-method dispatch — under the hood, it is an array of pointers. Source: [include/linux/fs.h](https://github.com/torvalds/linux/blob/master/include/linux/fs.h).
+
+**[LMAX Disruptor / ring buffers in trading systems]** — uses **a pre-allocated array as a ring buffer** — because eliminating allocator calls and pointer-chasing pushes throughput past six million messages per second per thread.
+
+High-throughput message passing inside a single process uses a pre-allocated array with reader and writer cursors held as atomic integers. No allocations on the hot path; cache-line-aligned slots; no contention except where it is mathematically necessary. The throughput win is not a clever algorithm — it is the absence of allocator calls and pointer-chasing. Source: [disruptor design paper](https://lmax-exchange.github.io/disruptor/disruptor.html).
+
+**[Java's `HashMap` bucket table]** — uses **`Node<K,V>[] table` — a plain array of bucket pointers** — because hash tables fundamentally require O(1) indexed dispatch from a hash code to a bucket.
+
+The map "is" a hash table because of how the array is *used*; the underlying storage is the same primitive we have been discussing. Same story for Python's dict (a hash table backed by an array of `PyDictKeyEntry`), Go's map, and every standard library on every platform. Source: [HashMap.java](https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/java/util/HashMap.java).
 
 ***
 
 # Practice Ladder
 
-Five problems, easiest first. Each one has a hint — try the problem unaided first, hit the hint only if you've been stuck for ten minutes, and don't peek at solutions until you've made the array *do something* in code.
+Five problems, easiest first. Try each unaided; hit the hint only after ten minutes stuck; don't peek at solutions until you've made the array *do something* in code.
 
-1. **Two Sum** ([LeetCode 1](https://leetcode.com/problems/two-sum/)) — given an unsorted array of integers and a target, return the indices of the two numbers that add up to the target.
-   > *Hint:* the brute-force `O(n²)` nested loop is the wrong move. As you scan, build a hash map from `value → index`. For each `x`, check whether `target − x` is already in the map. Single pass, `O(n)`.
+| # | Problem | Pattern | Difficulty | Hint |
+|---|---------|---------|------------|------|
+| 1 | [Two Sum](https://leetcode.com/problems/two-sum/) | [Two Pointers Reduction](./05-pattern-two-pointers-reduction/02-problems/01-two-sum.md) | Easy | Scan once, build a `value → index` hash map. For each `x`, check whether `target − x` is already in the map. One pass, `O(n)`. |
+| 2 | [Best Time to Buy and Sell Stock](https://leetcode.com/problems/best-time-to-buy-and-sell-stock/) | [Variable Sliding Window](./09-pattern-variable-sliding-window/01-pattern.md) | Easy | Track `min_price_so_far` as you scan. At each day, candidate profit is `price − min_price_so_far`. Answer is the max. |
+| 3 | [Rotate Array](https://leetcode.com/problems/rotate-array/) | [Two Pointers](./04-pattern-two-pointers/01-pattern.md) | Medium | Reversal trick: reverse the whole array, then the first `k`, then the remaining `n − k`. Three reversals, `O(n)` time, `O(1)` space. Don't forget `k %= n`. |
+| 4 | [Container With Most Water](https://leetcode.com/problems/container-with-most-water/) | [Two Pointers Reduction](./05-pattern-two-pointers-reduction/02-problems/04-largest-container.md) | Medium | Start one pointer at each end. Area is `min(height[L], height[R]) × (R − L)`. Move the *shorter* pointer inward — the taller one can only decrease the area. |
+| 5 | [Trapping Rain Water](https://leetcode.com/problems/trapping-rain-water/) | [Two Pointers Reduction](./05-pattern-two-pointers-reduction/01-pattern.md) | Hard | Water above bar `i` is `min(max_left[i], max_right[i]) − height[i]`. Three passes give `O(n)` time, `O(n)` space; the two-pointer variant compresses to `O(1)` space. |
 
-2. **Best Time to Buy and Sell Stock** ([LeetCode 121](https://leetcode.com/problems/best-time-to-buy-and-sell-stock/)) — given an array of daily prices, find the maximum profit from one buy and one sell (buy first, sell later).
-   > *Hint:* one pass. Track `min_price_so_far` as you scan; at each day, candidate profit is `price − min_price_so_far`. The answer is the max of those candidates.
-
-3. **Rotate Array** ([LeetCode 189](https://leetcode.com/problems/rotate-array/)) — rotate an array of length `n` to the right by `k` steps, in place, using `O(1)` extra space.
-   > *Hint:* the *reversal trick*. Reverse the entire array, then reverse the first `k` elements, then reverse the remaining `n − k`. Total: three reversals, `O(n)` time, `O(1)` space. Don't forget `k %= n`.
-
-4. **Container With Most Water** ([LeetCode 11](https://leetcode.com/problems/container-with-most-water/)) — given heights of vertical lines, find two lines that, with the x-axis, form the container holding the most water.
-   > *Hint:* two-pointer. Start one pointer at each end. The container's area is `min(height[L], height[R]) × (R − L)`. Move the *shorter* pointer inward — moving the taller one can only ever decrease the area. Single pass, `O(n)`.
-
-5. **Trapping Rain Water** ([LeetCode 42](https://leetcode.com/problems/trapping-rain-water/)) — given heights, compute how much rainwater would be trapped in the valleys between bars.
-   > *Hint:* the water above bar `i` is `min(max_left[i], max_right[i]) − height[i]`. Precompute the two arrays in one pass each, then a third pass sums the trapped water. `O(n)` time, `O(n)` space; if you want `O(1)` space, the two-pointer variant tracks running maxes from both ends.
-
-Once these feel automatic, you've internalised every move the array's two-pointer / prefix-sum / sliding-window vocabulary asks of you — and you're ready for the patterns chapters that name and reuse them.
+Once these feel automatic, you have internalised every move the two-pointer, prefix-sum, and sliding-window vocabularies will ask of you — ready for the pattern chapters that name and reuse them.
 
 ***
 
-# Memorize
+# Quiz
 
-The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Reading the chapter once builds understanding; cementing the items below is what makes recall fast.
+Test your grip before moving on. One answer per question; reveal only after you have committed to one.
 
-## Quick recall
+**[Recall] Q: Given an integer array with base address `100` and 4-byte ints, what is the address of `arr[7]`?**
+`100 + 4 × 7 = 128`.
 
-Click any question to reveal the answer.
+**[Recall] Q: What is the worst-case time complexity of inserting a value at the middle of an array of length `n`?**
+`O(n)` — every element from the insertion index onward shifts one slot to the right.
 
-<details>
-<summary><strong>Q:</strong> Worst-case complexity of <code>arr[i]</code> read or write?</summary>
+**[Reasoning] Q: Why is `arr[i]` `O(1)` regardless of how large `i` is?**
+The address `base + size × i` is one multiplication and one addition; the cost does not depend on `i` or on `n`, so access is constant time.
 
-**A:** `O(1)`. One multiplication and one addition compute the address; one memory read or write completes the access.
+**[Reasoning] Q: Why are arrays cache-friendly in real wall-clock terms, not just in Big-O?**
+Contiguous memory plus fixed element size lets the CPU's hardware prefetcher predict and fetch the next cache line before the program asks for it; linked structures fight this at every pointer hop.
 
-</details>
-<details>
-<summary><strong>Q:</strong> Worst-case complexity of inserting at the middle of an array of length <code>n</code>?</summary>
+**[Tradeoff] Q: When does a dynamic array (`list.append`, `ArrayList.add`) hide an `O(n)` step inside its "`O(1)`" promise, and how do you avoid it in latency-critical code?**
+The promise is *amortised* `O(1)` — every full buffer triggers an `O(n)` resize-and-copy. Pre-size the array (`[0] * n`, `new ArrayList<>(n)`) when you know the final size to skip the resize hiccups entirely.
 
-**A:** `O(n)`. Every element from the insertion index to the end shifts one slot to the right.
+***
 
-</details>
-<details>
-<summary><strong>Q:</strong> Worst-case complexity of <code>arr.append(x)</code> on a *dynamic* array?</summary>
+# Further Reading
 
-**A:** `O(n)` worst-case (the resize step), but `O(1)` *amortised* across many appends. The doubling strategy means total resize work is `O(n)` for `n` appends.
+Curated paths in, not a syllabus. Read in order of the annotation; come back for the rest when you need depth.
 
-</details>
-<details>
-<summary><strong>Q:</strong> Why are array indices zero-based?</summary>
-
-**A:** The address formula `addr = base + size × index` lands on the first element when `index = 0`. Starting at `1` would skip the base address and require a subtraction in the formula.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Address of element at index <code>i</code> in an int array of base address <code>B</code> with 4-byte ints?</summary>
-
-**A:** `B + 4 × i`.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Why are arrays so cache-friendly?</summary>
-
-**A:** Contiguous memory + fixed element size means the CPU's hardware prefetcher can predict the next cache line and fetch it before you ask for it. Linked structures fight this at every step.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Difference between Python's <code>list</code> and <code>array.array</code>?</summary>
-
-**A:** `list` is an array of `PyObject*` pointers — heterogeneous, every element a heap-allocated boxed object. `array.array` is a typed primitive array (one contiguous buffer of `int`s, `float`s, etc.) with no boxing. NumPy's `ndarray` is the same idea, generalised to N dimensions.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Difference between row-major and column-major layout?</summary>
-
-**A:** Row-major (C, Python, Java) stores `arr[i][j]` and `arr[i][j+1]` in adjacent memory. Column-major (Fortran, MATLAB) stores `arr[i][j]` and `arr[i+1][j]` adjacently. Loop order matters — iterate the *innermost* dimension fastest for cache locality.
-
-</details>
-<details>
-<summary><strong>Q:</strong> What does it mean for a Python <code>list</code> slice vs a NumPy slice?</summary>
-
-**A:** `list[1:5]` allocates a *copy*. `numpy[1:5]` returns a *view* — same underlying buffer, mutations write through.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Pre-size pattern in Python / Java to avoid resize hiccups?</summary>
-
-**A:** `arr = [0] * n` (Python) or `new ArrayList<>(n)` (Java) — pre-allocates the backing buffer so subsequent appends don't trigger reallocation.
-
-</details>
-
-## Code template
-
-```python
-# The four core operations, plus the patterns that compose them.
-
-# Create
-arr = [0] * n                                 # pre-sized, zero-initialised
-arr = [i for i in range(n)]                   # comprehension
-
-# Access / modify — both O(1)
-x = arr[i]
-arr[i] = x
-
-# Traverse
-for i in range(len(arr)):       do(arr[i])    # index-based
-for x in arr:                   do(x)          # value-only
-for i, x in enumerate(arr):     do(i, x)       # both
-
-# Two-pointer (sorted array)
-left, right = 0, len(arr) - 1
-while left < right:
-    if condition(arr[left], arr[right]):
-        left += 1                              # or right -= 1, depending on the move
-    else:
-        right -= 1
-
-# Sliding window (variable-size subarray)
-left = 0
-for right in range(len(arr)):
-    expand(arr[right])
-    while not_valid():
-        contract(arr[left])
-        left += 1
-    record_window(left, right)
-
-# Prefix sum — O(n) build, O(1) range query
-prefix = [0] * (len(arr) + 1)
-for i in range(len(arr)):
-    prefix[i + 1] = prefix[i] + arr[i]
-range_sum_i_to_j = prefix[j + 1] - prefix[i]
-```
-
-## Pattern triggers
-
-- **Find a pair / triplet that sums to a target** → hash map (`O(n)`) or sort + two-pointer (`O(n log n)`)
-- **Subarray with max / min sum** → Kadane, sliding window
-- **Range sum / range count queries on a static array** → prefix sum (`O(1)` per query after `O(n)` build)
-- **Find duplicates in `O(1)` extra space** → in-place sign flipping, or cyclic sort if values are `1..n`
-- **`k`-th smallest / largest** → quickselect (`O(n)` average), or heap (`O(n log k)`)
-- **Rotate by `k` in place** → reversal trick (`O(n)` time, `O(1)` space)
-- **Two sorted arrays** → two-pointer merge
-- **Anything across a *sorted* array** → binary search or two-pointer first; only fall back to a linear scan if neither fits
-- **Histogram / count of values** → bucket array if value range is small (counting sort, frequency map)
-- **Sliding window over a stream** → ring buffer (fixed-size array + two cursors)
+- **[CLRS — Chapter 10: Elementary Data Structures](https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/)**
+  ★ Essential — the canonical reference for arrays, stacks, and queues; the abstract definitions every other source builds on.
+- **[Ulrich Drepper — "What Every Programmer Should Know About Memory"](https://people.freebsd.org/~lstewart/articles/cpumemory.pdf)**
+  ◆ Advanced — explains *why* contiguous memory is fast at the hardware level. Cache lines, prefetchers, NUMA, all the way down.
+- **[Bjarne Stroustrup — "Why you should avoid linked lists" (GoingNative 2012)](https://www.youtube.com/watch?v=YQs6IC-vgmo)**
+  ★ Essential — a 30-second clip that turns the cache-locality argument into a concrete benchmark; the punchline lands harder than any textbook chart.
+- **[NumPy internals: the `ndarray` object](https://numpy.org/doc/stable/reference/arrays.ndarray.html)**
+  → Reference — how strides, dtypes, and views are layered over the contiguous buffer; the doc to keep open when reading NumPy source.
+- **[Python `list` implementation — `listobject.c`](https://github.com/python/cpython/blob/main/Objects/listobject.c)**
+  ◆ Advanced — the canonical "dynamic array of `PyObject*` pointers" implementation, including the growth factor (`new_allocated = (size_t)newsize + (newsize >> 3) + 6`) that gives the amortised `O(1)` append its real-world shape.
 
 ***
 
 # Cross-Links
 
-- **Prerequisite:** [Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis) — what `O(1)`, `O(n)`, and `amortised O(1)` mean, and how to derive them from a loop.
-- **Next chapter:** [Multidimensional Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-multidimensional) — extending the address formula to 2D and beyond, with row-major vs column-major in detail.
-- **Patterns built on this chapter:** [Two Pointers](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers), [Sliding Window](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-fixed-sliding-window), [Prefix Sum](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-prefix-sum) — the three idioms you'll see in nine out of ten array problems.
-- **Related structure:** [Hash Tables](/cortex/data-structures-and-algorithms/linear-structures-hash-table-introduction-to-hash-tables) — backed by an array of buckets; the "trade `O(n²)` for `O(n)` with a hash map" move comes up constantly in array problems.
-- **Production deep dive (stub):** [Redis Internal Encodings](/cortex/data-structures-and-algorithms/dsa-in-real-systems-redis-internal-encodings) — where the array form (ziplist / listpack) wins over the "proper" structure for small collections.
+**Prerequisites**
+
+- [Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis) — what `O(1)`, `O(n)`, and `amortised O(1)` mean, and how to derive them from a loop.
+
+**What comes next**
+
+- [Multidimensional Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-multidimensional) — the address formula extended to 2D and beyond, with row-major vs column-major in detail.
+- [Two Pointers](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers) — the first major traversal pattern that the array's contiguous layout unlocks.
+- [Fixed Sliding Window](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-fixed-sliding-window) — the second traversal pattern; an `O(1)` extension of two pointers over a windowed subarray.
+- [Hash Tables](/cortex/data-structures-and-algorithms/linear-structures-hash-table-introduction-to-hash-tables) — the next structure, itself backed by an array of buckets; the "trade `O(n²)` for `O(n)` with a hash map" move shows up constantly.
 
 ***
 
 ## Final Takeaway
 
-The array is one contiguous block of same-sized cells, addressable by index in `O(1)`, and the storage layer behind every other data structure in this book. Three patterns to internalise:
-
-1. **Contiguous memory + fixed element size = `O(1)` random access.** That single fact is the entire reason arrays exist. The address formula `base + size × index` is one multiplication and one addition; the CPU evaluates it in a single cycle. No scanning, no searching, no pointer-chasing.
-2. **The trade-off is rigid shape.** Cheap access, but expensive insertion and deletion in the middle (`O(n)` shifts). When you find yourself inserting in the middle of a loop, you've written quadratic code — reach for a linked list, a deque, or a different algorithmic shape.
-3. **Cache locality is the secret weapon.** Arrays are not just fast in Big-O terms; they're fast in *real wall-clock* terms because the CPU prefetcher can predict the next cache line. A linked list of a million pointer-chased nodes is 50× slower than an array of a million ints for the same conceptual work — same Big-O, vastly different reality.
-
-Master those three moves and the rest of this curriculum — every data structure, every pattern, every trade-off — has its floor.
+1. **Core mechanic:** an array is a contiguous block of same-sized cells, addressable by index in `O(1)` time via `address = base + size × index`.
+2. **Dominant tradeoff:** you gain constant-time random access and cache-friendly traversal; you give up cheap middle insertion and deletion (both `O(n)` shifts) and the freedom to mix element types or grow without reallocating.
+3. **One thing to remember:** every other data structure in this book is either built on top of an array or exists to work around one of its limitations — so understanding the array is the floor for understanding everything that follows.

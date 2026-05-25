@@ -1,3 +1,8 @@
+---
+title: "Detecting Cycle In Singly Linked Lists"
+summary: "Floyd's tortoise-and-hare algorithm — two pointers at different speeds detect a cycle in O(n) time and O(1) space, then a second phase locates the cycle's entry node."
+---
+
 # 5. Detecting Cycle in Singly Linked Lists
 
 ## The Hook
@@ -15,6 +20,17 @@ Floyd came up with something better. His algorithm uses **two pointers**, no has
 1. [Understanding Floyd's cycle finding algorithm](#understanding-floyds-cycle-finding-algorithm)
 2. [Detect cycle](#detect-cycle)
 3. [Remove loop](#remove-loop)
+4. [Understanding the problem](#understanding-the-problem)
+5. [Supported operations](#supported-operations)
+6. [Internal mechanics](#internal-mechanics)
+7. [Working example](#working-example)
+8. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
+9. [Production reality](#production-reality)
+10. [Quiz](#quiz)
+11. [Practice ladder](#practice-ladder)
+12. [Further reading](#further-reading)
+13. [Cross-links](#cross-links)
+14. [Final takeaway](#final-takeaway)
 
 ***
 
@@ -514,7 +530,7 @@ Given the **head** of a linked list, write a function to detect if there is a c
 
 
 
-```python run
+```python run viz=linked-list viz-root=head
 from typing import Optional, Tuple
 
 
@@ -719,7 +735,7 @@ n3.next -> n2.value: "loop back (X=2)"
 
 
 
-```python run
+```python run viz=linked-list viz-root=head
 from typing import Optional
 
 
@@ -979,24 +995,264 @@ public class Main {
 ```
 
 </details>
-<details>
-<summary><h2>Final Takeaway</h2></summary>
+***
 
+# Understanding the Problem
 
-Floyd's algorithm is one of the most elegant algorithms in all of computer science. Two pointers, different speeds, and O(1) extra memory solve what naïvely needs a hash set. Three ideas are worth burning into memory:
+A singly linked list is *supposed* to terminate. Walk `head`, then `head.next`, then `head.next.next`, and eventually you land on a node whose `.next` is `null`. Every loop you have written so far — traversal, search, length, insertion, deletion — depends on that `null` to halt.
 
-1. **Different speeds converge inside loops, diverge outside them.** The fast pointer either laps the slow one (cycle) or falls off (no cycle). There is no third outcome — the algorithm *cannot* wrongly report a cycle.
-2. **The reset-and-walk trick locates the cycle start.** After the first collision, reset `fast` to `head` and walk both at the same speed. The math — `a ≡ m mod n` — guarantees they re-meet at the cycle's entrance.
-3. **Two pointers + different speeds is a pattern, not just a trick.** You'll see it again in "find the middle node", "k-th from the end", "palindrome detection", and every fast-slow problem in the next pattern chapter. The two-speed walk is the Swiss Army knife of singly-linked-list algorithms.
+A **cycle** breaks that invariant. Some node's `.next` points back into the chain instead of to `null`. The list now has no tail, and the standard `while (cur != null)` loop runs forever.
 
-When you next see "detect", "find cycle start", "find middle", or any problem that needs to infer structure from a one-way chain — reach for two pointers at different speeds first.
+The question this lesson answers has two layers:
 
-> **Transfer Challenge:** Given a linked list known to have a cycle, return the **length** of the cycle. Can you do it in O(n) time and O(1) space using only Floyd's-style pointers?
->
-> <details><summary><strong>Solution hint</strong></summary>
->
-> After the first collision (phase 1), keep <code>slow</code> at the meeting point and walk it one step at a time, counting ticks, until you come back to the same node. The tick count is the cycle length. Total cost: one extra loop over the cycle only — O(n) time, O(1) space.
->
-> </details>
+- **Detection** — given only `head`, decide whether the list contains a cycle, without looping forever yourself.
+- **Localisation** — if a cycle exists, find the exact node where it *begins* (the node multiple `.next` references point to).
 
-</details>
+To make this concrete: on `5 → 7 → 3 → 10 → 6 → (back to 3)`, the cycle's entry is the node holding `3` — the node where the tail's `.next` re-enters. Detection says "yes, a cycle exists". Localisation returns the node holding `3`.
+
+So the key idea is: cycle detection is not just defensive programming — it is the precondition for *fixing* the structure (cutting the back-edge to restore a proper `null` terminator) and for any algorithm that needs to know whether a one-way chain is finite.
+
+---
+
+### Why the obvious answer is wrong
+
+The first instinct is a **hash set**: walk the list, push every node into a `Set`, and return `true` the first time you try to push a node that is already there. It works, in O(n) time. But it spends O(n) extra memory on a problem that turns out to need none.
+
+Floyd's algorithm is the canonical proof that O(1) space is achievable here. Two pointers at different speeds extract the same information the hash set extracts — *has this node already been visited?* — using only the structural property of a cycle: **inside a cycle, two pointers moving at different speeds must eventually collide.**
+
+So the tradeoff is: the hash-set solution is one line shorter, but Floyd's pays nothing in extra space. On a list of ten million nodes, the difference is hundreds of megabytes versus two pointer-sized variables.
+
+---
+
+## Key Takeaway
+
+A cycle replaces the tail's `null` with a back-edge. Every traversal-based operation breaks until you either prove there is no cycle or cut the back-edge — and the cheapest tool for both jobs is Floyd's two-pointer walk.
+
+***
+
+# Supported Operations
+
+Cycle detection is itself a small family of operations, all built on the same two-pointer scaffold. The table below names them and pins their cost, so you can pick the right one when a problem says "this list might be cyclic".
+
+| Operation | Time | Space | Why |
+|---|---|---|---|
+| **Detect cycle (yes/no)** | O(n) | O(1) | Phase 1 of Floyd's — fast laps slow inside the loop, or falls off the end |
+| **Find cycle start (entry node)** | O(n) | O(1) | Phase 1 to collide, then reset `fast` to `head` and walk both at speed 1 until they re-meet |
+| **Find cycle length** | O(n) | O(1) | After phase 1, walk one pointer one step at a time around the loop until it returns; count the steps |
+| **Remove cycle (restore `null` tail)** | O(n) | O(1) | Find the cycle start, then walk to the node whose `.next` is the start and set it to `null` |
+| **Detect cycle (hash-set version)** | O(n) | O(n) | Push every node into a set; first duplicate push signals a cycle |
+
+Two patterns explain the whole table.
+
+- **Floyd's gives you O(1) space for every cycle-related question** — detection, entry, length, removal. The hash-set version trades O(n) memory for one fewer line of code.
+- **Every operation here decomposes into "phase 1 (collide) → phase 2 (locate)"** — even cycle length, where phase 2 is the same `slow` pointer walking one more lap, counting nodes.
+
+To make this concrete: a linked list with a million nodes and a cycle near the tail uses 16 MB of memory under the hash-set approach (8 bytes per pointer × 2 million entries with hash overhead). Floyd's uses 16 bytes total — two pointers, regardless of list size.
+
+So the core insight is: once you can collide two pointers inside a cycle, every other cycle-related question reduces to a constant number of further walks over the same list.
+
+---
+
+## Key Takeaway
+
+Floyd's algorithm is the *single primitive* behind every cycle-related operation on a singly linked list. Master phase 1, then layer phase 2 (or its lap-counting variant) on top.
+
+***
+
+# Internal Mechanics
+
+The whole algorithm rests on two facts about one-way chains: a `null`-terminated list has a definite end, and a cyclic chain does not. From those two facts, the two-pointer walk becomes inevitable.
+
+The structural facts the algorithm exploits:
+
+- **Slow advances one node per tick.** It cannot overshoot any node; whatever the slow pointer reaches, the algorithm has had time to observe.
+- **Fast advances two nodes per tick.** It enters the cycle (if one exists) faster than slow does, then runs strictly faster inside the cycle.
+- **Inside a cycle, the gap between `fast` and `slow` shrinks by exactly one each tick.** Modulo the cycle's length, the gap monotonically converges to zero — they must collide.
+- **Outside a cycle, `fast` falls off the end first.** It hits `null` after roughly `n/2` ticks; slow has only reached the middle.
+
+So the core insight is: the algorithm cannot misfire. There is no third outcome between "fast hits `null`" (no cycle) and "fast meets slow" (cycle). The structure guarantees one of the two within a bounded number of ticks.
+
+---
+
+### Why the meeting point isn't the cycle's entry
+
+When `slow` and `fast` first collide, they collide *somewhere inside* the loop — not necessarily at the entry. The meeting node depends on where slow happened to enter the cycle and on the cycle's length.
+
+The phase-2 trick — reset `fast` to `head`, advance both at speed 1 — exploits a small piece of modular arithmetic. Let `a` be the distance from `head` to the cycle's entry, `n` the cycle's length, and `x` the distance from the entry to the meeting point. The first collision happens when `2 × (a + x) = a + x + k·n` for some integer `k`, which simplifies to `a = k·n − x`. That equation says: walking `a` steps from `head` and walking `a` steps forward from the meeting point both land on the same node — the cycle's entry. The full geometric proof is the next section.
+
+So the tradeoff is: phase 2 looks magical, but it is one identity in modular arithmetic — and that identity is what turns "we collided somewhere inside the loop" into "here is the entry".
+
+---
+
+### Why fast-then-slow ordering matters
+
+The standard form checks `fast != null && fast.next != null` before advancing. Both checks are essential — `fast` makes a *double* hop per tick, so it must touch the node after its current one. Skip the second check and `fast.next.next` crashes on the penultimate node of a `null`-terminated list.
+
+Reversing the order — advance first, then check — runs the body once *past* the end on cycle-free lists. The dereference of `fast.next.next` would either crash (Python, Java) or read garbage (C). The "check first, advance second" shape is not stylistic; it is the only ordering that survives every linked-list shape.
+
+---
+
+## Key Takeaway
+
+Floyd's algorithm works because of two structural facts and one modular identity. The slow/fast pair *must* collide inside a cycle; phase 2's reset *must* land on the cycle's entry; and the dual null-check guards every double-hop. Internalise the three and the loop writes itself.
+
+***
+
+# Working Example
+
+To make the algorithm concrete, trace it on `5 → 7 → 3 → 10 → 6 → (back to 3)` — a five-node list whose tail loops back to the third node. The cycle's length is `n = 3` (nodes 3, 10, 6), and the lead-in distance is `a = 2` (nodes 5, 7).
+
+**Phase 1 — detection.** Both pointers start at `head` (node 5). Each tick, `slow` advances one node, `fast` advances two.
+
+| Tick | `slow` | `fast` | Notes |
+|---|---|---|---|
+| 0 — init | 5 | 5 | Both at `head` |
+| 1 | 7 | 3 | Slow +1, fast +2 |
+| 2 | 3 | 6 | Slow now inside the cycle; fast is at the tail node |
+| 3 | 10 | 10 | Fast wraps via the cycle edge → collision |
+
+Three ticks. The collision node is `10` — *not* the cycle's entry. That is the whole point of phase 2.
+
+**Phase 2 — locate the entry.** Reset `fast` to `head`. Advance both at speed 1.
+
+| Tick | `fast` | `slow` | Notes |
+|---|---|---|---|
+| 0 — init | 5 | 10 | Fast back at head; slow stays at the collision |
+| 1 | 7 | 6 | Both +1 |
+| 2 | 3 | 3 | Slow wraps via cycle edge → collision at node 3 |
+
+Two ticks. The re-collision is at node 3 — the cycle's entry. That matches the input: the tail's `.next` points to node 3.
+
+To make this concrete:
+
+- phase 1 takes `O(a + n)` ticks — at most one full lap of the cycle plus the lead-in
+- phase 2 takes exactly `a` ticks — the lead-in distance, which is also (by the identity in *Internal Mechanics*) the distance from the meeting point to the cycle's entry
+- total: `O(a + n)` = `O(n)`, with two pointer-sized variables
+
+So the key idea is: every phase-1 collision sits at a known modular offset from the cycle's entry, and phase 2 walks off that offset in exactly the same number of steps as `head → entry`.
+
+---
+
+## Key Takeaway
+
+Two pointers, three ticks to collide, two more ticks to locate the entry — on a five-node list with a three-node cycle. The numbers grow with `n`, but the shape of the trace does not.
+
+***
+
+# Edge Cases and Pitfalls
+
+The algorithm is short and ships with a long list of small bugs. The list below catches the ones every reviewer eventually develops a reflex for.
+
+- **Empty list — `head` is `null`.** Both pointers start at `null`; the `while (fast != null && fast.next != null)` test fails immediately. Return "no cycle" without ever entering the loop. Forget the entry guard and you dereference `null` on the first iteration.
+- **Single node with no self-loop.** `head.next` is `null`. The loop's second guard `fast.next != null` short-circuits the body; correct behaviour is "no cycle". This is the most common "I only tested with cycles" miss.
+- **Single node with a self-loop (`head.next == head`).** On the first tick `slow = head`, `fast = head.next = head` — they collide on tick 1. Phase 2 immediately re-collides at `head`, which *is* the cycle's entry. Correct, but easy to miss in test design.
+- **Cycle entry is `head` itself.** Lead-in `a = 0`. Phase 1 still produces a valid collision; phase 2's first tick before either pointer advances is already the answer — the reset puts `fast` at `head`, slow is somewhere in the loop, and they re-meet at `head` after walking `n` steps. The implementation must handle the `slow == head` case explicitly when *removing* the cycle (the `Remove Loop` solution above does this).
+- **Very long lead-in, very short cycle.** A million-node list with a three-node cycle at the tail. Phase 1 takes ~500k ticks before slow even enters the cycle. The algorithm still runs in O(n), but profiling will look spiky compared to the hash-set version. Worth knowing if a benchmark surprises you.
+- **Confusing "meeting point" with "cycle start".** The single most common bug. Phase-1's collision is *not* the entry — that is what phase 2 exists to find. Returning the phase-1 meeting point as the cycle start fails on every test case where the entry is not the meeting point (which is almost all of them).
+- **Forgetting the `fast.next` guard.** Writing `while (fast != null)` and then dereferencing `fast.next.next` crashes the moment `fast` lands on the penultimate node of a cycle-free list. The double guard `fast != null && fast.next != null` is non-negotiable.
+- **Calling the algorithm on a list you already destroyed.** Some "remove cycle" implementations mutate `.next` during detection. If a later call expects the cycle to still exist, it will not. Treat detection and mutation as separate phases — and document which one the function performs.
+- **Hash-set version's overhead in GC'd languages.** Pushing every node into a `Set` is O(n) memory *plus* the boxing/hash-bucket cost in Java/Python. For ten million nodes, that is several hundred megabytes. Floyd's stays at two pointers regardless. <!-- VERIFY: HashSet<Node> in OpenJDK 21 allocates ~48 bytes per entry on top of the node itself. -->
+- **Recursive variants.** A recursive cycle detector would have to memoise visited nodes — collapsing back to O(n) space and a stack overflow risk on long lists. The iterative two-pointer form is the only one that scales.
+
+***
+
+# Production Reality
+
+Cycle detection is rarely the headline feature of a system, but it sits on the safety-critical path of several big ones. The five places below put it on a load-bearing edge.
+
+**[Git's reachability traversal in `git gc`]** — uses **Floyd's-style cycle detection on the commit/tree/blob DAG** — because a corrupted pack file or a buggy hook can introduce a cycle, and the garbage collector must finish even when its input violates the "DAG" assumption.
+
+When `git gc` walks references to mark live objects, it carries cycle-guard logic so a malformed object graph does not produce an infinite loop. The walk uses the same "two pointers, different speeds" insight to prove finiteness without an O(n) visited-set. Source: [revision.c](https://github.com/git/git/blob/master/revision.c).
+
+**[The JVM garbage collector — reference cycles in `Reference` chains]** — uses **graph traversal with explicit cycle handling** — because Java's `WeakReference`, `SoftReference`, and `PhantomReference` chains can form cycles that the GC must collect without recursing forever.
+
+The GC's reference processor walks per-type reference queues; cycles among references (a `Reference` whose referent is itself a `Reference`) are detected via marking, but the algorithmic shape is the same constant-space cycle guard discussed in this lesson. Source: [referenceProcessor.cpp](https://github.com/openjdk/jdk/blob/master/src/hotspot/share/gc/shared/referenceProcessor.cpp).
+
+**[Linux's L2 bridging — Spanning Tree Protocol]** — uses **cycle detection over the network graph** — because two switches with a redundant link form an L2 loop that broadcasts every frame infinitely, melting the network in seconds.
+
+STP runs BPDU exchanges so each switch knows whether forwarding a frame would close a cycle; the algorithm is graph-theoretic cycle detection on a distributed graph. The same insight that Floyd's exploits — a cycle exists if and only if two walks at different speeds collide — generalises to STP's bridge-port states. Source: [net/bridge/br_stp.c](https://github.com/torvalds/linux/blob/master/net/bridge/br_stp.c).
+
+**[Random number generator quality testing — Pollard's rho algorithm]** — uses **Floyd's tortoise-and-hare directly** — because the period of a pseudo-random sequence is the length of the cycle in its state graph, and Floyd's finds it in O(period) time with O(1) memory.
+
+Cryptographic and statistical libraries use Pollard's rho (literally Floyd's algorithm under another name) to factor integers and to measure the period of a PRNG. The mathematical core is identical to the lesson's two-pointer walk; only the "next" function differs. Source: [GMP `mpz_pollard_rho`](https://gmplib.org/manual/Integer-Algorithms).
+
+**[Compilers — strongly connected component detection in optimisation passes]** — uses **graph cycle detection on the call graph or dataflow graph** — because loop-invariant code motion and inlining decisions depend on whether a function (or basic block) is in a cycle.
+
+LLVM's loop-analysis pass identifies natural loops by detecting back-edges in the control-flow graph; the back-edge is exactly the kind of cycle Floyd's would find on a linearised version of the same graph. Source: [LoopInfo.cpp](https://github.com/llvm/llvm-project/blob/main/llvm/lib/Analysis/LoopInfo.cpp).
+
+***
+
+# Quiz
+
+Force the answer to surface before reading the response — that is the test of whether the algorithm is internalised.
+
+**[Recall] Q: What are the time and space complexities of Floyd's cycle-finding algorithm?**
+O(n) time and O(1) space — two pointer-sized variables regardless of list length.
+
+**[Recall] Q: After phase 1 detects a cycle, where does the second phase start the `fast` pointer?**
+At `head` — phase 2 resets `fast` and advances both pointers one step at a time until they re-meet at the cycle's entry.
+
+**[Reasoning] Q: Why must `slow` and `fast` collide inside a cycle, rather than just passing each other?**
+Inside a cycle, the gap between them shrinks by exactly one node per tick (fast gains one step on slow). Since the gap is a non-negative integer, it must hit zero — they land on the same node simultaneously.
+
+**[Reasoning] Q: Why is the phase-1 meeting point not the cycle's entry node?**
+The meeting point depends on where `slow` enters the cycle and on the cycle's length, not on the entry itself. The meeting node sits at a known modular offset (`n − k`) from the entry, which is what the phase-2 reset exploits.
+
+**[Tradeoff] Q: When would you reach for the O(n)-space hash-set version of cycle detection instead of Floyd's?**
+When you also need the *set* of visited nodes as a by-product (e.g. you are about to delete them all), or when the implementation language makes pointer comparison awkward and the readability win of `if (node in seen)` outweighs the O(n) memory cost.
+
+***
+
+# Practice Ladder
+
+Five problems, easiest first. Each one extends Floyd's two-pointer scaffold — same algorithm shape, different visit step or termination check.
+
+| # | Problem | Pattern | Difficulty | Hint |
+|---|---------|---------|------------|------|
+| 1 | [Linked List Cycle](https://leetcode.com/problems/linked-list-cycle/) | [Fast and Slow Pointers](./10-pattern-fast-and-slow-pointers/01-pattern.md) | Easy | Phase 1 only — slow +1, fast +2 each tick. Return `true` on collision; return `false` when fast hits `null`. |
+| 2 | [Middle of the Linked List](https://leetcode.com/problems/middle-of-the-linked-list/) | [Fast and Slow Pointers](./10-pattern-fast-and-slow-pointers/02-problems/01-middle-node-search.md) | Easy | Same scaffold without phase 2. When fast falls off the end, slow sits at the middle. One pass, O(n) time, O(1) space. |
+| 3 | [Linked List Cycle II](https://leetcode.com/problems/linked-list-cycle-ii/) | [Fast and Slow Pointers](./10-pattern-fast-and-slow-pointers/01-pattern.md) | Medium | The full two-phase Floyd's. Detect with phase 1, locate the entry with phase 2's reset-and-walk. |
+| 4 | [Palindrome Linked List](https://leetcode.com/problems/palindrome-linked-list/) | [Fast and Slow Pointers](./10-pattern-fast-and-slow-pointers/02-problems/04-palindrome-checker.md) | Easy | Find the middle (problem 2), reverse the back half, then walk both halves comparing values. Three traversals stacked — O(n) time, O(1) space. |
+| 5 | [Happy Number](https://leetcode.com/problems/happy-number/) | [Fast and Slow Pointers](./10-pattern-fast-and-slow-pointers/01-pattern.md) | Easy | Floyd's on an *implicit* graph — the "next" function is sum-of-squared-digits. Collision means a cycle (not happy); `fast == 1` means terminated (happy). |
+
+Once these feel reflexive, you have rehearsed every variation the fast-and-slow pattern chapter will demand.
+
+***
+
+# Further Reading
+
+Curated paths in. The annotation tells you which to open first.
+
+- **[CLRS — Chapter 22.3: Depth-First Search (back-edge / cycle detection)](https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/)**
+  ★ Essential — the general-graph version of cycle detection; reading it after this lesson clarifies why linear-chain cycles only need two pointers while general graphs need DFS bookkeeping.
+- **[Donald Knuth — *The Art of Computer Programming, Vol. 2*, §3.1, exercise 6](https://www-cs-faculty.stanford.edu/~knuth/taocp.html)**
+  ◆ Advanced — the original published treatment of Floyd's algorithm (with the canonical proof). Worth reading once to see the modular-arithmetic identity laid out formally.
+- **[Brent's algorithm — an O(n) cycle-finder with better constants](https://maths-people.anu.edu.au/~brent/pub/pub051.html)**
+  ◆ Advanced — a refinement of Floyd's that fast-pointer-jumps in powers of two; same complexity class, faster in practice for long cycles. Read after Floyd's clicks.
+- **[Pollard's rho — Floyd's algorithm applied to integer factorisation](https://en.wikipedia.org/wiki/Pollard%27s_rho_algorithm)**
+  → Reference — the most famous non-linked-list use of the algorithm. Shows that "two pointers, different speeds" works on any function with a finite image.
+- **[Java's `LinkedList.contains` — why it doesn't have a cycle guard](https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/java/util/LinkedList.java)**
+  → Reference — the JDK assumes its own linked list is well-formed; reading the source shows what production code skips when it controls both ends of the structure.
+
+***
+
+# Cross-Links
+
+**Prerequisites**
+
+- [Introduction to Singly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-introduction-to-singly-linked-lists) — the node, the `.next` pointer, and the tail's `null` invariant that cycles break.
+- [Traversal in Singly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-traversal-in-singly-linked-lists) — the single-pointer walk that Floyd's algorithm doubles up.
+
+**What comes next**
+
+- [Fast and Slow Pointers (pattern)](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-fast-and-slow-pointers) — the pattern this lesson sets up; cycle detection is its archetypal problem, but the same scaffold solves "middle node", "k-th from end", and "palindrome check".
+- [Singly Linked Lists — Memorize](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-memorize) — the chapter's distilled crib sheet; cycle detection lives there as the canonical O(1)-space algorithm.
+- [Pattern Synthesis](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-synthesis) — the chapter-end map of which pattern to reach for when; Floyd's anchors the fast-and-slow row.
+
+***
+
+# Final Takeaway
+
+1. **Core mechanic:** advance two pointers from `head` — slow by one node per tick, fast by two — and either fast falls off the end (no cycle) or they collide inside the loop; a phase-2 reset of `fast` to `head` then locates the cycle's entry by walking both at speed 1.
+2. **Dominant tradeoff:** O(n) time and O(1) space, versus the hash-set version's O(n) time and O(n) space — Floyd's pays nothing for the memory win except a small amount of cleverness in the proof.
+3. **One thing to remember:** the phase-1 meeting point is *not* the cycle's entry; the reset-and-walk trick exists precisely because `a ≡ (n − x) mod n` turns "we collided somewhere inside the loop" into "here is the entry".

@@ -1,3 +1,8 @@
+---
+title: "Upper Bound"
+summary: "<!-- TODO: summary -->"
+---
+
 # 3. Upper Bound
 
 Lower bound found the first element `>= target`. **Upper bound finds the first element strictly `> target`.** One operator changed; the rest of the algorithm is identical. The use case differs: lower bound gives you "where would I insert this if I want it before equal values"; upper bound gives you "where would I insert this if I want it after equal values."
@@ -330,7 +335,7 @@ The next lesson lifts binary search from 1D to 2D: searching a sorted matrix. **
 <details>
 <summary><strong>Answer — open after you've thought about it</strong></summary>
 
-```python run
+```python run viz=array viz-root=arr
 class Solution:
     def first_and_last(self, arr, target):
         first = self.lower_bound(arr, target)
@@ -363,3 +368,40 @@ print(Solution().first_and_last([1, 2, 3], 5))         # [-1, -1]
 Two `O(log n)` calls. The check `arr[first] != target` distinguishes "target absent" from "target present" — lower bound returns the same value (the insertion position) in both cases, so we have to compare. **You just rediscovered LeetCode #34, "Find First and Last Position of Element in Sorted Array."**
 
 </details>
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: The Hook — missing, needs to be written -->
+<!--       Guidance: real-world story opening before any definition -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->
+
+<!-- TODO: Final Takeaway — missing, needs to be written -->
+<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->

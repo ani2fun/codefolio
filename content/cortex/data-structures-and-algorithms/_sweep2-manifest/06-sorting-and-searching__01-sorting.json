@@ -1,0 +1,175 @@
+{
+  "chapter": "06-sorting-and-searching/01-sorting",
+  "sweep": 2,
+  "pilot_approved": true,
+  "files": [
+    {
+      "path": "content/cortex/data-structures-and-algorithms/06-sorting-and-searching/01-sorting/01-introduction-to-sorting.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 11,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/06-sorting-and-searching/01-sorting/02-bubble-sort.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 11,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/06-sorting-and-searching/01-sorting/03-selection-sort.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 11,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/06-sorting-and-searching/01-sorting/04-insertion-sort.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 11,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/06-sorting-and-searching/01-sorting/05-counting-sort.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 11,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/06-sorting-and-searching/01-sorting/06-quicksort.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 11,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/06-sorting-and-searching/01-sorting/07-dutch-national-flag-sort.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 11,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/06-sorting-and-searching/01-sorting/08-three-way-quicksort.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 11,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/06-sorting-and-searching/01-sorting/09-merge-sort.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 11,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/06-sorting-and-searching/01-sorting/10-heapsort.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 11,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/06-sorting-and-searching/01-sorting/11-memorize.md",
+      "type": "CHAPTER_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 0,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/06-sorting-and-searching/01-sorting/12-pattern-quickselect/01-pattern.md",
+      "type": "PATTERN",
+      "status": "done",
+      "placeholders_inserted": 11,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/06-sorting-and-searching/01-sorting/13-pattern-custom-compare/01-pattern.md",
+      "type": "PATTERN",
+      "status": "done",
+      "placeholders_inserted": 11,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/06-sorting-and-searching/01-sorting/12-pattern-quickselect/02-problems/01-kth-smallest-element.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 8,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/06-sorting-and-searching/01-sorting/12-pattern-quickselect/02-problems/02-median-finder.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 8,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/06-sorting-and-searching/01-sorting/12-pattern-quickselect/02-problems/03-k-closest-elements.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 8,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/06-sorting-and-searching/01-sorting/12-pattern-quickselect/02-problems/04-k-most-frequent-elements.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 8,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/06-sorting-and-searching/01-sorting/13-pattern-custom-compare/02-problems/01-bitwise-sort.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/06-sorting-and-searching/01-sorting/13-pattern-custom-compare/02-problems/02-sort-characters-by-frequency.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/06-sorting-and-searching/01-sorting/13-pattern-custom-compare/02-problems/03-largest-number.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/06-sorting-and-searching/01-sorting/13-pattern-custom-compare/02-problems/04-sort-people-by-height.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 8,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/06-sorting-and-searching/01-sorting/12-pattern-quickselect/03-memorize.md",
+      "type": "PATTERN_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/06-sorting-and-searching/01-sorting/13-pattern-custom-compare/03-memorize.md",
+      "type": "PATTERN_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/06-sorting-and-searching/01-sorting/14-pattern-synthesis.md",
+      "type": "PATTERN_SYNTHESIS",
+      "status": "done",
+      "placeholders_inserted": 0,
+      "flags": 0
+    }
+  ]
+}

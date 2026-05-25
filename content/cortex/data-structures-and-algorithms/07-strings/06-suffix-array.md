@@ -99,7 +99,7 @@ Each binary search comparison takes `O(m)` (compare `P` to `S[SA[mid]..SA[mid] +
 
 # Implementation
 
-```python run
+```python run viz=array viz-root=lcp
 def build_sa(s):
     """O(n² log n) naive construction — fine for educational use."""
     n = len(s)
@@ -336,3 +336,28 @@ The suffix array is the compact representation of every suffix of a string. Thre
 1. **Sorted suffixes are surprisingly powerful.** Substring search, longest repeated substring, distinct substring counting — all reduce to scans over SA + LCP.
 2. **The LCP array is the secret sauce.** Without LCP, SA is just a sorted list. With LCP, it answers a dozen string queries in linear time.
 3. **Production-grade construction is non-trivial.** Naive `O(n² log n)` is fine for educational use. Real systems use SA-IS, DC3, or library implementations to hit `O(n)` or `O(n log n)` on multi-million-character inputs.
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->

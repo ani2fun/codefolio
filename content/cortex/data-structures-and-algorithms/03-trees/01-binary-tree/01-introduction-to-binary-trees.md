@@ -1,3 +1,8 @@
+---
+title: "Introduction To Binary Trees"
+summary: "<!-- TODO: summary -->"
+---
+
 # 1. Introduction to Binary Trees
 
 ## The Hook
@@ -509,3 +514,37 @@ The vocabulary we built in this lesson — root, leaf, internal, edge, path, sub
 3. **Names matter — they unlock specialisations.** *Complete* trees can be stored in arrays (next lesson). *Perfect* trees have closed-form formulas for size and height. *Full* trees obey `leaves = internal + 1`. Recognising which special shape you're dealing with often saves you from re-deriving the same identities.
 
 > *Coming up — the next two lessons cover the two ways to actually <em>store</em> a binary tree in memory: <strong>arrays</strong> (compact, index-arithmetic, perfect for complete trees and heaps) and <strong>linked nodes</strong> (flexible, the right choice for arbitrary tree shapes). After that, the chapter pivots to <em>traversals</em> — the algorithmic core of nearly every tree problem you'll ever solve.*
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
+<!--       Guidance: bulleted list of gotchas -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->

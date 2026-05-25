@@ -1,3 +1,8 @@
+---
+title: "Introduction To Stacks"
+summary: "<!-- TODO: summary -->"
+---
+
 # 1. Introduction to Stacks
 
 ## The Hook
@@ -433,3 +438,31 @@ A stack is the simplest non-trivial data structure in the course, and arguably t
 3. **Stacks model deferred work.** Anywhere you find yourself thinking *"I'll deal with this later, after I finish the more recent thing"*, you're describing a stack. Bracket matching, function calls, undo, depth-first search, expression evaluation — all the same shape.
 
 > *Coming up — implementations. The next lesson builds a stack on top of a **dynamic array** (the natural choice when capacity is bounded or when you want cache locality), and the lesson after on top of a **linked list** (the natural choice when push/pop must be guaranteed O(1) without amortisation). Both implement the same interface; the trade-offs are subtle and worth knowing.*
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
+<!--       Guidance: bulleted list of gotchas -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->

@@ -1,3 +1,8 @@
+---
+title: "Edit Distance"
+summary: "<!-- TODO: summary -->"
+---
+
 # 5. Edit Distance
 
 You type `recieve` into a search box. The site doesn't say "no results"; it asks "did you mean *receive*?" Behind the scenes the site computed the **edit distance** between your query and every word in its dictionary and returned the closest match. Edit distance is the minimum number of single-character operations — insertions, deletions, substitutions — needed to turn one string into another. It powers spell-checkers, fuzzy search, DNA alignment, version-control diffs, and OCR error correction.
@@ -220,7 +225,7 @@ Output: 0                    No edits needed
 
 
 
-```python run
+```python run viz=graph viz-root=dp
 from typing import List
 
 class Solution:
@@ -413,3 +418,40 @@ Edit distance is the canonical "transform one sequence into another" DP. Match �
 The longest palindromic subsequence of `s` equals `LCS(s, reverse(s))`. The next lesson uses a more direct recurrence on a single string with two indices, but mathematically it's equivalent to LCS on `s` and its reverse.
 
 </details>
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: The Hook — missing, needs to be written -->
+<!--       Guidance: real-world story opening before any definition -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->
+
+<!-- TODO: Final Takeaway — missing, needs to be written -->
+<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->

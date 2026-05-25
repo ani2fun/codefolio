@@ -26,7 +26,8 @@ object Blocks:
       source: Option[String],
       runnable: Option[Boolean],
       viz: Option[String] = None,
-      vizRoot: Option[String] = None
+      vizRoot: Option[String] = None,
+      vizCase: Option[String] = None
   )
 
   /**
@@ -40,7 +41,8 @@ object Blocks:
       source: Option[String],
       languageLabel: Option[String],
       viz: Option[String] = None,
-      vizRoot: Option[String] = None
+      vizRoot: Option[String] = None,
+      vizCase: Option[String] = None
   ): Either[BlockDecodeError, Block.RunnableCode] =
     for
       lang <- language.toRight(BlockDecodeError.MissingAttribute("runnable-code", "data-lang"))
@@ -50,7 +52,8 @@ object Blocks:
       src,
       languageLabel.filter(_.nonEmpty),
       viz.filter(_.nonEmpty),
-      vizRoot.filter(_.nonEmpty)
+      vizRoot.filter(_.nonEmpty),
+      vizCase.flatMap(_.toIntOption)
     )
 
   /**
@@ -80,7 +83,8 @@ object Blocks:
             src,
             raw.runnable.getOrElse(true),
             raw.viz.filter(_.nonEmpty),
-            raw.vizRoot.filter(_.nonEmpty)
+            raw.vizRoot.filter(_.nonEmpty),
+            raw.vizCase.flatMap(_.toIntOption)
           )
       }
       converted.map(Block.RunnableGroup(_))
@@ -178,7 +182,8 @@ object Block:
       source: String,
       languageLabel: Option[String],
       viz: Option[String] = None,
-      vizRoot: Option[String] = None
+      vizRoot: Option[String] = None,
+      vizCase: Option[Int] = None
   ) extends Block
 
   final case class Tab(
@@ -187,7 +192,8 @@ object Block:
       source: String,
       runnable: Boolean,
       viz: Option[String] = None,
-      vizRoot: Option[String] = None
+      vizRoot: Option[String] = None,
+      vizCase: Option[Int] = None
   )
 
   final case class RunnableGroup(tabs: List[Tab]) extends Block

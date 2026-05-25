@@ -1,3 +1,8 @@
+---
+title: "Cycle Detection"
+summary: "<!-- TODO: summary -->"
+---
+
 # 6. Cycle detection
 
 This lesson teaches you to answer one of the most common questions asked of graphs: **"is there a cycle?"** — and shows you why the answer is *one* algorithm for undirected graphs and a *different* algorithm for directed graphs, even though both look like DFS at first glance.
@@ -140,7 +145,7 @@ That's the whole proof. The key insight: **the parent check is the precise filte
 # Undirected — Implementation
 
 
-```python run
+```python run viz=graph viz-root=graph
 from typing import List, Set
 
 class Solution:
@@ -412,7 +417,7 @@ The crucial line is `nodesInPath.remove(node)` at step 4 — the **back-tracking
 # Directed — Implementation
 
 
-```python run
+```python run viz=graph viz-root=graph
 from typing import List, Set
 
 class Solution:
@@ -627,3 +632,40 @@ Cycle detection is also the gateway to one of the most useful directed-graph alg
 Same algorithm as detection — only the bookkeeping changes.
 
 </details>
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: The Hook — missing, needs to be written -->
+<!--       Guidance: real-world story opening before any definition -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
+<!--       Guidance: bulleted list of gotchas -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->

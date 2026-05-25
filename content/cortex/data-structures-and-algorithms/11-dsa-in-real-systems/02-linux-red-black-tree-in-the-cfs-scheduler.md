@@ -215,3 +215,31 @@ The CFS scheduler is the canonical RB-tree-in-production. Three patterns to inte
 1. **RB-tree wins on write-heavy workloads.** Constant-bounded rotation count beats AVL's log-bounded for schedulers, where every context switch is an insert+delete.
 2. **Cached leftmost is the trick.** `rb_root_cached` makes `pick_next_task` `O(1)`, not `O(log n)`. A small structural addition with outsized impact.
 3. **Per-CPU trees + load balancing scales linearly.** One RB-tree per CPU avoids contention. The load-balancing algorithm migrates tasks across trees to enforce fairness across cores. The combined system runs from 1 CPU to 256 CPUs without retuning.
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->

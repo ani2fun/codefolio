@@ -95,7 +95,7 @@ This is randomisation as defence: not for performance, but for *security*. The s
 
 # Implementation
 
-```python run
+```python run viz=graph viz-root=sample
 import random
 
 def partition(A, lo, hi):
@@ -351,3 +351,25 @@ Randomised algorithms trade worst-case for expected-case. Three patterns to inte
 1. **Monte Carlo and Las Vegas are different deals.** Monte Carlo: fast, occasionally wrong. Las Vegas: always right, expected fast. Pick deliberately.
 2. **Randomisation defeats adversaries.** HashDoS, sorted-input quicksort, and a dozen other "worst case is suspiciously easy to construct" bugs are fixed by adding randomness to the algorithm. The adversary can't aim if they don't know the seed.
 3. **The expected case is what matters in practice.** When variance is exponentially small (as in randomised quicksort), the expected-case bound is operationally indistinguishable from a worst-case bound. Don't be paranoid about the theoretical `O(n²)` if the practical probability is `2^-1000`.
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->

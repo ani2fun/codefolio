@@ -101,7 +101,7 @@ The root special case: a DFS root is an articulation point iff it has ≥ 2 tree
 
 # Implementation
 
-```python run
+```python run viz=graph viz-root=adj
 import sys
 sys.setrecursionlimit(10**6)
 
@@ -355,3 +355,25 @@ Bridges and articulation points identify single points of failure. Three pattern
 1. **The lowlink trick is the same as Tarjan's SCC.** One DFS, two arrays (`disc` and `low`), `O(V + E)` total. Once you understand `low[v]` = "smallest reachable discovery time", every cut-vertex / cut-edge problem in undirected graphs reduces to comparing it against `disc[u]`.
 2. **Bridge vs articulation: a single character of difference in the criterion.** `low[v] > disc[u]` for bridges; `low[v] ≥ disc[u]` for articulations. That's the entire algorithmic difference.
 3. **Real-world reliability problems live here.** Whenever someone asks "what would break if we lost X?" — bridge or articulation analysis is the answer. Network engineering, software architecture, biology, sociology — same algorithm, different domain.
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->

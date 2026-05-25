@@ -1065,3 +1065,19 @@ Three patterns to internalise from this lesson:
 3. **The two flavours are mirrors.** Min-heap and max-heap have identical algorithms with `<` swapped for `>`. Pick whichever fits your "high priority" definition — and language libraries make it a one-line comparator change.
 
 The next lesson is where the magic shows up: we'll forget the imaginary tree and store the heap as **a flat array**. Parent and child indices become arithmetic, no pointers, no allocations per node — and every operation we just sketched compiles into 5–10 lines of tight, cache-friendly code.
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->

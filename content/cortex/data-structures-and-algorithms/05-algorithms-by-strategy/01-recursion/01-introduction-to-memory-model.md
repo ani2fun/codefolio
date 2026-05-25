@@ -1,3 +1,8 @@
+---
+title: "Introduction To Memory Model"
+summary: "<!-- TODO: summary -->"
+---
+
 # 1. Introduction to the Memory Model
 
 Recursive code looks innocent. A function that calls itself, a base case, three lines total. Then a million-row test case crashes the process and the stack trace is a wall of identical frames. **You didn't write a bad algorithm — you ran out of a region of memory most tutorials never show you.** Before recursion makes sense, you need to see the four invisible regions every running program already lives in. Get this right and recursion clicks. Skip it and stack overflows feel like dark magic for the rest of your career.
@@ -141,7 +146,7 @@ In low-level languages — C, C++, and (with caveats) Rust — heap memory is ma
 In Python and Java the same allocations look like the snippets below — but here the runtime, not the programmer, reclaims the memory once nothing references it:
 
 
-```python run
+```python run viz=array viz-root=arr
 # Dynamically allocate a list on the heap
 arr = [0] * 5
 
@@ -216,7 +221,7 @@ High-level languages — Python, Java, Kotlin, Scala, Go, JavaScript, TypeScript
 The point is the same across all of them: **the lumber yard cleans itself.** You take what you need; sweepers come through later.
 
 
-```python run
+```python run viz=array viz-root=arr
 # Python: every container is a heap object. The garbage collector
 # (reference counting + cycle collector) reclaims when nothing references it.
 arr = [0] * 5            # List object on the heap
@@ -886,3 +891,40 @@ That's the entire mechanism. Recursion is *just* the stack, used self-similarly.
 </details>
 
 Next time someone tells you recursion "uses the stack," you won't nod — you'll see the scaffolding.
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: The Hook — missing, needs to be written -->
+<!--       Guidance: real-world story opening before any definition -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
+<!--       Guidance: bulleted list of gotchas -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->

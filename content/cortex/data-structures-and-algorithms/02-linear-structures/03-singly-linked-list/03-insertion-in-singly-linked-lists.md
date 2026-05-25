@@ -1,3 +1,8 @@
+---
+title: "Insertion In Singly Linked Lists"
+summary: "Five insertion variants for a singly linked list — at head, at tail, after a given node, before a given node, at a distance — all reducing to the same three-line splice. The cost lives in the walk, never in the wire-up."
+---
+
 # 3. Insertion in Singly Linked Lists
 
 ## The Hook
@@ -12,18 +17,91 @@ Five variations follow — head, tail, after-given, before-given, at-distance. T
 
 ## Table of contents
 
-1. [Understanding insertion at beginning](#understanding-insertion-at-beginning)
-2. [Insert at beginning](#insert-at-beginning)
-3. [Understanding insertion at end](#understanding-insertion-at-end)
-4. [Insert at end](#insert-at-end)
-5. [Understanding insertion after the given node](#understanding-insertion-after-the-given-node)
-6. [Insert after the given node](#insert-after-the-given-node)
-7. [Understanding insertion before the given node](#understanding-insertion-before-the-given-node)
-8. [Insert before the given node](#insert-before-the-given-node)
-9. [Understanding insertion at a given distance](#understanding-insertion-at-a-given-distance)
-10. [Insert at given distance](#insert-at-given-distance)
+1. [Understanding the Problem](#understanding-the-problem)
+2. [Supported Operations](#supported-operations)
+3. [Internal Mechanics](#internal-mechanics)
+4. [Understanding insertion at beginning](#understanding-insertion-at-beginning)
+5. [Insert at beginning](#insert-at-beginning)
+6. [Understanding insertion at end](#understanding-insertion-at-end)
+7. [Insert at end](#insert-at-end)
+8. [Understanding insertion after the given node](#understanding-insertion-after-the-given-node)
+9. [Insert after the given node](#insert-after-the-given-node)
+10. [Understanding insertion before the given node](#understanding-insertion-before-the-given-node)
+11. [Insert before the given node](#insert-before-the-given-node)
+12. [Understanding insertion at a given distance](#understanding-insertion-at-a-given-distance)
+13. [Insert at given distance](#insert-at-given-distance)
+14. [Working Example](#working-example)
+15. [Edge Cases and Pitfalls](#edge-cases-and-pitfalls)
+16. [Production Reality](#production-reality)
+17. [Practice Ladder](#practice-ladder)
+18. [Quiz](#quiz)
+19. [Further Reading](#further-reading)
+20. [Cross-Links](#cross-links)
+21. [Final Takeaway](#final-takeaway)
 
 ***
+
+# Understanding the Problem
+
+Insertion is the operation that exposes what each data structure is *good at*. Arrays hide a cascade of `O(n)` element shifts behind a one-line `arr.insert(i, x)`; linked lists turn a five-character "insert at index 0" into a fast two-pointer-assignment splice. The same word, two completely different machines underneath.
+
+The trap is in the verb itself:
+
+- **Arrays** "insert" by *shifting* — every element past the cut point slides over to make room. Insertion in the middle is `O(n)` time and `O(1)` space.
+- **Linked lists** "insert" by *re-wiring* — no element moves; only two `.next` pointers change. Insertion is `O(1)` time *once the right node is in hand*, `O(1)` space.
+
+To make this concrete: prepending to a one-million-element Python list (`lst.insert(0, x)`) executes a million `memmove` writes; prepending to a one-million-node linked list flips two pointers and returns. The work is in the *layout*, not the operation name.
+
+So the key idea is: in a linked list, inserting is two pointer assignments. The expensive part is **finding** the predecessor — and that's the cost you control by choosing which insertion variant to use.
+
+---
+
+# Supported Operations
+
+A singly linked list supports five insertion variants — distinguished by *what reference you already hold* into the list. The wire-up is always the same three lines; the cost varies with how far you have to walk to reach the splice point.
+
+| Operation | Inputs | Time | Space | Notes |
+|---|---|---|---|---|
+| Insert at beginning | `head`, `data` | `O(1)` | `O(1)` | Two pointer ops; cost is independent of list length. |
+| Insert at end | `head`, `data` | `O(n)` time / `O(1)` with cached tail | `O(1)` | Walk to the tail unless the list caches a `tail` pointer. |
+| Insert after given node | `node`, `data` | `O(1)` | `O(1)` | Node reference is given; no walk needed. |
+| Insert before given node | `head`, `node`, `data` | `O(n)` worst, `O(1)` if `node == head` | `O(1)` | Walk to find the predecessor — singly linked lists are forward-only. |
+| Insert at distance `X` | `head`, `X`, `data` | `O(X)` time | `O(1)` | Walk `X − 1` steps, then splice. Out-of-range `X` returns the list unchanged. |
+
+Two pieces are constant across the table: every variant allocates **one** node (`O(1)` extra space) and every variant ends in the same splice. The variability is purely in the *walk*.
+
+To make this concrete: inserting after a node you already hold (`O(1)`) and inserting at position `X = 0` (also `O(1)`) take the same wall-clock time on a billion-node list. Inserting at position `X = n − 1`, by contrast, is `O(n)` time — you walk the whole list to find the predecessor. The cost lives in the search, not the splice.
+
+So the tradeoff is: linked-list insertion trades random-access (you can't jump to "position 500" in `O(1)` time) for cheap modification — once you've found the splice point, the structural change is two pointer assignments regardless of list size.
+
+---
+
+# Internal Mechanics
+
+Every insertion in a singly linked list — at the head, at the tail, after a node, before a node, or at a distance — compiles down to the same three operations. Lock these into muscle memory and every variant in this lesson becomes a five-minute exercise.
+
+The three operations:
+
+- **Allocate**: create a fresh `ListNode` holding the new data. `new_node.next` starts as `null`.
+- **Wire forward**: set `new_node.next` to the node that should follow the new one (its *successor*).
+- **Wire backward**: update the *predecessor's* `.next` to point at the new node.
+
+The order of those two pointer writes is not cosmetic — it is the entire correctness argument for the splice. **Always wire forward first.**
+
+To make this concrete: suppose we want to insert `6` between `7` and `3` in `5 → 7 → 3`. The given node is `7`, so:
+
+- `new_node.next = node.next` wires forward — `new_node` now points at `3`.
+- `node.next = new_node` wires backward — `7` now points at `new_node`.
+
+Reverse the lines and the list breaks. `node.next = new_node` runs first, so the reference to `3` is gone — `node.next` no longer holds it. The next line `new_node.next = node.next` then reads back `new_node` and writes it into `new_node.next` — a self-loop. Everything past `7` has been dropped on the floor.
+
+The same rule covers the head case (the predecessor is the `head` variable itself) and the tail case (the successor is `null`). When the predecessor is given (`insert at beginning`, `insert after`), the splice is `O(1)` time. When the predecessor must be searched for (`insert before`, `insert at distance`), the walk dominates and the cost climbs to `O(n)` time.
+
+So the core insight is: every insertion is "allocate, then two pointer writes, in the order successor-first, predecessor-second" — what differs across the five variants is only how the predecessor is found.
+
+> 🖼 Diagram — TODO: three-frame splice — allocate the new node, wire forward (`new.next = successor`), wire backward (`predecessor.next = new`); a fourth frame illustrating the self-loop bug if the order is reversed.
+
+---
 
 # Understanding insertion at beginning
 
@@ -294,7 +372,7 @@ Given the **head** of a singly linked list and a **data** value, write a functio
 
 
 
-```python run
+```python run viz=linked-list viz-root=head
 from typing import Optional
 
 
@@ -686,7 +764,7 @@ Given the **head** of a singly linked list and a **data** value, write a functio
 
 
 
-```python run
+```python run viz=linked-list viz-root=head
 from typing import Optional
 
 
@@ -1065,7 +1143,7 @@ Given a reference to a **random node** in a singly linked list and a **data** va
 
 
 
-```python run
+```python run viz=linked-list viz-root=head
 from typing import Optional
 
 
@@ -1635,7 +1713,7 @@ Given the **head** of a singly linked list, a reference to a **random node** in 
 
 
 
-```python run
+```python run viz=linked-list viz-root=head
 from typing import Optional
 
 
@@ -2266,7 +2344,7 @@ Given the **head** of a singly linked list, a distance **X**, and a **data** val
 
 
 
-```python run
+```python run viz=linked-list viz-root=head
 from typing import Optional
 
 
@@ -2489,32 +2567,158 @@ public class Main {
 ```
 
 </details>
-<details>
-<summary><h2>Final Takeaway</h2></summary>
 
+***
 
-Five insertion variants, one splice pattern. Look at what they share:
+# Working Example
 
-| Variant | Walk cost | Splice cost | Total |
-|---|---|---|---|
-| At beginning | 0 steps (head is given) | O(1) | **O(1)** |
-| At end (no tail ref) | n steps (walk to tail) | O(1) | **O(n)** |
-| After given node | 0 steps (node is given) | O(1) | **O(1)** |
-| Before given node | n steps (find predecessor) | O(1) | **O(n)** |
-| At distance X | X steps | O(1) | **O(X)** |
+Five insertion variants, one splice pattern. The table below walks the same data — `head → 5 → 7 → 3 → 10` — through each variant and shows where the cost goes.
 
-Every row uses the exact same three-line splice at the end — `newNode.next = successor; predecessor.next = newNode`. The cost is always in the walk, never in the splice. **Whenever a linked-list problem offers you a pointer to "where", the insert is O(1). Whenever you have to find "where", the insert pays for the search.**
+| Variant | Walk cost | Splice cost | Total | Result |
+|---|---|---|---|---|
+| At beginning, `data = 6` | 0 steps (head is given) | `O(1)` | **`O(1)`** | `6 → 5 → 7 → 3 → 10` |
+| At end, `data = 6` (no tail ref) | `n` steps (walk to tail) | `O(1)` | **`O(n)`** | `5 → 7 → 3 → 10 → 6` |
+| After given node `node(7)`, `data = 6` | 0 steps (node is given) | `O(1)` | **`O(1)`** | `5 → 7 → 6 → 3 → 10` |
+| Before given node `node(7)`, `data = 6` | `n` steps (find predecessor) | `O(1)` | **`O(n)`** | `5 → 6 → 7 → 3 → 10` |
+| At distance `X = 2`, `data = 6` | 2 steps | `O(1)` | **`O(X)`** | `5 → 7 → 6 → 3 → 10` |
 
-This is why production linked-list libraries (`java.util.LinkedList`, C++ `std::list`) cache a **tail pointer** alongside the head — it collapses the "insert at end" variant from O(n) back down to O(1). A singly linked list with cached tail has **four** O(1) operations (head insert, head delete, tail insert) and only loses to the doubly-linked version on tail *deletion*.
+Every row ends in the same two-line splice: `new_node.next = successor; predecessor.next = new_node`. The cost is always in the walk, never in the splice.
 
-> **Transfer Challenge:** Your list holds 1 million nodes and you need to insert a node **right before the tail**. With only a `head` reference, what's the minimum number of pointer dereferences? If you also have a cached `tail` pointer — can you *still* do it in O(1), or does the single-direction nature of singly linked lists force an O(n) walk?
+So the core insight is: **whenever a linked-list problem hands you a pointer to "where", the insert is `O(1)` time. Whenever you have to find "where", the insert pays for the search.**
+
+This is exactly why production linked-list libraries — `java.util.LinkedList`, C++ `std::list` — cache a **tail pointer** alongside the head. It collapses the "insert at end" variant from `O(n)` time back down to `O(1)` time. A singly linked list with a cached tail has **four** `O(1)` operations (head insert, head delete, tail insert, traversal start) and only loses to the doubly linked version on tail *deletion* — for which you need a backward pointer to find the new tail.
+
+> **Transfer Challenge:** Your list holds 1 million nodes and you need to insert a node **right before the tail**. With only a `head` reference, what's the minimum number of pointer dereferences? If you also have a cached `tail` pointer — can you *still* do it in `O(1)` time, or does the single-direction nature of singly linked lists force an `O(n)` walk?
 >
 > <details><summary><strong>Answer</strong></summary>
 >
-> With only `head`: O(n) — you must walk until `cur.next.next == null` to find the predecessor of the tail.
+> With only `head`: `O(n)` time — you must walk until `cur.next.next == null` to find the predecessor of the tail.
 >
-> With a cached `tail`: still **O(n)**. The tail pointer gets you to the last node in O(1), but a singly linked list has no backward pointer — you cannot find the node *before* the tail without walking from the head. This is one of the few cases where doubly linked lists strictly win: they cache `prev` on every node, making "insert before tail" O(1).
+> With a cached `tail`: still **`O(n)`** time. The tail pointer gets you to the last node in `O(1)`, but a singly linked list has no backward pointer — you cannot find the node *before* the tail without walking from the head. This is one of the few cases where doubly linked lists strictly win: they cache a `prev` reference on every node, making "insert before tail" `O(1)` time.
 >
 > </details>
 
-</details>
+---
+
+# Edge Cases and Pitfalls
+
+The splice is short, which makes the edge cases sneaky — most insertion bugs land on the boundary between "list of zero" and "list of one", or on the order of two pointer writes. Keep this list open when you write any of the five variants.
+
+- **Wrong pointer-write order.** `node.next = new_node` *before* `new_node.next = node.next` overwrites the only reference to the tail of the list. The next read sees `new_node` instead of the original successor, producing a self-loop and dropping everything past the splice point. Rule: **always wire the new node's `.next` first**, then redirect the predecessor.
+- **Inserting into an empty list.** `head == null` is a separate code path for every variant. For *insert at head* and *insert at end* it means "the new node becomes the head"; for *insert after* / *insert before* it means "do nothing, the reference node cannot exist"; for *insert at distance* with `X > 0` it means "invalid position, return `null`". Skip the empty-list check and you'll dereference `null` on the first line.
+- **Inserting into a single-node list.** The single node *is* the head and *is* the tail. *Insert at beginning* and *insert at end* both produce a two-node list, but via different code paths — verify both branches are tested.
+- **`node` argument is `null` (insert-after, insert-before).** A `null` reference means there's nothing to insert next to. The function should return cleanly, not crash on `node.next`.
+- **Given `node` is not in the list.** *Insert before* walks until `current == node` — if the node never appears, the walk falls off the end (`current == null`). Return the head unchanged; don't dereference the trailing `null`.
+- **`X` is out of range (insert-at-distance).** `X > length(list)` and `X < 0` are both invalid positions. The reference implementation returns `head` unchanged for `X > length`; reject negatives explicitly if the caller can supply them.
+- **Confusing `X = 0` with `X = 1`.** A position of `0` means *before* the head (the new node becomes the new head); `X = 1` means *between* node 0 and node 1. Off-by-one here produces results that look almost right and pass shallow tests.
+- **Forgetting to return the new head when it changes.** *Insert at beginning* and *insert before head* both change which node is the head. If the function returns the old `head` reference, the caller's pointer still points at the second node — the new head is unreachable and silently leaks.
+- **No tail pointer means `O(n)` end-insertion in a loop.** `for (val in xs) list.insert_at_end(val)` is `O(n²)` time when `insert_at_end` walks to the tail each call. Either cache the tail externally, build the list head-first and reverse, or use a deque/doubly-linked list when you need both ends cheap.
+
+***
+
+# Production Reality
+
+Linked-list insertion looks academic until you notice how many "real systems" pick this structure precisely because insert/splice is `O(1)` time at a known reference point.
+
+**[Linux kernel `list_head`]** — uses **a doubly linked intrusive list with `list_add` doing four pointer writes** — because every subsystem that holds an object reference (scheduler, VFS, network) can splice it in or out in `O(1)` time without a separate container allocation.
+
+The kernel's circular doubly linked list is embedded directly into each struct via a `list_head` field. Any code that holds a pointer to the struct gets `O(1)` insertion and removal without touching the allocator — exactly what an interrupt-context path needs. Source: [include/linux/list.h](https://github.com/torvalds/linux/blob/master/include/linux/list.h).
+
+**[Java's `LinkedList`]** — uses **a doubly linked list with cached `first` and `last` pointers** — because `addFirst`/`addLast` are both `O(1)` time, the price for `O(n)` random-access `get(i)`.
+
+`java.util.LinkedList` keeps head and tail node references on the list itself, so prepending and appending are both two-pointer writes. Java leans on this for queue/deque workloads; for indexed access it costs `O(n)` time. Source: [LinkedList.java](https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/java/util/LinkedList.java).
+
+**[Redis adlist (`listAddNodeHead`)]** — uses **a doubly linked list with `len`, `head`, and `tail` fields** — because pub/sub queues and the slow-log are append-and-trim workloads where the per-operation cost dominates throughput.
+
+Redis maintains a doubly linked list with cached endpoints. `LPUSH` and `RPUSH` are `O(1)` time; the trimming logic (`LTRIM`, `EXPIRE`) deletes from one end in `O(1)` time per node. Source: [adlist.c](https://github.com/redis/redis/blob/unstable/src/adlist.c).
+
+**[Python's `collections.OrderedDict`]** — uses **a doubly linked list of dictionary entries** — because preserving insertion order across `move_to_end` operations requires `O(1)` splicing of any entry to either end.
+
+The underlying hash table gives `O(1)` lookup; the linked list threaded through the entries gives `O(1)` reordering. `LRU` caches built on `OrderedDict.move_to_end(...)` rely entirely on this property. Source: [_collectionsmodule.c](https://github.com/python/cpython/blob/main/Modules/_collectionsmodule.c) <!-- VERIFY: OrderedDict implementation now lives in odictobject.c — confirm canonical source file -->.
+
+**[Memory allocators — free lists]** — uses **a singly linked list of free blocks indexed by size class** — because freeing memory at the front of the list is two writes and allocating is one read, so `malloc`/`free` stay constant-time on the hot path.
+
+`jemalloc`, `tcmalloc`, and most small-object allocators carve memory into size classes and keep each class's free blocks on a singly linked stack. Allocation pops the head; free pushes to the head. Both `O(1)` time without traversal. Source: [jemalloc internals](https://github.com/jemalloc/jemalloc/blob/dev/INSTALL.md).
+
+**[Process scheduler ready-queues]** — uses **per-priority intrusive linked lists** — because the scheduler enqueues runnable tasks on every context switch and an `O(1)` insertion at the tail keeps that hot path off the allocator.
+
+Linux's `CFS` red-black tree handles the general case, but real-time scheduling classes (`SCHED_FIFO`, `SCHED_RR`) use plain doubly linked lists per priority level — enqueue at the tail, dequeue at the head, no rebalancing. Source: [kernel/sched/rt.c](https://github.com/torvalds/linux/blob/master/kernel/sched/rt.c).
+
+***
+
+# Practice Ladder
+
+Five problems, easiest first. Try each unaided; hit the hint only after ten minutes stuck; don't peek at solutions until you've made the splice *do something* in code.
+
+| # | Problem | Pattern | Difficulty | Hint |
+|---|---------|---------|------------|------|
+| 1 | [Reverse a List](./07-pattern-reversal/02-problems/01-reverse-a-list.md) | [Reversal](./07-pattern-reversal/01-pattern.md) | Easy | At each step, save `current.next`, then re-point `current.next` back to the previous node. Same three-pointer dance as insertion, repeated `n` times. |
+| 2 | [Trim Nth Node](./09-pattern-sliding-window-traversal/02-problems/02-trim-nth-node.md) | [Sliding Window Traversal](./09-pattern-sliding-window-traversal/01-pattern.md) | Easy | Walk two pointers `n` apart; when the leader hits the tail, the follower points at the predecessor of the node to remove. Then it's a one-line splice. |
+| 3 | [Middle Node Search](./10-pattern-fast-and-slow-pointers/02-problems/01-middle-node-search.md) | [Fast and Slow Pointers](./10-pattern-fast-and-slow-pointers/01-pattern.md) | Easy | Slow advances one step per loop; fast advances two. When fast hits the end, slow sits at the middle — useful when an insertion site is defined relative to length. |
+| 4 | [Merge Sorted Lists](./12-pattern-merge/02-problems/02-merge-sorted-lists.md) | [Merge](./12-pattern-merge/01-pattern.md) | Easy | Use a dummy head and an `O(1)` "insert at tail" of a growing result list — the same `tail.next = node; tail = node` pattern from this lesson, applied in a loop. |
+| 5 | [Relocate Node](./13-pattern-reorder/02-problems/01-relocate-node.md) | [Reorder](./13-pattern-reorder/01-pattern.md) | Medium | Detach the source node (delete + insert in two splices). The reusable trick: hold the predecessor of *both* the source and the destination before touching any `.next`. |
+
+Once these feel automatic, you've internalised every move the reversal, sliding-window, fast/slow, and merge patterns will ask of you — and the splice itself disappears into muscle memory.
+
+***
+
+# Quiz
+
+Test your grip before moving on. One answer per question; reveal only after you have committed to one.
+
+**[Recall] Q: What is the time and space complexity of inserting at the beginning of a singly linked list?**
+`O(1)` time and `O(1)` space — two pointer writes regardless of list length.
+
+**[Recall] Q: For *insert at distance `X`* on a list of length `n`, what is the worst-case time complexity?**
+`O(n)` time when `X = n` (insert at the very end) — the walk visits every node before the splice.
+
+**[Reasoning] Q: Why must `new_node.next = node.next` happen *before* `node.next = new_node`?**
+Because `node.next = new_node` overwrites the only reference to the original successor; reading `node.next` afterwards yields `new_node` itself, producing a self-loop and dropping the rest of the list.
+
+**[Reasoning] Q: Why is *insert before a given node* `O(n)` time on a singly linked list even when the target node is already in hand?**
+Singly linked lists have no backward pointer — to rewire the predecessor's `.next`, you must walk from the head until you find it.
+
+**[Tradeoff] Q: When does caching a `tail` pointer alongside the head pay off, and when does it *fail* to help?**
+Caching `tail` makes *insert at end* `O(1)` time, paying for one extra pointer of overhead per list. It still fails to help *insert before the tail* (`O(n)` time) or *delete the tail* (`O(n)` time) — both need the tail's predecessor, which only a doubly linked list keeps cheap.
+
+***
+
+# Further Reading
+
+Curated paths in, not a syllabus. Read in order of the annotation; come back for the rest when you need depth.
+
+- **[CLRS — Chapter 10: Elementary Data Structures](https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/)**
+  ★ Essential — the canonical reference for linked-list insertion, deletion, and the sentinel-node trick that simplifies every edge case.
+- **[Sedgewick & Wayne — Algorithms, 4th ed., §1.3 Bags, Queues and Stacks](https://algs4.cs.princeton.edu/13stacks/)**
+  ★ Essential — implements linked lists as the storage backing for stack and queue, with diagrams that make the splice visual.
+- **[The Linux Kernel Linked Lists API](https://www.kernel.org/doc/html/latest/core-api/kernel-api.html#list-management-functions)**
+  ◆ Advanced — the intrusive-list pattern (`container_of` macro, embedded `list_head`) — how production C systems get zero-allocation `O(1)` insert.
+- **[Java `LinkedList.linkFirst` / `linkLast` source](https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/java/util/LinkedList.java)**
+  → Reference — the exact head/tail pointer-caching idiom that turns `O(n)` end-insertion into `O(1)`.
+- **[Open Data Structures — §3.1 SLList: A Singly Linked List](https://opendatastructures.org/ods-python/3_1_SLList_Singly_Linked_Lis.html)**
+  → Reference — a clean academic walk through every insertion variant, with worked examples in Python and Java.
+
+***
+
+# Cross-Links
+
+**Prerequisites**
+
+- [Introduction to Singly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-introduction-to-singly-linked-lists) — node structure, `head` reference, and why pointers replace contiguous memory.
+- [Traversal in Singly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-traversal-in-singly-linked-lists) — the walk that every non-`O(1)` insertion variant piggybacks on.
+- [Introduction to Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-introduction) — the cost model that insertion exposes the gap from (`O(n)` shift) vs (`O(1)` splice).
+
+**What comes next**
+
+- [Deletion in Singly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-deletion-in-singly-linked-lists) — the mirror operation; same predecessor-search problem, with a few extra cases when the head moves.
+- [Detecting Cycle in Singly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-detecting-cycle-in-singly-linked-lists) — how Floyd's tortoise-and-hare uses pure traversal (no insertion) to expose a structural property.
+- [Pattern: Reversal](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reversal-pattern) — the first major linked-list pattern; reversal is "splice at the head" in a loop.
+- [Pattern: Sliding Window Traversal](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-sliding-window-traversal-pattern) — the two-pointer walk that finds insertion sites defined by *offset from the tail*.
+
+***
+
+## Final Takeaway
+
+1. **Core mechanic:** every insertion in a singly linked list is "allocate a node, wire its `.next` to the successor, redirect the predecessor's `.next` to the new node" — two pointer writes, always in that order.
+2. **Dominant tradeoff:** insertion at a known reference point is `O(1)` time regardless of list size; insertion at an unknown position pays `O(n)` time to *find* the predecessor — there is no `O(1)` random access to amortise this away.
+3. **One thing to remember:** the cost lives in the walk, not in the splice — so whenever you can preserve a reference to "where" (head, tail, predecessor), you keep insertion `O(1)`.

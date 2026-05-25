@@ -1,3 +1,8 @@
+---
+title: "Traversing A Grid"
+summary: "<!-- TODO: summary -->"
+---
+
 # 5. Traversing a grid
 
 This lesson teaches you to **see grids as graphs** — and once you do, every grid problem you'll ever face becomes a slightly disguised version of DFS or BFS.
@@ -231,7 +236,7 @@ Cell `(0,0)`: only `(0,1)` and `(1,0)` are in bounds — 2 valid. Cell `(2,2)`: 
 The full algorithm in Python and Java.
 
 
-```python run
+```python run viz=grid viz-root=grid
 from typing import List, Tuple
 
 class Solution:
@@ -538,7 +543,7 @@ flowchart LR
 # BFS Implementation
 
 
-```python run
+```python run viz=grid viz-root=grid
 from typing import List, Tuple
 from queue import Queue
 
@@ -851,3 +856,40 @@ The next set of lessons starts piling actual *questions* on top of these travers
 This is the structure of LeetCode's "Escape the Spreading Fire" problem and the underlying technique generalises to every adversarial-grid puzzle.
 
 </details>
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: The Hook — missing, needs to be written -->
+<!--       Guidance: real-world story opening before any definition -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
+<!--       Guidance: bulleted list of gotchas -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->

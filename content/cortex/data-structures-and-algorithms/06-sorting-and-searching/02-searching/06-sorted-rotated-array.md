@@ -1,3 +1,8 @@
+---
+title: "Sorted Rotated Array"
+summary: "<!-- TODO: summary -->"
+---
+
 # 6. Sorted Rotated Array
 
 A sorted array is rotated by some unknown amount: `[1, 2, 3, 4, 5, 6, 7]` becomes `[4, 5, 6, 7, 1, 2, 3]`. Plain binary search doesn't work — the array isn't sorted globally. But it's *almost* sorted: it consists of two sorted segments, with the second's values smaller than the first's. Can we still binary-search it in `O(log n)`?
@@ -107,7 +112,7 @@ Comparing with `arr[high]` is unambiguous. If `arr[mid] > arr[high]`, the second
 
 
 
-```python run
+```python run viz=array viz-root=arr
 from typing import List
 
 class Solution:
@@ -250,7 +255,7 @@ Two iterations to find the target on a 6-element array.
 
 
 
-```python run
+```python run viz=array viz-root=arr
 from typing import List
 
 class Solution:
@@ -471,7 +476,7 @@ The algorithm partially breaks. When `arr[mid] == arr[high]`, we can't tell whic
 
 Fix: when `arr[mid] == arr[high]`, conservatively decrement `high` by 1. This is the only safe move — we can't make a binary decision.
 
-```python run
+```python run viz=array viz-root=arr
 class Solution:
     def rotated_min_with_dups(self, arr):
         low, high = 0, len(arr) - 1
@@ -489,3 +494,37 @@ print(Solution().rotated_min_with_dups([2, 2, 2, 0, 1, 2, 2]))   # 3
 Time complexity degrades to `O(n)` in the worst case (all elements equal — we decrement `high` `n - 1` times). The average case is still `O(log n)` for typical inputs. **You just discovered why "rotated array with duplicates" is a separate, harder problem (LeetCode #154 vs #153).**
 
 </details>
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: The Hook — missing, needs to be written -->
+<!--       Guidance: real-world story opening before any definition -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->

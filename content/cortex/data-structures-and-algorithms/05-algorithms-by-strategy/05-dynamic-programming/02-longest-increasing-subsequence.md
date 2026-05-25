@@ -1,3 +1,8 @@
+---
+title: "Longest Increasing Subsequence"
+summary: "<!-- TODO: summary -->"
+---
+
 # 2. Longest Increasing Subsequence
 
 A monitoring graph crosses your screen and you ask one simple question: *what's the longest run where the metric kept improving?* Not consecutive — improvements are allowed to be interrupted by dips, as long as you skip the dips. The graph might be 10,000 points; the answer might be 47. On the surface this is a "look at the picture" question. Underneath it's one of the foundational problems of dynamic programming, and the algorithm that solves it shows up in version-control diff tools, financial trend detection, and the analysis of any sequence where you want to find the longest "improving" sub-trace.
@@ -251,7 +256,7 @@ grid: "dp for arr = [9, 5, 10, 6, 9, 7, 8]" {
 
 ### The Solution
 
-```python run
+```python run viz=array viz-root=dp
 from typing import List
 
 class Solution:
@@ -523,7 +528,7 @@ grid: "Reconstruction via prev[]" {
 
 ### The Solution
 
-```python run
+```python run viz=array viz-root=dp
 from typing import List
 
 class Solution:
@@ -759,3 +764,40 @@ The natural state is `dp[i][j]` = LCS of `arr1[0..i]` and `arr2[0..j]`. We've mo
 </details>
 
 </details>
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: The Hook — missing, needs to be written -->
+<!--       Guidance: real-world story opening before any definition -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->
+
+<!-- TODO: Final Takeaway — missing, needs to be written -->
+<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->

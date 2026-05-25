@@ -1,3 +1,8 @@
+---
+title: "Recursive Traversals In Binary Trees"
+summary: "<!-- TODO: summary -->"
+---
+
 # 4. Recursive Traversals in Binary Trees
 
 ## The Hook
@@ -176,7 +181,7 @@ Preorder shows up wherever you need to *emit a parent before its children*:
 A three-line recursive helper (`preorder`) does the work — visit, recurse-left, recurse-right — and a thin wrapper (`recursive_preorder_traversal`) seeds the `result` list and kicks it off.
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import List, Optional
 
 
@@ -420,7 +425,7 @@ Inorder also shows up in:
 Same shape as preorder; only the order of `visit` and the left recursion swap.
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import List, Optional
 
 
@@ -657,7 +662,7 @@ Postorder is what you use whenever a node's *result depends on its children's re
 
 ### Implementation
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import List, Optional
 
 
@@ -883,3 +888,37 @@ Recursive traversals are the gateway drug to tree algorithms. Once the *shape* �
 3. **Stack space is paid in tree height.** Every recursive call adds a frame to the call stack; on a balanced tree this is `O(log N)`, on a skew tree it's `O(N)`. For trees of height millions (yes, they happen — sequential insertion into a naive BST), recursive traversals can blow the stack. The next lesson — iterative traversals with an explicit stack — exists precisely to dodge that bullet.
 
 > *Coming up — iterative traversals. Same three orderings, but implemented with an explicit stack so we can traverse arbitrarily deep trees without risking a stack overflow. The iterative versions are uglier than the recursive ones, but they're production-grade for adversarial inputs and they teach you a lot about how the recursive call stack actually works under the hood.*
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
+<!--       Guidance: bulleted list of gotchas -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->

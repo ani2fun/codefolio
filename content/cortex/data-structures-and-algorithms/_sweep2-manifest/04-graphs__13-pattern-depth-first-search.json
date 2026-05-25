@@ -1,0 +1,49 @@
+{
+  "chapter": "04-graphs/13-pattern-depth-first-search",
+  "sweep": 2,
+  "pilot_approved": true,
+  "files": [
+    {
+      "path": "content/cortex/data-structures-and-algorithms/04-graphs/13-pattern-depth-first-search/01-pattern.md",
+      "type": "PATTERN",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/04-graphs/13-pattern-depth-first-search/02-problems/01-source-to-target-paths.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/04-graphs/13-pattern-depth-first-search/02-problems/02-target-paths-with-given-weight.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/04-graphs/13-pattern-depth-first-search/02-problems/03-hamiltonian-paths.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/04-graphs/13-pattern-depth-first-search/02-problems/04-simple-cycles.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 7,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/04-graphs/13-pattern-depth-first-search/03-memorize.md",
+      "type": "PATTERN_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    }
+  ]
+}

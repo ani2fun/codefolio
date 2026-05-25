@@ -1,3 +1,8 @@
+---
+title: "Longest Common Substring"
+summary: "<!-- TODO: summary -->"
+---
+
 # 4. Longest Common Substring
 
 The previous lesson found the longest common *subsequence* — characters in order, with arbitrary skipping allowed. **Substring** is the contiguous version: matched characters must be adjacent in both original strings, no gaps. The change sounds tiny ("the matched characters must touch"). The recurrence change is one operator. But the *consequences* — where the answer lives in the DP table, what a mismatch does, why the answer might be in any cell — flip the whole shape of the algorithm.
@@ -154,7 +159,7 @@ The recursive function returns the LCSubstr ending at `(i, j)`. Because the answ
 
 ### The Solution
 
-```python run
+```python run viz=graph viz-root=memo
 from typing import List
 
 class Solution:
@@ -331,7 +336,7 @@ table: "dp for s1 = 'aba', s2 = 'adab'" {
 
 
 
-```python run
+```python run viz=grid viz-root=lcs
 from typing import List
 
 class Solution:
@@ -459,7 +464,7 @@ Output: "lx"
 We add two trackers: `max_length` and `end_index` (an index in `s1`). After the table is full, slice `s1[end_index - max_length + 1 .. end_index + 1]`.
 
 
-```python run
+```python run viz=grid viz-root=dp
 from typing import List
 
 class Solution:
@@ -643,3 +648,40 @@ The three cases all decrement the cost by 1 from a different predecessor: `dp[i-
 </details>
 
 </details>
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: The Hook — missing, needs to be written -->
+<!--       Guidance: real-world story opening before any definition -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->
+
+<!-- TODO: Final Takeaway — missing, needs to be written -->
+<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->

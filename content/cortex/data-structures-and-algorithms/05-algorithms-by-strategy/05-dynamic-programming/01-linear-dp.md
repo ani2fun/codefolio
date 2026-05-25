@@ -1,3 +1,11 @@
+---
+title: "Linear DP"
+summary: "First DP shape — recurrence on a single index. Built directly on top of recursive Fibonacci by memoizing the call tree."
+prereqs:
+  - 05-algorithms-by-strategy/01-recursion/07-pattern-multiple-recursion/01-pattern
+  - 05-algorithms-by-strategy/01-recursion/07-pattern-multiple-recursion/02-problems/01-fibonacci-number
+---
+
 # 1. Linear DP
 
 You wrote a recursive Fibonacci function in the recursion chapter. It worked. `fib(10)` returned in microseconds. `fib(30)` paused for a fraction of a second. `fib(40)` took seconds. `fib(50)` would take *minutes* on the same machine that loads a webpage in 100ms. Something is catastrophically wrong with how the machine is spending its time — and the diagnosis is the first lesson of dynamic programming.
@@ -814,3 +822,40 @@ If the recurrence's window is bounded, the DP table can be reduced to a rolling 
 **No.** The recurrence references *every* earlier entry where `arr[j] < arr[i]`, not just the last few. The window is unbounded — any of `dp[0]`, `dp[1]`, …, `dp[i-1]` could be the one that gives the maximum. Without bounded look-back, you have to keep them all. The next lesson is `O(n)` space at minimum (with the simple solution; there's a clever `O(n log n)` solution too — but it uses a different data structure entirely).
 
 </details>
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: The Hook — missing, needs to be written -->
+<!--       Guidance: real-world story opening before any definition -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->
+
+<!-- TODO: Final Takeaway — missing, needs to be written -->
+<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->

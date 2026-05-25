@@ -1,0 +1,43 @@
+{
+  "chapter": "02-linear-structures/06-queue",
+  "sweep": 2,
+  "pilot_approved": true,
+  "files": [
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/06-queue/01-introduction-to-queues.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 8,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/06-queue/02-array-implementation-of-queues.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 11,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/06-queue/03-linked-list-implementation-of-queues.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 11,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/06-queue/04-memorize.md",
+      "type": "CHAPTER_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 0,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/06-queue/05-design-a-queue/01-design-a-queue.md",
+      "type": "DESIGN",
+      "status": "done",
+      "placeholders_inserted": 0,
+      "flags": 0,
+      "skip_audit": true
+    }
+  ]
+}

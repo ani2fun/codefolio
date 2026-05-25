@@ -32,6 +32,9 @@ Each variant in this lesson appears in real codebases: insert-at-root for top-do
 - [Insert a parent above a named node](#insert-a-parent-above-a-named-node)
     - [Implementation](#implementation-4)
     - [Complexity](#complexity-4)
+- [Delete a node](#delete-a-node)
+    - [Implementation](#implementation-5)
+    - [Complexity](#complexity-5)
 
 ***
 
@@ -1370,6 +1373,289 @@ public class Main {
 ### Complexity
 
 > **Time:** O(N) — worst case the target is the last node visited. **Space:** O(h) for recursion.
+
+</details>
+
+***
+
+# Delete a node
+
+Insertion has an inverse — and it shows off a different half of the Visualise diagram. Deleting from a *plain* binary tree has the same two-part shape every mutation does (**find, then relink**), but with a twist: you can't simply detach the target. A target in the *middle* of the tree would strand its children. The standard fix is the one a binary **heap** uses for its own delete — don't move the target at all: **overwrite its value** with the value of the **deepest, last-placed node**, then delete *that* node instead. The deepest node sits at the frontier, so unlinking it never strands anything, and the tree stays complete.
+
+So the work is one level-order pass that finds both the **target node** and the **deepest node** (plus the deepest node's parent, so it can be unlinked), then two writes: copy the value up, null one pointer. The Visualise button traces exactly this — watch node `2` flash **amber** as its value is overwritten, and the old deepest node fade out **red** as it is dropped.
+
+```mermaid
+---
+config:
+  theme: base
+  themeVariables:
+    primaryColor: "#dbeafe"
+    primaryBorderColor: "#3b82f6"
+    primaryTextColor: "#1e3a5f"
+    lineColor: "#64748b"
+    secondaryColor: "#ede9fe"
+    tertiaryColor: "#fef9c3"
+---
+flowchart LR
+    subgraph BEFORE["before — delete 2"]
+        direction TB
+        B1((1))
+        B2((2))
+        B3((3))
+        B4((4))
+        B1 --> B2
+        B1 --> B3
+        B2 --> B4
+    end
+    subgraph AFTER["after deleteNode(2)"]
+        direction TB
+        A1((1))
+        A2((4))
+        A3((3))
+        A1 --> A2
+        A1 --> A3
+    end
+    BEFORE -->|"copy 4 up into 2, drop the deepest node"| AFTER
+    style B2 fill:#fef9c3,stroke:#f59e0b
+    style B4 fill:#fee2e2,stroke:#ef4444
+    style A2 fill:#fef9c3,stroke:#f59e0b
+```
+
+<p align="center"><strong>Delete a node — the target (2) keeps its slot but takes the deepest node's value (4); the deepest node is then unlinked. One value copy, one pointer null — and the tree stays complete.</strong></p>
+
+> **Algorithm**
+>
+> -   **Step 1:** If the tree is empty, or a lone node, handle it directly.
+> -   **Step 2:** Level-order scan the whole tree. Record the node whose value equals `target`; keep overwriting `deepest` / `parent` as you go, so they end on the last node visited and its parent.
+> -   **Step 3:** If no node matched `target`, return the tree unchanged.
+> -   **Step 4:** Overwrite `found.val` with `deepest.val`.
+> -   **Step 5:** Unlink `deepest` from `parent` — whichever of the two child pointers held it.
+
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
+
+### Implementation
+
+```python run viz=binary-tree viz-root=tree
+from typing import Optional
+from collections import deque
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+def to_level_order(root):
+    """Serialize tree to level-order list with None for missing children."""
+    if not root:
+        return []
+    result = []
+    queue = deque([root])
+    while queue:
+        node = queue.popleft()
+        if node:
+            result.append(node.val)
+            queue.append(node.left)
+            queue.append(node.right)
+        else:
+            result.append(None)
+    while result and result[-1] is None:
+        result.pop()
+    return result
+
+
+class Solution:
+    def delete_node(
+        self, root: Optional[TreeNode], target: int
+    ) -> Optional[TreeNode]:
+
+        # Empty tree, or a lone node — handle directly
+        if root is None:
+            return None
+        if root.left is None and root.right is None:
+            return None if root.val == target else root
+
+        # Level-order scan: find the target node, and keep overwriting
+        # deepest / parent so they end on the last node visited
+        queue = [root]
+        found = None
+        deepest = root
+        parent = None
+        while queue:
+            node = queue.pop(0)
+            if node.val == target:
+                found = node
+            if node.left is not None:
+                parent = node
+                deepest = node.left
+                queue.append(node.left)
+            if node.right is not None:
+                parent = node
+                deepest = node.right
+                queue.append(node.right)
+
+        # No node matched the target — return the tree unchanged
+        if found is None:
+            return root
+
+        # Overwrite the target's value, then unlink the deepest node
+        found.val = deepest.val
+        if parent.right is deepest:
+            parent.right = None
+        else:
+            parent.left = None
+        return root
+
+
+# A single worked example — the Visualise button traces exactly this run.
+tree = from_level_order([1, 2, 3, 4])
+print(to_level_order(Solution().delete_node(tree, 2)))  # [1, 4, 3]
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static List<Integer> toLevelOrder(TreeNode root) {
+        List<Integer> result = new ArrayList<>();
+        if (root == null) return result;
+        Deque<TreeNode> queue = new LinkedList<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            if (node != null) {
+                result.add(node.val);
+                queue.add(node.left);
+                queue.add(node.right);
+            } else {
+                result.add(null);
+            }
+        }
+        while (!result.isEmpty() && result.get(result.size() - 1) == null) {
+            result.remove(result.size() - 1);
+        }
+        return result;
+    }
+
+    static class Solution {
+        public TreeNode deleteNode(TreeNode root, int target) {
+
+            // Empty tree, or a lone node — handle directly
+            if (root == null) {
+                return null;
+            }
+            if (root.left == null && root.right == null) {
+                return root.val == target ? null : root;
+            }
+
+            // Level-order scan: find the target node, and keep overwriting
+            // deepest / parent so they end on the last node visited
+            Queue<TreeNode> queue = new LinkedList<>();
+            queue.add(root);
+            TreeNode found = null;
+            TreeNode deepest = root;
+            TreeNode parent = null;
+            while (!queue.isEmpty()) {
+                TreeNode node = queue.poll();
+                if (node.val == target) {
+                    found = node;
+                }
+                if (node.left != null) {
+                    parent = node;
+                    deepest = node.left;
+                    queue.add(node.left);
+                }
+                if (node.right != null) {
+                    parent = node;
+                    deepest = node.right;
+                    queue.add(node.right);
+                }
+            }
+
+            // No node matched the target — return the tree unchanged
+            if (found == null) {
+                return root;
+            }
+
+            // Overwrite the target's value, then unlink the deepest node
+            found.val = deepest.val;
+            if (parent.right == deepest) {
+                parent.right = null;
+            } else {
+                parent.left = null;
+            }
+            return root;
+        }
+    }
+
+    public static void main(String[] args) {
+        // The worked example — the same run the Python Visualise traces
+        System.out.println(toLevelOrder(new Solution().deleteNode(fromLevelOrder(1, 2, 3, 4), 2)));  // [1, 4, 3]
+
+        // Edge cases
+        System.out.println(toLevelOrder(new Solution().deleteNode(fromLevelOrder(1), 1)));            // []
+        System.out.println(toLevelOrder(new Solution().deleteNode(fromLevelOrder(1, 2, 3), 1)));      // [3, 2]
+        System.out.println(toLevelOrder(new Solution().deleteNode(fromLevelOrder(1, 2, 3), 9)));      // [1, 2, 3]
+    }
+}
+```
+
+### Complexity
+
+> **Time:** O(N) — one level-order pass over every node. **Space:** O(W) for the queue, where W is the tree's maximum width.
 
 </details>
 <details>

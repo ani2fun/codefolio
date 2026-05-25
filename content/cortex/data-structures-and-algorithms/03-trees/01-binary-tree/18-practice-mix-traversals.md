@@ -159,7 +159,7 @@ flowchart TB
 A single pass requires three helpers and one driver. Implementations follow.
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional, List
 
 

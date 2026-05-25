@@ -52,7 +52,7 @@ With `dp[0] = 1` (one way to "stand still") and missing predecessors treated as 
 
 
 
-```python run
+```python run viz=array viz-root=dp
 from typing import List
 
 class Solution:
@@ -203,7 +203,7 @@ Output: false              Stuck at index 1 with arr[1] = 0
 
 
 
-```python run
+```python run viz=array viz-root=dp
 from typing import List
 
 class Solution:
@@ -337,7 +337,7 @@ For each peak candidate `i`, the bitonic length through `i` = `LIS_ending_at(i) 
 
 
 
-```python run
+```python run viz=array viz-root=arr
 from typing import List
 
 class Solution:
@@ -533,7 +533,7 @@ Answer: max over `i` of `max(dp[i][0], dp[i][1])`.
 
 
 
-```python run
+```python run viz=grid viz-root=dp
 from typing import List
 
 class Solution:
@@ -721,7 +721,7 @@ Base case: `dp[0][j] = 1` for all `j` — there's exactly one way to form the em
 
 
 
-```python run
+```python run viz=grid viz-root=dp
 from typing import List
 
 class Solution:
@@ -891,7 +891,7 @@ Base cases: `dp[i][0] = i`, `dp[0][j] = j` (an empty side forces taking everythi
 
 
 
-```python run
+```python run viz=grid viz-root=dp
 from typing import List
 
 class Solution:
@@ -1062,7 +1062,7 @@ Then backtrack to reconstruct the subsequence string.
 
 
 
-```python run
+```python run viz=graph viz-root=dp
 from typing import List
 
 class Solution:

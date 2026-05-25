@@ -112,7 +112,7 @@ The lowlink trick is the genius of the algorithm: `low[u]` tracks how far back u
 
 # Implementation
 
-```python run
+```python run viz=graph viz-root=adj
 import sys
 sys.setrecursionlimit(10**6)
 
@@ -422,3 +422,25 @@ SCCs partition a directed graph into "everything mutually reachable". Three patt
 1. **The relation is an equivalence relation.** Reflexive, symmetric, transitive. The equivalence classes — the SCCs — are unique and partition the vertex set.
 2. **Two algorithms, one cost.** Both Kosaraju and Tarjan are `O(V + E)`. Kosaraju is two passes; Tarjan is one pass with the lowlink trick. Production code overwhelmingly uses Tarjan because of the constant-factor advantage and elegance.
 3. **The condensation graph is a DAG.** That's why so many problems on directed graphs reduce to "compute SCCs, then solve on the DAG" — the DAG is easier in every algorithmic sense.
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->

@@ -1,3 +1,8 @@
+---
+title: "Array Implementation Of Binary Trees"
+summary: "<!-- TODO: summary -->"
+---
+
 # 2. Array Implementation of Binary Trees
 
 ## The Hook
@@ -346,3 +351,37 @@ The array representation is the cleanest expression of binary-tree-as-data: pure
 3. **Heaps are the killer app.** Every priority queue you've ever used — heaps in `std::priority_queue`, `java.util.PriorityQueue`, Python's `heapq`, the timer wheels in event loops, Dijkstra's frontier in pathfinding — uses an array-backed binary tree as its internal storage. The array representation is the *enabling technology* for one of the most-used data structures in computing.
 
 > *Coming up — the next lesson covers the **linked-list implementation**, which trades the index arithmetic for a per-node <code>left</code>/<code>right</code> pointer. Less compact, less cache-friendly, but flexible enough to store arbitrarily-shaped trees without paying any sentinel tax. That representation is what every traversal, construction, and pattern lesson in the rest of the chapter will use.*
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
+<!--       Guidance: bulleted list of gotchas -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->

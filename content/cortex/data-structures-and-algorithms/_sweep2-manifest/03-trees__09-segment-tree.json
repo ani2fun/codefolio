@@ -1,0 +1,21 @@
+{
+  "chapter": "03-trees/09-segment-tree",
+  "sweep": 2,
+  "pilot_approved": true,
+  "files": [
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/09-segment-tree/01-introduction-to-segment-trees.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/09-segment-tree/02-memorize.md",
+      "type": "CHAPTER_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 0,
+      "flags": 0
+    }
+  ]
+}

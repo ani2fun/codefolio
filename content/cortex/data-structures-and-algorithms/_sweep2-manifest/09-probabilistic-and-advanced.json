@@ -1,0 +1,56 @@
+{
+  "chapter": "09-probabilistic-and-advanced",
+  "sweep": 2,
+  "pilot_approved": true,
+  "files": [
+    {
+      "path": "content/cortex/data-structures-and-algorithms/09-probabilistic-and-advanced/01-skip-list.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/09-probabilistic-and-advanced/02-bloom-filter.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/09-probabilistic-and-advanced/03-count-min-sketch.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 7,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/09-probabilistic-and-advanced/04-hyperloglog.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 7,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/09-probabilistic-and-advanced/05-treap.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 7,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/09-probabilistic-and-advanced/06-persistent-data-structures.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 7,
+      "flags": 2
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/09-probabilistic-and-advanced/07-memorize.md",
+      "type": "CHAPTER_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 0,
+      "flags": 0
+    }
+  ]
+}

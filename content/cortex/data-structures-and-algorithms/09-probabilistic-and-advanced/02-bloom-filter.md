@@ -89,7 +89,7 @@ Compared to a regular hash set: storing `10⁹` 32-byte keys costs `32 GB` minim
 
 # Implementation
 
-```python run
+```python run viz=array viz-root=bits
 import math, hashlib
 
 class BloomFilter:
@@ -342,3 +342,25 @@ The Bloom filter is the probabilistic set. Three patterns to internalise:
 1. **False positives only.** A Bloom filter never lies "no" but sometimes lies "yes". Whenever that asymmetry is acceptable (cache, skip-list-of-disk-files, malicious-URL probe), Bloom is a memory win.
 2. **Tune `m` and `k` from `n` and target FPR.** The two formulas are the entire calibration. Memory grows logarithmically with the target FPR.
 3. **Production-grade for "set membership at scale".** Cassandra, RocksDB, Chrome, Bitcoin — every Bloom filter in those systems saves orders of magnitude of memory or bandwidth versus exact methods.
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->

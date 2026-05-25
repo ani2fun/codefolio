@@ -1,0 +1,252 @@
+{
+  "chapter": "03-trees/02-binary-search-tree",
+  "sweep": 2,
+  "pilot_approved": true,
+  "files": [
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/02-binary-search-tree/01-introduction-to-binary-search-trees.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 11,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/02-binary-search-tree/02-height-and-balance-in-binary-search-trees.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 11,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/02-binary-search-tree/03-recursive-searching-in-binary-search-trees.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 11,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/02-binary-search-tree/04-iterative-searching-in-binary-search-trees.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 11,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/02-binary-search-tree/05-insertion-in-binary-search-trees.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 11,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/02-binary-search-tree/06-deletion-in-binary-search-trees.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 11,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/02-binary-search-tree/07-constructing-a-binary-search-tree.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 11,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/02-binary-search-tree/08-lowest-common-ancestor-in-binary-search-trees.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 11,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/02-binary-search-tree/09-iterators-in-binary-search-trees.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 11,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/02-binary-search-tree/10-memorize.md",
+      "type": "CHAPTER_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 0,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/02-binary-search-tree/11-pattern-sorted-traversal/01-pattern.md",
+      "type": "PATTERN",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/02-binary-search-tree/12-pattern-reversed-sorted-traversal/01-pattern.md",
+      "type": "PATTERN",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/02-binary-search-tree/13-pattern-range-postorder/01-pattern.md",
+      "type": "PATTERN",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/02-binary-search-tree/14-pattern-two-pointer/01-pattern.md",
+      "type": "PATTERN",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/02-binary-search-tree/11-pattern-sorted-traversal/02-problems/01-lowest-absolute-variance.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/02-binary-search-tree/11-pattern-sorted-traversal/02-problems/02-bst-validator.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/02-binary-search-tree/11-pattern-sorted-traversal/02-problems/03-bst-to-sorted-array.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/02-binary-search-tree/11-pattern-sorted-traversal/02-problems/04-bst-to-dll.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/02-binary-search-tree/12-pattern-reversed-sorted-traversal/02-problems/01-rank-nodes.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/02-binary-search-tree/12-pattern-reversed-sorted-traversal/02-problems/02-kth-largest-element.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/02-binary-search-tree/12-pattern-reversed-sorted-traversal/02-problems/03-enriched-sum-tree.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/02-binary-search-tree/12-pattern-reversed-sorted-traversal/02-problems/04-multiple-replacement.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/02-binary-search-tree/13-pattern-range-postorder/02-problems/01-range-summation.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/02-binary-search-tree/13-pattern-range-postorder/02-problems/02-range-diameter.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/02-binary-search-tree/13-pattern-range-postorder/02-problems/03-range-leaves.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/02-binary-search-tree/13-pattern-range-postorder/02-problems/04-range-exclusive-trim.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/02-binary-search-tree/14-pattern-two-pointer/02-problems/01-two-sum-on-bst.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/02-binary-search-tree/14-pattern-two-pointer/02-problems/02-multiple-tree.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/02-binary-search-tree/14-pattern-two-pointer/02-problems/03-median-in-bst.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/02-binary-search-tree/14-pattern-two-pointer/02-problems/04-bst-pair-sum.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/02-binary-search-tree/11-pattern-sorted-traversal/03-memorize.md",
+      "type": "PATTERN_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/02-binary-search-tree/12-pattern-reversed-sorted-traversal/03-memorize.md",
+      "type": "PATTERN_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/02-binary-search-tree/13-pattern-range-postorder/03-memorize.md",
+      "type": "PATTERN_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/02-binary-search-tree/14-pattern-two-pointer/03-memorize.md",
+      "type": "PATTERN_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/03-trees/02-binary-search-tree/15-pattern-synthesis.md",
+      "type": "PATTERN_SYNTHESIS",
+      "status": "done",
+      "placeholders_inserted": 0,
+      "flags": 0
+    }
+  ]
+}

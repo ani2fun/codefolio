@@ -1,0 +1,31 @@
+{
+  "chapter": "03-trees/08-b-tree",
+  "sweep": 3,
+  "pilot_approved": false,
+  "units": [
+    {
+      "id": "03-trees/08-b-tree/lesson-01-introduction-to-b-trees",
+      "type": "LESSON_UNIT",
+      "files": [
+        "03-trees/08-b-tree/01-introduction-to-b-trees.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "03-trees/08-b-tree/chapter_memorize-02-memorize",
+      "type": "CHAPTER_MEMORIZE_UNIT",
+      "files": [
+        "03-trees/08-b-tree/02-memorize.md"
+      ],
+      "status": "pending",
+      "blocked_by": [
+        "03-trees/08-b-tree/lesson-01-introduction-to-b-trees"
+      ],
+      "todos_filled": 0,
+      "verify_flags": 0
+    }
+  ]
+}

@@ -1,3 +1,8 @@
+---
+title: "Word Break"
+summary: "<!-- TODO: summary -->"
+---
+
 # 9. Word Break
 
 You paste a stream of characters into a search box: `"codeintuition"`. The site needs to know — is this two words, or one, or three? With no spaces, every position is potentially a boundary, and you can't tell from the characters alone. The system needs a dictionary and a procedure: scan the string, try every possible split, and ask whether *any* arrangement turns the run-on into a sequence of valid words.
@@ -238,7 +243,7 @@ Same logic as palindrome partitioning. The left edge of the partition is pinned 
 The implementation uses `dp[i]` for the first `i` characters. `dp[0] = true` is the empty-prefix base case. We hoist the dictionary into a hash set before the loop.
 
 
-```python run
+```python run viz=array viz-root=dp
 from typing import List
 
 class Solution:
@@ -358,3 +363,40 @@ Word break is the **boolean** twin of palindrome partitioning. The state stays 1
 `dp[i][w]` = max value using the first `i` items, capacity `w`. Two choices per item: include (`dp[i-1][w - weight[i]] + value[i]`) or skip (`dp[i-1][w]`). 2D state, max-aggregator. The next lesson formalises this as the **0/1 Knapsack** problem — the most-cited DP archetype in interviews.
 
 </details>
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: The Hook — missing, needs to be written -->
+<!--       Guidance: real-world story opening before any definition -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->
+
+<!-- TODO: Final Takeaway — missing, needs to be written -->
+<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->

@@ -1,3 +1,8 @@
+---
+title: "Bubble Sort"
+summary: "<!-- TODO: summary -->"
+---
+
 # 2. Bubble Sort
 
 You're a teacher with a queue of students lined up in some random order. You need them sorted by height — shortest at the front, tallest at the back. With no clipboard, no sorting helper, just yourself and a "swap these two" move, what's the simplest algorithm? **Walk down the line; whenever you find two adjacent students out of order, swap them. Repeat the walk until you make a full pass with zero swaps.** That's it. The tallest student bubbles up to the back on the first pass; the second-tallest bubbles up to the second-to-last on the next pass; and so on.
@@ -208,7 +213,7 @@ Two versions: the basic implementation (always runs `n - 1` passes) and the opti
 ## Basic Implementation
 
 
-```python run
+```python run viz=array viz-root=arr
 from typing import List
 
 class Solution:
@@ -304,7 +309,7 @@ The optimisation: track whether *any swap* happened in a pass. If a full pass co
 
 This makes bubble sort *adaptive* (the Introduction to Sorting lesson, classification axis 4). On already-sorted input, the algorithm completes in one `O(n)` pass instead of `O(n²)` total work.
 
-```python run
+```python run viz=array viz-root=arr
 class Solution:
     def bubble_sort(self, arr):
         n = len(arr)
@@ -404,7 +409,7 @@ Output: [1, 2, 3, 4, 5, 6]   (already sorted)
 The canonical bubble sort: two nested loops, swap adjacent pairs on a strict `>`. Run against a spread of inputs — duplicates, reverse-sorted, already-sorted, empty, single-element — to confirm it sorts every case in place.
 
 
-```python run
+```python run viz=array viz-root=arr
 from typing import List
 
 class Solution:
@@ -536,7 +541,7 @@ The next algorithm — selection sort — fixes one specific weakness of bubble 
 <details>
 <summary><strong>Answer — open after you've written it</strong></summary>
 
-```python run
+```python run viz=array viz-root=arr
 class Solution:
     def bubble_sort_desc(self, arr):
         n = len(arr)
@@ -560,3 +565,40 @@ The change is the comparison: `>` becomes `<`. The algorithm is still stable (we
 **Generalising:** the same one-character change — `<` vs `>` — flips the sort order of *any* comparison-based algorithm. We'll abstract this into a "custom compare function" pattern in the Custom Compare lesson. **You just discovered the foundation of how `sorted(arr, reverse=True)` works internally.**
 
 </details>
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: The Hook — missing, needs to be written -->
+<!--       Guidance: real-world story opening before any definition -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->
+
+<!-- TODO: Final Takeaway — missing, needs to be written -->
+<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->

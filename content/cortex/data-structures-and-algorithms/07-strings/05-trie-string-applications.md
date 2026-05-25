@@ -93,7 +93,7 @@ Hash sets can't do any of those efficiently. When prefix-related queries are com
 
 # Implementation: Word Break
 
-```python run
+```python run viz=array viz-root=root
 class TrieNode:
     __slots__ = ("children", "is_end")
     def __init__(self):
@@ -283,3 +283,34 @@ Tries shine when prefix structure matters. Three patterns to internalise:
 1. **Tries beat hash sets when prefix queries are common.** Autocomplete, IP routing, prefix-counting — none of these are efficient on a hash set.
 2. **Tries decompose problems into "walk down the trie".** Once you have the structure, many string problems collapse to a DFS or DP over the trie.
 3. **Compression matters at scale.** Plain tries waste space on single-child chains. Production code (Linux LC-trie, DuckDB ART) uses compression for memory and cache reasons.
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Table of Contents — missing, needs to be written -->
+<!--       Guidance: bulleted list of major H2 sections -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->

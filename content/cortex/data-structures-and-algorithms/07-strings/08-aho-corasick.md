@@ -106,7 +106,7 @@ Optimisation: precompute the **output link** — for each node `u`, the closest 
 
 # Implementation
 
-```python run
+```python run viz=array viz-root=root
 from collections import deque
 
 class ACNode:
@@ -324,3 +324,28 @@ Aho-Corasick is KMP for many patterns at once. Three patterns to internalise:
 3. **The reason `grep -F` is fast.** Whenever you've used multi-pattern fixed-string search and been impressed by the throughput, you've used Aho-Corasick or a close cousin.
 
 This concludes the Strings module. Combined with the [Trie chapter](/cortex/data-structures-and-algorithms/trees-trie-introduction-to-tries), the module covers naive matching → KMP → Z → Rabin-Karp → trie applications → suffix array → suffix automaton → Aho-Corasick: the canonical senior-engineer string-algorithm survey.
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->

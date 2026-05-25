@@ -1,0 +1,70 @@
+{
+  "chapter": "07-strings",
+  "sweep": 2,
+  "pilot_approved": true,
+  "files": [
+    {
+      "path": "content/cortex/data-structures-and-algorithms/07-strings/01-string-matching-naive.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 12,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/07-strings/02-kmp.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/07-strings/03-z-algorithm.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/07-strings/04-rabin-karp-and-rolling-hash.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/07-strings/05-trie-string-applications.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/07-strings/06-suffix-array.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 7,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/07-strings/07-suffix-automaton.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 8,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/07-strings/08-aho-corasick.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 7,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/07-strings/09-memorize.md",
+      "type": "CHAPTER_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 0,
+      "flags": 0
+    }
+  ]
+}

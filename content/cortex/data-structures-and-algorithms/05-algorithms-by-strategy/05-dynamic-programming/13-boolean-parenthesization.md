@@ -1,3 +1,8 @@
+---
+title: "Boolean Parenthesization"
+summary: "<!-- TODO: summary -->"
+---
+
 # 13. Boolean Parenthesisation
 
 A boolean expression like `T ^ F & T` looks unambiguous until you ask "what's its value?" Without parentheses, the answer depends entirely on which operator binds first — `(T ^ F) & T = T & T = T`, but `T ^ (F & T) = T ^ F = T`. Both ways give `T`, so the count is 2. Switch to `T & F | T` and the parenthesisations diverge: `(T & F) | T = T`, `T & (F | T) = T` — again 2. But for some inputs, the two evaluations *disagree*, and the question becomes: how many parenthesisations make the expression evaluate to `True`? This is the kind of problem compilers and theorem provers stumble across when reasoning about ambiguous grammars or counting satisfying assignments — and it has a clean DP shape that recurs whenever a sequence has *internal* split points instead of just two endpoints.
@@ -219,7 +224,7 @@ For each split-point `k`, the number of left-tree × right-tree combinations is 
 Bottom-up tabulation; two parallel tables. We treat operands as living at even string indices and operators at odd indices; the inner loop steps by 2.
 
 
-```python run
+```python run viz=grid viz-root=T
 from typing import List
 
 class Solution:
@@ -384,3 +389,40 @@ The new structural lesson: when the combination operator's outcome depends on ea
 `dp[i][j]` = minimum scalar multiplications to compute the matrix product `A_i · A_{i+1} · ... · A_j`. For each split `k`, `dp[i][j] = min(dp[i][k] + dp[k+1][j] + cost(i, k, j))`, where `cost(i, k, j) = dims[i-1] · dims[k] · dims[j]` — the cost of multiplying the two sub-products. Same `(i, j)` interval shape, same split-point structure as boolean parenthesisation, but the aggregator is min instead of sum, and the per-split cost is non-trivial. The next lesson formalises this as **Matrix Chain Multiplication**.
 
 </details>
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: The Hook — missing, needs to be written -->
+<!--       Guidance: real-world story opening before any definition -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->
+
+<!-- TODO: Final Takeaway — missing, needs to be written -->
+<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->

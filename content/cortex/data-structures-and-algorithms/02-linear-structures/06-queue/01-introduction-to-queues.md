@@ -1,3 +1,8 @@
+---
+title: "Introduction To Queues"
+summary: "<!-- TODO: summary -->"
+---
+
 # 1. Introduction to Queues
 
 ## The Hook
@@ -592,3 +597,31 @@ The queue is one of the two foundational ordered-access data structures (the oth
 3. **Queues power breadth-first thinking.** Anywhere you find yourself thinking *"process the oldest pending item next"* — whether it's level-order tree traversal, BFS in a graph, scheduling, message dispatch, or producer–consumer coordination — you are describing a queue. Recognising the shape is half the battle.
 
 > *Coming up — implementations. The next lesson builds a queue on a **circular array** (the natural choice when capacity is bounded; the cyclic trick is genuinely beautiful), and the lesson after on a **linked list** (the natural choice when both ends must support O(1) work without bookkeeping). The lesson after that is the famous "queue out of stacks / stack out of queues" interview duo. Hold onto the FIFO mental model — every implementation that follows is just a different way to mechanise it.*
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
+<!--       Guidance: bulleted list of gotchas -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->

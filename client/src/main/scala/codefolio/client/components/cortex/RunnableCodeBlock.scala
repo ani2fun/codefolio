@@ -8,12 +8,13 @@ import codefolio.shared.runner.CodeExecutor
 import codefolio.shared.runner.CodeExecutor.{EditMode, RunState}
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
+import org.scalajs.dom
 
 import scala.concurrent.ExecutionContext
 import scala.scalajs.concurrent.JSExecutionContext
 import scala.scalajs.js
 import scala.scalajs.js.annotation.JSImport
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 
 /**
  * Renders a code editor + Run/Edit/Cancel controls + an output panel. State machine lives in [[CodeExecutor]]
@@ -64,9 +65,11 @@ object RunnableCodeBlock:
       runnable: Boolean = true,
       // When set, a "Visualise" button opens VisualiseModal and traces the live
       // editor content. `viz` is the layout hint (e.g. "binary-tree"); `vizRoot`
-      // optionally names the structure's root variable. Set only on Python tabs.
+      // optionally names the structure's root variable; `vizCase` optionally
+      // overrides the multi-case segmentation count. Set only on Python tabs.
       viz: Option[String] = None,
-      vizRoot: Option[String] = None
+      vizRoot: Option[String] = None,
+      vizCase: Option[Int] = None
   )
 
   private val StatusOk = 3
@@ -85,6 +88,26 @@ object RunnableCodeBlock:
 
   private given ExecutionContext = JSExecutionContext.queue
 
+  // ─── Discovery cue ──────────────────────────────────────────────────────────────────────────────
+  // A one-time nudge toward the Visualise button. The first viz block a visitor actually scrolls into
+  // view claims it — `discoveryClaimed` caps it at one nudge per page load, `DiscoveryKey` in
+  // localStorage caps it at one per browser. See the `useEffectOnMountBy` IntersectionObserver.
+  private val DiscoveryKey     = "cortex-reader.vizDiscovered"
+  private var discoveryClaimed = false
+  private var vizSeq           = 0
+
+  private def nextVizId(): String =
+    vizSeq += 1
+    s"rcb-viz-$vizSeq"
+
+  // On failure (e.g. localStorage blocked in private browsing) treat the cue as already seen — never
+  // nag rather than risk nagging on every visit.
+  private def discoverySeen(): Boolean =
+    Try(dom.window.localStorage.getItem(DiscoveryKey) != null).getOrElse(true)
+
+  private def markDiscoverySeen(): Unit =
+    Try(dom.window.localStorage.setItem(DiscoveryKey, "1")).getOrElse(())
+
   val Component =
     ScalaFnComponent
       .withHooks[Props]
@@ -97,8 +120,36 @@ object RunnableCodeBlock:
           Callback(unsubscribe())
         }
       }
-      .useState(false) // VisualiseModal open state
-      .render { (props, st, authS, vizOpenS) =>
+      .useState(false)            // VisualiseModal open state
+      .useState(false)            // discovery cue visible
+      .useRefBy(_ => nextVizId()) // stable id for the Visualise button wrapper
+      // First-encounter discovery cue: observe this block's Visualise button and show the one-time
+      // nudge when it first scrolls into view (so the cue is claimed by a button actually seen).
+      .useEffectOnMountBy { (props, _, _, _, cueS, vizIdRef) =>
+        CallbackTo {
+          val target =
+            if props.viz.isDefined && !discoveryClaimed && !discoverySeen() then
+              Option(dom.document.getElementById(vizIdRef.value))
+            else None
+          target match
+            case None => Callback.empty
+            case Some(el) =>
+              val callback
+                  : js.Function2[js.Array[dom.IntersectionObserverEntry], dom.IntersectionObserver, Unit] =
+                (entries, obs) => {
+                  val seen = entries.exists(_.isIntersecting)
+                  if seen && !discoveryClaimed && !discoverySeen() then
+                    discoveryClaimed = true
+                    markDiscoverySeen()
+                    cueS.setState(true).runNow()
+                  if seen then obs.disconnect()
+                }
+              val observer = new dom.IntersectionObserver(callback)
+              observer.observe(el)
+              Callback(observer.disconnect())
+        }
+      }
+      .render { (props, st, authS, vizOpenS, cueS, vizIdRef) =>
         val s = st.value
 
         val status  = authS.value.status
@@ -221,17 +272,27 @@ object RunnableCodeBlock:
               if editing then "Run edit" else "Run"
             )
 
-        // Visualise — opens VisualiseModal and traces the live editor content.
+        // Visualise — opens VisualiseModal and traces the live editor content. While the discovery
+        // cue is showing, the button pulses and a one-time tip sits beneath it (see `renderVizCue`).
+        val cueVisible           = cueS.value && props.viz.isDefined
+        val dismissCue: Callback = cueS.setState(false)
         val vizControl: VdomNode =
           if props.viz.isDefined then
-            <.button(
-              ^.tpe   := "button",
-              ^.title := "Visualise (⌥V)",
-              ^.onClick --> vizOpenS.setState(true),
-              ^.aria.label := "Visualise code",
-              ^.className  := "rcb__button rcb__button--viz",
-              LucideIcons.Network(LucideIcons.withClass("rcb__button-icon")),
-              "Visualise"
+            <.span(
+              ^.className := "rcb__viz",
+              ^.id        := vizIdRef.value,
+              <.button(
+                ^.tpe   := "button",
+                ^.title := "Visualise (⌥V)",
+                ^.onClick --> (vizOpenS.setState(true) >> dismissCue),
+                ^.aria.label := "Visualise code",
+                ^.className :=
+                  (if cueVisible then "rcb__button rcb__button--viz rcb__button--viz-cue"
+                   else "rcb__button rcb__button--viz"),
+                LucideIcons.Network(LucideIcons.withClass("rcb__button-icon")),
+                "Visualise"
+              ),
+              if cueVisible then renderVizCue(dismissCue) else EmptyVdom
             )
           else EmptyVdom
 
@@ -371,6 +432,7 @@ object RunnableCodeBlock:
                   pythonSource = s.code,
                   vizHint = hint,
                   vizRoot = props.vizRoot,
+                  vizCase = props.vizCase,
                   title = "Code visualisation"
                 )
               )
@@ -381,6 +443,26 @@ object RunnableCodeBlock:
         if props.bare then React.Fragment(body, vizModal)
         else React.Fragment(<.div(^.className := "rcb", body), vizModal)
       }
+
+  /**
+   * The first-encounter discovery cue beneath the Visualise button — a one-time, dismissible tip, shown once
+   * per browser (see the `useEffectOnMountBy` IntersectionObserver). Dismissed by its `×` or by opening the
+   * modal.
+   */
+  private def renderVizCue(dismiss: Callback): VdomNode =
+    <.div(
+      ^.className           := "rcb__viz-cue",
+      ^.role                := "status",
+      VdomAttr("aria-live") := "polite",
+      <.span(^.className := "rcb__viz-cue-text", "New — watch this code run, step by step"),
+      <.button(
+        ^.tpe        := "button",
+        ^.className  := "rcb__viz-cue-close",
+        ^.aria.label := "Dismiss tip",
+        ^.onClick --> dismiss,
+        LucideIcons.X(LucideIcons.withClass("rcb__viz-cue-close-icon"))
+      )
+    )
 
   private def renderResult(r: RunResult): VdomNode =
     val ok = r.statusId == StatusOk

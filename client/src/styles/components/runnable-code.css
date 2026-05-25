@@ -9,6 +9,9 @@
     }
     .rcb__header {
         @apply flex items-center justify-between gap-2 px-3 py-2 border-b border-border bg-muted/40;
+        /* containing block for the discovery cue, so the cue is bounded by the
+           header width and can never overflow the viewport */
+        position: relative;
     }
     .rcb__language-label {
         @apply inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground;
@@ -231,5 +234,111 @@
     .identity-chip__signout-icon {
         width: 11px;
         height: 11px;
+    }
+
+    /* ─── Visualise discovery cue ────────────────────────────────── */
+    /* A one-time, once-per-browser nudge toward the Visualise button: the
+       button pulses and a dismissible tip drops beneath the header. Claimed
+       by the first viz block scrolled into view (RunnableCodeBlock — the
+       IntersectionObserver + `discoveryClaimed` / `DiscoveryKey`). The tip
+       is positioned against `.rcb__header`, so it is always bounded by the
+       block and never overflows the viewport. */
+    .rcb__viz {
+        display: inline-flex;
+    }
+    /* Pulse ring — kept ≤ 5px so it isn't clipped by `.rcb`'s overflow-hidden;
+       four iterations, then it stops. */
+    @keyframes rcb-viz-pulse {
+        0%   { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.5); }
+        70%  { box-shadow: 0 0 0 5px hsl(var(--primary) / 0); }
+        100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0); }
+    }
+    .rcb__button--viz-cue {
+        animation: rcb-viz-pulse 1.8s ease-out 4;
+    }
+    @keyframes rcb-viz-cue-in {
+        from { opacity: 0; transform: translateY(-4px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    .rcb__viz-cue {
+        position: absolute;
+        top: calc(100% + 9px);
+        right: 12px;
+        z-index: 5;
+        display: flex;
+        align-items: flex-start;
+        gap: 6px;
+        width: max-content;
+        max-width: 15rem;
+        padding: 7px 8px 8px 11px;
+        border: 1px solid hsl(var(--border));
+        border-radius: 8px;
+        background: hsl(var(--card));
+        color: hsl(var(--foreground));
+        box-shadow: 0 10px 26px -10px rgba(0, 0, 0, 0.4);
+        font-size: 12px;
+        line-height: 1.4;
+        animation: rcb-viz-cue-in 200ms ease-out;
+    }
+    /* Caret pointing up — offset to sit roughly under the Visualise button
+       (which is ~131px in from the header's right edge). */
+    .rcb__viz-cue::before {
+        content: "";
+        position: absolute;
+        top: -5px;
+        right: 119px;
+        width: 10px;
+        height: 10px;
+        background: hsl(var(--card));
+        border-left: 1px solid hsl(var(--border));
+        border-top: 1px solid hsl(var(--border));
+        transform: rotate(45deg);
+    }
+    /* On a phone the tip spans the block width — a banner, not a pointer. */
+    @media (max-width: 768px) {
+        .rcb__viz-cue {
+            left: 12px;
+            right: 12px;
+            width: auto;
+            max-width: none;
+        }
+        .rcb__viz-cue::before {
+            display: none;
+        }
+    }
+    .rcb__viz-cue-text {
+        flex: 1;
+        min-width: 0;
+    }
+    .rcb__viz-cue-close {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        width: 18px;
+        height: 18px;
+        margin: -2px -2px 0 0;
+        border: none;
+        border-radius: 4px;
+        background: transparent;
+        color: hsl(var(--muted-foreground));
+        transition: color 140ms ease;
+    }
+    .rcb__viz-cue-close:hover {
+        color: hsl(var(--foreground));
+    }
+    .rcb__viz-cue-close-icon {
+        width: 12px;
+        height: 12px;
+    }
+    /* The tip carries the message; honour a reduced-motion preference by
+       dropping the pulse and the entrance animation. */
+    @media (prefers-reduced-motion: reduce) {
+        .rcb__button--viz-cue {
+            animation: none;
+        }
+        .rcb__viz-cue {
+            animation: none;
+        }
     }
 }

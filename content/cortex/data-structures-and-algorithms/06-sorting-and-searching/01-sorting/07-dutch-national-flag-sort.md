@@ -1,3 +1,8 @@
+---
+title: "Dutch National Flag Sort"
+summary: "<!-- TODO: summary -->"
+---
+
 # 7. Dutch National Flag Sort
 
 You're sorting balls into three colour groups: red, white, blue. Or characters into three categories: lowercase, digit, uppercase. Or array elements into three buckets: smaller-than-pivot, equal-to-pivot, larger-than-pivot. Whatever the *meaning*, the *structure* of the problem is the same — three categories, one array, one pass. Counting sort would work here in `O(n + k) = O(n + 3) = O(n)` time, but it needs `O(k)` extra memory and a second array. Quicksort would work too in `O(n log n)`, but that's overkill for three categories.
@@ -231,7 +236,7 @@ The four-region invariant gives the algorithm its correctness proof. The loop co
 # Implementation
 
 
-```python run
+```python run viz=array viz-root=arr
 from typing import List
 
 class Solution:
@@ -432,7 +437,7 @@ The next algorithm — **three-way quicksort** — bolts the Dutch flag's three-
 <details>
 <summary><strong>Answer — open after you've thought about it</strong></summary>
 
-```python run
+```python run viz=array viz-root=arr
 class Solution:
     def three_way_partition(self, arr, pivot):
         left, mid, right = 0, 0, len(arr) - 1
@@ -459,3 +464,40 @@ Time: `O(n)`, single pass. Space: `O(1)`.
 This is **the partition step of three-way quicksort** (the Three-Way Quicksort lesson). It collapses all equal-to-pivot elements into one contiguous middle region — those elements are *already in their final sorted positions*, so the recursive sort never has to revisit them. Compared with two-way (Lomuto) partition, this avoids the `O(n²)` blow-up on arrays with many duplicates. **You just rediscovered the partition that makes three-way quicksort linear-time on duplicate-heavy inputs.**
 
 </details>
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: The Hook — missing, needs to be written -->
+<!--       Guidance: real-world story opening before any definition -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->
+
+<!-- TODO: Final Takeaway — missing, needs to be written -->
+<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->

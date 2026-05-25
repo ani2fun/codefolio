@@ -94,7 +94,7 @@ flowchart LR
 
 # Implementation
 
-```python run
+```python run viz=graph viz-root=root
 import random
 
 class TreapNode:
@@ -349,3 +349,28 @@ Treaps blend BST and heap into a probabilistically-balanced tree. Three patterns
 1. **BST on keys, heap on priorities.** Two orderings simultaneously; rotations preserve both.
 2. **Random priorities = expected balance.** Sorted-insert worst case is gone; the random priorities defuse adversarial input.
 3. **Simpler than RB-tree, slightly more random than skip list.** When you need a balanced BST you can write from scratch in 50 lines, treap is the answer.
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->

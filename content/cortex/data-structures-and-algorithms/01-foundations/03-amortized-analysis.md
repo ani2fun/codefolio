@@ -37,27 +37,34 @@ This chapter is the proof. By the end you'll be able to look at any "occasionall
 
 ## Table of contents
 
-1. [The "every now and then" cost problem](#the-every-now-and-then-cost-problem)
-2. [Three ways to amortize](#three-ways-to-amortize)
-3. [Worked example: dynamic array push](#worked-example-dynamic-array-push)
-4. [Worked example: incrementing a binary counter](#worked-example-incrementing-a-binary-counter)
-5. [A runnable demo](#a-runnable-demo)
-6. [When amortized analysis isn't enough](#when-amortized-analysis-isnt-enough)
-7. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
-8. [Production reality](#production-reality)
-9. [Practice ladder](#practice-ladder)
-10. [Cross-links](#cross-links)
-11. [Final takeaway](#final-takeaway)
+1. [Understanding the Problem](#understanding-the-problem)
+2. [Internal Mechanics — the three methods](#internal-mechanics--the-three-methods)
+3. [Supported Operations](#supported-operations)
+4. [Working Example: dynamic array push](#working-example-dynamic-array-push)
+5. [Working Example: incrementing a binary counter](#working-example-incrementing-a-binary-counter)
+6. [A runnable demo](#a-runnable-demo)
+7. [When amortized analysis isn't enough](#when-amortized-analysis-isnt-enough)
+8. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
+9. [Production reality](#production-reality)
+10. [Quiz](#quiz)
+11. [Practice ladder](#practice-ladder)
+12. [Further reading](#further-reading)
+13. [Cross-Links](#cross-links)
+14. [Final Takeaway](#final-takeaway)
 
 ***
 
-# The "every now and then" cost problem
+# Understanding the Problem
 
-Suppose you have a sequence of `n` operations on a data structure. Most operations cost `O(1)`. Every now and then, one operation costs `O(n)`. What's the *total* cost of the sequence?
+Amortized analysis exists because some data structures are fast on average but occasionally pay a big repair bill. Suppose you have a sequence of `n` operations on a data structure. Most cost `O(1)`. Every now and then one costs `O(n)`. What is the *total* cost of the sequence?
 
-Naively: `(n-1) × O(1) + 1 × O(n) = O(n)`. So the average per-operation cost is `O(1)` — divide the total by `n`.
+Three notions of "cost" compete for the answer, and only one fits:
 
-The catch is in "every now and then". For dynamic-array push, every now-and-then is roughly *every doubling*: pushes 1, 2, 4, 8, 16, … each trigger a resize. Push number `k` resizes when `k` is a power of 2, and the resize copies `k-1` elements. The total cost over `n` pushes is:
+- **Worst case** describes the most expensive *single* operation. For dynamic-array push that's `O(n)` — the resize.
+- **Average case** describes the expected cost over a random *input distribution*. There is no input distribution here; the same structure is hit by the same caller.
+- **Amortized cost** describes the average cost over a *sequence* of operations on one structure, taken in the worst case over all sequences of that length.
+
+To make this concrete: pushes 1, 2, 4, 8, 16, … into a dynamic array each trigger a resize. Push number `k` resizes when `k` is a power of 2, and the resize copies `k − 1` elements. The total cost over `n` pushes is:
 
 ```
 (n − log n × constant) cheap pushes × O(1) per push
@@ -65,33 +72,31 @@ The catch is in "every now and then". For dynamic-array push, every now-and-then
 ∑ (over each resize at sizes 1, 2, 4, …, n) O(size of array at the time)
 ```
 
-The `O(1)` cheap pushes contribute `O(n)`. The resizes contribute `1 + 2 + 4 + … + n/2 + n = 2n − 1` (geometric series). Together: `O(n) + O(n) = O(n)` for *all `n` operations combined*. Per-operation: `O(1)` *amortized*.
-
-That's not the worst case (the worst single push is `O(n)`). It's not the average case (we didn't average over a distribution of inputs; we averaged over a *sequence* of operations on a single data structure). It's its own thing: the **amortized** cost.
+The cheap pushes contribute `O(n)`. The resizes contribute `1 + 2 + 4 + … + n = 2n − 1` — a geometric series. Together: `O(n)` total work, `O(1)` per push when divided.
 
 > **Definition.** The **amortized cost** of an operation is the total cost of any sequence of `n` operations divided by `n`, in the worst case over all sequences of length `n`.
 
-The key word is "any". An adversary doesn't get to pick a *single* expensive operation — they have to make the *whole sequence* expensive. And it turns out that for many data structures, no sequence is expensive enough on average to break the constant-time claim, even though the worst single operation looks scary.
+So the key idea is: amortized cost is neither a probabilistic claim nor a per-operation guarantee — it is a `worst-sequence average`. An adversary cannot pick one expensive operation to indict the structure. They have to make the *whole sequence* expensive, and for many designs no such sequence exists.
 
 ***
 
-# Three ways to amortize
+# Internal Mechanics — the three methods
 
-There are three standard methods to prove an amortized cost claim. They produce the *same* number; they differ in how they get there. Pick whichever matches your taste and the structure of the problem.
+Three proof techniques deliver an amortized bound. They produce the *same* number; they differ in how the proof is structured and which structures they fit best.
 
 ### 1. Aggregate method
 
 Compute the total cost of `n` operations directly. Divide by `n`. Done.
 
-This is the method we just applied to dynamic-array push. It's the most concrete and the easiest first attempt. Its weakness is that it gives a single average — it doesn't differentiate between operation types if there are several.
+This is the method applied to dynamic-array push above. It is the most concrete and the easiest first attempt. Its weakness is that it gives a single average — it does not differentiate between operation types if there are several.
 
 ### 2. Accounting (banker's) method
 
 Charge each operation more than it costs. Save the surplus as "credits" attached to the data structure. When an expensive operation comes along, pay for it with the saved credits.
 
-For dynamic-array push: charge each push `3` units (the actual cost of one push, plus `2` credit). When a resize triggers, the array has been growing — every element added since the last resize has contributed `2` credits, so there's enough credit to pay for the copy. The amortized cost per push is `3 = O(1)`.
+For dynamic-array push: charge each push `3` units (the actual cost of one push, plus `2` credit). When a resize triggers, the array has been growing — every element added since the last resize has contributed `2` credits, so there is enough credit to pay for the copy. The amortized cost per push is `3 = O(1)`.
 
-The trick is the choice of what's charged extra. If you charge enough, you can afford anything; if you charge too little, the credit account goes negative and the analysis fails.
+The trick is the choice of what is charged extra. If you charge enough, you can afford anything; if you charge too little, the credit account goes negative and the analysis fails.
 
 ### 3. Potential method
 
@@ -135,7 +140,26 @@ flowchart LR
 
 ***
 
-# Worked example: dynamic array push
+# Supported Operations
+
+Amortized analysis is a technique, not a data structure, but the same technique recurs across a small canon of operations. This table indexes the structure → operation pairs where amortized bounds give the tightest honest answer, and where the chapter returns to each one.
+
+| Structure | Operation | Amortized | Worst single | Method used |
+|---|---|---|---|---|
+| Dynamic array | `push` / `append` | `O(1)` time, `O(1)` space per push | `O(n)` time (resize) | Aggregate or potential |
+| Dynamic array | `pop` (with quarter-shrink) | `O(1)` time, `O(1)` space | `O(n)` time (shrink) | Aggregate |
+| Hash table | `insert` (with rehash) | `O(1)` time, `O(1)` space | `O(n)` time (rehash) | Aggregate |
+| Binary counter | `increment` (cost = bits flipped) | `O(1)` time, `O(1)` space | `O(log n)` time | Aggregate or potential |
+| Splay tree | `access` / `insert` / `delete` | `O(log n)` time, `O(log n)` space | `O(n)` time | Potential (rank function) |
+| Fibonacci heap | `decrease-key` | `O(1)` time, `O(1)` space | `O(log n)` time | Potential |
+| Fibonacci heap | `extract-min` | `O(log n)` time, `O(log n)` space | `O(n)` time | Potential |
+| Union-Find | `union` / `find` (with path compression) | `O(α(n))` time, `O(1)` space | `O(log n)` time | Potential |
+
+Two patterns connect every row. <!-- VERIFY: Confirm Fibonacci heap extract-min amortized space is O(log n) rather than O(1). --> The structure either *spreads expensive repair work across many cheap operations* (resize, rehash, restructuring) or *accumulates state that the next expensive operation consumes* (deferred merges in a Fibonacci heap, path compression in Union-Find). So the key idea is: when you see a structure whose repair cost is bounded by the work done since the last repair, amortized analysis is the natural vocabulary.
+
+***
+
+# Working Example: dynamic array push
 
 The canonical amortized data structure. Capacity starts at `1`; when you push into a full array, you allocate a new array of `2 ×` capacity and copy.
 
@@ -173,7 +197,7 @@ Just after a resize, `size = capacity/2`, so `Φ = 0`. As we push without resizi
 
 **Cheap push** (no resize): `c_i = 1`, `ΔΦ = 2`. Amortized: `1 + 2 = 3`.
 
-**Push that triggers a resize**: just *before* the push, `size = capacity`, so `Φ = capacity`. The resize copies `capacity` elements (cost `capacity`), then we push (cost `1`), then capacity doubles. After the operation: new `size = capacity + 1`, new `capacity = 2 × old capacity`, so new `Φ = 2 · (capacity + 1 - capacity) = 2`. So `ΔΦ = 2 - capacity`. Amortized: `(capacity + 1) + (2 - capacity) = 3`.
+**Push that triggers a resize**: immediately *before* the push, `size = capacity`, so `Φ = capacity`. The resize copies `capacity` elements (cost `capacity`), then we push (cost `1`), then capacity doubles. After the operation: new `size = capacity + 1`, new `capacity = 2 × old capacity`, so new `Φ = 2 · (capacity + 1 - capacity) = 2`. So `ΔΦ = 2 - capacity`. Amortized: `(capacity + 1) + (2 - capacity) = 3`.
 
 Both cases give amortized cost `3 = O(1)`. ✓
 
@@ -212,7 +236,7 @@ flowchart LR
 
 ***
 
-# Worked example: incrementing a binary counter
+# Working Example: incrementing a binary counter
 
 A textbook example that's instructive even though it doesn't ship in production. Maintain an `n`-bit binary counter; the operation is "increment by 1". The cost of an increment is the number of bits it flips.
 
@@ -235,7 +259,7 @@ The worst increment flips all `n` bits (when going from `0111…1` to `1000…0`
 
 $$\text{total bit flips} = \sum_{i=0}^{\lfloor \log_2 n \rfloor} \lfloor n / 2^i \rfloor \leq n \sum_{i=0}^{\infty} \frac{1}{2^i} = 2n$$
 
-Total cost over `n` increments: `≤ 2n`. Amortized per increment: `2 = O(1)`. The "every now and then expensive" increment averages out to constant, just like dynamic-array push.
+Total cost over `n` increments: `≤ 2n`. Amortized per increment: `2 = O(1)`. The "every now and then expensive" increment averages out to constant, mirroring dynamic-array push.
 
 The intuition: a 1-bit transition is cheap (cost 1). Long carry chains are expensive but rare — a chain of length `k` happens only every `2^k` increments. Geometric decay strikes again.
 
@@ -245,7 +269,7 @@ The intuition: a 1-bit transition is cheap (cost 1). Long carry chains are expen
 
 The code below implements a dynamic array with growth factor 2, pushes a million items, and measures both per-push cost and total cost. The graph the data tells: a few catastrophically expensive pushes, the rest near-instant, and the average per push converging to constant.
 
-```python run
+```python run viz=array viz-root=arr
 import time
 
 class DynArray:
@@ -363,156 +387,100 @@ The Linux kernel makes this trade-off explicitly. The CFS scheduler uses a red-b
 
 # Production reality
 
-- **Java's `ArrayList`** grows by 50% on resize (`newCapacity = oldCapacity + (oldCapacity >> 1)`). Memory-friendlier than 2×, slightly tighter copy cost. Amortized `O(1)` add.
-- **CPython's `list`** grows according to `new_size = (new_size >> 3) + (new_size < 9 ? 3 : 6)` — roughly 1.125×. The growth factor was 2× until Python 1.5; the smaller factor reduces memory waste but trades against more frequent resizes. Empirically `O(1)` amortized; the constant is just a bit worse than 2×.
-- **C++'s `std::vector`** grows by 2× on most implementations (libc++, libstdc++). The standard doesn't mandate the growth factor; it just mandates amortized `O(1)` `push_back`.
-- **Go's `append`** uses growth factor 2× for small slices, 1.25× for larger ones (the threshold and the exact factor have changed over Go versions). The Go runtime documents this in `runtime/slice.go`. Same amortized `O(1)`.
-- **Rust's `Vec`** doubles capacity. `Vec::push` is amortized `O(1)`.
-- **Hash table resize.** Open-addressed hash tables (Python's dict, Java's `HashMap`) all rehash when the load factor exceeds a threshold (typically 2/3 or 3/4). Each rehash costs `O(capacity)`, but it happens only every constant fraction of insertions, so the amortized insert is `O(1)` average. (Combined with the average-case-`O(1)` lookup, a hash table is `O(1)` amortized average for insert. The amortized vs average distinction matters when adversarial inputs are possible.)
-- **Splay tree access** is amortized `O(log n)` but worst-case `O(n)`. They show up in some VM heap allocators (the BSD malloc has a splay-tree variant) and in language-implementation contexts where amortized bounds are good enough.
-- **Fibonacci heap operations.** `extract-min` is `O(log n)` amortized; `decrease-key` is `O(1)` amortized. Used in some Dijkstra implementations to get `O(E + V log V)` instead of `O((E + V) log V)`. The amortized analysis behind Fibonacci heaps is sophisticated — a beautiful example of the potential method, covered in textbook detail in CLRS chapter 19.
+**Java's `ArrayList`** — uses geometric growth at factor 1.5× — because memory pressure on long-lived JVM heaps rewards a tighter growth factor over the cleaner math of 2×.
+
+`ArrayList`'s resize is `newCapacity = oldCapacity + (oldCapacity >> 1)`. Amortized `O(1)` time per `add`, `O(1)` space per element steady-state. The 1.5× factor wastes less memory per resize and tends to reuse freed blocks better than 2× under the JVM's allocator.
+
+**CPython's `list`** — uses near-linear growth at roughly 1.125× — because Python's allocator is page-pool-backed and benefits from many small reallocations rather than rare giant ones.
+
+The exact rule is `new_size = (new_size >> 3) + (new_size < 9 ? 3 : 6)`. Amortized `O(1)` time per `append`; constant factor is slightly worse than 2× because resizes happen more often. The growth factor was 2× until Python 1.5; the smaller factor reduces peak memory use at the cost of more frequent copies.
+
+**C++'s `std::vector`** — uses geometric growth, usually at 2× — because the standard mandates amortized `O(1)` `push_back` and leaves the constant up to the implementation.
+
+libc++ and libstdc++ both use 2×; MSVC uses 1.5×. The standard's `[vector.modifiers]` text requires that `push_back` be amortized constant, so any factor `> 1` is conformant. Time `O(1)` amortized, space `O(1)` per element.
+
+**Go's `append`** — uses adaptive growth (2× small, 1.25× large) — because Go's runtime trades startup speed against steady-state memory pressure differently than C++ or Java.
+
+Small slices double until ~1024 elements; larger slices grow by ~25%. The exact constants live in `runtime/slice.go` and have shifted across Go versions. Amortized `O(1)` time, `O(1)` space per element.
+
+**Open-addressed hash tables** — Python's `dict`, Java's `HashMap`, Go's `map` — use **amortized rehash at a fixed load-factor threshold** — because table latency degrades sharply once buckets cluster, but rehashing on every insert would crush throughput.
+
+Rehash triggers at load factor `2/3` (Python) or `0.75` (Java). Each rehash is `O(capacity)` time and `O(capacity)` space, but it happens only every `Θ(capacity)` insertions, so amortized insert is `O(1)` *expected* time, `O(1)` space per element.
+
+**Fibonacci heaps in Dijkstra** — use `decrease-key` with **`O(1)` amortized cost via the potential method** — because the inner loop of priority-queue-driven shortest path runs `O(E)` decrease-keys, and saving a `log n` factor there beats the constant overhead.
+
+The amortized analysis is non-trivial — a textbook example of the potential method, covered in CLRS chapter 19. Time `O(1)` amortized per `decrease-key`, `O(log n)` amortized per `extract-min`, `O(n)` space.
+
+***
+
+# Quiz
+
+**[Recall] Q: Define amortized cost in one sentence.**
+The total cost of any sequence of `n` operations divided by `n`, taken in the worst case over all sequences of length `n`.
+
+**[Recall] Q: Why is dynamic-array push `O(1)` amortized when one push in `log n` is `O(n)`?**
+The resize costs form a geometric series — `1 + 2 + 4 + … + n = O(n)` total work spread across `n` pushes — so the per-push average stays constant.
+
+**[Reasoning] Q: What goes wrong if you "shrink to half" the moment a dynamic array drops below half-full?**
+A `pop`-then-`push` pattern at the boundary triggers a resize on every pair of operations, dragging the amortized cost to `O(n)`; the standard fix is to shrink only at quarter-full.
+
+**[Tradeoff] Q: When should you prefer a red-black tree over a splay tree, even though splay trees are simpler to implement?**
+When tail latency matters — splay trees are `O(log n)` amortized but `O(n)` worst-case per access, so any system with per-operation deadlines (schedulers, real-time loops) needs the worst-case guarantee.
+
+**[Reasoning] Q: Why does the potential method require `Φ(D₀) ≤ Φ(D_n)` for the amortized bound to hold?**
+The total amortized cost equals the total actual cost plus `Φ(D_n) − Φ(D₀)`, so if the final potential is lower than the starting potential the bound *underestimates* real work, and the proof breaks.
 
 ***
 
 # Practice ladder
 
-1. **Argue the case.** Two engineers debate. One says a Python `list.append` is `O(1)`. The other says it's `O(n)` because resizing copies the whole array. Who's right?
-   > *Hint:* both are right *in different senses*. The first means amortized. The second means worst-case for a single operation. Both terms describe real properties of the data structure.
+A curated path from "name the technique" to "design an amortized data structure". Sources include the textbook canon (CLRS) and standard LeetCode-style problem framings.
 
-2. **Spot the bad design.** A junior engineer claims their custom dynamic array is `O(1)` amortized push because it grows by `+10` slots per resize. Write the recurrence (or aggregate) showing this is actually `O(n)` amortized.
-   > *Hint:* over `n` pushes, the resizes happen at sizes 10, 20, 30, …, n. Total resize cost: `10 + 20 + 30 + … + n = Θ(n²)`. Amortized per push: `Θ(n)`. The `+10` growth rule kills the amortization.
-
-3. **Apply the potential method.** Define a potential function for the binary counter (where the operation is increment-by-1) that proves `O(1)` amortized increment. *Hint:* `Φ(D) = number of 1-bits in D`. An increment that flips `k` low-order 1-bits to 0 then sets one new 1-bit has actual cost `k+1` and `ΔΦ = -k + 1`. Amortized: `(k+1) + (1-k) = 2`. Done.
-   > *Hint:* see above for the answer. The choice of `Φ = popcount` is the kind of cleverness amortized analysis rewards.
-
-4. **Worst-case under adversarial input.** A hash table with chaining has amortized `O(1)` insert under a random hash function. An attacker who knows your hash function can craft `n` keys that all hash to the same bucket, making the `n`-th insert `O(n)`. What's the amortized insert under this adversarial sequence?
-   > *Hint:* total cost over `n` inserts: `0 + 1 + 2 + … + n = Θ(n²)`. Amortized: `Θ(n)`. The amortized analysis assumed random hashing; remove that assumption and the bound collapses. Mitigation: random hash seeds (HashDoS defense).
-
-5. **Rebuild it from scratch.** Design a data structure that supports `push(x)` in worst-case `O(1)` (not amortized). Hint: you can't naively use a single dynamic array, because *some* push has to do the resize.
-   > *Hint:* keep two arrays. `push` always writes to the smaller one and copies one element from the bigger one. When the smaller fills up, swap roles (the bigger becomes the "old", and a new bigger array is allocated, copy work continues). This "incremental resize" amortizes the copy cost across `n` pushes — *worst-case* `O(1)` per push, at the cost of some extra memory and constant overhead. The CLRS-style "spread the work" trick.
+| # | Problem | Pattern | Difficulty | Hint |
+|---|---|---|---|---|
+| 1 | Two engineers argue: Python `list.append` is `O(1)` vs `O(n)` | Vocabulary check | Easy | Both are right — one means amortized, one means worst-case single-op. |
+| 2 | Junior claims `+10`-slot resize is `O(1)` amortized — disprove it | Aggregate method | Easy | Resize costs sum to `10 + 20 + … + n = Θ(n²)`; per-push amortized is `Θ(n)`. |
+| 3 | Prove binary-counter increment is `O(1)` amortized with the potential method | Potential method | Medium | Use `Φ(D) = popcount(D)`; a `k`-bit-carry has `ΔΦ = 1 − k` and actual cost `k + 1`. |
+| 4 | LeetCode 716 — Max Stack with `O(1)` amortized `popMax` | Two-stack design | Medium | Pair a max-tracking stack with a buffer stack; `popMax` reshuffles work that future pushes have already paid for. |
+| 5 | LeetCode 895 — Maximum Frequency Stack | Layered stacks | Hard | Push always `O(1)`; pop reuses the highest-frequency layer — every element only moves once, so the per-op cost amortizes. |
+| 6 | Design a `push`/`enqueue` with **worst-case** `O(1)` (not amortized) | Incremental resize | Hard | Maintain two arrays; every push copies one element from the old to the new — the work spreads across the next resize window. |
 
 ***
 
-# Memorize
+# Further reading
 
-The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Amortized analysis lets you defend "this is `O(1)`" claims that look false at first glance; once these patterns click, you'll spot dynamic-array push, hash rehash, and splay-tree access at sight.
+★ **Essential — read before moving deeper.**
+- [Cormen, Leiserson, Rivest, Stein — *Introduction to Algorithms* (CLRS), 3rd ed., Chapter 17 "Amortized Analysis"](https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/). The canonical treatment of all three methods; worked dynamic-array and binary-counter examples align with this chapter's framing.
+- [MIT 6.046J — Lecture 11 "Amortized Analysis"](https://ocw.mit.edu/courses/6-046j-design-and-analysis-of-algorithms-spring-2015/). One-hour video that walks the aggregate, accounting, and potential methods in the same order used here.
 
-## Quick recall
+◆ **Advanced — once the basics click.**
+- [Tarjan — "Amortized Computational Complexity", SIAM Journal on Algebraic and Discrete Methods (1985)](https://epubs.siam.org/doi/10.1137/0606031). The paper that introduced the potential method as a general tool.
+- [Sleator and Tarjan — "Self-Adjusting Binary Search Trees" (1985)](https://www.cs.cmu.edu/~sleator/papers/self-adjusting.pdf). The splay-tree paper; reading it after this chapter makes the potential-function argument legible.
 
-Click any question to reveal the answer.
-
-<details>
-<summary><strong>Q:</strong> Definition of amortized cost?</summary>
-
-**A:** Total cost of any sequence of `n` operations, divided by `n`, in the worst case over all sequences. *Not* an average over inputs — it's an average over operations on one structure.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Three methods to prove amortized cost claims?</summary>
-
-**A:** **Aggregate** (total over `n` ops, divide by `n`). **Accounting** (charge ops more than actual cost; bank credits). **Potential** (`amortized = actual + ΔΦ` where `Φ` is a potential function).
-
-</details>
-<details>
-<summary><strong>Q:</strong> Amortized cost of dynamic-array push (growth factor 2)?</summary>
-
-**A:** `O(1)`. Total cost of `n` pushes ≤ `3n` (n pushes + ≤ 2n copy work from geometric resize series).
-
-</details>
-<details>
-<summary><strong>Q:</strong> Why does growth factor 2 give amortized `O(1)` but constant `+k` growth give amortized `O(n)`?</summary>
-
-**A:** Geometric series sums to `O(n)` total resize work. Arithmetic series sums to `O(n²)`. The constant factor must be `>1` strictly, not additive.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Why must dynamic-array shrink only at quarter-full, not half-full?</summary>
-
-**A:** Half-full triggers oscillation: pop-shrink-push-resize repeatedly, each `O(n)`. Quarter-full guarantees enough work between shrinks to amortise the resize.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Amortized cost of binary-counter increment (cost = bits flipped)?</summary>
-
-**A:** `O(1)`. Total flips over `n` increments ≤ `2n` (geometric series: bit `i` flips every `2^i` increments).
-
-</details>
-<details>
-<summary><strong>Q:</strong> Splay-tree access — amortized vs worst-case?</summary>
-
-**A:** Amortized `O(log n)`; worst-case `O(n)`. Excellent for batch processing; bad for latency-sensitive systems.
-
-</details>
-<details>
-<summary><strong>Q:</strong> When is amortized analysis the wrong tool?</summary>
-
-**A:** Real-time / latency-bounded systems. Amortized averages over a sequence; one operation can still be `O(n)`. Use worst-case-bounded structures (RB-tree over splay) for hard deadlines.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Why does Linux's CFS scheduler use RB-tree instead of splay tree, despite splay being amortized `O(log n)`?</summary>
-
-**A:** Per-decision worst-case bound matters more than throughput average. Splay's `O(n)` worst case is unacceptable in a scheduler; RB-tree's `O(log n)` worst case isn't.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Hash-table insert: average vs amortized?</summary>
-
-**A:** Average insert = `O(1)` (good hash). Amortized insert = `O(1)` (resize amortises across many inserts). Both required to claim "`O(1)`" in production.
-
-</details>
-
-## Code template
-
-```python
-# The three amortized-analysis methods, sketched on dynamic-array push.
-
-# 1. Aggregate method: total cost of n pushes
-def aggregate_cost(n):
-    pushes = n                          # 1 unit each
-    resize_powers = [2 ** k for k in range(n.bit_length()) if 2 ** k <= n]
-    resize = sum(resize_powers)         # geometric: ≤ 2n
-    return pushes + resize              # ≤ 3n  →  amortized 3 per push
-
-# 2. Accounting method: charge each push 3 units
-#    - 1 unit pays for the push itself
-#    - 2 units bank credit on the new element
-#    When resize hits, banked credits across the upper half pay for the copy.
-
-# 3. Potential method: Φ(D) = 2 * (size - capacity / 2)
-#    Cheap push:    actual=1, ΔΦ=2  → amortized=3
-#    Resize push:   actual=cap+1, ΔΦ=2-cap  → amortized=3
-
-# All three give the same answer: amortized O(1) per push.
-```
-
-## Pattern triggers
-
-- **Operation is occasionally `O(n)` but usually `O(1)`** → likely amortized; check the long-run sequence
-- **Geometric resize (×2 capacity)** → `O(1)` amortized
-- **Constant `+k` resize** → `O(n)` amortized; *not* a fix
-- **Hash table insert with rehash** → `O(1)` amortized
-- **Splay tree access / Fibonacci-heap decrease-key** → `O(log n)` / `O(1)` amortized; worst case worse
-- **Real-time / latency-sensitive system** → amortized is *not* enough; use worst-case-bounded structure
-- **Adversary controls the sequence** → still amortized; "for all sequences" definition holds
-- **"This is `O(1)` but my profiler shows occasional spikes"** → amortized in action; look for resize / rehash points
+→ **Reference — keep for lookup.**
+- [Python `listobject.c` `list_resize`](https://github.com/python/cpython/blob/main/Objects/listobject.c). The exact growth-factor rule and the comments around it.
+- [Go `runtime/slice.go` `growslice`](https://github.com/golang/go/blob/master/src/runtime/slice.go). Same, for Go's adaptive growth.
+- [Demaine — MIT 6.851 "Advanced Data Structures"](https://courses.csail.mit.edu/6.851/spring21/). Lectures on Fibonacci heaps and splay trees with the amortized proofs in full.
 
 ***
 
-# Cross-links
+# Cross-Links
 
-- **Prerequisite:** [Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis), [Recurrence Relations](/cortex/data-structures-and-algorithms/foundations-recurrence-relations-and-master-theorem).
-- **Cited from:** [Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-introduction) — the dynamic-array push complexity claim. [Hash Table](/cortex/data-structures-and-algorithms/linear-structures-hash-table-introduction-to-hash-tables) — the hash-table resize claim.
-- **Used by:** [Self-Balancing BSTs](/cortex/data-structures-and-algorithms/trees-self-balancing-bst-overview-self-balancing-bst-overview) — *stub* — splay-tree and AVL-tree amortized analyses. [Heap](/cortex/data-structures-and-algorithms/trees-heap-introduction-to-heaps) — heap-construction is `O(n)` despite naive sum suggesting `O(n log n)`.
+**Prerequisites**
+
+- [Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis) — the worst / average / amortised distinction this lesson sharpens.
+- [Recurrence Relations and the Master Theorem](/cortex/data-structures-and-algorithms/foundations-recurrence-relations-and-master-theorem) — the closed-form bounds the aggregate method substitutes into when the operation sequence is recursive.
+
+**What comes next**
+
+- [Memory Model and Cache](/cortex/data-structures-and-algorithms/foundations-memory-model-and-cache) — where the constant factor on the resize-and-copy step actually comes from on real hardware.
+- [Introduction to Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-introduction) — dynamic-array `append` is the canonical worked example revisited under the array data structure.
+- [Hash Tables](/cortex/data-structures-and-algorithms/linear-structures-hash-table-introduction-to-hash-tables) — rehash is the other classic amortised-`O(1)` operation; the same accounting argument carries.
 
 ***
 
 # Final Takeaway
 
-Amortized analysis is the proof that "occasionally slow" can still be "fast on average over a long run". Three patterns to internalise:
-
-1. **Pick the right method for the structure.** Aggregate is the easy first attempt. Accounting works when you can attach credits to specific elements. Potential is the heavy artillery for sophisticated structures.
-2. **Geometric growth is the trick.** Doubling, 1.5×, even 1.125× — any constant factor > 1 — gives amortized `O(1)` resize. Constant `+k` growth doesn't.
-3. **Amortized ≠ worst case.** Splay trees are amortized `O(log n)` but can be `O(n)` per access. For throughput-bounded systems, amortized is enough. For latency-bounded systems, you need worst-case bounds — which is why Linux's CFS scheduler picks RB-trees over splay trees.
-
-The next chapter steps back from cost to *correctness*: how do you prove that a piece of code does what it's supposed to? That's loop invariants, induction, and contradiction — the proof techniques every later chapter implicitly relies on.
+1. **Core mechanic:** Bound the *total* cost of a sequence of operations, then divide by the sequence length — three interchangeable methods (aggregate, accounting, potential) all produce the same per-operation amortized cost.
+2. **Dominant tradeoff:** Amortized analysis buys cheap *throughput* guarantees at the price of latency — one operation in the sequence can still be `O(n)`, so it is the wrong tool when individual operations have hard deadlines.
+3. **One thing to remember:** Geometric growth (any factor strictly greater than `1`) is the line between `O(1)` and `O(n)` amortized — `+k` arithmetic growth collapses the amortization, doubling and `1.5×` preserve it.

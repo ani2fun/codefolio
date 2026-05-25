@@ -1,3 +1,8 @@
+---
+title: "Introduction To Graphs"
+summary: "<!-- TODO: summary -->"
+---
+
 # 1. Introduction to graphs
 
 This section introduces the **graph** — the data structure that powers Google Maps, Facebook's friend suggestions, the dependency resolver in `npm`, and almost every "find the best route / connection / order" problem you will ever meet.
@@ -772,3 +777,40 @@ You now have the vocabulary to describe any graph precisely: **vertices, edges, 
 But knowing what a graph is on paper is half the story. To run algorithms on one we need to **store it in memory**. Should each node carry a list of neighbours? Should we use a giant matrix? Each choice has different speed and memory trade-offs — and that's exactly what the next lesson tackles.
 
 > **Transfer challenge.** Pick any system around you — your contacts list, your favourite recipe, the dependencies between courses in your degree, the hyperlinks on a Wikipedia page. Try to model it as a graph. What are the nodes? What are the edges? Are the edges directed or undirected? Weighted or unweighted? Acyclic? You'll be surprised how many things look like graphs once you know how to look.
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: The Hook — missing, needs to be written -->
+<!--       Guidance: real-world story opening before any definition -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
+<!--       Guidance: bulleted list of gotchas -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->

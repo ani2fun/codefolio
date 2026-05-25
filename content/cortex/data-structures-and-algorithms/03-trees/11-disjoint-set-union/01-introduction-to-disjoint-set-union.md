@@ -209,7 +209,7 @@ A weaker but useful intuition: each `find` that's forced to walk far gets "punis
 
 # Implementation
 
-```python run
+```python run viz=grid viz-root=edges
 class DSU:
     def __init__(self, n):
         self.parent = list(range(n))                                # everyone is their own parent
@@ -482,3 +482,25 @@ DSU is the structure for "are these things in the same group?" with merging supp
 3. **It's the right answer for "merge groups, query group membership".** Kruskal's MST, image segmentation, online connectivity, entity resolution — all the same DSU shape. Once you've internalised the pattern, you'll see it everywhere.
 
 This concludes the Trees module. Eight new chapters, plus the existing three (binary tree, BST, heap), now form a coherent path from "what's a tree" through "the structures that run real systems".
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->

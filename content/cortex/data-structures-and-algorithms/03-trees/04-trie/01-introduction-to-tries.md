@@ -149,7 +149,7 @@ The fiddly one. Walk to the end of the word; un-mark it as end-of-word. Then wal
 
 # Implementation
 
-```python run
+```python run viz=graph viz-root=root
 class TrieNode:
     __slots__ = ("children", "is_end")
     def __init__(self):
@@ -502,3 +502,25 @@ A trie is a tree whose paths spell strings. Three patterns to internalise:
 1. **Cost is per-input-string-length, not per-dictionary-size.** A trie's lookup cost depends only on the query length, regardless of how many strings are stored. That's the property a hash table can't match.
 2. **Compression matters.** Plain tries waste space on long single-child chains. Compressed (radix) tries collapse those chains; adaptive radix trees go further. For production-scale string data, the compressed variants dominate.
 3. **Tries shine when prefixes are shared *and* you need prefix queries.** For pure exact-match lookups, a hash table is faster. For sorted iteration, a BST is simpler. Tries earn their place when "what starts with X?" is a common query.
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->

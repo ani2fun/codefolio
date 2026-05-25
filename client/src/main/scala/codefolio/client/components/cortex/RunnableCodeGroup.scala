@@ -20,7 +20,8 @@ object RunnableCodeGroup:
       source: String,
       runnable: Boolean = true,
       viz: Option[String] = None,
-      vizRoot: Option[String] = None
+      vizRoot: Option[String] = None,
+      vizCase: Option[Int] = None
   )
 
   final case class Props(tabs: List[Tab])
@@ -40,7 +41,8 @@ object RunnableCodeGroup:
               Some(only.languageLabel),
               runnable = only.runnable,
               viz = only.viz,
-              vizRoot = only.vizRoot
+              vizRoot = only.vizRoot,
+              vizCase = only.vizCase
             )
           )
         else
@@ -83,7 +85,8 @@ object RunnableCodeGroup:
                     hideLanguageLabel = true,
                     runnable = tab.runnable,
                     viz = tab.viz,
-                    vizRoot = tab.vizRoot
+                    vizRoot = tab.vizRoot,
+                    vizCase = tab.vizCase
                   )
                 )
               )

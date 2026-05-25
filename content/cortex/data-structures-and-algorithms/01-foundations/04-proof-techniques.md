@@ -24,15 +24,17 @@ This chapter is the engineer's-eye view of proof. Not the textbook lemma-axiom-t
 1. [Why "I tested it" isn't a proof](#why-i-tested-it-isnt-a-proof)
 2. [Mathematical induction](#mathematical-induction)
 3. [Proof by contradiction](#proof-by-contradiction)
-4. [Loop invariants — the engineer's daily tool](#loop-invariants-the-engineers-daily-tool)
+4. [Loop invariants — the engineer's daily tool](#loop-invariants--the-engineers-daily-tool)
 5. [Worked example: binary search](#worked-example-binary-search)
-6. [Worked example: merge sort termination + correctness](#worked-example-merge-sort)
-7. [A runnable demo: invariant-checked code](#a-runnable-demo)
+6. [Worked example: merge sort](#worked-example-merge-sort)
+7. [A runnable demo](#a-runnable-demo)
 8. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
 9. [Production reality](#production-reality)
-10. [Practice ladder](#practice-ladder)
-11. [Cross-links](#cross-links)
-12. [Final takeaway](#final-takeaway)
+10. [Quiz](#quiz)
+11. [Practice ladder](#practice-ladder)
+12. [Further reading](#further-reading)
+13. [Cross-links](#cross-links)
+14. [Final takeaway](#final-takeaway)
 
 ***
 
@@ -40,7 +42,7 @@ This chapter is the engineer's-eye view of proof. Not the textbook lemma-axiom-t
 
 Tests check a finite set of inputs. The set of inputs the code might see in production is, for any non-trivial program, *infinite*. No finite collection of tests can cover an infinite set unless every test is *deductively* representative of all the cases it stands in for.
 
-A proof, in this chapter's sense, is an argument that the code's behaviour holds for *all* inputs in some class — not because we ran each one, but because the structure of the argument forces the conclusion. The three tools we'll use:
+A proof in this chapter's sense is an argument that the code's behaviour holds for *all* inputs in some class. The conclusion follows not from running each input but from the structure of the argument itself. The three tools we'll use:
 
 | Tool | Use when | Strength |
 |---|---|---|
@@ -117,9 +119,9 @@ This formula is what makes "the worst-case quicksort recurrence sums to `Θ(n²)
 
 ## Strong induction
 
-A variant: instead of assuming `P(k)` to prove `P(k+1)`, you assume `P(j)` for *all* `n₀ ≤ j ≤ k` to prove `P(k+1)`. Strong induction is useful when the inductive step needs information from earlier than just the immediate predecessor — for example, proving correctness of recursive algorithms whose recursion is on `n/2`, or that every integer ≥ 2 has a prime factorization.
+A variant: instead of assuming `P(k)` to prove `P(k+1)`, you assume `P(j)` for *all* `n₀ ≤ j ≤ k` to prove `P(k+1)`. Strong induction is useful when the inductive step needs information from earlier than the immediate predecessor. Examples: proving correctness of recursive algorithms whose recursion is on `n/2`, or showing that every integer ≥ 2 has a prime factorization.
 
-You'll meet strong induction every time we prove a divide-and-conquer recurrence's closed form. The classic Fibonacci-time proof — that `fib(n) ≥ φ^(n-2)` for `n ≥ 2`, where `φ` is the golden ratio — needs strong induction because `fib(k+1)` depends on both `fib(k)` and `fib(k-1)`.
+You'll meet strong induction every time we prove a divide-and-conquer recurrence's closed form. The classic Fibonacci-time proof — `fib(n) ≥ φ^(n-2)` for `n ≥ 2`, where `φ` is the golden ratio — needs strong induction. The reason: `fib(k+1)` depends on both `fib(k)` and `fib(k-1)`.
 
 ***
 
@@ -131,11 +133,14 @@ The classic example: prove there are infinitely many primes.
 
 > **Claim:** there are infinitely many primes.
 >
-> **Proof.** Assume for contradiction that there are only finitely many primes — call them `p₁, p₂, …, p_n`. Consider the number `N = p₁ · p₂ · … · p_n + 1`. Either `N` is prime — but then `N` is a prime not in our list, contradicting "those are all the primes". Or `N` is composite — but then `N` has some prime factor `p`, and that `p` must be one of our `p_i` — but `N` is `1 mod p_i` for every `p_i` in the list, so no `p_i` divides `N`, contradicting "every composite has a prime factor in the list". Either way: contradiction. So our assumption was wrong. There must be infinitely many primes. □
+> **Proof.** Assume for contradiction that only finitely many primes exist — call them `p₁, p₂, …, p_n`. Consider the number `N = p₁ · p₂ · … · p_n + 1`. Either `N` is prime, but then `N` is a prime not in our list, contradicting "those are all the primes". Or `N` is composite, so `N` has some prime factor `p`, which must be one of our `p_i`. But `N` is `1 mod p_i` for every `p_i` in the list, so no `p_i` divides `N`. That contradicts "every composite has a prime factor in the list". Either way: contradiction. The assumption was wrong. Infinitely many primes must exist. □
 
 The shape is universal: assume the negation, follow the implications, find that the world breaks, conclude the original claim.
 
-In algorithm correctness, contradiction is most often used to prove **lower bounds** ("no algorithm can sort with fewer than `n log n` comparisons" — assume one could; derive that the decision tree would have fewer than `n!` leaves; contradiction with the pigeonhole principle) or **uniqueness** ("there's exactly one shortest path with these properties — assume two; show they'd have to be equal; contradiction").
+In algorithm correctness, contradiction is most often used for two shapes of claim:
+
+- **Lower bounds** — "no algorithm can sort with fewer than `n log n` comparisons". Assume one could. Derive that the decision tree would have fewer than `n!` leaves. The pigeonhole principle delivers the contradiction.
+- **Uniqueness** — "there's exactly one shortest path with these properties". Assume two. Show they would have to be equal. Contradiction.
 
 ***
 
@@ -219,7 +224,7 @@ We've also shown the loop *terminates*: each iteration either exits via the `==`
 
 > *Predict before reading on:* what would happen if the line `mid = lo + (hi - lo) // 2` were instead `mid = (lo + hi) // 2`?
 
-For most inputs, identical behaviour. For very large arrays where `lo + hi > 2³¹` (roughly `len ≥ 2³¹` on 32-bit `int`), the addition overflows to a negative number, the `//` produces nonsense, and the search reads out-of-bounds. This bug shipped in Java's `Arrays.binarySearch` for nine years before [Joshua Bloch found it in 2006](https://research.googleblog.com/2006/06/extra-extra-read-all-about-it-nearly.html). Tests on small arrays don't catch it; the loop invariant *would* have, because `lo + (hi - lo) // 2` is the version that satisfies `lo ≤ mid ≤ hi` for all valid `lo, hi` with no overflow.
+For most inputs, identical behaviour. For very large arrays where `lo + hi > 2³¹` (roughly `len ≥ 2³¹` on 32-bit `int`), the addition overflows to a negative number. The `//` then produces nonsense and the search reads out-of-bounds. This bug shipped in Java's `Arrays.binarySearch` for nine years before [Joshua Bloch found it in 2006](https://research.googleblog.com/2006/06/extra-extra-read-all-about-it-nearly.html). Tests on small arrays don't catch it; the loop invariant *would* have. The reason: `lo + (hi - lo) // 2` is the version that satisfies `lo ≤ mid ≤ hi` for all valid `lo, hi` with no overflow.
 
 ***
 
@@ -274,7 +279,7 @@ The recursive call is correct by strong induction on array length, with the merg
 
 The code below implements binary search with explicit invariant assertions. Run it. Every assertion either holds (invariant maintained, code correct) or fires (bug — somewhere the implementation drifted from the spec).
 
-```python run
+```python run viz=array viz-root=arr
 def binary_search(arr, target):
     # Precondition: arr is sorted ascending.
     assert all(arr[i] <= arr[i + 1] for i in range(len(arr) - 1)), "arr must be sorted"
@@ -392,187 +397,94 @@ The assertions never fire, because the implementation respects the invariant. If
 
 # Production reality
 
-- **Invariant comments in production code.** Look at the source of CPython's `Lib/heapq.py`, the Linux kernel's `lib/rbtree.c`, or the JDK's `TreeMap.java` — every non-trivial loop has a comment block stating the invariant. The invariant *is* the documentation. When the code drifts (a bug fix, a refactor, a performance tweak), the invariant comment is the first thing to update; if it's still true after the change, you've kept correctness.
-- **Contract programming.** Languages and frameworks formalise the invariant idea: D's `invariant`, Java's `assert` (with `-ea`), C's `assert.h`, Eiffel's `require`/`ensure`, Rust's `debug_assert!`. The pattern is the same: the invariant lives in the code, runs in development/debug builds, and is compiled out in release builds. Many subtle production bugs are caught by the assert firing in CI.
-- **Proof assistants in industry.** Coq, Lean, Isabelle/HOL, and Agda are used for *machine-checked* proofs of correctness. CompCert is a C compiler whose optimisations are formally proved correct; seL4 is a microkernel with a machine-checked proof of functional correctness. These are for systems where a wrong answer literally costs lives or large amounts of money — flight control, medical devices, cryptocurrency consensus. For most production code, well-stated invariants in code review are the practical sweet spot.
-- **The Rust borrow checker is an invariant checker.** Every Rust program that compiles has had its memory-safety invariants *proved*: at every point, every reference is either unique-and-mutable or shared-and-read-only. The compiler does the proof for you. The reason Rust has so many advanced fans is that this single invariant rules out half the bug catalogue of C++.
-- **TLA+ and model checking.** Amazon Web Services, Microsoft Azure, and several other distributed-systems teams write their service designs in TLA+ — a formal specification language — and use TLC (the TLA+ model checker) to verify safety and liveness invariants of their distributed protocols. The investment is high; the pay-off is catching design-level bugs (race conditions, split-brain scenarios, data loss under partition) *before* implementation. [Leslie Lamport](https://lamport.azurewebsites.net/tla/tla.html) won the Turing Award partly for inventing TLA+.
+**seL4 microkernel** — uses machine-checked refinement proofs in Isabelle/HOL — because a kernel bug compromises every program above it, and a one-time formal proof costs less than a lifetime of CVEs.
+
+The seL4 team proved that the C implementation refines an abstract specification, line by line, in roughly 200,000 lines of Isabelle. The proof rules out buffer overflows, integer overflows, and unintended control flow. Operators deploying seL4 in avionics, autonomous vehicles, and defence systems trade a one-shot verification investment for a runtime correctness guarantee that no test suite can match.
+
+**CompCert C compiler** — uses formally verified compilation passes proved in Coq — because a wrong optimisation silently miscompiles correct source.
+
+Each optimisation pass carries a Coq proof that the output program has the same observable behaviour as the input. Airbus uses CompCert in flight-control code where the compiler is part of the certification boundary. The price is slower compile times and missing late-stage optimisations; the win is that a single proof replaces a fleet's worth of regression tests for compiler bugs.
+
+**Amazon Web Services control plane** — uses TLA+ specifications model-checked with TLC — because distributed protocols fail in ways unit tests cannot reach.
+
+S3, DynamoDB, and EBS engineers wrote TLA+ specs for protocols like the DynamoDB replicated-log consensus. The model checker explored billions of interleavings and exposed split-brain and data-loss bugs that survived years of integration tests. The technique catches design-level errors before any code ships; the [Lamport TLA+ page](https://lamport.azurewebsites.net/tla/tla.html) hosts the language Leslie Lamport invented for exactly this purpose.
+
+**Rust compiler borrow checker** — uses an affine-type invariant proved at compile time — because data races and use-after-free are caught by structure rather than discipline.
+
+Every reference in a compiling Rust program satisfies one invariant: it is either unique-and-mutable or shared-and-read-only. The compiler proves this invariant for the whole program before emitting code. Servo, Firefox's Stylo, and the Linux kernel's Rust modules all rely on this single proof to rule out memory-safety bugs that took decades to find in their C and C++ predecessors.
+
+**Linux kernel red-black tree** — uses loop invariants encoded as comments — because the kernel's scheduler hot-path cannot afford a runtime check yet still must be correct.
+
+The kernel's `lib/rbtree.c` documents five invariants every operation preserves — root colour, leaf colour, child-colour rule, black-height equality, and red-parent rule. The author's correctness argument lives in those comments; reviewers check each patch against the invariants instead of running an exhaustive test suite. The pattern surfaces in every non-trivial loop in the kernel — invariant first, code second.
+
+***
+
+# Quiz
+
+**[Recall] Q: What three properties must a loop invariant satisfy?**
+Initialization (holds before the first iteration), Maintenance (held entering an iteration implies held entering the next), and Termination (combined with the exit condition, implies the postcondition).
+
+**[Recall] Q: What is the loop invariant for the standard binary search shown in this chapter?**
+If `target` is in `arr`, then `target` is in the inclusive subarray `arr[lo..hi]`.
+
+**[Reasoning] Q: Why must termination be proved separately from correctness?**
+Correctness only guarantees "if the function returns, the answer is right" — a loop that maintains its invariant forever still never returns and is therefore wrong.
+
+**[Reasoning] Q: Why does the Fibonacci-time bound `fib(n) ≥ φ^(n-2)` need strong induction rather than weak induction?**
+The recursive case depends on both `fib(k)` and `fib(k-1)`, so the inductive step needs the hypothesis for two prior values, not just the immediate predecessor.
+
+**[Tradeoff] Q: When do you reach for proof by contradiction over a direct proof?**
+When the goal is impossibility or uniqueness — "no algorithm can do X" or "at most one Y exists" — because assuming the negation often forces a single concrete contradiction faster than constructing the positive argument.
 
 ***
 
 # Practice ladder
 
-1. **Prove by induction.** Show that `1 + 3 + 5 + … + (2n − 1) = n²` for all `n ≥ 1`.
-   > *Hint:* base case `n=1`: `1 = 1²`. Inductive step: assume sum to `2k-1` is `k²`. Add `(2(k+1) − 1) = 2k + 1`. Total: `k² + 2k + 1 = (k+1)²`. ✓
-
-2. **Find the broken proof.** Someone claims to prove "all horses are the same colour" by induction on the number of horses. Base case `n=1`: a single horse is trivially the same colour as itself. Inductive step: assume any group of `k` horses is the same colour. Take a group of `k+1` horses. Remove one to get a group of `k` (same colour by IH). Put it back, remove a different one to get another group of `k` (same colour). Therefore the original `k+1` are all the same colour. Find the bug.
-   > *Hint:* the inductive step assumes the two groups of `k` *overlap*. For `k=1`, removing one horse from a 2-horse group gives a 1-horse "group" each time, and the two singleton groups don't overlap. The induction step is invalid for the base-case-to-step transition. Total mathematical bug.
-
-3. **Loop invariant: `findMax`.** Write a loop invariant for the standard "find max in array" loop. Then use it to argue the post-condition (the returned value is the maximum).
-   ```python
-   def find_max(arr):
-       best = arr[0]
-       for i in range(1, len(arr)):
-           if arr[i] > best:
-               best = arr[i]
-       return best
-   ```
-   > *Hint:* invariant: `best == max(arr[0..i])` (where `i` is the loop index). Initialization: `best = arr[0] = max(arr[0..1])`. Maintenance: after the iteration, `best = max(arr[0..i+1])`. Termination: `i = len(arr)`, so `best = max(arr)`.
-
-4. **Proof by contradiction.** Prove that if `n²` is even, then `n` is even.
-   > *Hint:* assume `n` is odd. Then `n = 2k+1` for some integer `k`. So `n² = 4k² + 4k + 1`, which is odd. But this contradicts `n²` being even. So `n` is even.
-
-5. **Find the off-by-one via invariants.** This loop is supposed to count occurrences of `target` in a sorted array. State the invariant the implementation tries to maintain. Spot the bug.
-   ```python
-   def count_occurrences(arr, target):
-       lo, hi = 0, len(arr)
-       while lo < hi:
-           mid = (lo + hi) // 2
-           if arr[mid] < target: lo = mid + 1
-           else: hi = mid
-       left = lo
-       lo, hi = 0, len(arr)
-       while lo < hi:
-           mid = (lo + hi) // 2
-           if arr[mid] <= target: lo = mid + 1
-           else: hi = mid
-       right = lo
-       return right - left + 1   # ← bug here
-   ```
-   > *Hint:* the two while loops correctly find `left` (first index `≥ target`) and `right` (first index `> target`). The number of occurrences is `right - left`, *not* `right - left + 1`. The `+ 1` is an off-by-one that miscounts every result. The invariants of each loop are correct; the wrong assembly of their answers is the bug.
+| # | Problem | Pattern | Difficulty | Hint |
+|---|---------|---------|------------|------|
+| 1 | [Sum of first `n` odd integers equals `n²`](https://brilliant.org/wiki/induction-introduction/) | Induction | Easy | Base `n=1`: `1 = 1²`. Step: add `2k+1` to `k²` and factor `(k+1)²`. |
+| 2 | [The "all horses are the same colour" fallacy](https://en.wikipedia.org/wiki/All_horses_are_the_same_color) | Induction (broken proof) | Easy | The inductive step assumes the two `k`-sized groups overlap. They do not when `k=1`, so the bridge from `n=1` to `n=2` fails. |
+| 3 | [LeetCode 53 — Maximum Subarray](https://leetcode.com/problems/maximum-subarray/) | Loop invariant | Easy | Invariant: `best == max(arr[0..i])`. Prove initialization, maintenance, and termination. |
+| 4 | [Prove "if `n²` is even, then `n` is even"](https://www.themathdoctors.org/proof-by-contradiction-some-examples/) | Contradiction | Easy | Assume `n` is odd. Expand `(2k+1)²` and show the result is odd. |
+| 5 | [LeetCode 34 — Find First and Last Position of Element in Sorted Array](https://leetcode.com/problems/find-first-and-last-position-of-element-in-sorted-array/) | Loop invariant + off-by-one | Medium | Two binary searches: one for first index `≥ target`, one for first index `> target`. Subtract — do not add one. |
 
 ***
 
-# Memorize
+# Further reading
 
-The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Once these proof patterns are second nature, you can sketch a correctness argument as fast as you can write code.
-
-## Quick recall
-
-Click any question to reveal the answer.
-
-<details>
-<summary><strong>Q:</strong> Two parts of a proof by induction?</summary>
-
-**A:** **Base case** — prove `P(n₀)` directly. **Inductive step** — assume `P(k)`, prove `P(k+1)`.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Difference between weak and strong induction?</summary>
-
-**A:** Weak: assume `P(k)` to prove `P(k+1)`. Strong: assume `P(j)` for all `n₀ ≤ j ≤ k` to prove `P(k+1)`. Strong is needed for divide-and-conquer correctness and for Fibonacci-style recurrences.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Three properties a loop invariant must satisfy?</summary>
-
-**A:** **Initialization** (holds before first iteration), **Maintenance** (held entering iteration → holds entering next), **Termination** (combined with exit condition, implies the postcondition).
-
-</details>
-<details>
-<summary><strong>Q:</strong> Loop invariant for binary search?</summary>
-
-**A:** "If `target` is in `arr`, then it is in `arr[lo..hi]` (the inclusive subarray still being searched)."
-
-</details>
-<details>
-<summary><strong>Q:</strong> Why <code>mid = lo + (hi - lo) / 2</code> instead of <code>(lo + hi) / 2</code>?</summary>
-
-**A:** Avoids integer overflow when `lo + hi > Int.MaxValue`. Joshua Bloch found this bug in Java's `Arrays.binarySearch` after nine years.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Structure of a proof by contradiction?</summary>
-
-**A:** Assume `not P`. Derive an absurdity (a contradiction with established facts). Conclude `P`.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Why must you prove termination separately from correctness?</summary>
-
-**A:** Correctness says "*if* the function returns, the answer is right". Termination says "the function returns". A loop that maintains its invariant forever is still wrong.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Standard pattern for proving termination?</summary>
-
-**A:** Identify a non-negative integer-valued *measure* that strictly decreases each iteration (or each recursive call). Since it can't go below zero, the loop terminates.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Where do invariants live in production code?</summary>
-
-**A:** As comments on the loop, as `assert` statements (debug builds), and in formal contract languages (D's `invariant`, Eiffel's `require`/`ensure`). Compile out in release builds.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Why does the Rust borrow checker count as an invariant checker?</summary>
-
-**A:** It machine-proves: at every program point, every reference is either *unique-and-mutable* or *shared-and-read-only*. Ruling out half the C++ bug catalogue.
-
-</details>
-
-## Code template
-
-```python
-# Loop-invariant template — annotate the invariant directly on the loop.
-
-def binary_search(arr, target):
-    """
-    Precondition: arr is sorted ascending.
-    Postcondition: returns i with arr[i] == target, or -1 if absent.
-    """
-    assert all(arr[i] <= arr[i + 1] for i in range(len(arr) - 1))
-
-    lo, hi = 0, len(arr) - 1
-    while lo <= hi:
-        # Invariant: if target is in arr, it is in arr[lo..hi].
-        # Termination measure: hi - lo (strictly decreases each iteration).
-        mid = lo + (hi - lo) // 2          # avoid overflow
-        if arr[mid] == target: return mid
-        if arr[mid] < target:  lo = mid + 1
-        else:                  hi = mid - 1
-    # Postcondition: target is not in arr; lo > hi.
-    return -1
-
-
-# Induction-on-length skeleton for recursive correctness:
-#
-# def f(arr):
-#     if len(arr) <= 1: return base_case(arr)         # base
-#     left  = f(arr[:mid])                            # IH: f correct for size < n
-#     right = f(arr[mid:])                            # IH: same
-#     return combine(left, right)                     # show: combine preserves the postcondition
-```
-
-## Pattern triggers
-
-- **Loop with off-by-one suspicion** → write the invariant as a comment; check Initialization / Maintenance / Termination
-- **Recursive function correctness** → strong induction on input size
-- **"Prove this is impossible" / lower bound** → contradiction
-- **"Prove infinite supply / unbounded count"** → contradiction (assume finite, derive a contradiction)
-- **Operation that shrinks a measure** → use that measure as the termination argument
-- **Concurrent/shared state** → Rust's borrow checker, or formal model checking (TLA+)
-- **`if (map.containsKey(k)) map.put(k, v)`** → not atomic under concurrency; use atomic compound operations
-- **Production assertion fires in CI** → invariant violated; fix is to either correct the code or weaken the invariant
+- [Introduction to Algorithms (CLRS), Chapter 2 — Loop Invariants](https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/)
+  ★ Essential — the canonical engineering treatment of loop invariants, with insertion sort worked through line by line.
+- [How to Prove It — Daniel J. Velleman](https://www.cambridge.org/highereducation/books/how-to-prove-it/0BBE40FB78F7AAE6F2A2EAEF63E48D04)
+  ★ Essential — a friendly first pass over induction and contradiction with hundreds of exercises.
+- [Extra, Extra — Read All About It: Nearly All Binary Searches and Mergesorts are Broken](https://research.googleblog.com/2006/06/extra-extra-read-all-about-it-nearly.html)
+  ★ Essential — Joshua Bloch's 2006 post that motivated the `lo + (hi - lo) / 2` idiom in this chapter.
+- [Software Foundations — Benjamin Pierce et al.](https://softwarefoundations.cis.upenn.edu/)
+  ◆ Advanced — interactive Coq textbook for readers who want machine-checked proofs of program correctness.
+- [Specifying Systems — Leslie Lamport](https://lamport.azurewebsites.net/tla/book.html)
+  ◆ Advanced — the TLA+ book; pairs naturally with the AWS production-reality entry.
+- [Concrete Mathematics — Graham, Knuth, Patashnik](https://www.pearson.com/en-us/subject-catalog/p/concrete-mathematics-a-foundation-for-computer-science/P200000003167/)
+  → Reference — the lookup volume for induction-heavy summations and recurrences cited throughout this book.
+- [The Linux kernel `lib/rbtree.c`](https://github.com/torvalds/linux/blob/master/lib/rbtree.c)
+  → Reference — production loop-invariant comments at industrial scale; cross-reference with the chapter's red-black tree material later.
 
 ***
 
 # Cross-links
 
-- **Prerequisite:** [Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis) — the language proofs are written in.
-- **Used everywhere later** — every "this algorithm is correct" claim in the rest of the book leans on induction or loop invariants, even when the proof isn't spelled out. This chapter teaches you to read those claims like an engineer.
-- **Closely related:** [Recurrence Relations](/cortex/data-structures-and-algorithms/foundations-recurrence-relations-and-master-theorem) — the substitution method is induction in action.
-- **Production usage:** [DSA in Real Systems: Linux Red-Black Tree](/cortex/data-structures-and-algorithms/dsa-in-real-systems-linux-red-black-tree-in-the-cfs-scheduler) — *stub* — the kernel's RB-tree maintains five formal invariants every operation must preserve. Reading the source is a master-class in invariant-driven code.
+**Prerequisites**
+
+- [Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis) — the language complexity proofs are written in.
+
+**What comes next**
+
+- [Recurrence Relations & The Master Theorem](/cortex/data-structures-and-algorithms/foundations-recurrence-relations-and-master-theorem) — the substitution method is induction applied to complexity recurrences.
+- [Memory & Performance Reality](/cortex/data-structures-and-algorithms/foundations-memory-and-performance-reality) — the next chapter turns from correctness to wall-clock cost.
+- [DSA in Real Systems: Linux Red-Black Tree](/cortex/data-structures-and-algorithms/dsa-in-real-systems-linux-red-black-tree-in-the-cfs-scheduler) — production loop invariants in the kernel scheduler's hot path.
 
 ***
 
 # Final Takeaway
 
-Proof techniques turn "I tested some inputs" into "this code is correct on every input it could ever see". Three patterns to internalise:
-
-1. **Induction is the workhorse for recursion.** Every recursive function's correctness lives in a base case + inductive step. If you can articulate both, you can prove the function. If you can't articulate either, you're guessing.
-2. **Loop invariants are the engineer's daily tool.** Stating the invariant as a comment turns a confusing loop into self-documenting code. Most off-by-one bugs are places the invariant *should* hold but doesn't.
-3. **Termination is a separate proof.** Correctness ("if the function returns, the answer is right") and termination ("the function returns") are independent. Prove both. Most infinite loops in production are correctness-correct functions whose authors forgot to argue termination.
-
-The next chapter turns from *correctness* to *performance reality*: the gap between Big-O and wall-clock time, and the memory model that explains where it comes from.
+1. **Core mechanic:** Pick the proof tool that matches the question's shape — induction for recursive structure, contradiction for impossibility or uniqueness, loop invariants for "this code returns the right answer".
+2. **Dominant tradeoff:** Writing an invariant takes minutes; running it forever costs nothing in release builds — you trade up-front rigour for permanent confidence that survives every future refactor.
+3. **One thing to remember:** Correctness and termination are independent — prove both, or the code that "looks correct" never returns on the input that matters.

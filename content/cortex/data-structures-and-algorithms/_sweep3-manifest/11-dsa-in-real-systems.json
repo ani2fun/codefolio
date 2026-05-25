@@ -1,0 +1,91 @@
+{
+  "chapter": "11-dsa-in-real-systems",
+  "sweep": 3,
+  "pilot_approved": false,
+  "units": [
+    {
+      "id": "11-dsa-in-real-systems/lesson-01-postgres-b-tree-and-the-write-path",
+      "type": "LESSON_UNIT",
+      "files": [
+        "11-dsa-in-real-systems/01-postgres-b-tree-and-the-write-path.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "11-dsa-in-real-systems/lesson-02-linux-red-black-tree-in-the-cfs-scheduler",
+      "type": "LESSON_UNIT",
+      "files": [
+        "11-dsa-in-real-systems/02-linux-red-black-tree-in-the-cfs-scheduler.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "11-dsa-in-real-systems/lesson-03-redis-internal-encodings",
+      "type": "LESSON_UNIT",
+      "files": [
+        "11-dsa-in-real-systems/03-redis-internal-encodings.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "11-dsa-in-real-systems/lesson-04-git-merkle-dag",
+      "type": "LESSON_UNIT",
+      "files": [
+        "11-dsa-in-real-systems/04-git-merkle-dag.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "11-dsa-in-real-systems/lesson-05-lsm-trees-rocksdb-cassandra",
+      "type": "LESSON_UNIT",
+      "files": [
+        "11-dsa-in-real-systems/05-lsm-trees-rocksdb-cassandra.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "11-dsa-in-real-systems/lesson-06-network-data-plane",
+      "type": "LESSON_UNIT",
+      "files": [
+        "11-dsa-in-real-systems/06-network-data-plane.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "11-dsa-in-real-systems/chapter_memorize-07-memorize",
+      "type": "CHAPTER_MEMORIZE_UNIT",
+      "files": [
+        "11-dsa-in-real-systems/07-memorize.md"
+      ],
+      "status": "pending",
+      "blocked_by": [
+        "11-dsa-in-real-systems/lesson-01-postgres-b-tree-and-the-write-path",
+        "11-dsa-in-real-systems/lesson-02-linux-red-black-tree-in-the-cfs-scheduler",
+        "11-dsa-in-real-systems/lesson-03-redis-internal-encodings",
+        "11-dsa-in-real-systems/lesson-04-git-merkle-dag",
+        "11-dsa-in-real-systems/lesson-05-lsm-trees-rocksdb-cassandra",
+        "11-dsa-in-real-systems/lesson-06-network-data-plane"
+      ],
+      "todos_filled": 0,
+      "verify_flags": 0
+    }
+  ]
+}

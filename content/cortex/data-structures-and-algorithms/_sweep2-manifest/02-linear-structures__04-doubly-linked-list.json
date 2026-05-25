@@ -1,0 +1,225 @@
+{
+  "chapter": "02-linear-structures/04-doubly-linked-list",
+  "sweep": 2,
+  "pilot_approved": true,
+  "files": [
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/04-doubly-linked-list/01-introduction-to-doubly-linked-lists.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/04-doubly-linked-list/02-traversal-in-doubly-linked-lists.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 11,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/04-doubly-linked-list/03-insertion-in-doubly-linked-lists.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 11,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/04-doubly-linked-list/04-deletion-in-doubly-linked-lists.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 11,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/04-doubly-linked-list/05-memorize.md",
+      "type": "CHAPTER_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 0,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/04-doubly-linked-list/06-pattern-reversal/01-pattern.md",
+      "type": "PATTERN",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/04-doubly-linked-list/07-pattern-reversal-subproblem/01-pattern.md",
+      "type": "PATTERN",
+      "status": "done",
+      "placeholders_inserted": 11,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/04-doubly-linked-list/08-pattern-two-pointers/01-pattern.md",
+      "type": "PATTERN",
+      "status": "done",
+      "placeholders_inserted": 7,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/04-doubly-linked-list/09-pattern-reorder/01-pattern.md",
+      "type": "PATTERN",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/04-doubly-linked-list/06-pattern-reversal/02-problems/01-reverse-a-list.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/04-doubly-linked-list/06-pattern-reversal/02-problems/02-reverse-first-k-nodes.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/04-doubly-linked-list/06-pattern-reversal/02-problems/03-reverse-last-k-nodes.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/04-doubly-linked-list/06-pattern-reversal/02-problems/04-reverse-the-given-segment.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 9,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/04-doubly-linked-list/07-pattern-reversal-subproblem/02-problems/01-pairwise-swap.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/04-doubly-linked-list/07-pattern-reversal-subproblem/02-problems/02-reverse-k-segments.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/04-doubly-linked-list/07-pattern-reversal-subproblem/02-problems/03-reverse-increasing-groups.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/04-doubly-linked-list/07-pattern-reversal-subproblem/02-problems/04-reverse-alternate-segments.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/04-doubly-linked-list/08-pattern-two-pointers/02-problems/01-palindrome-number.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/04-doubly-linked-list/08-pattern-two-pointers/02-problems/02-two-sum.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/04-doubly-linked-list/08-pattern-two-pointers/02-problems/03-duplicate-aware-two-sum.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/04-doubly-linked-list/08-pattern-two-pointers/02-problems/04-approximate-three-sum.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/04-doubly-linked-list/09-pattern-reorder/02-problems/01-relocate-node.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/04-doubly-linked-list/09-pattern-reorder/02-problems/02-parity-order.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/04-doubly-linked-list/09-pattern-reorder/02-problems/03-value-partition.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/04-doubly-linked-list/09-pattern-reorder/02-problems/04-shuffle-list.md",
+      "type": "PROBLEM",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/04-doubly-linked-list/06-pattern-reversal/03-memorize.md",
+      "type": "PATTERN_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/04-doubly-linked-list/07-pattern-reversal-subproblem/03-memorize.md",
+      "type": "PATTERN_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/04-doubly-linked-list/08-pattern-two-pointers/03-memorize.md",
+      "type": "PATTERN_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/04-doubly-linked-list/09-pattern-reorder/03-memorize.md",
+      "type": "PATTERN_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 10,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/04-doubly-linked-list/11-pattern-synthesis.md",
+      "type": "PATTERN_SYNTHESIS",
+      "status": "done",
+      "placeholders_inserted": 0,
+      "flags": 0
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/02-linear-structures/04-doubly-linked-list/10-design-a-doubly-linked-list/01-design-a-doubly-linked-list.md",
+      "type": "DESIGN",
+      "status": "done",
+      "placeholders_inserted": 0,
+      "flags": 0,
+      "skip_audit": true
+    }
+  ]
+}

@@ -60,6 +60,12 @@ jobs:
         working-directory: client
         run: npm install --no-audit --no-fund
 
+      # Vitest covers the pure-TypeScript D3 layout maths (client/src/d3/
+      # *-layout.ts) — deterministic, no DOM, runs in plain Node.
+      - name: Test frontend (vitest)
+        working-directory: client
+        run: npm test
+
       - name: Build frontend bundle
         working-directory: client
         run: npm run build

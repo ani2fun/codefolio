@@ -1,0 +1,130 @@
+{
+  "chapter": "05-algorithms-by-strategy/01-recursion",
+  "sweep": 3,
+  "pilot_approved": false,
+  "units": [
+    {
+      "id": "05-algorithms-by-strategy/01-recursion/lesson-01-introduction-to-memory-model",
+      "type": "LESSON_UNIT",
+      "files": [
+        "05-algorithms-by-strategy/01-recursion/01-introduction-to-memory-model.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "05-algorithms-by-strategy/01-recursion/lesson-02-nested-functions",
+      "type": "LESSON_UNIT",
+      "files": [
+        "05-algorithms-by-strategy/01-recursion/02-nested-functions.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "05-algorithms-by-strategy/01-recursion/lesson-03-recursion",
+      "type": "LESSON_UNIT",
+      "files": [
+        "05-algorithms-by-strategy/01-recursion/03-recursion.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "05-algorithms-by-strategy/01-recursion/chapter_memorize-04-memorize",
+      "type": "CHAPTER_MEMORIZE_UNIT",
+      "files": [
+        "05-algorithms-by-strategy/01-recursion/04-memorize.md"
+      ],
+      "status": "pending",
+      "blocked_by": [
+        "05-algorithms-by-strategy/01-recursion/lesson-01-introduction-to-memory-model",
+        "05-algorithms-by-strategy/01-recursion/lesson-02-nested-functions",
+        "05-algorithms-by-strategy/01-recursion/lesson-03-recursion"
+      ],
+      "todos_filled": 0,
+      "verify_flags": 0
+    },
+    {
+      "id": "05-algorithms-by-strategy/01-recursion/pattern-05-pattern-head-recursion",
+      "type": "PATTERN_UNIT",
+      "files": [
+        "05-algorithms-by-strategy/01-recursion/05-pattern-head-recursion/01-pattern.md",
+        "05-algorithms-by-strategy/01-recursion/05-pattern-head-recursion/02-problems/01-forward-sequence.md",
+        "05-algorithms-by-strategy/01-recursion/05-pattern-head-recursion/02-problems/02-calculate-factorial.md",
+        "05-algorithms-by-strategy/01-recursion/05-pattern-head-recursion/02-problems/03-sum-of-digits.md",
+        "05-algorithms-by-strategy/01-recursion/05-pattern-head-recursion/02-problems/04-reverse-a-queue.md",
+        "05-algorithms-by-strategy/01-recursion/05-pattern-head-recursion/03-memorize.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "05-algorithms-by-strategy/01-recursion/pattern-06-pattern-tail-recursion",
+      "type": "PATTERN_UNIT",
+      "files": [
+        "05-algorithms-by-strategy/01-recursion/06-pattern-tail-recursion/01-pattern.md",
+        "05-algorithms-by-strategy/01-recursion/06-pattern-tail-recursion/02-problems/01-reverse-sequence.md",
+        "05-algorithms-by-strategy/01-recursion/06-pattern-tail-recursion/02-problems/02-search-element.md",
+        "05-algorithms-by-strategy/01-recursion/06-pattern-tail-recursion/02-problems/03-is-palindrome.md",
+        "05-algorithms-by-strategy/01-recursion/06-pattern-tail-recursion/02-problems/04-reverse-a-list.md",
+        "05-algorithms-by-strategy/01-recursion/06-pattern-tail-recursion/03-memorize.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "05-algorithms-by-strategy/01-recursion/pattern-07-pattern-multiple-recursion",
+      "type": "PATTERN_UNIT",
+      "files": [
+        "05-algorithms-by-strategy/01-recursion/07-pattern-multiple-recursion/01-pattern.md",
+        "05-algorithms-by-strategy/01-recursion/07-pattern-multiple-recursion/02-problems/01-fibonacci-number.md",
+        "05-algorithms-by-strategy/01-recursion/07-pattern-multiple-recursion/02-problems/02-zigzag-sequence.md",
+        "05-algorithms-by-strategy/01-recursion/07-pattern-multiple-recursion/02-problems/03-climb-stairs.md",
+        "05-algorithms-by-strategy/01-recursion/07-pattern-multiple-recursion/02-problems/04-catalan-number.md",
+        "05-algorithms-by-strategy/01-recursion/07-pattern-multiple-recursion/03-memorize.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "05-algorithms-by-strategy/01-recursion/pattern-08-pattern-multidimensional-recursion",
+      "type": "PATTERN_UNIT",
+      "files": [
+        "05-algorithms-by-strategy/01-recursion/08-pattern-multidimensional-recursion/01-pattern.md",
+        "05-algorithms-by-strategy/01-recursion/08-pattern-multidimensional-recursion/02-problems/01-binomial-coefficient.md",
+        "05-algorithms-by-strategy/01-recursion/08-pattern-multidimensional-recursion/02-problems/02-lattice-paths.md",
+        "05-algorithms-by-strategy/01-recursion/08-pattern-multidimensional-recursion/02-problems/03-ackermann-function.md",
+        "05-algorithms-by-strategy/01-recursion/08-pattern-multidimensional-recursion/02-problems/04-egg-dropping.md",
+        "05-algorithms-by-strategy/01-recursion/08-pattern-multidimensional-recursion/03-memorize.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "05-algorithms-by-strategy/01-recursion/synthesis-09-pattern-synthesis",
+      "type": "SYNTHESIS_UNIT",
+      "files": [
+        "05-algorithms-by-strategy/01-recursion/09-pattern-synthesis.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    }
+  ]
+}

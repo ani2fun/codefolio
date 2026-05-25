@@ -71,7 +71,8 @@ object BlockDiscovery:
       val label   = nonEmpty(node.getAttribute("data-language-label"))
       val viz     = nonEmpty(node.getAttribute("data-viz"))
       val vizRoot = nonEmpty(node.getAttribute("data-viz-root"))
-      Blocks.decodeRunnableCode(lang, src, label, viz, vizRoot)
+      val vizCase = nonEmpty(node.getAttribute("data-viz-case"))
+      Blocks.decodeRunnableCode(lang, src, label, viz, vizRoot, vizCase)
 
   private object RunnableGroup extends Discoverer:
     override val className: String = "runnable-group"
@@ -94,7 +95,8 @@ object BlockDiscovery:
             source = obj.source.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty),
             runnable = obj.runnable.asInstanceOf[js.UndefOr[Boolean]].toOption,
             viz = obj.viz.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty),
-            vizRoot = obj.vizRoot.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
+            vizRoot = obj.vizRoot.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty),
+            vizCase = obj.vizCase.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
           )
         }
       } match

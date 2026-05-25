@@ -1,3 +1,8 @@
+---
+title: "Single Source Shortest Path"
+summary: "<!-- TODO: summary -->"
+---
+
 # 8. Single source shortest path
 
 This lesson teaches you to answer "from this point, what's the cheapest way to reach everywhere else?" — the question behind every map app, every routing protocol, every chess engine that values pieces. By the end, you'll know two algorithms (**Dijkstra** and **Bellman-Ford**) and exactly when each one applies.
@@ -166,7 +171,7 @@ It would be popped, node 2 re-examined, and since `distance[2]` is already 1 eve
 The graph is given as an adjacency list of `(neighbour, weight)` pairs. We use the language's built-in min-heap (priority queue).
 
 
-```python run
+```python run viz=graph viz-root=graph
 import heapq
 from typing import List, Tuple
 
@@ -536,7 +541,7 @@ With that edge, every round of Bellman-Ford would lower `distance[0]` by 2 (the 
 # Bellman-Ford Implementation
 
 
-```python run
+```python run viz=graph viz-root=graph
 from typing import List, Tuple
 
 class Solution:
@@ -811,3 +816,40 @@ A profitable cycle multiplies your money: `r1 × r2 × ... × rn > 1`. Taking th
 Bellman-Ford detects exactly this — and the path it reports is the sequence of currencies to trade. This trick is used in real high-frequency trading systems and a famous interview question.
 
 </details>
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: The Hook — missing, needs to be written -->
+<!--       Guidance: real-world story opening before any definition -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
+<!--       Guidance: bulleted list of gotchas -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->

@@ -1,0 +1,98 @@
+{
+  "chapter": "03-trees/03-heap",
+  "sweep": 3,
+  "pilot_approved": false,
+  "units": [
+    {
+      "id": "03-trees/03-heap/lesson-01-introduction-to-heaps",
+      "type": "LESSON_UNIT",
+      "files": [
+        "03-trees/03-heap/01-introduction-to-heaps.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "03-trees/03-heap/lesson-02-array-implementation-of-heaps",
+      "type": "LESSON_UNIT",
+      "files": [
+        "03-trees/03-heap/02-array-implementation-of-heaps.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "03-trees/03-heap/chapter_memorize-03-memorize",
+      "type": "CHAPTER_MEMORIZE_UNIT",
+      "files": [
+        "03-trees/03-heap/03-memorize.md"
+      ],
+      "status": "pending",
+      "blocked_by": [
+        "03-trees/03-heap/lesson-01-introduction-to-heaps",
+        "03-trees/03-heap/lesson-02-array-implementation-of-heaps"
+      ],
+      "todos_filled": 0,
+      "verify_flags": 0
+    },
+    {
+      "id": "03-trees/03-heap/pattern-04-pattern-top-k-elements",
+      "type": "PATTERN_UNIT",
+      "files": [
+        "03-trees/03-heap/04-pattern-top-k-elements/01-pattern.md",
+        "03-trees/03-heap/04-pattern-top-k-elements/02-problems/01-kth-largest-element.md",
+        "03-trees/03-heap/04-pattern-top-k-elements/02-problems/02-kth-smallest-element.md",
+        "03-trees/03-heap/04-pattern-top-k-elements/02-problems/03-k-range-sum.md",
+        "03-trees/03-heap/04-pattern-top-k-elements/02-problems/04-k-sorted-array-sorting.md",
+        "03-trees/03-heap/04-pattern-top-k-elements/03-memorize.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "03-trees/03-heap/pattern-05-pattern-comparator",
+      "type": "PATTERN_UNIT",
+      "files": [
+        "03-trees/03-heap/05-pattern-comparator/01-pattern.md",
+        "03-trees/03-heap/05-pattern-comparator/02-problems/01-k-most-frequent-elements.md",
+        "03-trees/03-heap/05-pattern-comparator/02-problems/02-k-smallest-sum-pairs.md",
+        "03-trees/03-heap/05-pattern-comparator/02-problems/03-k-closest-values.md",
+        "03-trees/03-heap/05-pattern-comparator/02-problems/04-k-arrays-smallest-range.md",
+        "03-trees/03-heap/05-pattern-comparator/02-problems/05-k-way-list-merge.md",
+        "03-trees/03-heap/05-pattern-comparator/03-memorize.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "03-trees/03-heap/synthesis-07-pattern-synthesis",
+      "type": "SYNTHESIS_UNIT",
+      "files": [
+        "03-trees/03-heap/07-pattern-synthesis.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "03-trees/03-heap/design-06-design-a-heap",
+      "type": "DESIGN_UNIT",
+      "files": [
+        "03-trees/03-heap/06-design-a-heap/01-design-a-heap.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    }
+  ]
+}

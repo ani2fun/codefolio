@@ -78,7 +78,7 @@ Subtract the leaving character (multiplied by `b^(m-1)` to align), shift left by
 
 # Implementation
 
-```python run
+```python run viz=array viz-root=matches
 def rabin_karp(T, P):
     n, m = len(T), len(P)
     if m > n: return []
@@ -307,3 +307,25 @@ Rabin-Karp reduces string matching to *hash comparison*. Three patterns to inter
 1. **Hash compare, then verify.** A hash match is a *candidate* match, not a confirmed one. Always verify byte-by-byte after a hash hit.
 2. **Rolling hash makes the slide O(1).** The polynomial-hash recurrence `h_{i+1} = (h_i − leave) · b + enter` is the entire optimisation.
 3. **Best for multiple patterns and fingerprinting.** Pure single-pattern matching is usually faster with KMP. Rabin-Karp wins when you're computing many hashes (multiple patterns, document fingerprints, deduplication chunks).
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->

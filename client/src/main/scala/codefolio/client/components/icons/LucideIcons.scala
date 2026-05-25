@@ -78,6 +78,8 @@ object LucideIcons:
 
   @js.native @JSImport("lucide-react", "Network") private object NetworkRaw extends js.Object
 
+  @js.native @JSImport("lucide-react", "Info") private object InfoRaw extends js.Object
+
   // ---- Components (call as Sun(withClass("h-5 w-5"))) --------------------
 
   val Sun           = JsComponent[IconProps, Children.None, Null](SunRaw)
@@ -121,3 +123,4 @@ object LucideIcons:
   val AlertTriangle = JsComponent[IconProps, Children.None, Null](AlertTriangleRaw)
   val Terminal      = JsComponent[IconProps, Children.None, Null](TerminalRaw)
   val Network       = JsComponent[IconProps, Children.None, Null](NetworkRaw)
+  val Info          = JsComponent[IconProps, Children.None, Null](InfoRaw)

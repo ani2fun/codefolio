@@ -34,6 +34,9 @@ Thumbs.db
 .claude/
 docs
 tools
+.codegraph
+.graphify
+graphify-out
 
 # Logs
 *.log

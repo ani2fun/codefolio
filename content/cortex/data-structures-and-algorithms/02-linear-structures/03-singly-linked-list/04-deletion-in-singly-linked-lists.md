@@ -1,3 +1,8 @@
+---
+title: "Deletion In Singly Linked Lists"
+summary: "Seven deletion variants for a singly linked list — first, last, by data, after a given node, before a given node, the given node itself, and at a distance. Every variant reduces to a two-line splice; the cost lives in the predecessor hunt, never in the wire-up."
+---
+
 # 4. Deletion in Singly Linked Lists
 
 ## The Hook
@@ -12,23 +17,99 @@ Seven variations follow. They all reduce to a two-line splice: **`prev.next = vi
 
 ## Table of contents
 
-1. [Understanding deletion of first node](#understanding-deletion-of-first-node)
-2. [Delete first node](#delete-first-node)
-3. [Understanding deletion of last node](#understanding-deletion-of-last-node)
-4. [Delete last node](#delete-last-node)
-5. [Understanding deletion by given data](#understanding-deletion-by-given-data)
-6. [Delete node with given data](#delete-node-with-given-data)
-7. [Delete nodes with given data](#delete-nodes-with-given-data)
-8. [Understanding deletion after a given node](#understanding-deletion-after-a-given-node)
-9. [Delete node after the given node](#delete-node-after-the-given-node)
-10. [Understanding deletion before a given node](#understanding-deletion-before-a-given-node)
-11. [Delete node before the given node](#delete-node-before-the-given-node)
-12. [Understanding deletion of the given node](#understanding-deletion-of-the-given-node)
-13. [Delete the given node](#delete-the-given-node)
-14. [Understanding deletion at a given distance](#understanding-deletion-at-a-given-distance)
-15. [Delete node at given distance](#delete-node-at-given-distance)
+1. [Understanding the Problem](#understanding-the-problem)
+2. [Supported Operations](#supported-operations)
+3. [Internal Mechanics](#internal-mechanics)
+4. [Understanding deletion of first node](#understanding-deletion-of-first-node)
+5. [Delete first node](#delete-first-node)
+6. [Understanding deletion of last node](#understanding-deletion-of-last-node)
+7. [Delete last node](#delete-last-node)
+8. [Understanding deletion by given data](#understanding-deletion-by-given-data)
+9. [Delete node with given data](#delete-node-with-given-data)
+10. [Delete nodes with given data](#delete-nodes-with-given-data)
+11. [Understanding deletion after a given node](#understanding-deletion-after-a-given-node)
+12. [Delete node after the given node](#delete-node-after-the-given-node)
+13. [Understanding deletion before a given node](#understanding-deletion-before-a-given-node)
+14. [Delete node before the given node](#delete-node-before-the-given-node)
+15. [Understanding deletion of the given node](#understanding-deletion-of-the-given-node)
+16. [Delete the given node](#delete-the-given-node)
+17. [Understanding deletion at a given distance](#understanding-deletion-at-a-given-distance)
+18. [Delete node at given distance](#delete-node-at-given-distance)
+19. [Working Example](#working-example)
+20. [Edge Cases and Pitfalls](#edge-cases-and-pitfalls)
+21. [Production Reality](#production-reality)
+22. [Practice Ladder](#practice-ladder)
+23. [Quiz](#quiz)
+24. [Further Reading](#further-reading)
+25. [Cross-Links](#cross-links)
+26. [Final Takeaway](#final-takeaway)
 
 ***
+
+# Understanding the Problem
+
+Deletion is the operation that exposes the asymmetry of singly linked lists. An array's `del arr[0]` *looks* free but quietly shifts every later element one slot left — a million writes to remove a single byte from a million-element list. A linked list's `delete head` is **two pointer reads and one assignment** — `head = head.next` — regardless of length. The same word, two completely different machines underneath.
+
+The catch is what the splice needs:
+
+- **Arrays** need the *index* — `O(1)` time random access lets the structure find the cut point instantly, but then `O(n)` time goes into shifting everything past it.
+- **Singly linked lists** need the *predecessor* — the node whose `.next` will be redirected. Once the predecessor is in hand, the splice is `O(1)` time; finding it is the work.
+
+To make this concrete: deleting the head of a million-node linked list is `O(1)` time — `head = head.next; free(old_head)`. Deleting the tail is `O(n)` time — every step of the walk from the head is a probe for "is your `.next` the tail?" Same operation name, same data structure, costs that differ by a factor of a million.
+
+So the key idea is: every deletion in this lesson is the same two-line splice (`prev.next = victim.next`); the seven variants differ only in **how the predecessor is located** — and that's where the cost lives.
+
+---
+
+# Supported Operations
+
+A singly linked list supports seven deletion variants — distinguished by *what reference the caller already holds* and *what predicate selects the victim*. The splice is always `O(1)` time; the variability is purely in the predecessor hunt.
+
+| Operation | Inputs | Time | Space | Notes |
+|---|---|---|---|---|
+| Delete first node | `head` | `O(1)` | `O(1)` | No predecessor — advance `head` to `head.next`. |
+| Delete last node | `head` | `O(n)` | `O(1)` | Walk until `cur.next.next == null` to find the tail's predecessor. |
+| Delete node with given data | `head`, `data` | `O(n)` worst, `O(1)` best (head match) | `O(1)` | Walk `prev`/`cur` until `cur.val == data`; deletes the first match only. |
+| Delete all nodes with given data | `head`, `data` | `O(n)` | `O(1)` | Single walk; a sentinel/dummy head removes the head-vs-mid branch. |
+| Delete node after given node | `node` | `O(1)` | `O(1)` | The given node *is* the predecessor — pure splice, no walk. |
+| Delete node before given node | `head`, `node` | `O(n)` worst, `O(1)` if `node == head.next` | `O(1)` | Walk to find the predecessor of the predecessor; no-op if `node == head`. |
+| Delete the given node | `head`, `node` | `O(n)` worst, `O(1)` if `node == head` | `O(1)` | Walk to find the given node's predecessor, then splice. |
+| Delete node at distance `X` | `head`, `X` | `O(X)` | `O(1)` | Walk `X − 1` steps to the predecessor, splice, return new head if `X = 0`. |
+
+Two pieces are constant across the table: every variant ends in the **same splice** (`prev.next = victim.next`) and every variant frees **one** node (`O(1)` extra space). The variability is purely in the walk.
+
+To make this concrete: deleting the node a caller already holds a reference to (`O(n)` time when given a *value*; `O(1)` time when given the *predecessor*) and deleting the head (`O(1)` time) take the same wall-clock time on a billion-node list when the caller cooperates with the right inputs. The same delete on a billion-node list when only a value or a position is supplied is `O(n)` time — the walk dominates.
+
+So the tradeoff is: linked-list deletion gives `O(1)` time splicing in exchange for `O(n)` time predecessor search — there is no random access to amortise the hunt away. If predecessor lookup matters more than node-locality, switch to a doubly linked list.
+
+---
+
+# Internal Mechanics
+
+Every deletion in a singly linked list — first, last, by value, after-a-node, before-a-node, by-reference, at-distance — compiles down to the same three operations. Lock these into muscle memory and every variant in this lesson collapses to a five-minute exercise.
+
+The three operations:
+
+- **Locate the predecessor**: walk from the head until you hold a reference `prev` whose `prev.next` is the victim. For *delete head*, the predecessor is the `head` variable itself; for *delete after node*, the given node *is* the predecessor.
+- **Splice**: assign `prev.next = victim.next`. One write. The victim is now unreachable from the list.
+- **Free**: in C / C++ call `free(victim)`. In garbage-collected languages (Python, Java) dropping the reference is sufficient — the runtime reclaims the node when no live reference remains.
+
+The order matters: splice **before** free. If you free first, `victim.next` becomes a dangling read in languages without GC, and the splice writes garbage into `prev.next`.
+
+To make this concrete: deleting `7` from `5 → 7 → 3` with `prev` pointing at `5`:
+
+- `prev.next = victim.next` — `5.next` now points at `3` (was `7`).
+- `free(victim)` — node `7` is reclaimed.
+
+The list is now `5 → 3`. Reverse the order — `free(victim); prev.next = victim.next` — and the second line reads a freed pointer.
+
+The same three operations cover every variant. Head deletion uses `head` as the predecessor (`head = head.next; free(old_head)`). Tail deletion walks to the second-to-last node (`prev.next.next == null`), then sets `prev.next = null` and frees. Sentinel-head implementations skip the head special case entirely — `dummy.next = head` makes the head "just another node" with a predecessor of `dummy`.
+
+So the core insight is: every deletion is "find predecessor, one splice, free node" — what differs across the seven variants is only how the predecessor is found.
+
+> 🖼 Diagram — TODO: three-frame splice — `prev` and `victim` identified, `prev.next` redirected to `victim.next`, `victim` freed; a fourth frame contrasting head-deletion (no predecessor — advance `head`) against mid-list deletion.
+
+---
 
 # Understanding deletion of first node
 
@@ -5054,35 +5135,159 @@ public class Main {
 ```
 
 </details>
-<details>
-<summary><h2>Final Takeaway</h2></summary>
+***
 
+# Working Example
 
-Seven deletion variants, one predecessor-hunt pattern:
+Seven deletion variants, one predecessor-hunt pattern. The table below walks the same data — `head → 5 → 7 → 3 → 10` — through each variant and shows where the cost goes.
 
-| Variant | Hunt cost | Splice cost | Total |
-|---|---|---|---|
-| First node | 0 hops (head is given) | O(1) | **O(1)** |
-| Last node | n−1 hops (walk to find predecessor) | O(1) | **O(n)** |
-| By given data | 0 to n hops (first match) | O(1) | **O(n) worst** |
-| After given node | 0 hops (given is the predecessor) | O(1) | **O(1)** |
-| Before given node | 0 to n hops (find predecessor of given) | O(1) | **O(n) worst** |
-| The given node itself | 0 to n hops (find predecessor of given) | O(1) | **O(n) worst** |
-| At distance X | X hops | O(1) | **O(X)** |
+| Variant | Hunt cost | Splice cost | Total | Result |
+|---|---|---|---|---|
+| First node | 0 hops (head is given) | `O(1)` | **`O(1)`** | `7 → 3 → 10` |
+| Last node | `n − 1` hops (walk to find predecessor) | `O(1)` | **`O(n)`** | `5 → 7 → 3` |
+| By given data `7` | 0 to `n` hops (first match) | `O(1)` | **`O(n)` worst** | `5 → 3 → 10` |
+| After given node `node(7)` | 0 hops (given is the predecessor) | `O(1)` | **`O(1)`** | `5 → 7 → 10` |
+| Before given node `node(7)` | 0 to `n` hops (find predecessor of given) | `O(1)` | **`O(n)` worst** | `7 → 3 → 10` |
+| The given node `node(7)` | 0 to `n` hops (find predecessor of given) | `O(1)` | **`O(n)` worst** | `5 → 3 → 10` |
+| At distance `X = 2` | `X` hops | `O(1)` | **`O(X)`** | `5 → 7 → 10` |
 
-Every row splices with the same two lines — `prev.next = victim.next; free(victim)`. The cost is always in the *hunt*, never in the *splice*. Two insights to internalise:
+Every row splices with the same one line — `prev.next = victim.next` — followed by the free (explicit in C/C++, implicit in GC languages). The cost is always in the *hunt*, never in the *splice*.
 
-1. **Predecessor is the currency.** A singly linked list node cannot look backward. Every deletion problem is ultimately a "find the predecessor" problem, and the predecessor's location determines the cost.
-2. **`prev` + `current` walk is the workhorse.** Keeping two pointers, one step apart, is the canonical pattern. When `current` meets the victim, `prev` is already pointing at it — ready for the splice.
+So the core insight is: **whenever a linked-list problem hands you the predecessor, the delete is `O(1)` time. Whenever it hands you the victim (or a value, or a position), you pay `O(n)` time to walk back to the predecessor — because singly linked nodes cannot look backward.**
 
-This is why doubly linked lists feel magical: every node already has a `prev` pointer, so predecessor lookup drops to O(1) everywhere. For the cost of one extra pointer per node, every deletion in this lesson becomes constant time.
+This is why doubly linked lists feel magical: every node already has a `prev` pointer, so predecessor lookup drops to `O(1)` time everywhere. For the cost of one extra pointer per node, every deletion in this lesson becomes constant time.
 
-> **Transfer Challenge:** Your list has 1 million nodes and you receive a sequence of 1 million `delete-by-value` operations. Naïve per-call cost is O(n); total is O(n²) = 10¹² operations. Can you preprocess the list once to bring the total to O(n) or better?
+> **Transfer Challenge:** Your list has 1 million nodes and you receive a sequence of 1 million `delete-by-value` operations. Naïve per-call cost is `O(n)` time; total is `O(n²)` = 10¹² operations. Can you preprocess the list once to bring the total to `O(n)` time or better?
 >
 > <details><summary><strong>Answer</strong></summary>
 >
-> Yes — use a hash map. One O(n) pass builds `value → (node, predecessor)` entries. Each subsequent deletion is now O(1): look up the pair, splice, update the map. Total: O(n) preprocess + O(n) deletes = **O(n)**. The catch: when you splice out a node, update the map entry for its successor (its predecessor just changed) — still O(1) per op.
+> Yes — use a hash map. One `O(n)` pass builds `value → (node, predecessor)` entries. Each subsequent deletion is now `O(1)` time: look up the pair, splice, update the map. Total: `O(n)` preprocess + `O(n)` deletes = **`O(n)` time**. The catch: when you splice out a node, update the map entry for its successor (its predecessor just changed) — still `O(1)` time per op.
 >
 > </details>
 
-</details>
+***
+
+# Edge Cases and Pitfalls
+
+The splice is short, which makes the edge cases sneaky — most deletion bugs land on the boundary between "list of zero" and "list of one", or on the head-vs-mid asymmetry. Keep this list open when you write any of the seven variants.
+
+- **Empty list.** `head == null` is a separate code path for every variant. *Delete first*, *delete last*, and *delete by data* return `null` unchanged; *delete after/before/the-given-node* return `null` when `node` is also `null`; *delete at distance* returns `null`. Skip the empty-list check and you'll dereference `null` on the first line.
+- **Single-node list.** The lone node *is* the head and *is* the tail. *Delete first*, *delete last*, *delete by data* (when the value matches), *delete the given node*, and *delete at distance 0* all collapse to "`head = null` and free the node" — but via different code paths. Verify each branch is tested.
+- **Head deletion changes the return value.** *Delete first*, *delete by data* (when head matches), *delete the given node* (when `node == head`), and *delete at distance 0* all change which node is the head. If the function returns the old `head` reference, the caller still points at the deleted node. Always return the (possibly new) head.
+- **Value not found / node not in list.** *Delete by data* with no match must traverse to the end and return the list unchanged — not crash on `cur == null`. *Delete the given node* / *delete before given node* with a `node` that isn't in the list must also fall through cleanly.
+- **Tail deletion needs the predecessor, not the tail.** The natural stopping condition is `cur.next.next == null` — not `cur.next == null`. Walking one step too far drops the tail's predecessor and breaks the splice. A singleton (`head.next == null`) is the edge that this condition mis-handles — special-case it.
+- **`node` argument is `null` (after/before/the-given-node).** A `null` reference means there is nothing to delete next to or at. The function should return the head unchanged, not crash on `node.next`.
+- **Use-after-free on the victim.** In C/C++, code that reads `victim.next` *after* calling `free(victim)` reads a dangling pointer. Rule: splice first (`prev.next = victim.next`), free second (`free(victim)`). Garbage-collected languages dodge this — but the discipline transfers cleanly.
+- **Sentinel/dummy head changes the boundary.** Using `dummy.next = head` removes the head special case, but then *delete by data* must return `dummy.next` rather than `head` — forgetting to "unwrap" the sentinel returns a permanently leaked node.
+- **Deleting the only occurrence vs all occurrences.** *Delete node with given data* deletes the **first** match and returns; *delete nodes with given data* (plural) walks the whole list. Confusing the two breaks correctness silently when duplicates exist.
+- **Off-by-one on distance.** *Delete at distance `X = 0`* deletes the head; `X = n − 1` deletes the tail; `X ≥ n` is out of range and returns the list unchanged. The walk needs `X − 1` steps to land `prev` at the predecessor — one fewer than the distance to the victim.
+
+***
+
+# Production Reality
+
+Linked-list deletion looks academic until you notice how many real systems pick this structure precisely because `O(1)` splice at a known reference point keeps the hot path off the allocator and out of `memmove`.
+
+**[Linux kernel `list_head`]** — uses **a doubly linked intrusive list with `list_del` doing four pointer writes** — because every subsystem holding an object reference (scheduler, VFS, network) can splice the object out in `O(1)` time without a separate container traversal.
+
+The kernel's circular doubly linked list is embedded directly into each struct via a `list_head` field. `list_del` updates the neighbours' pointers in `O(1)` time — no walk, no allocator interaction. That's exactly what an interrupt-context path needs. Source: [include/linux/list.h](https://github.com/torvalds/linux/blob/master/include/linux/list.h).
+
+**[Java's `LinkedList.remove(Object)`]** — uses **a doubly linked list, walks from head or tail (whichever is closer) to find the node** — because the API accepts a value and must search; once found, the `O(1)` splice uses both `prev` and `next` pointers.
+
+`java.util.LinkedList` walks bidirectionally to halve the average search cost (`n / 2` worst case), then runs an `O(1)` splice. The same class's `removeFirst` / `removeLast` are pure `O(1)` time — the head and tail pointers eliminate the hunt. Source: [LinkedList.java](https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/java/util/LinkedList.java).
+
+**[Redis `listDelNode`]** — uses **a doubly linked list with cached `head`, `tail`, and `len`** — because pub/sub queues, the slow log, and `LREM` need predictable per-operation cost; the cached endpoints make removal `O(1)` time once the node is held.
+
+Redis `LPOP`, `RPOP`, and `LREM` (after the walk) all bottom out in `listDelNode`, which is a four-pointer-write splice plus a `zfree`. Source: [adlist.c `listDelNode`](https://github.com/redis/redis/blob/unstable/src/adlist.c).
+
+**[Python's `collections.OrderedDict.popitem`]** — uses **a doubly linked list of dictionary entries** — because LRU-cache eviction must remove from either end in `O(1)` time regardless of which key is being evicted.
+
+The underlying hash table gives `O(1)` lookup; the linked list threaded through the entries gives `O(1)` removal from either end. `functools.lru_cache` and any user-built LRU rely on this property. Source: [odictobject.c](https://github.com/python/cpython/blob/main/Objects/odictobject.c) <!-- VERIFY: confirm odictobject.c is the canonical source file for OrderedDict in current CPython -->.
+
+**[Memory allocators — free lists]** — uses **a singly linked list of free blocks indexed by size class** — because freeing memory at the front of the list is two writes and allocating is one read; both stay `O(1)` time without traversal.
+
+`jemalloc`, `tcmalloc`, and most small-object allocators carve memory into size classes and keep each class's free blocks on a singly linked stack. `free` pushes a block onto the head; allocation pops the head. Deletion is `O(1)` time at a known location — no walk. Source: [jemalloc internals](https://github.com/jemalloc/jemalloc/blob/dev/INSTALL.md).
+
+**[Garbage collectors — remembered sets and dead-object lists]** — uses **intrusive singly linked lists threaded through object headers** — because the GC enumerates and removes objects at the rate of allocation; `O(1)` time removal at the front of the list keeps the GC's marking and sweeping phases off the allocator's critical path.
+
+Mark-sweep and concurrent collectors maintain per-thread or per-region linked lists of candidate objects; sweeping unlinks dead entries in `O(1)` time per node. Source: [HotSpot G1 source](https://github.com/openjdk/jdk/tree/master/src/hotspot/share/gc/g1) <!-- VERIFY: G1 uses linked-list remembered-set structures specifically; confirm against current GC literature -->.
+
+***
+
+# Practice Ladder
+
+Five problems, easiest first. Try each unaided; hit the hint only after ten minutes stuck; don't peek at the solution until you've made the splice *do something* in code.
+
+| # | Problem | Pattern | Difficulty | Hint |
+|---|---------|---------|------------|------|
+| 1 | [Trim Nth Node](./09-pattern-sliding-window-traversal/02-problems/02-trim-nth-node.md) | [Sliding Window Traversal](./09-pattern-sliding-window-traversal/01-pattern.md) | Easy | Walk two pointers `n` apart; when the leader hits the tail, the follower points at the predecessor of the node to delete. Then it's a one-line splice. |
+| 2 | [Reverse a List](./07-pattern-reversal/02-problems/01-reverse-a-list.md) | [Reversal](./07-pattern-reversal/01-pattern.md) | Easy | Reversal is *iterated deletion + re-insertion at the head* — each step "deletes" the current node's forward link and re-wires it backward. Same three-pointer dance as deletion, applied `n` times. |
+| 3 | [Middle Node Search](./10-pattern-fast-and-slow-pointers/02-problems/01-middle-node-search.md) | [Fast and Slow Pointers](./10-pattern-fast-and-slow-pointers/01-pattern.md) | Easy | Slow advances one step per loop; fast advances two. When fast hits the end, slow sits at the middle — useful when a deletion site is defined relative to length. |
+| 4 | [Even Odd Split](./11-pattern-split/02-problems/01-even-odd-split.md) | [Split](./11-pattern-split/01-pattern.md) | Easy | Walk once and "delete" each odd node from the main list by splicing it onto a second list — the splice in this lesson is the engine of every list-rebuilding pattern. |
+| 5 | [Relocate Node](./13-pattern-reorder/02-problems/01-relocate-node.md) | [Reorder](./13-pattern-reorder/01-pattern.md) | Medium | Detach the source node (delete) and re-insert it at the destination (insert). The reusable trick: hold the predecessor of *both* the source and the destination before touching any `.next`. |
+
+Once these feel automatic, you've internalised every move the sliding-window, reversal, fast/slow, split, and reorder patterns will ask of you — and the splice itself disappears into muscle memory.
+
+***
+
+# Quiz
+
+Test your grip before moving on. One answer per question; reveal only after you have committed to one.
+
+**[Recall] Q: What is the time and space complexity of deleting the first node of a singly linked list?**
+`O(1)` time and `O(1)` space — `head = head.next` plus the free, regardless of list length.
+
+**[Recall] Q: For *delete last node* on a list of length `n`, what is the worst-case time complexity, and why?**
+`O(n)` time — singly linked lists are forward-only, so finding the tail's predecessor requires walking from the head until `cur.next.next == null`.
+
+**[Reasoning] Q: Why must the splice (`prev.next = victim.next`) run *before* the free (`free(victim)`) in C / C++?**
+Because `victim.next` becomes a dangling pointer once `free(victim)` returns; reading it afterwards yields undefined behaviour and the splice writes garbage into `prev.next`.
+
+**[Reasoning] Q: Why is *delete a given node* `O(n)` time on a singly linked list even when the caller already holds a pointer to the node?**
+Because the splice needs the *predecessor's* `.next`, not the victim's, and singly linked nodes have no backward pointer — finding the predecessor requires walking from the head.
+
+**[Tradeoff] Q: When does caching a `tail` pointer alongside the head pay off for deletion, and when does it *fail* to help?**
+Caching `tail` makes the *delete first* and *traversal-start* operations `O(1)` time with one extra pointer of overhead per list. It still fails to help *delete last* (`O(n)` time) — finding the tail's *predecessor* still requires walking from the head. Only a doubly linked list (or a back-pointer) makes tail deletion `O(1)` time.
+
+***
+
+# Further Reading
+
+Curated paths in, not a syllabus. Read in order of the annotation; come back for the rest when you need depth.
+
+- **[CLRS — Chapter 10: Elementary Data Structures](https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/)**
+  ★ Essential — the canonical reference for linked-list insertion, deletion, and the sentinel-node trick that removes the head-vs-mid special case.
+- **[Sedgewick & Wayne — Algorithms, 4th ed., §1.3 Bags, Queues and Stacks](https://algs4.cs.princeton.edu/13stacks/)**
+  ★ Essential — implements linked lists as the storage backing for stack and queue, with diagrams that make the splice visual.
+- **[The Linux Kernel Linked Lists API](https://www.kernel.org/doc/html/latest/core-api/kernel-api.html#list-management-functions)**
+  ◆ Advanced — the intrusive-list `list_del` pattern: how production C systems get zero-allocation `O(1)` deletion in interrupt context.
+- **[Java `LinkedList.unlink` source](https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/java/util/LinkedList.java)**
+  → Reference — the canonical `unlink` implementation: four pointer writes plus a size decrement, with the head/tail special cases broken out.
+- **[Open Data Structures — §3.1 SLList: A Singly Linked List](https://opendatastructures.org/ods-python/3_1_SLList_Singly_Linked_Lis.html)**
+  → Reference — a clean academic walk through every deletion variant, with worked examples in Python and Java.
+
+***
+
+# Cross-Links
+
+**Prerequisites**
+
+- [Introduction to Singly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-introduction-to-singly-linked-lists) — node structure, `head` reference, and why pointers replace contiguous memory.
+- [Traversal in Singly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-traversal-in-singly-linked-lists) — the walk that every non-`O(1)` deletion variant piggybacks on; the `prev` / `cur` two-pointer move starts here.
+- [Insertion in Singly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-insertion-in-singly-linked-lists) — the mirror operation; the same predecessor-search problem, with a different splice on the wire-up.
+- [Introduction to Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-introduction) — the cost model that deletion exposes the gap from (`O(n)` shift) vs (`O(1)` splice).
+
+**What comes next**
+
+- [Detecting Cycle in Singly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-detecting-cycle-in-singly-linked-lists) — how Floyd's tortoise-and-hare uses pure traversal (no deletion) to expose a structural property the splice cannot.
+- [Pattern: Reversal](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reversal-pattern) — iterated re-wiring; reversal is "delete the forward link and re-attach backward" in a loop.
+- [Pattern: Sliding Window Traversal](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-sliding-window-traversal-pattern) — the two-pointer walk that finds deletion sites defined by *offset from the tail*.
+- [Pattern: Split](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-split-pattern) — the first pattern that *uses* deletion as a primitive — every split is "delete from the input list, append to one of the output lists".
+
+***
+
+## Final Takeaway
+
+1. **Core mechanic:** every deletion in a singly linked list is "locate the predecessor, run one splice (`prev.next = victim.next`), free the victim" — one pointer write, regardless of which variant.
+2. **Dominant tradeoff:** deletion at a known predecessor is `O(1)` time regardless of list size; deletion at any other handle (head-pointer, value, victim-reference, position) pays `O(n)` time to *find* the predecessor — there is no random access to amortise the hunt away.
+3. **One thing to remember:** the cost lives in the predecessor hunt, not in the splice — so whenever you can preserve a reference to "the node before", you keep deletion `O(1)`.

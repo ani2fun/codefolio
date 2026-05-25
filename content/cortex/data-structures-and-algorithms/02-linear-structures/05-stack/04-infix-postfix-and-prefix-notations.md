@@ -1,3 +1,8 @@
+---
+title: "Infix Postfix And Prefix Notations"
+summary: "<!-- TODO: summary -->"
+---
+
 # 4. Infix, Postfix, and Prefix Notations
 
 ## The Hook
@@ -319,3 +324,37 @@ The takeaway:
 3. **Position is the precedence.** What makes postfix and prefix work is that the *order* of tokens fully determines the order of evaluation. We don't *need* parens or precedence — they're baked in.
 
 > *Coming up — we build the postfix evaluator. Read each token, push or pop on a stack, return the lone item left at the end. Lesson 5 turns this lesson's idea into running code in Python and Java, with edge cases (operand order for non-commutative operators, malformed expressions, single-operand expressions) handled cleanly.*
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
+<!--       Guidance: bulleted list of gotchas -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->

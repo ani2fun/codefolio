@@ -1,0 +1,23 @@
+{
+  "chapter": "04-graphs/16-pattern-shortest-path-breadth-first-search",
+  "sweep": 3,
+  "pilot_approved": false,
+  "units": [
+    {
+      "id": "04-graphs/16-pattern-shortest-path-breadth-first-search/pattern-16-pattern-shortest-path-breadth-first-search",
+      "type": "PATTERN_UNIT",
+      "files": [
+        "04-graphs/16-pattern-shortest-path-breadth-first-search/01-pattern.md",
+        "04-graphs/16-pattern-shortest-path-breadth-first-search/02-problems/01-minimum-steps-in-a-grid.md",
+        "04-graphs/16-pattern-shortest-path-breadth-first-search/02-problems/02-nearest-distance.md",
+        "04-graphs/16-pattern-shortest-path-breadth-first-search/02-problems/03-shortest-word-transformation.md",
+        "04-graphs/16-pattern-shortest-path-breadth-first-search/02-problems/04-minimum-steps-in-a-grid-ii.md",
+        "04-graphs/16-pattern-shortest-path-breadth-first-search/03-memorize.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    }
+  ]
+}

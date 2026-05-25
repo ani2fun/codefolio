@@ -58,19 +58,7 @@
 codefolio/
 ├── CONTEXT.md              # ★ project domain glossary (Cortex, Greeting, Handler Failure, …)
 ├── api/openapi.yaml        # ★ source of truth for the API
-├── docs/adr/               # architecture decision records (0001–0012)
-│   ├── 0001-cortex-content-errors-are-lenient-by-default.md
-│   ├── 0002-non-critical-store-failures-degrade-silently.md
-│   ├── 0003-hello-pipeline-internal-seams.md
-│   ├── 0004-wire-adapters-and-unified-backends.md
-│   ├── 0005-client-cortex-blocks-bytes-to-values-seam.md
-│   ├── 0006-d3-widgets-as-a-closed-catalog.md
-│   ├── 0007-traced-code-uses-a-client-side-tracer-harness.md
-│   ├── 0008-filesystem-pipelines-share-an-mtime-cache.md
-│   ├── 0009-spa-route-topology-in-app-routes.md
-│   ├── 0010-file-server-owns-the-path-traversal-guard.md
-│   ├── 0011-languages-table-is-the-single-source-of-truth.md
-│   └── 0012-endpoint-wiring-helpers-enforce-the-error-contract.md
+├── docs/adr/               # architecture decision records
 ├── shared/                 # cross-compiled (JVM + JS); codegen lands in src_managed
 │   └── src/main/scala/codefolio/shared/
 │       ├── runner/         # CodeExecutor (pure Idle→Running→Done state machine)
@@ -230,6 +218,40 @@ Quick-reference rules for in-flight DSA edits:
 - Source code is canonical for `## Solution` / `## The Solution` / `## Implementation` blocks. Replace destination Py/Java with source verbatim — but only if the info string is exactly `python run` / `java run` (plain `python`/`java` are inline snippets that stay).
 - Never re-create what `dsa_fence_parser.py` already does. Import `iter_blocks` / `FenceBlock` for any tool that touches code fences.
 - After any wrap/merge/edit pass on a chapter, run `dsa_tidy_details_gaps.py` to normalise sibling-collapsible spacing — otherwise the chapter renders with too-large gaps compared to other chapters.
+
+### Pilot-finalised directory convention (arrays section is the reference)
+
+The `02-linear-structures/01-arrays/` section is the completed pilot. Its structure is the template for all other DSA sections. Three file types, used in fixed order within any section directory:
+
+**1 — Lesson files** (flat `.md`, no subdirectory)
+Plain tutorial chapters. Stay as `NN-name.md` files directly in the section folder.
+Example: `01-introduction.md`, `02-multidimensional.md`
+
+**2 — Pattern directories** (`NN-pattern-NAME/`)
+Each monolithic pattern `.md` is split into a directory:
+```
+NN-pattern-NAME/
+  _section.json              {"title": "Pattern Name"}
+  01-pattern.md              Understanding + Identifying sections + diagram labels
+  02-problems/
+    _section.json            {"title": "Problems"}
+    01-slug.md               frontmatter + problem content verbatim
+    02-slug.md
+    …
+  03-memorize.md             frontmatter + TODO stub
+```
+Diagram labels use `> 🖼 Diagram — caption` (static) or `> ▶ Interactive Diagram — caption` (d3 widget with `"steps"`), placed on the line immediately before the opening fence.
+
+**3 — Design directories** (`NN-design-NAME/`)
+Each design challenge `.md` is wrapped into a directory with a single content file:
+```
+NN-design-NAME/
+  _section.json              {"title": "Design"}
+  01-design-NAME.md          frontmatter + full content verbatim (top # heading stripped)
+```
+Example: `11-design-a-dynamic-array/` with `01-design-a-dynamic-array.md`.
+
+**Index maintenance** — `tools/gen_cortex_index.py` regenerates `index.md` for any section directory. Run it after any rename/move/split. A `.claude/settings.json` PostToolUse hook fires it automatically after every `Write`/`Edit` to `content/cortex/`.
 
 ## Useful upstream docs
 

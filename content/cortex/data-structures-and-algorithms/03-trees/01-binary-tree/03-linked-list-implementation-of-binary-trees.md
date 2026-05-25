@@ -1,3 +1,8 @@
+---
+title: "Linked List Implementation Of Binary Trees"
+summary: "<!-- TODO: summary -->"
+---
+
 # 3. Linked-List Implementation of Binary Trees
 
 ## The Hook
@@ -104,7 +109,7 @@ n: TreeNode {
 Most of the rest of this chapter assumes the type definitions below. Each version exposes the same three fields and provides a small constructor. We follow the LeetCode-style convention used across the chapter: optional left/right that default to `null`.
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 class TreeNode:
     def __init__(self, val: int = 0, left: 'TreeNode | None' = None, right: 'TreeNode | None' = None):
         self.val   = val
@@ -340,3 +345,37 @@ The linked-node representation is the default workhorse of binary trees in real 
 3. **The root reference is the entire tree's identity.** Every algorithm starts from `root`. Every operation that allocates or destroys nodes must respect that — losing the root reference is losing the whole tree. Treat `root` like a precious resource: pass it down the recursion, but never let it become unreachable.
 
 > *Coming up — with a node type defined, we can finally start <em>doing</em> things to trees. The next lesson covers the three classical recursive traversals: <strong>preorder</strong>, <strong>inorder</strong>, and <strong>postorder</strong>. Each is a three-line recursive function that visits every node once, and each uncovers the values in a different — and surprisingly useful — order.*
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
+<!--       Guidance: bulleted list of gotchas -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->

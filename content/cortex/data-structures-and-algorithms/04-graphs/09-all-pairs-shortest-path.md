@@ -1,3 +1,8 @@
+---
+title: "All Pairs Shortest Path"
+summary: "<!-- TODO: summary -->"
+---
+
 # 9. All pairs shortest path
 
 This lesson teaches you the **all-pairs shortest path** problem — what's the shortest distance between *every* pair of nodes? — and the surprisingly elegant 4-line algorithm (Floyd-Warshall) that solves it.
@@ -228,7 +233,7 @@ Final matrix:
 The graph is given as an adjacency list of `(neighbour, weight)` pairs. We build the distance matrix from the adjacency list — using `-1` as the "not reachable" sentinel, `0` on the diagonal, and the edge weight for direct edges — then run the triple loop.
 
 
-```python run
+```python run viz=graph viz-root=graph
 from typing import List, Tuple
 
 class Solution:
@@ -483,3 +488,40 @@ Diameter: `max(d[i][j] for i in range(n) for j in range(n) if d[i][j] < INF)` �
 For median, you'd flatten all the finite distances into one list and take the median, also O(N²). Floyd-Warshall makes both queries trivial because the matrix already contains every answer. This is *the* point of all-pairs algorithms — once computed, every pairwise question is O(1) lookup.
 
 </details>
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: The Hook — missing, needs to be written -->
+<!--       Guidance: real-world story opening before any definition -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
+<!--       Guidance: bulleted list of gotchas -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->

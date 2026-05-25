@@ -1,0 +1,21 @@
+{
+  "chapter": "08-bit-tricks/03-pattern-restructuring",
+  "sweep": 3,
+  "pilot_approved": false,
+  "units": [
+    {
+      "id": "08-bit-tricks/03-pattern-restructuring/pattern-03-pattern-restructuring",
+      "type": "PATTERN_UNIT",
+      "files": [
+        "08-bit-tricks/03-pattern-restructuring/01-pattern.md",
+        "08-bit-tricks/03-pattern-restructuring/02-problems/01-reverse-bits.md",
+        "08-bit-tricks/03-pattern-restructuring/02-problems/02-circular-shift-bits.md",
+        "08-bit-tricks/03-pattern-restructuring/03-memorize.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    }
+  ]
+}

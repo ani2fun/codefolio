@@ -1,0 +1,23 @@
+{
+  "chapter": "08-bit-tricks/01-pattern-kth-bit",
+  "sweep": 3,
+  "pilot_approved": false,
+  "units": [
+    {
+      "id": "08-bit-tricks/01-pattern-kth-bit/pattern-01-pattern-kth-bit",
+      "type": "PATTERN_UNIT",
+      "files": [
+        "08-bit-tricks/01-pattern-kth-bit/01-pattern.md",
+        "08-bit-tricks/01-pattern-kth-bit/02-problems/01-kth-bit-check.md",
+        "08-bit-tricks/01-pattern-kth-bit/02-problems/02-set-kth-bit.md",
+        "08-bit-tricks/01-pattern-kth-bit/02-problems/03-unset-kth-bit.md",
+        "08-bit-tricks/01-pattern-kth-bit/02-problems/04-toggle-kth-bit.md",
+        "08-bit-tricks/01-pattern-kth-bit/03-memorize.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    }
+  ]
+}

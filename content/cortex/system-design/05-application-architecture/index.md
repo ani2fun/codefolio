@@ -2,13 +2,11 @@
 
 > **How the pieces fit together** — and when the answer is "stop adding pieces".
 
-## Lessons
+## Chapters
 
-27. [Monoliths, microservices, and modular monoliths](/cortex/system-design/application-architecture-monoliths-microservices-modular-monoliths)
-28. [API design — REST, gRPC, GraphQL](/cortex/system-design/application-architecture-api-design)
-29. [Service discovery and service mesh](/cortex/system-design/application-architecture-service-discovery-and-mesh)
-30. [Authentication and authorization](/cortex/system-design/application-architecture-authn-authz)
-31. [Multi-tenancy](/cortex/system-design/application-architecture-multi-tenancy)
-32. [Example — modelling a system with the C4 model](/cortex/system-design/application-architecture-example-c4-model)
-
-> **Status:** chapters 27–31 are stubs (Wave 4 of the build plan); chapter 32 is a worked example.
+- [Monoliths, microservices, and modular monoliths](/cortex/system-design/application-architecture-monoliths-microservices-modular-monoliths)
+- [API design — REST, gRPC, GraphQL](/cortex/system-design/application-architecture-api-design)
+- [Service discovery and service mesh](/cortex/system-design/application-architecture-service-discovery-and-mesh)
+- [Authentication and authorization](/cortex/system-design/application-architecture-authn-authz)
+- [Multi-tenancy](/cortex/system-design/application-architecture-multi-tenancy)
+- [Example — modelling a system with the C4 model](/cortex/system-design/application-architecture-example-c4-model)

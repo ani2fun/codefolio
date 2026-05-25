@@ -1,3 +1,8 @@
+---
+title: "Recursion"
+summary: "<!-- TODO: summary -->"
+---
+
 # 3. Recursion
 
 You're stuck in a queue at an ATM. The line stretches around the block. You want to know your position — eleventh? thirty-seventh? — but you can't move out of line and you're too lazy to count. There's exactly one trick that gets you the answer without leaving your spot, without counting anything yourself, and without anybody in front of you counting either. It's the same trick that powers half the algorithms you'll ever write.
@@ -705,3 +710,40 @@ print(sum_to(5))   # 15
 The recursion tree is a straight line of `n + 1` nodes; time and space both `O(n)`. The work — the `n +` — happens during *unwinding*, exactly like the queue example. **Congratulations: you just wrote your second head-recursion problem.** The Head Recursion lesson names the pattern and gives you four more like this — each subtly different in where it does the work and how it threads data through the stack.
 
 </details>
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: The Hook — missing, needs to be written -->
+<!--       Guidance: real-world story opening before any definition -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
+<!--       Guidance: bulleted list of gotchas -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->

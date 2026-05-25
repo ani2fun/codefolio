@@ -158,7 +158,7 @@ if [[ ! -d client/node_modules ]]; then
   (cd client && npm install --no-audit --no-fund) | prefix "npm" "$c_vite"
 fi
 
-# ---- 4. sbt watcher: client fastLinkJS + server reStart in parallel -----
+# ---- 4. sbt watcher: client fastLinkJS + server reStart in sequence -----
 
 # Order matters: `client/fastLinkJS` MUST come before `server/reStart`.
 # reStart (sbt-revolver) is an InputTask with a greedy argument parser —
@@ -166,8 +166,16 @@ fi
 # argument to the forked app (the tell: `Main.main(client/fastLinkJS)` in
 # the log) instead of running as its own watched task, so client sources
 # would never be recompiled on change. Keep reStart last.
+#
+# Previously this used `~ all client/fastLinkJS server/reStart` to run the
+# two tasks in parallel under `~`, but sbt 1.10.7 rejects that as
+# "Invalid commands: 'all …'" the moment `~` parses it. Falling back to
+# the explicit `;`-chained form keeps the same semantics (recompile both
+# on every change) and survives the `all` regression. Each `;` makes sbt
+# treat the next token as a fresh command, so reStart's greedy parser
+# doesn't swallow client/fastLinkJS.
 log "starting sbt watcher (client/fastLinkJS + server/reStart)…"
-sbt -no-colors "~ all client/fastLinkJS server/reStart" \
+sbt -no-colors "~ ;client/fastLinkJS ;server/reStart" \
   2> >(prefix "sbt" "$c_sbt" >&2) \
   |  prefix "sbt" "$c_sbt" &
 PIDS+=($!)

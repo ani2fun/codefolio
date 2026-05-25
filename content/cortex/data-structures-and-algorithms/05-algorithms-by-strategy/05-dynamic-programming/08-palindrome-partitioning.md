@@ -1,3 +1,8 @@
+---
+title: "Palindrome Partitioning"
+summary: "<!-- TODO: summary -->"
+---
+
 # 8. Palindrome Partitioning — Minimum Cuts
 
 The previous two lessons hunted for *one* palindrome inside a string — the longest subsequence, then the longest contiguous substring. Now the demand flips: split the **whole** string so that every single piece is a palindrome, and use as few cuts as possible. `"abbbc"` looks unfriendly until you see it as `a | bbb | c` — three palindromic pieces, two cuts. The naive thing is to try every possible partition, but a string of length `n` has `2^(n-1)` ways to drop dividers; brute force collapses fast. Underneath, every cut decision depends on choices already made — classic optimal substructure with overlapping subproblems.
@@ -231,7 +236,7 @@ Output: 0                  Already a palindrome — no cuts needed
 The implementation interleaves the boolean `dp` palindromicity table with the `cuts` array — one outer loop on `end`, one inner loop on `start`. The running minimum, `minimum_partitionings`, starts at `sys.maxsize` (`Integer.MAX_VALUE` in Java) and is only ever written inside the palindrome branch — every prefix has at least its single-character last piece, so that branch always fires at least once and the sentinel never survives.
 
 
-```python run
+```python run viz=graph viz-root=dp
 from typing import List
 import sys
 
@@ -439,3 +444,40 @@ Palindrome partitioning is the canonical "split into satisfying pieces" DP. Stat
 The state stays 1D — `canBreak[i]` = whether `s[0..i]` is segmentable. The min-over-cuts becomes a logical OR: `canBreak[i] = OR over valid j of canBreak[j]`, where "valid" means `s[j+1..i]` is in the dictionary. The predicate is now a hash-set membership check (O(1) average) instead of palindrome lookup. Same shape; different predicate; aggregator changed from `min(... + 1)` to `OR`. The next lesson formalises this as the **Word Break** problem.
 
 </details>
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: The Hook — missing, needs to be written -->
+<!--       Guidance: real-world story opening before any definition -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->
+
+<!-- TODO: Final Takeaway — missing, needs to be written -->
+<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->

@@ -22,6 +22,10 @@ const STEP_DELAY_MS = 1400;
 const NODE_RADIUS = 22;
 const SVG_NS = "http://www.w3.org/2000/svg";
 
+// Bumped per render so each widget's arrowhead <marker> gets a unique id — two
+// graphs on one page must not cross-reference each other's def.
+let widgetSeq = 0;
+
 interface EdgeDatum {
   id: string;
   from: string;
@@ -76,7 +80,7 @@ export function renderGraph(
   root.appendChild(controls);
 
   // A static key for the node colours + the pointer caret.
-  root.appendChild(buildLegend());
+  root.appendChild(buildLegend(data));
 
   container.appendChild(root);
 
@@ -103,6 +107,29 @@ export function renderGraph(
   svg.setAttribute("height", String(placed.height));
   svg.setAttribute("role", "img");
   svg.setAttribute("aria-label", data.title || "Code visualisation");
+
+  // Arrowhead marker — one shared <marker> every edge points at via marker-end, so
+  // each edge reads as a directed parent→child reference. `context-stroke` makes the
+  // arrowhead inherit its edge's stroke (incl. a traversal tint); the CSS carries a
+  // muted fallback for the rare engine without it.
+  const arrowId = `viz-graph-arrow-${(widgetSeq += 1)}`;
+  const defs = document.createElementNS(SVG_NS, "defs");
+  const marker = document.createElementNS(SVG_NS, "marker");
+  marker.setAttribute("id", arrowId);
+  marker.setAttribute("class", "viz-graph__arrowhead");
+  marker.setAttribute("viewBox", "0 0 10 10");
+  marker.setAttribute("refX", "8.5");
+  marker.setAttribute("refY", "5");
+  marker.setAttribute("markerUnits", "userSpaceOnUse");
+  marker.setAttribute("markerWidth", "9");
+  marker.setAttribute("markerHeight", "9");
+  marker.setAttribute("orient", "auto");
+  const arrowPath = document.createElementNS(SVG_NS, "path");
+  arrowPath.setAttribute("d", "M 1 1 L 9 5 L 1 9 Z");
+  marker.appendChild(arrowPath);
+  defs.appendChild(marker);
+  svg.appendChild(defs);
+
   const edgesG = document.createElementNS(SVG_NS, "g");
   edgesG.setAttribute("class", "viz-graph__edges");
   const nodesG = document.createElementNS(SVG_NS, "g");
@@ -154,13 +181,34 @@ export function renderGraph(
     }
     // Frame-local variables pointing into the structure, grouped by the node they target,
     // so a node held by several locals shows every name (e.g. a long-lived `root` + a `node`).
-    const cursorNames = new Map<string, string[]>();
+    // Each carries its role colour from MarkerColors.
+    const cursorsByNode = new Map<string, { name: string; color: string }[]>();
     for (const c of step.cursor) {
-      const held = cursorNames.get(c.target);
-      if (held !== undefined) held.push(c.name);
-      else cursorNames.set(c.target, [c.name]);
+      const held = cursorsByNode.get(c.target);
+      if (held !== undefined) held.push({ name: c.name, color: c.color });
+      else cursorsByNode.set(c.target, [{ name: c.name, color: c.color }]);
     }
     const highlights = new Set(step.highlight);
+    const changedSet = new Set(step.changed);
+    const removedSet = new Set(step.removed);
+
+    // Cursor traversal — a cursor that moved A→B since the previous step tints the
+    // edge between A and B in that cursor's colour, for this step only. The tint is
+    // an inline stroke; the next step clears it and CSS eases the edge back to muted.
+    const traversedEdges = new Map<string, string>();
+    if (index > 0) {
+      const prevByName = new Map<string, string>();
+      for (const c of steps[index - 1].cursor) prevByName.set(c.name, c.target);
+      for (const c of step.cursor) {
+        const was = prevByName.get(c.name);
+        if (was !== undefined && was !== c.target) {
+          const fwd = `${was}->${c.target}`;
+          const bwd = `${c.target}->${was}`;
+          if (edges.some((e) => e.id === fwd)) traversedEdges.set(fwd, c.color);
+          else if (edges.some((e) => e.id === bwd)) traversedEdges.set(bwd, c.color);
+        }
+      }
+    }
 
     // --- edges (drawn under nodes) ---
     const edgeSel = d3
@@ -172,10 +220,15 @@ export function renderGraph(
       .append("path")
       .attr("class", "viz-graph__edge")
       .attr("fill", "none")
+      .attr("marker-end", `url(#${arrowId})`)
       .attr("d", (e: any) => edgePath(e.from, e.to))
       .attr("opacity", 0);
     edgeSel.exit().remove();
     const edgeAll = edgeEnter.merge(edgeSel);
+    // Traversal tint — set/cleared every step so it never lingers past its step.
+    edgeAll
+      .classed("viz-graph__edge--traversed", (e: any) => traversedEdges.has(e.id))
+      .style("stroke", (e: any) => traversedEdges.get(e.id) ?? null);
     if (animate) {
       // Named transitions — the enter fade-in and the path move must NOT share
       // D3's default (unnamed) transition namespace, or the move interrupts the
@@ -235,6 +288,13 @@ export function renderGraph(
       .attr("transform", (n: any) => transformOf(n.id))
       .attr("opacity", 0);
     nodeEnter.append("circle").attr("class", "viz-graph__circle").attr("r", NODE_RADIUS);
+    // Transient-state adornment ring — invisible by default; the --changed / --removed
+    // modifiers light it amber / red. A separate element so the flash / fade never fights
+    // the persistent --cursor / --new circle tint (the two states layer instead).
+    nodeEnter
+      .append("circle")
+      .attr("class", "viz-graph__node-ring")
+      .attr("r", NODE_RADIUS + 4);
     nodeEnter
       .append("text")
       .attr("class", "viz-graph__value")
@@ -257,15 +317,33 @@ export function renderGraph(
       .attr("y", -(NODE_RADIUS + 10));
     nodeSel.exit().remove();
     const nodeAll = nodeEnter.merge(nodeSel);
+    // Persistent layer (--cursor / --new) tints the circle; transient layer
+    // (--changed / --removed) lights the adornment ring — disjoint, never overwrite.
     nodeAll
-      .classed("viz-graph__node--cursor", (n: any) => cursorNames.has(n.id))
-      .classed("viz-graph__node--new", (n: any) => highlights.has(n.id));
+      .classed("viz-graph__node--cursor", (n: any) => cursorsByNode.has(n.id))
+      .classed("viz-graph__node--new", (n: any) => highlights.has(n.id))
+      .classed("viz-graph__node--changed", (n: any) => changedSet.has(n.id))
+      .classed("viz-graph__node--removed", (n: any) => removedSet.has(n.id));
     nodeAll.select("text.viz-graph__value").text((n: any) => n.label);
     nodeAll.select("text.viz-graph__meta").text((n: any) => metaText(n));
-    nodeAll.select("text.viz-graph__cursor-mark").text((n: any) => {
-      const names = cursorNames.get(n.id);
-      return names !== undefined && names.length > 0 ? `${names.join(", ")} ▾` : "";
+    // Cursor caret — each pointer name in its own role colour (MarkerColors); the caret
+    // glyph takes the first pointer's colour. Rebuilt as tspans each step.
+    nodeAll.select("text.viz-graph__cursor-mark").each(function (n: any) {
+      const sel = d3.select(this as SVGTextElement);
+      sel.selectAll("tspan").remove();
+      const cs = cursorsByNode.get(n.id);
+      if (cs === undefined || cs.length === 0) return;
+      cs.forEach((c, i) => {
+        sel
+          .append("tspan")
+          .attr("fill", c.color || null)
+          .text(i === 0 ? c.name : `, ${c.name}`);
+      });
+      sel.append("tspan").attr("fill", cs[0].color || null).text("  ▾");
     });
+    // A node removed this step is re-emitted once at reduced opacity, so it visibly
+    // fades out before the next step drops it entirely.
+    const opacityOf = (n: any): number => (removedSet.has(n.id) ? 0.25 : 1);
     if (animate) {
       nodeEnter.transition("node-fade").duration(FADE_MS).attr("opacity", 1);
       nodeAll
@@ -273,9 +351,9 @@ export function renderGraph(
         .duration(MOVE_MS)
         .ease(d3.easeCubicInOut)
         .attr("transform", (n: any) => transformOf(n.id))
-        .attr("opacity", 1);
+        .attr("opacity", opacityOf);
     } else {
-      nodeAll.attr("opacity", 1).attr("transform", (n: any) => transformOf(n.id));
+      nodeAll.attr("opacity", opacityOf).attr("transform", (n: any) => transformOf(n.id));
     }
 
     caption.textContent = step.annotation;
@@ -314,14 +392,21 @@ function makeButton(label: string): HTMLButtonElement {
   return b;
 }
 
-// A static key for the diagram's visual vocabulary — the node colours and the pointer
-// caret. Universal to the VizGraph model, so it lives in the renderer, not a layout.
-function buildLegend(): HTMLDivElement {
+// A key for the diagram's visual vocabulary — the node colours and the pointer caret.
+// Universal to the VizGraph model, so it lives in the renderer, not a layout. The
+// changed / removed swatches appear only when the trace actually exercises them.
+function buildLegend(data: VizGraph): HTMLDivElement {
   const legend = document.createElement("div");
   legend.className = "viz-graph__legend";
   legend.append(
     legendItem("viz-graph__legend-swatch--cursor", "", "a variable points here"),
     legendItem("viz-graph__legend-swatch--new", "", "new this step"),
+  );
+  if (data.steps.some((s) => s.changed.length > 0))
+    legend.append(legendItem("viz-graph__legend-swatch--changed", "", "value changed"));
+  if (data.steps.some((s) => s.removed.length > 0))
+    legend.append(legendItem("viz-graph__legend-swatch--removed", "", "removed"));
+  legend.append(
     legendItem("viz-graph__legend-swatch--pointer", "▾", "pointer — labelled with the variable"),
   );
   return legend;

@@ -1,0 +1,182 @@
+{
+  "chapter": "06-sorting-and-searching/01-sorting",
+  "sweep": 3,
+  "pilot_approved": false,
+  "units": [
+    {
+      "id": "06-sorting-and-searching/01-sorting/lesson-01-introduction-to-sorting",
+      "type": "LESSON_UNIT",
+      "files": [
+        "06-sorting-and-searching/01-sorting/01-introduction-to-sorting.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "06-sorting-and-searching/01-sorting/lesson-02-bubble-sort",
+      "type": "LESSON_UNIT",
+      "files": [
+        "06-sorting-and-searching/01-sorting/02-bubble-sort.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "06-sorting-and-searching/01-sorting/lesson-03-selection-sort",
+      "type": "LESSON_UNIT",
+      "files": [
+        "06-sorting-and-searching/01-sorting/03-selection-sort.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "06-sorting-and-searching/01-sorting/lesson-04-insertion-sort",
+      "type": "LESSON_UNIT",
+      "files": [
+        "06-sorting-and-searching/01-sorting/04-insertion-sort.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "06-sorting-and-searching/01-sorting/lesson-05-counting-sort",
+      "type": "LESSON_UNIT",
+      "files": [
+        "06-sorting-and-searching/01-sorting/05-counting-sort.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "06-sorting-and-searching/01-sorting/lesson-06-quicksort",
+      "type": "LESSON_UNIT",
+      "files": [
+        "06-sorting-and-searching/01-sorting/06-quicksort.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "06-sorting-and-searching/01-sorting/lesson-07-dutch-national-flag-sort",
+      "type": "LESSON_UNIT",
+      "files": [
+        "06-sorting-and-searching/01-sorting/07-dutch-national-flag-sort.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "06-sorting-and-searching/01-sorting/lesson-08-three-way-quicksort",
+      "type": "LESSON_UNIT",
+      "files": [
+        "06-sorting-and-searching/01-sorting/08-three-way-quicksort.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "06-sorting-and-searching/01-sorting/lesson-09-merge-sort",
+      "type": "LESSON_UNIT",
+      "files": [
+        "06-sorting-and-searching/01-sorting/09-merge-sort.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "06-sorting-and-searching/01-sorting/lesson-10-heapsort",
+      "type": "LESSON_UNIT",
+      "files": [
+        "06-sorting-and-searching/01-sorting/10-heapsort.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "06-sorting-and-searching/01-sorting/chapter_memorize-11-memorize",
+      "type": "CHAPTER_MEMORIZE_UNIT",
+      "files": [
+        "06-sorting-and-searching/01-sorting/11-memorize.md"
+      ],
+      "status": "pending",
+      "blocked_by": [
+        "06-sorting-and-searching/01-sorting/lesson-01-introduction-to-sorting",
+        "06-sorting-and-searching/01-sorting/lesson-02-bubble-sort",
+        "06-sorting-and-searching/01-sorting/lesson-03-selection-sort",
+        "06-sorting-and-searching/01-sorting/lesson-04-insertion-sort",
+        "06-sorting-and-searching/01-sorting/lesson-05-counting-sort",
+        "06-sorting-and-searching/01-sorting/lesson-06-quicksort",
+        "06-sorting-and-searching/01-sorting/lesson-07-dutch-national-flag-sort",
+        "06-sorting-and-searching/01-sorting/lesson-08-three-way-quicksort",
+        "06-sorting-and-searching/01-sorting/lesson-09-merge-sort",
+        "06-sorting-and-searching/01-sorting/lesson-10-heapsort"
+      ],
+      "todos_filled": 0,
+      "verify_flags": 0
+    },
+    {
+      "id": "06-sorting-and-searching/01-sorting/pattern-12-pattern-quickselect",
+      "type": "PATTERN_UNIT",
+      "files": [
+        "06-sorting-and-searching/01-sorting/12-pattern-quickselect/01-pattern.md",
+        "06-sorting-and-searching/01-sorting/12-pattern-quickselect/02-problems/01-kth-smallest-element.md",
+        "06-sorting-and-searching/01-sorting/12-pattern-quickselect/02-problems/02-median-finder.md",
+        "06-sorting-and-searching/01-sorting/12-pattern-quickselect/02-problems/03-k-closest-elements.md",
+        "06-sorting-and-searching/01-sorting/12-pattern-quickselect/02-problems/04-k-most-frequent-elements.md",
+        "06-sorting-and-searching/01-sorting/12-pattern-quickselect/03-memorize.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "06-sorting-and-searching/01-sorting/pattern-13-pattern-custom-compare",
+      "type": "PATTERN_UNIT",
+      "files": [
+        "06-sorting-and-searching/01-sorting/13-pattern-custom-compare/01-pattern.md",
+        "06-sorting-and-searching/01-sorting/13-pattern-custom-compare/02-problems/01-bitwise-sort.md",
+        "06-sorting-and-searching/01-sorting/13-pattern-custom-compare/02-problems/02-sort-characters-by-frequency.md",
+        "06-sorting-and-searching/01-sorting/13-pattern-custom-compare/02-problems/03-largest-number.md",
+        "06-sorting-and-searching/01-sorting/13-pattern-custom-compare/02-problems/04-sort-people-by-height.md",
+        "06-sorting-and-searching/01-sorting/13-pattern-custom-compare/03-memorize.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "06-sorting-and-searching/01-sorting/synthesis-14-pattern-synthesis",
+      "type": "SYNTHESIS_UNIT",
+      "files": [
+        "06-sorting-and-searching/01-sorting/14-pattern-synthesis.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    }
+  ]
+}

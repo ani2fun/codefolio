@@ -90,7 +90,7 @@ Delete is symmetric: find the predecessors at every level, splice out the node f
 
 # Implementation
 
-```python run
+```python run viz=graph viz-root=head
 import random
 
 class SkipNode:
@@ -405,3 +405,25 @@ Skip lists are the simplest probabilistic ordered structure. Three patterns to i
 1. **Probabilistic balance via coin flips.** Each insertion's level is randomised; the structure is balanced *in expectation*. Worst case `O(n)` is exponentially unlikely for `n ≥ 100`.
 2. **Code is shorter than any balanced BST.** ~30 lines for full insert/search/delete vs ~200 for an RB-tree. When code simplicity matters and you can tolerate probabilistic guarantees, skip lists win.
 3. **Production-grade, especially for concurrent contexts.** Redis, LevelDB, Java's `ConcurrentSkipListMap` — all chose skip list over balanced BST for the simpler concurrent semantics.
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->

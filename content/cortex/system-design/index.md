@@ -2,73 +2,52 @@
 
 > A serious, hands-on track for building production systems — written for curious beginners, not interview-cram readers.
 
-This track teaches you to design and operate real software systems the way senior engineers do at serious technology companies. It is **not** an interview cheat sheet. By the time you finish, you will have built tiny working versions of load balancers, rate limiters, replicated stores, search indexes, payment flows, and chat backends — and you will be able to walk into an architecture review and contribute meaningfully.
+## Chapters
 
-## Who this is for
-
-- **Undergraduate students** who can write a Python loop, an `if/else`, and a function — and want to know how Twitter, Netflix, Uber, and Stripe actually work under the hood.
-- **High-school programmers** who are curious about distributed systems and tired of vague YouTube explainers.
-- **Working engineers** who can build a CRUD app and want a structured path to senior-level systems thinking.
-
-We assume **zero** prior systems knowledge. We do not assume you have ever heard of Kafka, Raft, CAP, or sharding. By the end of [Part 1](/cortex/system-design/foundations-index) you will have heard of all of them, and you will have *used* most of them.
-
-## The four promises this track makes you
-
-The four axes we measure ourselves against:
-
-1. **Runnable.** Every architectural concept ships with code you can clone and run. `docker compose up`, click "Run", or a single `just test` — and the example works on your laptop.
-2. **Quantitative.** No hand-waving. If we say "a memory access is fast and a network call is slow", you will see the actual numbers and an analogy that makes them stick.
-3. **Visual.** Every non-trivial idea has at least one diagram, authored as code in the repo (Mermaid, D2, or Structurizr DSL — the three tools senior engineers actually use).
-4. **Honest about trade-offs.** We never say "this is the right way". We say "if you want X, pick A; if you can tolerate Y, pick B; here are the numbers behind the trade-off."
-
-If a lesson fails any of these four, it is not done.
-
-## Curriculum at a glance
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    P1["Part 1<br/>Foundations<br/>(modules 1–5)"] --> P2["Part 2<br/>Building blocks<br/>(modules 6–14)"]
-    P2 --> P3["Part 3<br/>Distributed patterns<br/>(modules 15–21)"]
-    P2 --> P4["Part 4<br/>Storage &amp; search<br/>(modules 22–26)"]
-    P3 --> P5["Part 5<br/>Application architecture<br/>(modules 27–31)"]
-    P4 --> P5
-    P5 --> P6["Part 6<br/>Production operations<br/>(modules 32–36)"]
-    P6 --> P7["Part 7<br/>Capstones<br/>(modules 37–46)"]
-```
-
-<p align="center"><strong>The dependency graph. Foundations first, then building blocks; storage and patterns are independent; capstones are last.</strong></p>
-
-| Part | What you learn | Modules |
-|---|---|---|
-| **[1. Foundations](/cortex/system-design/foundations-index)** | The mental model: latency hierarchy, estimation, CAP/PACELC, Little's Law | 1–5 |
-| **[2. Building blocks](/cortex/system-design/building-blocks-index)** | Networking, load balancing, caching, databases (RDBMS + NoSQL), replication, sharding, consistency, consensus | 6–14 |
-| **[3. Distributed patterns](/cortex/system-design/distributed-patterns-index)** | Queues, pub/sub, idempotency, outbox + CDC, sagas, rate limiting, circuit breakers | 15–21 |
-| **[4. Storage & search at scale](/cortex/system-design/storage-and-search-index)** | LSM vs B-trees, probabilistic data structures, time-series, search, object storage | 22–26 |
-| **[5. Application architecture](/cortex/system-design/application-architecture-index)** | Monolith vs microservices, API design, service mesh, authn/authz, multi-tenancy | 27–31 |
-| **[6. Production operations](/cortex/system-design/production-operations-index)** | Observability, deployment strategies, autoscaling, chaos engineering, postmortems | 32–36 |
-| **[7. Capstones](/cortex/system-design/capstones-index)** | Design 10 famous systems end-to-end with C4 diagrams + working prototypes | 37–46 |
-
-## How to use this section
-
-- **Linear path:** start at [Part 1, module 1](/cortex/system-design/foundations-what-system-design-means) and walk through to the capstones. Each lesson takes 30–90 minutes including the lab.
-- **Reference path:** if you already know the basics, jump to a specific lesson and use the inline links to back-fill missing context.
-- **Capstone-first path:** if you learn best from concrete problems, skim Parts 1–2, then dive into a [capstone](/cortex/system-design/capstones-index) and follow links back to the building blocks you need.
-
-## A note on the audience
-
-We default to the voice of a kind, deeply experienced senior engineer explaining things to a curious 17-year-old over coffee. Concrete. Honest. Funny when it helps. Willing to say "this design is bad and here is why people still use it."
-
-When something is genuinely hard, we say so. When something has been over-hyped (looking at you, "microservices fix everything"), we push back with evidence.
-
-Welcome. Open [Part 1, module 1](/cortex/system-design/foundations-what-system-design-means) and let's go.
+- [1. What "system design" actually means](/cortex/system-design/foundations-what-system-design-means)
+- [2. Numbers every engineer should know](/cortex/system-design/foundations-numbers-every-engineer-should-know)
+- [3. Back-of-envelope estimation](/cortex/system-design/foundations-back-of-envelope-estimation)
+- [4. The CAP theorem and PACELC, honestly](/cortex/system-design/foundations-cap-and-pacelc)
+- [5. Latency, throughput, and the Universal Scalability Law](/cortex/system-design/foundations-latency-throughput-usl)
+- [6. Networking primer for system designers](/cortex/system-design/building-blocks-networking-primer)
+- [7. Load balancing](/cortex/system-design/building-blocks-load-balancing)
+- [8. Caching](/cortex/system-design/building-blocks-caching)
+- [9. Relational databases](/cortex/system-design/building-blocks-relational-databases)
+- [10. NoSQL families](/cortex/system-design/building-blocks-nosql-families)
+- [11. Replication](/cortex/system-design/building-blocks-replication)
+- [12. Sharding and partitioning](/cortex/system-design/building-blocks-sharding-and-partitioning)
+- [13. Consistency models](/cortex/system-design/building-blocks-consistency-models)
+- [14. Consensus — Paxos and Raft, from scratch](/cortex/system-design/building-blocks-consensus-paxos-and-raft)
+- [Message queues and event streams](/cortex/system-design/distributed-patterns-message-queues-and-streams)
+- [Pub/sub and fan-out](/cortex/system-design/distributed-patterns-pubsub-and-fanout)
+- [Idempotency, retries, and backoff](/cortex/system-design/distributed-patterns-idempotency-retries-backoff)
+- [The outbox pattern and CDC](/cortex/system-design/distributed-patterns-outbox-pattern-and-cdc)
+- [Sagas and distributed transactions](/cortex/system-design/distributed-patterns-sagas-and-distributed-transactions)
+- [Rate limiting](/cortex/system-design/distributed-patterns-rate-limiting)
+- [Circuit breakers and bulkheads](/cortex/system-design/distributed-patterns-circuit-breakers-and-bulkheads)
+- [LSM trees vs B-trees](/cortex/system-design/storage-and-search-lsm-trees-vs-btrees)
+- [Probabilistic data structures](/cortex/system-design/storage-and-search-probabilistic-data-structures)
+- [Time-series databases](/cortex/system-design/storage-and-search-time-series-databases)
+- [Search systems](/cortex/system-design/storage-and-search-search-systems)
+- [Object storage and blob stores](/cortex/system-design/storage-and-search-object-storage)
+- [Monoliths, microservices, and modular monoliths](/cortex/system-design/application-architecture-monoliths-microservices-modular-monoliths)
+- [API design — REST, gRPC, GraphQL](/cortex/system-design/application-architecture-api-design)
+- [Service discovery and service mesh](/cortex/system-design/application-architecture-service-discovery-and-mesh)
+- [Authentication and authorization](/cortex/system-design/application-architecture-authn-authz)
+- [Multi-tenancy](/cortex/system-design/application-architecture-multi-tenancy)
+- [Example — modelling a system with the C4 model](/cortex/system-design/application-architecture-example-c4-model)
+- [Observability — logs, metrics, traces](/cortex/system-design/production-operations-observability)
+- [Deployment strategies](/cortex/system-design/production-operations-deployment-strategies)
+- [Capacity planning and autoscaling](/cortex/system-design/production-operations-capacity-planning-and-autoscaling)
+- [Failure injection and chaos engineering](/cortex/system-design/production-operations-chaos-engineering)
+- [Incident response and postmortems](/cortex/system-design/production-operations-incident-response-and-postmortems)
+- [URL shortener (capstone)](/cortex/system-design/capstones-url-shortener)
+- [News feed / timeline (capstone)](/cortex/system-design/capstones-news-feed)
+- [Chat system (capstone)](/cortex/system-design/capstones-chat-system)
+- [Video streaming (capstone)](/cortex/system-design/capstones-video-streaming)
+- [Ride-sharing dispatch (capstone)](/cortex/system-design/capstones-ride-sharing-dispatch)
+- [Search autocomplete (capstone)](/cortex/system-design/capstones-search-autocomplete)
+- [Distributed file storage (capstone)](/cortex/system-design/capstones-distributed-file-storage)
+- [Payment system (capstone)](/cortex/system-design/capstones-payment-system)
+- [Online multiplayer game backend (capstone)](/cortex/system-design/capstones-multiplayer-game-backend)
+- [Recommendation system serving layer (capstone)](/cortex/system-design/capstones-recommendation-serving)

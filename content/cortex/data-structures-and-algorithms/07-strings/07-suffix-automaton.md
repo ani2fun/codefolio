@@ -78,7 +78,7 @@ Time: `O(n · |Σ|)` if transitions are stored in arrays, or `O(n log |Σ|)` wit
 
 A working suffix automaton in Python:
 
-```python run
+```python run viz=array viz-root=trans
 class SAMState:
     __slots__ = ("trans", "link", "length")
     def __init__(self):
@@ -289,3 +289,31 @@ The suffix automaton is the minimal DFA recognising all substrings. Three patter
 1. **Linear size, linear construction, linear queries.** No other suffix-based structure achieves all three.
 2. **Equivalence classes are the abstraction.** A state = a set of substrings ending at the same positions. Many SAM algorithms walk the suffix-link tree exploiting this.
 3. **Niche but unbeatable for specific problems.** Distinct-substring counting, multi-string LCS, k-th smallest substring — all `O(n)` via SAM, harder via other structures.
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
+<!--       Guidance: bulleted list of gotchas -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->

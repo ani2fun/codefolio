@@ -2,33 +2,52 @@
 
 The most general data structure in this book. Every linked list is a graph. Every tree is a graph. Every state machine, every dependency, every road network, every social connection, every Git commit history — all graphs. Once you can traverse one cleanly and know which algorithm to reach for, a vast class of problems collapses into a few well-named patterns.
 
-## Place in the curriculum
-
-- **Prerequisites:** [Trees](/cortex/data-structures-and-algorithms/trees-index) (DFS on a tree generalises to DFS on a graph; the only new wrinkle is the visited-set), [Linear Structures](/cortex/data-structures-and-algorithms/linear-structures-index) (queues for BFS, stacks for iterative DFS, hash tables for visited-sets).
-- **Followed by:** [Algorithms by Strategy](/cortex/data-structures-and-algorithms/algorithms-by-strategy-index) (Dijkstra is greedy; Bellman-Ford is DP; Floyd-Warshall is DP).
-
 ## Chapters
 
-1. [Introduction to Graphs](/cortex/data-structures-and-algorithms/graphs-introduction-to-graphs) — vertex, edge, directed vs undirected, weighted, dense vs sparse.
-2. [Adjacency Matrix Representation](/cortex/data-structures-and-algorithms/graphs-adjacency-matrix-representation) — O(V²) space; O(1) edge query; the right pick for dense graphs.
-3. [Adjacency List Representation](/cortex/data-structures-and-algorithms/graphs-adjacency-list-representation) — O(V+E) space; the default representation for almost everything.
-4. [Traversing a Graph](/cortex/data-structures-and-algorithms/graphs-traversing-a-graph) — BFS and DFS from first principles.
-5. [Traversing a Grid](/cortex/data-structures-and-algorithms/graphs-traversing-a-grid) — the implicit-graph trick: every grid problem is a graph problem.
-6. [Cycle Detection](/cortex/data-structures-and-algorithms/graphs-cycle-detection) — colouring DFS for directed graphs; union-find for undirected.
-7. [Topological Sort](/cortex/data-structures-and-algorithms/graphs-topological-sort) — Kahn's algorithm, DFS ordering; build-system and course-prerequisite ordering.
-8. [Single-Source Shortest Path](/cortex/data-structures-and-algorithms/graphs-single-source-shortest-path) — BFS for unweighted, Dijkstra for non-negative-weighted, Bellman-Ford for arbitrary.
-9. [All-Pairs Shortest Path](/cortex/data-structures-and-algorithms/graphs-all-pairs-shortest-path) — Floyd-Warshall.
-10. [Max Flow / Min Cut Theorem](/cortex/data-structures-and-algorithms/graphs-max-flow-min-cut-theorem) — the duality every flow problem boils down to.
-11. [Maximum Bipartite Matching](/cortex/data-structures-and-algorithms/graphs-maximum-bipartite-matching) — flow as matching; the Hopcroft-Karp speed-up.
-12. [Minimum Spanning Trees](/cortex/data-structures-and-algorithms/graphs-minimum-spanning-trees) — Kruskal (sort + union-find), Prim (heap-based).
-13. [Strongly Connected Components](/cortex/data-structures-and-algorithms/graphs-strongly-connected-components) — Tarjan's lowlink and Kosaraju's two-pass DFS.
-14. [Bridges and Articulation Points](/cortex/data-structures-and-algorithms/graphs-bridges-and-articulation-points) — the lowlink trick again, this time on undirected graphs.
-15. [2-SAT](/cortex/data-structures-and-algorithms/graphs-2-sat) — implication graphs and SCCs; one of the few NP problems with a polynomial special case.
-
-### Patterns
-
-- [Pattern: Depth-First Search](/cortex/data-structures-and-algorithms/graphs-pattern-depth-first-search)
-- [Pattern: Connected Components](/cortex/data-structures-and-algorithms/graphs-pattern-connected-components)
-- [Pattern: Two Colouring](/cortex/data-structures-and-algorithms/graphs-pattern-two-colouring)
-- [Pattern: Shortest Path BFS](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-breadth-first-search)
-- [Pattern: Shortest Path Dijkstra](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-dijkstra)
+- [Introduction To Graphs](/cortex/data-structures-and-algorithms/graphs-introduction-to-graphs)
+- [Adjacency Matrix Representation](/cortex/data-structures-and-algorithms/graphs-adjacency-matrix-representation)
+- [Adjacency List Representation](/cortex/data-structures-and-algorithms/graphs-adjacency-list-representation)
+- [Traversing A Graph](/cortex/data-structures-and-algorithms/graphs-traversing-a-graph)
+- [Traversing A Grid](/cortex/data-structures-and-algorithms/graphs-traversing-a-grid)
+- [Cycle Detection](/cortex/data-structures-and-algorithms/graphs-cycle-detection)
+- [Topological Sort](/cortex/data-structures-and-algorithms/graphs-topological-sort)
+- [Single Source Shortest Path](/cortex/data-structures-and-algorithms/graphs-single-source-shortest-path)
+- [All Pairs Shortest Path](/cortex/data-structures-and-algorithms/graphs-all-pairs-shortest-path)
+- [Max Flow Min Cut Theorem](/cortex/data-structures-and-algorithms/graphs-max-flow-min-cut-theorem)
+- [Maximum Bipartite Matching](/cortex/data-structures-and-algorithms/graphs-maximum-bipartite-matching)
+- [Memorize: Graphs](/cortex/data-structures-and-algorithms/graphs-memorize)
+- [Pattern: Depth-First Search](/cortex/data-structures-and-algorithms/graphs-pattern-depth-first-search-pattern)
+- [Source to Target Paths](/cortex/data-structures-and-algorithms/graphs-pattern-depth-first-search-problems-source-to-target-paths)
+- [Target Paths With Given Weight](/cortex/data-structures-and-algorithms/graphs-pattern-depth-first-search-problems-target-paths-with-given-weight)
+- [Hamiltonian Paths](/cortex/data-structures-and-algorithms/graphs-pattern-depth-first-search-problems-hamiltonian-paths)
+- [Simple Cycles](/cortex/data-structures-and-algorithms/graphs-pattern-depth-first-search-problems-simple-cycles)
+- [Memorize: Depth-First Search](/cortex/data-structures-and-algorithms/graphs-pattern-depth-first-search-memorize)
+- [Pattern: Connected Components](/cortex/data-structures-and-algorithms/graphs-pattern-connected-components-pattern)
+- [Find Connected Components](/cortex/data-structures-and-algorithms/graphs-pattern-connected-components-problems-find-connected-components)
+- [Sum of Minimums](/cortex/data-structures-and-algorithms/graphs-pattern-connected-components-problems-sum-of-minimums)
+- [Island Count](/cortex/data-structures-and-algorithms/graphs-pattern-connected-components-problems-island-count)
+- [Size of Largest Island](/cortex/data-structures-and-algorithms/graphs-pattern-connected-components-problems-size-of-largest-island)
+- [Memorize: Connected Components](/cortex/data-structures-and-algorithms/graphs-pattern-connected-components-memorize)
+- [Pattern: Two Colouring](/cortex/data-structures-and-algorithms/graphs-pattern-two-colouring-pattern)
+- [Two Colourable](/cortex/data-structures-and-algorithms/graphs-pattern-two-colouring-problems-two-colourable)
+- [Dislike Pairs](/cortex/data-structures-and-algorithms/graphs-pattern-two-colouring-problems-dislike-pairs)
+- [Colour Repair](/cortex/data-structures-and-algorithms/graphs-pattern-two-colouring-problems-colour-repair)
+- [Group Colourable](/cortex/data-structures-and-algorithms/graphs-pattern-two-colouring-problems-group-colourable)
+- [Memorize: Two Colouring](/cortex/data-structures-and-algorithms/graphs-pattern-two-colouring-memorize)
+- [Pattern: Shortest Path (Breadth-First Search)](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-breadth-first-search-pattern)
+- [Minimum Steps in a Grid](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-breadth-first-search-problems-minimum-steps-in-a-grid)
+- [Nearest Distance](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-breadth-first-search-problems-nearest-distance)
+- [Shortest Word Transformation](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-breadth-first-search-problems-shortest-word-transformation)
+- [Minimum Steps in a Grid II](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-breadth-first-search-problems-minimum-steps-in-a-grid-ii)
+- [Memorize: Shortest Path (BFS)](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-breadth-first-search-memorize)
+- [Minimum Spanning Trees (Kruskal and Prim)](/cortex/data-structures-and-algorithms/graphs-minimum-spanning-trees)
+- [Pattern: Shortest Path (Dijkstra)](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-dijkstra-pattern)
+- [Minimum Cost Path](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-dijkstra-problems-minimum-cost-path)
+- [Cheapest Flights With K Stops](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-dijkstra-problems-cheapest-flights-with-k-stops)
+- [Minimum Travel Time](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-dijkstra-problems-minimum-travel-time)
+- [Teleporter Grid](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-dijkstra-problems-teleporter-grid)
+- [Memorize: Shortest Path (Dijkstra)](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-dijkstra-memorize)
+- [Pattern Synthesis: Graphs](/cortex/data-structures-and-algorithms/graphs-pattern-synthesis)
+- [Strongly Connected Components (Tarjan and Kosaraju)](/cortex/data-structures-and-algorithms/graphs-strongly-connected-components)
+- [Bridges and Articulation Points](/cortex/data-structures-and-algorithms/graphs-bridges-and-articulation-points)
+- [2-SAT (2-Satisfiability)](/cortex/data-structures-and-algorithms/graphs-2-sat)

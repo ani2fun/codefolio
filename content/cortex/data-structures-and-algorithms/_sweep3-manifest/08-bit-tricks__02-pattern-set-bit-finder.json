@@ -1,0 +1,21 @@
+{
+  "chapter": "08-bit-tricks/02-pattern-set-bit-finder",
+  "sweep": 3,
+  "pilot_approved": false,
+  "units": [
+    {
+      "id": "08-bit-tricks/02-pattern-set-bit-finder/pattern-02-pattern-set-bit-finder",
+      "type": "PATTERN_UNIT",
+      "files": [
+        "08-bit-tricks/02-pattern-set-bit-finder/01-pattern.md",
+        "08-bit-tricks/02-pattern-set-bit-finder/02-problems/01-only-set-bit.md",
+        "08-bit-tricks/02-pattern-set-bit-finder/02-problems/02-rightmost-set-bit.md",
+        "08-bit-tricks/02-pattern-set-bit-finder/03-memorize.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    }
+  ]
+}

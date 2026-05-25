@@ -141,7 +141,7 @@ public class Main {
 }
 ```
 
-```python run
+```python run viz=graph viz-root=stripes
 import threading
 from collections import defaultdict
 
@@ -306,3 +306,28 @@ Concurrent hash maps are the workhorse of multi-threaded code. Three patterns to
 1. **Lock granularity is the design knob.** Single global lock < segment locks < per-bucket locks < lock-free. Each step buys throughput at the cost of complexity.
 2. **Use atomic compound operations.** `putIfAbsent`, `compute`, `merge` — never check-then-act manually under concurrency.
 3. **Java's `ConcurrentHashMap` is the gold standard.** When in doubt, use it. Reading its source is a master class in concurrent programming.
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->

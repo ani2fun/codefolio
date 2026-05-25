@@ -1,0 +1,21 @@
+{
+  "chapter": "05-algorithms-by-strategy/02-divide-and-conquer",
+  "sweep": 2,
+  "pilot_approved": true,
+  "files": [
+    {
+      "path": "content/cortex/data-structures-and-algorithms/05-algorithms-by-strategy/02-divide-and-conquer/01-introduction-to-divide-and-conquer.md",
+      "type": "LESSON",
+      "status": "done",
+      "placeholders_inserted": 6,
+      "flags": 1
+    },
+    {
+      "path": "content/cortex/data-structures-and-algorithms/05-algorithms-by-strategy/02-divide-and-conquer/02-memorize.md",
+      "type": "CHAPTER_MEMORIZE",
+      "status": "done",
+      "placeholders_inserted": 0,
+      "flags": 0
+    }
+  ]
+}

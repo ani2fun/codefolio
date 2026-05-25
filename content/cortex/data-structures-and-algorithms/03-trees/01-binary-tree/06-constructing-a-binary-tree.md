@@ -1,3 +1,8 @@
+---
+title: "Constructing A Binary Tree"
+summary: "<!-- TODO: summary -->"
+---
+
 # 6. Constructing a Binary Tree
 
 ## The Hook
@@ -244,7 +249,7 @@ flowchart TB
 
 ### Implementation
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional, List, Any
 from collections import deque
 
@@ -566,7 +571,7 @@ Result is the same tree as before — pre+in and post+in *both* uniquely reconst
 The Python and Java versions in full; compared to the pre+in code, the only differences are `pre_ind` becomes `post_ind` (initialised to the *last* index and *decremented*) and the recursion order swaps to right-then-left.
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional, List
 from collections import deque
 
@@ -898,3 +903,37 @@ Tree construction from traversals is a small jewel of recursive thinking. Three 
 3. **Watch the inorder lookup cost.** The implementations above use a `find_index` linear scan to locate the root in the inorder slice — clear to read, but it makes every recursive call O(N), degrading the algorithm to O(N²) on skew trees. Pre-building a **value → inorder index** hash map turns each lookup into O(1) and brings the whole construction down to O(N). The map is a one-line change with massive payoff — reach for it in production code.
 
 > *Coming up — the lessons that follow build on construction with <strong>insertion</strong> (adding a new node to an existing tree at a given position) and then dive into the <strong>11 binary-tree patterns</strong> that cover almost every interview question you'll see on this data structure: stateless and stateful preorder/postorder, root-to-leaf paths, level-order traversal, lowest common ancestor, simultaneous traversal of two trees, and a final practice mix. Each pattern is a recipe — once you've internalised the recursive shape from these first six lessons, the patterns are just <em>"what work do I do at the visit step?"</em> applied to specific problems.*
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
+<!--       Guidance: bulleted list of gotchas -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->

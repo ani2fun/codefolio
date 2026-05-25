@@ -1,3 +1,8 @@
+---
+title: "Introduction To Binary Search Trees"
+summary: "<!-- TODO: summary -->"
+---
+
 # 1. Introduction to Binary Search Trees
 
 ## The Hook
@@ -426,3 +431,40 @@ flowchart TB
 Throughout this chapter, when we write `node.left` or `node.right`, this is the picture in your head — a small struct with a value and two child pointers. That's the entire physical machinery. Everything else — search, insert, delete, balance — is just smart traversal over this skeleton.
 
 The next lesson sharpens an idea you've already met informally: a BST can be tall and skinny, or short and bushy, and that *shape* is what decides whether your operations run in O(log n) or in catastrophic O(n). We'll formalise it as **height** and **balance** — the two numbers that quietly govern every BST's performance.
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
+<!--       Guidance: bulleted list of gotchas -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->
+
+<!-- TODO: Final Takeaway — missing, needs to be written -->
+<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->

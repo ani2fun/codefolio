@@ -1,3 +1,8 @@
+---
+title: "Maximum Bipartite Matching"
+summary: "<!-- TODO: summary -->"
+---
+
 # 11. Maximum bipartite matching
 
 This lesson teaches you to solve the **assignment problem** — match workers to jobs, students to schools, taxis to riders — using a strikingly elegant trick: convert the problem into a max-flow problem and let the algorithm from the last lesson do the work.
@@ -213,7 +218,7 @@ The input is given as:
 `maximum_bipartite_matching` copies the original edges into a `flow_graph` adjacency list of `(neighbour, capacity)` pairs (every capacity is 1 — the matching constraint), appends 2 new nodes (source and sink), wires the source to every `left` node and every `right` node to the sink, then hands the whole network to `maximum_flow`.
 
 
-```python run
+```python run viz=graph viz-root=graph
 import sys
 from typing import List, Tuple, Set
 
@@ -600,3 +605,40 @@ L = students, R = boards. Edge `(student, board)` if the student is willing to p
 This is identical to the applicants-and-jobs example with smaller numbers. The reduction is universal.
 
 </details>
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: The Hook — missing, needs to be written -->
+<!--       Guidance: real-world story opening before any definition -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
+<!--       Guidance: bulleted list of gotchas -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->

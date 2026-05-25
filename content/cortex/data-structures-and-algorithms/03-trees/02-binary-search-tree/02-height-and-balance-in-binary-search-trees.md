@@ -1,3 +1,8 @@
+---
+title: "Height And Balance In Binary Search Trees"
+summary: "<!-- TODO: summary -->"
+---
+
 # 2. Height & Balance in Binary Search Trees
 
 ## The Hook
@@ -535,7 +540,7 @@ flowchart LR
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional
 
 
@@ -765,7 +770,7 @@ If the value isn't in the tree, the find returns `null`/`None`, and we return `0
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional
 
 
@@ -1399,7 +1404,7 @@ The answer is **O(n²)** in the worst case (a skew tree), because `findHeight` r
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional
 
 
@@ -1603,3 +1608,40 @@ Two numbers govern every BST's performance: its **height** (worst-case path leng
 The next lesson zooms back in to the basic operation that justifies all of this engineering: **search**. We'll first do it recursively, leaning on the BST property at every step to halve the remaining tree.
 
 </details>
+
+<!-- ============================================== -->
+<!-- SWEEP 2 — missing sections (placeholders only) -->
+<!-- ============================================== -->
+
+<!-- TODO: Understanding the Problem — missing, needs to be written -->
+<!--       Guidance: frame the gap the structure/algorithm fills -->
+
+<!-- TODO: Supported Operations — missing, needs to be written -->
+<!--       Guidance: table: operation / time / notes -->
+
+<!-- TODO: Internal Mechanics — missing, needs to be written -->
+<!--       Guidance: how it actually works under the hood -->
+
+<!-- TODO: Working Example — missing, needs to be written -->
+<!--       Guidance: one fully worked end-to-end example -->
+
+<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
+<!--       Guidance: bulleted list of gotchas -->
+
+<!-- TODO: Production Reality — missing, needs to be written -->
+<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+
+<!-- TODO: Quiz — missing, needs to be written -->
+<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+
+<!-- TODO: Practice Ladder — missing, needs to be written -->
+<!--       Guidance: table: 5 links into pattern problems + hints -->
+
+<!-- TODO: Further Reading — missing, needs to be written -->
+<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+
+<!-- TODO: Cross-Links — missing, needs to be written -->
+<!--       Guidance: Prerequisites | What comes next -->
+
+<!-- TODO: Final Takeaway — missing, needs to be written -->
+<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->

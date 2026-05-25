@@ -1,3 +1,10 @@
+---
+title: "Introduction to Singly Linked Lists"
+summary: "Chained nodes scattered across memory, threaded by next pointers. O(1) insert and delete at the head; O(n) traversal — the foundational structure behind stacks, queues, hash tables, and trees."
+prereqs:
+  - linear-structures-arrays-introduction
+---
+
 # 1. Introduction to Singly Linked Lists
 
 ## The Hook
@@ -18,6 +25,14 @@ The linked list is the most important data structure you'll ever learn. Everythi
 4. [Structure of a singly linked list](#structure-of-a-singly-linked-list)
 5. [Overview of supported operations](#overview-of-supported-operations)
 6. [Boundary node](#boundary-node)
+7. [Internal mechanics](#internal-mechanics)
+8. [Working example](#working-example)
+9. [Production reality](#production-reality)
+10. [Practice ladder](#practice-ladder)
+11. [Quiz](#quiz)
+12. [Further reading](#further-reading)
+13. [Cross-links](#cross-links)
+14. [Final takeaway](#final-takeaway)
 
 ***
 
@@ -1012,3 +1027,148 @@ Every linked-list problem you'll ever solve starts with one of two questions: *"
 > </details>
 
 </details>
+
+# Internal Mechanics
+
+Under the hood, a singly linked list is nothing more than a small heap-allocated struct per value, plus one pointer per struct holding the address of the next struct. There is no master container, no length field, no contiguous buffer. Each call to `new ListNode(...)` (Java) or `ListNode(...)` (Python) asks the allocator for a fresh block. The next block could land anywhere in the heap.
+
+Two facts follow from this layout, and the rest of the chapter falls out of them:
+
+- **A node's address is opaque to its neighbours.** The only way `B` knows where `C` lives is because `B.next` was set to the address the allocator returned for `C`. Lose that pointer and `C` becomes unreachable — even though its bytes are still sitting in RAM.
+- **There is no `O(1)` "jump to index `k`".** Arrays compute `base + size × k` and land on the right cell directly. A linked list has no base and no fixed cell size, so reaching node `k` means following `k` pointers one at a time. Traversal is `O(n)` time and `O(1)` space; random access by index does not exist as a primitive.
+
+To make this concrete: store five `int` values in an array versus a singly linked list. The array reserves exactly `5 × 4 = 20` bytes in one contiguous block. The linked list allocates five separate heap blocks of roughly `24` bytes each — `8` bytes for the value plus padding, `8` bytes for the `next` pointer on a 64-bit machine, and `~8` bytes of allocator metadata per block. The linked list uses roughly six times the memory of the array for the same payload. The blocks may sit anywhere in the heap.
+
+So the key idea is: the singly linked list buys structural flexibility — insert and delete in `O(1)` once you hold the right node — at the price of one pointer per element, one heap allocation per insert, and `O(n)` traversal to reach anything by position.
+
+---
+
+## Key Takeaway
+
+A linked list is a chain of independently-allocated heap nodes connected by `next` pointers. The `head` reference is the only entry point; the tail's `null` pointer is the only termination signal. Everything else — insertion, deletion, search — is built on top of those two invariants.
+
+***
+
+# Working Example
+
+Walk through the smallest interesting list — three names, three nodes — end to end, from allocation to traversal.
+
+**Step 1 — allocate.** The program calls `ListNode("Alice")`, `ListNode("Bob")`, and `ListNode("Carol")` in that order. The allocator returns three heap addresses; for this trace, say `0x100`, `0x240`, and `0x1A8`. Each node holds its value and a `next` field initialised to `null`.
+
+**Step 2 — link.** Assignments wire the chain: `a.next = b` writes the address `0x240` into the `next` field of the node at `0x100`. Then `b.next = c` writes `0x1A8` into the `next` field at `0x240`. Carol's `next` stays at `null`, marking the tail.
+
+**Step 3 — anchor.** A single `head` variable holds the address `0x100`. This is the only handle into the list — without it, the three nodes are reachable from nothing.
+
+The chain now looks like this in memory:
+
+- `head` → address `0x100`: `val = Alice`, `next = 0x240`
+- address `0x240`: `val = Bob`, `next = 0x1A8`
+- address `0x1A8`: `val = Carol`, `next = null`
+
+**Step 4 — traverse.** To print every value, set `curr = head`, then loop while `curr != null`: print `curr.val`, then assign `curr = curr.next`. Three iterations, three pointer follows, three prints. The cost is `O(n)` time and `O(1)` space — no copies, no recursion stack, only one variable walking the chain.
+
+> 🖼 Diagram — TODO: 3-frame trace: allocation in scattered heap blocks; pointers wired into a chain; curr walking the chain during traversal.
+
+The core insight is: every operation on a linked list reduces to one of two motions — *follow a pointer* (read `curr.next`) or *redirect a pointer* (write `curr.next = ...`). Insertion, deletion, reversal, merging — they are all combinations of these two atoms.
+
+---
+
+## Key Takeaway
+
+The complete lifecycle is allocate-link-anchor-traverse. Anchor through `head`, link through `next`, terminate at `null`. Memorise the trace above — every later chapter is a variation on it.
+
+***
+
+# Production Reality
+
+Linked lists rarely show up in user-level code, but they sit underneath some of the most critical infrastructure in the software stack. The places below are worth knowing by name.
+
+**[The Linux kernel's `struct list_head`]** — uses **an intrusively-linked circular doubly linked list embedded into every kernel data structure** — because in-place insertion and deletion in `O(1)` matters more than cache locality when the list represents process queues, file descriptors, or driver registrations. Source: [include/linux/list.h](https://github.com/torvalds/linux/blob/master/include/linux/list.h).
+
+**[Java's `LinkedList<E>`]** — uses **a doubly linked list under the `List` and `Deque` interfaces** — because the standard library needs an `O(1)` `addFirst` / `removeFirst` for code that uses it as a queue, even though `ArrayDeque` is almost always faster in practice.
+
+**[Garbage-collector free lists]** — uses **a singly linked list of freed memory blocks** — because reclaiming a block costs one pointer write to push it onto the head, which is the fastest possible "remember this for later" operation.
+
+**[The JVM's monitor wait-set]** — uses **a singly linked list of threads waiting on a lock** — because `notify()` only ever pops from the head, and `wait()` only ever pushes to the tail, so `O(1)` ends of the list are all that matter.
+
+**[LISP `cons` cells and every functional list]** — uses **immutable singly linked nodes (`car` + `cdr`)** — because functional updates need to share the tail of a list with previous versions, which is impossible with a contiguous array but trivial when each node is a separate heap object.
+
+**[Adjacency lists in graph libraries (NetworkX, Boost.Graph)]** — uses **a linked list per vertex of outgoing edges** — because the edge set of any one vertex is typically tiny, and `O(degree)` traversal beats a hash table's constant-factor overhead at small sizes.
+
+***
+
+# Practice Ladder
+
+Five problems to lock in the head-pointer + `next == null` reflex before the pattern chapters take over. Try each unaided; hit the hint after ten minutes; don't peek at solutions until you have written something runnable.
+
+| # | Problem | Pattern | Difficulty | Hint |
+|---|---------|---------|------------|------|
+| 1 | [Reverse a List](./07-pattern-reversal/02-problems/01-reverse-a-list.md) | [Reversal](./07-pattern-reversal/01-pattern.md) | Easy | Walk with three pointers — `prev`, `curr`, `next`. At each step, save `curr.next`, flip `curr.next = prev`, then slide `prev` and `curr` forward. Return `prev`. |
+| 2 | [Middle Node Search](./10-pattern-fast-and-slow-pointers/02-problems/01-middle-node-search.md) | [Fast and Slow Pointers](./10-pattern-fast-and-slow-pointers/01-pattern.md) | Easy | Advance `slow` by one and `fast` by two per step. When `fast` falls off the end, `slow` is at the middle. One pass, no length precomputation. |
+| 3 | [Merge Sorted Lists](./12-pattern-merge/02-problems/02-merge-sorted-lists.md) | [Merge](./12-pattern-merge/01-pattern.md) | Easy | Use a sentinel `dummy` head. At each step, splice the smaller of `a.val` / `b.val` onto the tail. When one list empties, attach the other in `O(1)`. |
+| 4 | [Trim Nth Node](./09-pattern-sliding-window-traversal/02-problems/02-trim-nth-node.md) | [Sliding Window Traversal](./09-pattern-sliding-window-traversal/01-pattern.md) | Medium | A two-pointer window of width `n + 1`. Advance the fast pointer `n` steps first, then walk both together until fast hits the tail. Slow now sits one node *before* the target. |
+| 5 | [Palindrome Checker](./10-pattern-fast-and-slow-pointers/02-problems/04-palindrome-checker.md) | [Fast and Slow Pointers](./10-pattern-fast-and-slow-pointers/01-pattern.md) | Medium | Find the middle with fast/slow, reverse the second half in place, then walk one pointer from `head` and one from the new sub-head, comparing values. `O(n)` time, `O(1)` space. |
+
+Once these feel automatic, the head pointer and `null` terminator have stopped being syntax and started being structural reflexes — and the pattern chapters can land their punches.
+
+***
+
+# Quiz
+
+Test your grip before moving on. One answer per question; reveal only after you have committed to one.
+
+**[Recall] Q: What two fields does a singly linked list node hold?**
+A value (the payload, any type) and a `next` pointer (the address of the following node, or `null` if it is the tail).
+
+**[Recall] Q: What is the time complexity of accessing the `k`-th node by index in a singly linked list of length `n`?**
+`O(k)` time and `O(1)` space — you must follow `k` pointers from the head; there is no address-arithmetic shortcut.
+
+**[Reasoning] Q: Why is inserting at the head `O(1)` for a linked list but `O(n)` for an array?**
+Inserting at the head of a linked list is two pointer writes — point the new node at the old head, then move `head` to the new node — neither depends on `n`. An array insertion at index `0` shifts every existing element one slot to the right, which is `n` writes.
+
+**[Reasoning] Q: If you lose the `head` reference of a linked list, what happens to the nodes?**
+They become unreachable. The bytes remain in RAM until the garbage collector (or `free()`) reclaims them, but no code can access them — every node except the head is reachable only through the previous node's `next` pointer.
+
+**[Tradeoff] Q: When does a linked list beat a dynamic array, and when does the dynamic array win?**
+A linked list wins when most operations are `O(1)` head insertions or deletions and traversal order is fixed (queues, free lists, undo stacks). The dynamic array wins when you need indexed access, when cache locality matters, or when memory overhead per element is tight — three out of four production workloads land here.
+
+***
+
+# Further Reading
+
+Curated paths in, not a syllabus. Read in order of the annotation; come back for the rest when you need depth.
+
+- **[CLRS — Chapter 10.2: Linked Lists](https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/)**
+  ★ Essential — the canonical reference for singly and doubly linked lists, sentinel nodes, and the proofs behind their complexity bounds.
+- **[Linus Torvalds — "Linked lists and good taste"](https://www.youtube.com/watch?v=o8NPllzkFhE)**
+  ★ Essential — the famous five-minute clip on the pointer-to-pointer technique for deletion. Watching the idea click is faster than reading it.
+- **[Linux kernel `struct list_head`](https://github.com/torvalds/linux/blob/master/include/linux/list.h)**
+  ◆ Advanced — the most-read linked-list implementation in the world, with `container_of` macro tricks that show how an intrusive list embeds itself in any host struct.
+- **[Bjarne Stroustrup — "Why you should avoid linked lists" (GoingNative 2012)](https://www.youtube.com/watch?v=YQs6IC-vgmo)**
+  ◆ Advanced — the counterargument: a benchmark showing `std::vector` outperforms `std::list` for almost every workload because of cache locality. Read it after you understand when linked lists *do* win.
+- **[Python `deque` implementation — `_collectionsmodule.c`](https://github.com/python/cpython/blob/main/Modules/_collectionsmodule.c)**
+  → Reference — a block-based doubly linked list (64 elements per block) that demonstrates the hybrid array-of-linked-blocks trick used to claw back cache locality.
+
+***
+
+# Cross-Links
+
+**Prerequisites**
+
+- [Introduction to Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-introduction) — the contrast structure; every "linked list wins here" claim is implicitly "the array loses here".
+- [Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis) — what `O(1)` insertion and `O(n)` traversal actually mean, and how to read them off a loop.
+
+**What comes next**
+
+- [Traversal in Singly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-traversal-in-singly-linked-lists) — the one operation every other operation depends on; the canonical `curr = curr.next` loop.
+- [Insertion in Singly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-insertion-in-singly-linked-lists) — the five insertion variants and the pointer-rewrite recipe each one uses.
+- [Deletion in Singly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-deletion-in-singly-linked-lists) — the dual to insertion, plus the dummy-head trick that makes edge cases vanish.
+- [Detecting Cycle in Singly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-detecting-cycle-in-singly-linked-lists) — the first non-trivial algorithm; Floyd's two-pointer trick over a linked list.
+
+***
+
+## Final Takeaway
+
+1. **Core mechanic:** a singly linked list is a chain of heap-allocated nodes, each holding a value and a `next` pointer to the following node, anchored by a `head` reference and terminated by a `null` pointer.
+2. **Dominant tradeoff:** you gain `O(1)` insertion and deletion at the head, plus structural flexibility (grow and shrink without reallocating); you give up `O(1)` indexed access (every lookup is `O(n)`), cache locality (nodes scatter across the heap), and roughly six times the memory of an equivalent array.
+3. **One thing to remember:** every linked-list operation reduces to two moves — *follow a pointer* (`curr = curr.next`) and *redirect a pointer* (`curr.next = ...`). Master those two, and every later pattern is a recombination of them.

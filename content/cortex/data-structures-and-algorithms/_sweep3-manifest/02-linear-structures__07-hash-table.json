@@ -1,0 +1,183 @@
+{
+  "chapter": "02-linear-structures/07-hash-table",
+  "sweep": 3,
+  "pilot_approved": false,
+  "units": [
+    {
+      "id": "02-linear-structures/07-hash-table/lesson-01-introduction-to-hash-tables",
+      "type": "LESSON_UNIT",
+      "files": [
+        "02-linear-structures/07-hash-table/01-introduction-to-hash-tables.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "02-linear-structures/07-hash-table/lesson-02-separate-chaining",
+      "type": "LESSON_UNIT",
+      "files": [
+        "02-linear-structures/07-hash-table/02-separate-chaining.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "02-linear-structures/07-hash-table/lesson-03-linear-probing",
+      "type": "LESSON_UNIT",
+      "files": [
+        "02-linear-structures/07-hash-table/03-linear-probing.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "02-linear-structures/07-hash-table/lesson-04-quadratic-probing",
+      "type": "LESSON_UNIT",
+      "files": [
+        "02-linear-structures/07-hash-table/04-quadratic-probing.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "02-linear-structures/07-hash-table/lesson-05-double-hashing",
+      "type": "LESSON_UNIT",
+      "files": [
+        "02-linear-structures/07-hash-table/05-double-hashing.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "02-linear-structures/07-hash-table/chapter_memorize-06-memorize",
+      "type": "CHAPTER_MEMORIZE_UNIT",
+      "files": [
+        "02-linear-structures/07-hash-table/06-memorize.md"
+      ],
+      "status": "pending",
+      "blocked_by": [
+        "02-linear-structures/07-hash-table/lesson-01-introduction-to-hash-tables",
+        "02-linear-structures/07-hash-table/lesson-02-separate-chaining",
+        "02-linear-structures/07-hash-table/lesson-03-linear-probing",
+        "02-linear-structures/07-hash-table/lesson-04-quadratic-probing",
+        "02-linear-structures/07-hash-table/lesson-05-double-hashing"
+      ],
+      "todos_filled": 0,
+      "verify_flags": 0
+    },
+    {
+      "id": "02-linear-structures/07-hash-table/pattern-07-pattern-counting",
+      "type": "PATTERN_UNIT",
+      "files": [
+        "02-linear-structures/07-hash-table/07-pattern-counting/01-pattern.md",
+        "02-linear-structures/07-hash-table/07-pattern-counting/02-problems/01-first-non-repeating-character.md",
+        "02-linear-structures/07-hash-table/07-pattern-counting/02-problems/02-constructibility-check.md",
+        "02-linear-structures/07-hash-table/07-pattern-counting/02-problems/03-anagram-checker.md",
+        "02-linear-structures/07-hash-table/07-pattern-counting/02-problems/04-build-palindrome.md",
+        "02-linear-structures/07-hash-table/07-pattern-counting/02-problems/05-cluster-anagrams.md",
+        "02-linear-structures/07-hash-table/07-pattern-counting/03-memorize.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "02-linear-structures/07-hash-table/pattern-08-pattern-pattern-generation",
+      "type": "PATTERN_UNIT",
+      "files": [
+        "02-linear-structures/07-hash-table/08-pattern-pattern-generation/01-pattern.md",
+        "02-linear-structures/07-hash-table/08-pattern-pattern-generation/02-problems/01-row-specific-words.md",
+        "02-linear-structures/07-hash-table/08-pattern-pattern-generation/02-problems/02-homomorphic-strings.md",
+        "02-linear-structures/07-hash-table/08-pattern-pattern-generation/02-problems/03-pattern-matching.md",
+        "02-linear-structures/07-hash-table/08-pattern-pattern-generation/02-problems/04-cluster-displaced-strings.md",
+        "02-linear-structures/07-hash-table/08-pattern-pattern-generation/03-memorize.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "02-linear-structures/07-hash-table/pattern-09-pattern-fixed-sized-sliding-window",
+      "type": "PATTERN_UNIT",
+      "files": [
+        "02-linear-structures/07-hash-table/09-pattern-fixed-sized-sliding-window/01-pattern.md",
+        "02-linear-structures/07-hash-table/09-pattern-fixed-sized-sliding-window/02-problems/01-duplicate-detection.md",
+        "02-linear-structures/07-hash-table/09-pattern-fixed-sized-sliding-window/02-problems/02-subarray-distinctness.md",
+        "02-linear-structures/07-hash-table/09-pattern-fixed-sized-sliding-window/02-problems/03-contains-variation.md",
+        "02-linear-structures/07-hash-table/09-pattern-fixed-sized-sliding-window/02-problems/04-anagram-finder.md",
+        "02-linear-structures/07-hash-table/09-pattern-fixed-sized-sliding-window/03-memorize.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "02-linear-structures/07-hash-table/pattern-10-pattern-variable-sized-sliding-window",
+      "type": "PATTERN_UNIT",
+      "files": [
+        "02-linear-structures/07-hash-table/10-pattern-variable-sized-sliding-window/01-pattern.md",
+        "02-linear-structures/07-hash-table/10-pattern-variable-sized-sliding-window/02-problems/01-unique-character-span.md",
+        "02-linear-structures/07-hash-table/10-pattern-variable-sized-sliding-window/02-problems/02-k-characters-span.md",
+        "02-linear-structures/07-hash-table/10-pattern-variable-sized-sliding-window/02-problems/03-maximal-character-swap.md",
+        "02-linear-structures/07-hash-table/10-pattern-variable-sized-sliding-window/02-problems/04-subarray-sum-equals-k.md",
+        "02-linear-structures/07-hash-table/10-pattern-variable-sized-sliding-window/02-problems/05-twin-in-proximity.md",
+        "02-linear-structures/07-hash-table/10-pattern-variable-sized-sliding-window/03-memorize.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "02-linear-structures/07-hash-table/pattern-11-pattern-prefix-sum",
+      "type": "PATTERN_UNIT",
+      "files": [
+        "02-linear-structures/07-hash-table/11-pattern-prefix-sum/01-pattern.md",
+        "02-linear-structures/07-hash-table/11-pattern-prefix-sum/02-problems/01-first-equilibrium-point.md",
+        "02-linear-structures/07-hash-table/11-pattern-prefix-sum/02-problems/02-self-excluded-array-product.md",
+        "02-linear-structures/07-hash-table/11-pattern-prefix-sum/02-problems/03-balanced-binary-subarray.md",
+        "02-linear-structures/07-hash-table/11-pattern-prefix-sum/02-problems/04-zero-sum-subarrays.md",
+        "02-linear-structures/07-hash-table/11-pattern-prefix-sum/03-memorize.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "02-linear-structures/07-hash-table/synthesis-13-pattern-synthesis",
+      "type": "SYNTHESIS_UNIT",
+      "files": [
+        "02-linear-structures/07-hash-table/13-pattern-synthesis.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "02-linear-structures/07-hash-table/design-12-design-a-hash-map",
+      "type": "DESIGN_UNIT",
+      "files": [
+        "02-linear-structures/07-hash-table/12-design-a-hash-map/01-design-a-hash-map.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    }
+  ]
+}

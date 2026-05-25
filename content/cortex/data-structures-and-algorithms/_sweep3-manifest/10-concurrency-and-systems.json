@@ -1,0 +1,79 @@
+{
+  "chapter": "10-concurrency-and-systems",
+  "sweep": 3,
+  "pilot_approved": false,
+  "units": [
+    {
+      "id": "10-concurrency-and-systems/lesson-01-cas-and-atomics",
+      "type": "LESSON_UNIT",
+      "files": [
+        "10-concurrency-and-systems/01-cas-and-atomics.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "10-concurrency-and-systems/lesson-02-lock-free-queue",
+      "type": "LESSON_UNIT",
+      "files": [
+        "10-concurrency-and-systems/02-lock-free-queue.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "10-concurrency-and-systems/lesson-03-concurrent-hash-map",
+      "type": "LESSON_UNIT",
+      "files": [
+        "10-concurrency-and-systems/03-concurrent-hash-map.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "10-concurrency-and-systems/lesson-04-rcu-and-hazard-pointers",
+      "type": "LESSON_UNIT",
+      "files": [
+        "10-concurrency-and-systems/04-rcu-and-hazard-pointers.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "10-concurrency-and-systems/lesson-05-distributed-data-structures-teaser",
+      "type": "LESSON_UNIT",
+      "files": [
+        "10-concurrency-and-systems/05-distributed-data-structures-teaser.md"
+      ],
+      "status": "pending",
+      "todos_filled": 0,
+      "verify_flags": 0,
+      "memorize_migrated": false
+    },
+    {
+      "id": "10-concurrency-and-systems/chapter_memorize-06-memorize",
+      "type": "CHAPTER_MEMORIZE_UNIT",
+      "files": [
+        "10-concurrency-and-systems/06-memorize.md"
+      ],
+      "status": "pending",
+      "blocked_by": [
+        "10-concurrency-and-systems/lesson-01-cas-and-atomics",
+        "10-concurrency-and-systems/lesson-02-lock-free-queue",
+        "10-concurrency-and-systems/lesson-03-concurrent-hash-map",
+        "10-concurrency-and-systems/lesson-04-rcu-and-hazard-pointers",
+        "10-concurrency-and-systems/lesson-05-distributed-data-structures-teaser"
+      ],
+      "todos_filled": 0,
+      "verify_flags": 0
+    }
+  ]
+}
