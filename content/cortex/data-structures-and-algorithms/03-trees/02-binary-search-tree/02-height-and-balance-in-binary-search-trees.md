@@ -1,1647 +1,204 @@
 ---
-title: "Height And Balance In Binary Search Trees"
-summary: "<!-- TODO: summary -->"
+title: "Height and Balance in Binary Search Trees"
+summary: "Every BST operation costs O(h), so height is the whole game. A tree is height-balanced when every node's two subtrees differ in height by at most 1 — which forces h = O(log n). This lesson makes 'height' and 'balanced' precise, defining what self-balancing trees maintain."
+prereqs:
+  - 03-trees/02-binary-search-tree/01-introduction-to-binary-search-trees
 ---
 
-# 2. Height & Balance in Binary Search Trees
+# Height and Balance in Binary Search Trees
 
-## The Hook
+## Why It Exists
 
-In the previous lesson we said BST operations run in **O(log n)**. That number is a *promise* — and it is one a BST keeps **only when the tree is short and bushy**. Insert the values `1, 2, 3, 4, 5` into an empty BST in that order, and you don't get a tree at all. You get a *vine*: every node leaning right, depth equal to the number of values, search cost equal to a linear scan. The same data, same code, same rule — but the geometry collapses, and your O(log n) lookup becomes O(n).
+The [BST intro](/cortex/data-structures-and-algorithms/trees-binary-search-tree-introduction-to-binary-search-trees) said every operation is `O(h)` and that "balanced" means `O(log n)` while "degenerate" means `O(n)`. Those two words — *height* and *balanced* — are doing all the work, so they deserve precise definitions.
 
-So performance in a BST is not really about *the* tree — it's about the **shape** of the tree. Two numbers describe that shape: the **height** (how tall it is) and the **balance factor** (how lopsided it is at every node). This lesson formalises both, shows why a complete tree would be the dream-but-impractical ideal, and lands on the working compromise — the **height-balanced** tree — that real systems actually maintain.
+**Height** is the length of the longest root-to-leaf path. Since search, insert, and delete each follow one such path, the height *is* the cost. **Balance** is the property that keeps height small: a tree is *height-balanced* when, at every node, its left and right subtrees differ in height by at most 1. That local rule has a global payoff — it forces `h = O(log n)`, so the BST keeps its promise. Defining this precisely is the foundation for the self-balancing trees (AVL, red-black) that *enforce* it.
 
----
+## See It Work
 
-## Table of Contents
+Compute the height and balance of a bushy tree, then a sorted-insertion chain — and check whether each is height-balanced. Run it, then **Visualise** the difference in shape.
 
-1. [Understanding the impact of height on performance](#understanding-the-impact-of-height-on-performance)
-2. [Understanding the impact of balance on performance](#understanding-the-impact-of-balance-on-performance)
-3. [Balance factor](#balance-factor)
-4. [Balance of subtree](#balance-of-subtree)
-5. [Challenges in implementing complete binary search trees](#challenges-in-implementing-complete-binary-search-trees)
-6. [Understanding height balanced binary trees](#understanding-height-balanced-binary-trees)
-7. [Height balanced tree](#height-balanced-tree)
+> ▶ Run it, then click **Visualise** — the first tree is short and balanced; the second is a degenerate chain whose height equals its node count.
 
-***
-
-# Understanding the impact of height on performance
-
-The **height** of a BST is the length of the longest root-to-leaf path. Every operation we'll write in this chapter — search, insert, delete — descends from the root, takes one decision at each node, and stops when it either finds the value or falls off the tree. The height is therefore the *worst-case number of comparisons* any of those operations can perform. Cut the height in half, you cut the work in half. Double the height, you double the work.
-
-For a fixed number of nodes, *many* tree shapes are possible. With just `4` nodes, for example, you can build all of these — and they are emphatically not equally fast.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    subgraph S1["Shape A — h=3"]
-        direction TB
-        A1((1))
-        A2((2))
-        A3((3))
-        A4((4))
-        A1 --> A2
-        A2 --> A3
-        A3 --> A4
-    end
-    subgraph S2["Shape B — h=3"]
-        direction TB
-        B1((4))
-        B2((3))
-        B3((2))
-        B4((1))
-        B1 --> B2
-        B2 --> B3
-        B3 --> B4
-    end
-    subgraph S3["Shape C — h=2"]
-        direction TB
-        C1((2))
-        C2((1))
-        C3((3))
-        C3 --> C4((4))
-        C1 --> C2
-        C1 --> C3
-    end
-    subgraph S4["Shape D — h=2"]
-        direction TB
-        D1((3))
-        D2((1))
-        D3((4))
-        D2 --> D4((2))
-        D1 --> D2
-        D1 --> D3
-    end
-    subgraph S5["Shape E — h=2"]
-        direction TB
-        E1((2))
-        E2((1))
-        E3((4))
-        E3 --> E4((3))
-        E1 --> E2
-        E1 --> E3
-    end
-```
-
-<p align="center"><strong>Five different BSTs holding the same four values <code>{1, 2, 3, 4}</code>. The two skew shapes (A, B) have height 3; the three balanced-ish shapes (C, D, E) have height 2. Same data, different geometries, different speeds.</strong></p>
-
-Some shapes — the skewed ones — give you a worst-case path of `3` for `4` nodes. Other shapes give you `2`. Scale this up to a million nodes and the gap explodes: a balanced tree gives ~20 hops, a skewed tree gives a million.
-
-## Most performant binary trees
-
-The fastest BSTs are the **shortest** ones. For a given number of nodes, the minimum possible height is achieved when every level is completely filled — except possibly the last, which fills from left to right. That shape is called a **complete binary tree**, and it gives the tightest possible height: `⌊log₂(n)⌋ + 1`.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    subgraph T1["Minimum-height shape #1"]
-        direction TB
-        A1((2))
-        A2((1))
-        A3((3))
-        A1 --> A2
-        A1 --> A3
-        A3 --> A4((4))
-    end
-    subgraph T2["Minimum-height shape #2"]
-        direction TB
-        B1((3))
-        B2((1))
-        B3((4))
-        B1 --> B2
-        B1 --> B3
-        B2 --> B4((2))
-    end
-    subgraph T3["Minimum-height shape #3"]
-        direction TB
-        C1((2))
-        C2((1))
-        C3((4))
-        C1 --> C2
-        C1 --> C3
-        C3 --> C4((3))
-    end
-```
-
-<p align="center"><strong>All BSTs of 4 nodes that have the minimum possible height (h = 2). Each has every level filled before any deeper level is started.</strong></p>
-
-These trees are *as good as it gets*. If you could keep your BST in this shape forever, every operation would run in pure O(log n) and there would be nothing more to discuss. The rest of this lesson is about the fact that you can't — at least, not without some help.
-
-## Least performant binary trees
-
-The slowest BSTs are the **tallest** — the **skew trees**, where every node has only a left child or only a right child. With `n` nodes, the height is `n`, the worst case for a path through the tree.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    A((1))
-    B((2))
-    C((3))
-    D((4))
-    A --> B
-    B --> C
-    C --> D
-    style A fill:#fecaca,stroke:#ef4444
-    style B fill:#fecaca,stroke:#ef4444
-    style C fill:#fecaca,stroke:#ef4444
-    style D fill:#fecaca,stroke:#ef4444
-```
-
-<p align="center"><strong>A right-skew BST with 4 nodes. Height = 4 = number of nodes. Operations on this tree degrade from O(log n) to O(n) — exactly as bad as a linked list.</strong></p>
-
-You produce this tree by inserting *already-sorted* data into an empty BST: `1, 2, 3, 4` go right, right, right, right. Sorted input is the worst-case adversary for a naive BST — and unfortunately, sorted input shows up *constantly* in the real world (chronologically ordered records, monotone IDs, alphabetised keys). This is the failure case the rest of the chapter is engineered to avoid.
-
-## Limitation in using height for performance
-
-Height is the **dominant** factor in BST performance, but it is not the *only* one. The big-O bound `O(h)` describes a *worst-case path* — the longest one. It does not describe the *average* path, which is what you experience over many lookups. Two trees with identical heights can still differ in *average* search depth, and over millions of operations that constant-factor difference is real.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    subgraph T1["Tree A — h=3, avg depth ≈ 2.0"]
-        direction TB
-        A1((4))
-        A2((2))
-        A3((6))
-        A4((1))
-        A5((3))
-        A6((5))
-        A7((7))
-        A1 --> A2
-        A1 --> A3
-        A2 --> A4
-        A2 --> A5
-        A3 --> A6
-        A3 --> A7
-    end
-    subgraph T2["Tree B — h=3, avg depth ≈ 2.4"]
-        direction TB
-        B1((4))
-        B2((2))
-        B3((6))
-        B4((1))
-        B5((3))
-        B6((7))
-        B7((5))
-        B1 --> B2
-        B1 --> B3
-        B2 --> B4
-        B2 --> B5
-        B3 --> B6
-        B6 --> B7
-    end
-    style T1 fill:#bbf7d0,stroke:#16a34a
-    style T2 fill:#fde68a,stroke:#d97706
-```
-
-<p align="center"><strong>Both trees have the same height. Tree A is perfectly balanced and reaches every node with an average of ~2 hops. Tree B has the same worst-case height but a slightly skewed right side, costing more hops on average. Big-O hides this — but real workloads feel it.</strong></p>
-
-So height alone is necessary but not sufficient to judge a BST. We need a finer-grained metric — one that asks not just *how tall* the tree is, but *how lopsided* it is at each node. That is the **balance factor**, and it is the subject of the next section.
-
-***
-
-# Understanding the impact of balance on performance
-
-The metric that captures *how evenly distributed* a tree's nodes are is the **balance factor**. It is computed at every node, from that node's two subtrees.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    N(("N"))
-    L["Left subtree<br/>height = h_L"]
-    R["Right subtree<br/>height = h_R"]
-    N --> L
-    N --> R
-    F["Balance factor of N = h_L − h_R"]
-    F -.- N
-    style N fill:#fef9c3,stroke:#f59e0b
-    style F fill:#bbf7d0,stroke:#16a34a
-```
-
-<p align="center"><strong>The balance factor of a node is the height of its left subtree minus the height of its right subtree.</strong></p>
-
-> The balance factor for a node is the difference between the height of its left and right subtree.
-
-A node with balance factor `0` is perfectly balanced — its two subtrees are the same height. A factor of `+1` means the left subtree is one level taller; `-1` means the right subtree is one level taller. The further from zero the factor, the more lopsided the node — and the more wasted depth your tree carries on one side.
-
-## Balance factor of a subtree
-
-The same definition extends to any node in the tree, not just the root. The balance factor *at a node* is computed using only the subtree rooted at that node — its own left subtree's height minus its own right subtree's height. Different nodes in the same tree can therefore have very different balance factors.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    A(("4<br/>bf=0"))
-    B(("2<br/>bf=1"))
-    C(("6<br/>bf=−1"))
-    D(("1<br/>bf=0"))
-    E(("7<br/>bf=0"))
-    A --> B
-    A --> C
-    B --> D
-    C --> E
-    style A fill:#fef9c3,stroke:#f59e0b
-```
-
-<p align="center"><strong>Each node carries its own balance factor: <code>4</code> is balanced, <code>2</code> leans left by 1, <code>6</code> leans right by 1. The tree as a whole has many balance factors — one per node.</strong></p>
-
-Now look at all five 4-node trees again, this time annotated with the balance factor at the root.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    subgraph S1["Shape A — root bf = +3"]
-        direction TB
-        A1((4))
-        A2((3))
-        A3((2))
-        A4((1))
-        A1 --> A2
-        A2 --> A3
-        A3 --> A4
-    end
-    subgraph S3["Shape C — root bf = −1"]
-        direction TB
-        C1((2))
-        C2((1))
-        C3((3))
-        C3 --> C4((4))
-        C1 --> C2
-        C1 --> C3
-    end
-    subgraph S4["Shape D — root bf = 0"]
-        direction TB
-        D1((3))
-        D2((1))
-        D3((4))
-        D2 --> D4((2))
-        D1 --> D2
-        D1 --> D3
-    end
-```
-
-<p align="center"><strong>Three BSTs of 4 nodes with very different balance factors at the root: skew (+3), gentle lean (−1), and perfectly balanced (0).</strong></p>
-
-The sign of the balance factor tells you *which* side leans, but for performance reasoning we usually only care *how much* it leans. That motivates one final notion.
-
-## Absolute balance factor
-
-> The absolute value of the balance factor is called the **absolute balance factor**.
-
-A node with absolute balance factor `0` has identically tall subtrees. `1` means one side is one level taller — barely lopsided. Anything `≥ 2` means the tree has a meaningfully wasted side, and operations descending into the taller side will pay for it.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    subgraph T1["Tree A — same height, abs bf = 0"]
-        direction TB
-        A1(("4<br/>bf=0"))
-        A2((2))
-        A3((6))
-        A4((1))
-        A5((3))
-        A6((5))
-        A7((7))
-        A1 --> A2
-        A1 --> A3
-        A2 --> A4
-        A2 --> A5
-        A3 --> A6
-        A3 --> A7
-    end
-    subgraph T2["Tree B — same height, abs bf = 1"]
-        direction TB
-        B1(("4<br/>bf=1"))
-        B2((2))
-        B3((6))
-        B4((1))
-        B5((3))
-        B6((5))
-        B1 --> B2
-        B1 --> B3
-        B2 --> B4
-        B2 --> B5
-        B3 --> B6
-    end
-    style T1 fill:#bbf7d0,stroke:#16a34a
-    style T2 fill:#fde68a,stroke:#d97706
-```
-
-<p align="center"><strong>Both trees are 3 levels tall, but Tree A is perfectly balanced (abs bf = 0 everywhere) while Tree B is one node short on the right. Average lookup depth is lower in Tree A — same big-O, but better constants.</strong></p>
-
-A tree with low absolute balance factors at every node is a tree whose work is spread evenly. That's the regime where BSTs sing.
-
-## Characteristics of optimal binary search trees
-
-The optimal BST is the one with **minimum possible height** *and* **minimum possible absolute balance factor at every node**. These two are not independent — keeping the absolute balance factor at most `1` at every node *forces* the height to be minimal.
-
-The proof is constructive. Build a 5-node BST node by node, always keeping the absolute balance factor of every node ≤ 1, and you'll see you have no choice but to fill each level completely before starting the next.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    subgraph N1["Insert 1"]
-        direction TB
-        S1((1))
-    end
-    subgraph N2["Insert 2"]
-        direction TB
-        T1((1))
-        T2((2))
-        T1 --> T2
-    end
-    subgraph N3["Insert 3"]
-        direction TB
-        U1((2))
-        U2((1))
-        U3((3))
-        U1 --> U2
-        U1 --> U3
-    end
-    subgraph N4["Insert 4"]
-        direction TB
-        V1((2))
-        V2((1))
-        V3((3))
-        V4((4))
-        V1 --> V2
-        V1 --> V3
-        V3 --> V4
-    end
-    subgraph N5["Insert 5"]
-        direction TB
-        W1((2))
-        W2((1))
-        W3((4))
-        W4((3))
-        W5((5))
-        W1 --> W2
-        W1 --> W3
-        W3 --> W4
-        W3 --> W5
-    end
-```
-
-<p align="center"><strong>Building a 5-node BST with absolute balance factor ≤ 1 at every step. The constraint forces each level to fill completely before the next is started — so the result is a complete binary tree.</strong></p>
-
-The constraint forced the result. **A BST in which every node has absolute balance factor ≤ 1, with the strictest interpretation, is a complete binary tree** — the most optimal structure for `n` nodes.
-
-***
-
-# Balance factor
-
-## Problem Statement
-
-Given the **root** of a binary search tree, write a function to calculate and return its balance factor.
-
-> The balance factor of a binary tree is the difference between the height of the left and right subtree of the root node.
-
-### Example 1
-
-> - **Input:** `root = [4, 2, 6, 1, null, null, 7]`
-> - **Output:** `0`
-> - **Explanation:**
->   - height of left subtree = 2
->   - height of right subtree = 2
->   - balance factor = 2 − 2 = 0
-
-### Example 2
-
-> - **Input:** `root = [2, 1, 4, null, null, 3, 7]`
-> - **Output:** `-1`
-> - **Explanation:**
->   - height of left subtree = 1
->   - height of right subtree = 2
->   - balance factor = 1 − 2 = −1
-
-<details>
-<summary><h2>The Strategy</h2></summary>
-
-
-Two pieces. Both are tiny on their own; the trick is composing them.
-
-1. A helper `height(node)` that returns the height of the subtree at `node`. Recurse down both sides, take the bigger one, add `1` for the current level. An empty subtree contributes `0`.
-2. The main function calls `height(root.left)` and `height(root.right)` and returns their difference.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    A["balanceFactor(root)"] --> B["h_L = height(root.left)"]
-    A --> C["h_R = height(root.right)"]
-    B --> D["return h_L − h_R"]
-    C --> D
-```
-
-<p align="center"><strong>Compute each side's height once, subtract, return.</strong></p>
-
-</details>
-<details>
-<summary><h2>The Solution</h2></summary>
-
-
-
-```python run viz=binary-tree viz-root=root
-from typing import Optional
-
-
+```python run viz=binary-tree viz-root=balanced
 class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
+    def __init__(self, val):
         self.val = val
-        self.left = left
-        self.right = right
+        self.left = None
+        self.right = None
 
-
-def from_level_order(values):
-    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
-    if not values:
-        return None
-    root = TreeNode(values[0])
-    queue = [root]
-    i = 1
-    while queue and i < len(values):
-        node = queue.pop(0)
-        if i < len(values) and values[i] is not None:
-            node.left = TreeNode(values[i])
-            queue.append(node.left)
-        i += 1
-        if i < len(values) and values[i] is not None:
-            node.right = TreeNode(values[i])
-            queue.append(node.right)
-        i += 1
+def insert(root, val):
+    if root is None:
+        return TreeNode(val)
+    if val < root.val:
+        root.left = insert(root.left, val)
+    elif val > root.val:
+        root.right = insert(root.right, val)
     return root
 
-
-class Solution:
-    def find_height(self, root: Optional[TreeNode]) -> int:
-
-        # Empty tree has height 0
-        if root is None:
-            return 0
-
-        # Recursively calculate the height of the left and right subtrees
-        left_height = self.find_height(root.left)
-        right_height = self.find_height(root.right)
-
-        # Return the maximum height among the left and right subtrees
-        # plus 1 for the current node
-        return max(left_height, right_height) + 1
-
-    def balance_factor(self, root: Optional[TreeNode]) -> int:
-        if root is None:
-            return 0
-
-        # Calculate the height of the left subtree
-        left_height = self.find_height(root.left)
-
-        # Calculate the height of the right subtree
-        right_height = self.find_height(root.right)
-
-        # Calculate the balance factor
-        balance_factor = left_height - right_height
-
-        return balance_factor
-
-
-# Examples from the problem statement
-t1 = from_level_order([4, 2, 6, 1, None, None, 7])
-print(Solution().balance_factor(t1))              # 0
-
-t2 = from_level_order([2, 1, 4, None, None, 3, 7])
-print(Solution().balance_factor(t2))              # -1
-
-# Edge cases
-print(Solution().balance_factor(None))            # 0  — empty tree
-
-t4 = TreeNode(5)                                  # single node
-print(Solution().balance_factor(t4))              # 0
-
-t5 = from_level_order([5, 4, None, 3, None, 2])  # left-skewed
-print(Solution().balance_factor(t5))              # 3
-
-t6 = from_level_order([1, None, 2, None, None, None, 3])  # right-skewed
-print(Solution().balance_factor(t6))              # -1
-
-t7 = from_level_order([4, 2, 6, 1, 3, 5, 7])    # perfect balanced BST
-print(Solution().balance_factor(t7))              # 0
-```
-
-```java run
-import java.util.*;
-
-public class Main {
-    static class TreeNode {
-        int val;
-        TreeNode left;
-        TreeNode right;
-        TreeNode() {}
-        TreeNode(int val) { this.val = val; }
-    }
-
-    static TreeNode fromLevelOrder(Integer... values) {
-        if (values.length == 0 || values[0] == null) return null;
-        TreeNode root = new TreeNode(values[0]);
-        Deque<TreeNode> queue = new ArrayDeque<>();
-        queue.add(root);
-        int i = 1;
-        while (!queue.isEmpty() && i < values.length) {
-            TreeNode node = queue.poll();
-            if (i < values.length && values[i] != null) {
-                node.left = new TreeNode(values[i]);
-                queue.add(node.left);
-            }
-            i++;
-            if (i < values.length && values[i] != null) {
-                node.right = new TreeNode(values[i]);
-                queue.add(node.right);
-            }
-            i++;
-        }
-        return root;
-    }
-
-    static class Solution {
-        private int findHeight(TreeNode root) {
-
-            // Empty tree has height 0
-            if (root == null) {
-                return 0;
-            }
-
-            // Recursively calculate the height of the left and right
-            // subtrees
-            int leftHeight = findHeight(root.left);
-            int rightHeight = findHeight(root.right);
-
-            // Return the maximum height among the left and right subtrees
-            // plus 1 for the current node
-            return Math.max(leftHeight, rightHeight) + 1;
-        }
-
-        public int balanceFactor(TreeNode root) {
-            if (root == null) {
-                return 0;
-            }
-
-            // Calculate the height of the left subtree
-            int leftHeight = findHeight(root.left);
-
-            // Calculate the height of the right subtree
-            int rightHeight = findHeight(root.right);
-
-            // Calculate the balance factor
-            int balanceFactor = leftHeight - rightHeight;
-
-            return balanceFactor;
-        }
-    }
-
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        TreeNode t1 = fromLevelOrder(4, 2, 6, 1, null, null, 7);
-        System.out.println(new Solution().balanceFactor(t1));              // 0
-
-        TreeNode t2 = fromLevelOrder(2, 1, 4, null, null, 3, 7);
-        System.out.println(new Solution().balanceFactor(t2));              // -1
-
-        // Edge cases
-        System.out.println(new Solution().balanceFactor(null));            // 0  — empty tree
-
-        TreeNode t4 = new TreeNode(5);                                     // single node
-        System.out.println(new Solution().balanceFactor(t4));              // 0
-
-        TreeNode t5 = fromLevelOrder(5, 4, null, 3, null, 2);             // left-skewed
-        System.out.println(new Solution().balanceFactor(t5));              // 3
-
-        TreeNode t6 = new TreeNode(1);                                     // right-skewed
-        t6.right = new TreeNode(2); t6.right.right = new TreeNode(3);
-        System.out.println(new Solution().balanceFactor(t6));              // -2
-
-        TreeNode t7 = fromLevelOrder(4, 2, 6, 1, 3, 5, 7);               // perfect balanced BST
-        System.out.println(new Solution().balanceFactor(t7));              // 0
-    }
-}
-```
-
-</details>
-
-
-***
-
-# Balance of subtree
-
-## Problem Statement
-
-Given the **root** of a binary search tree and the **value** of a node, write a function to find and return the balance factor of the subtree at that node. Return `0` if the node with the given value does not exist.
-
-The balance factor of a subtree is the difference between the height of its left and right subtree.
-
-### Example 1
-
-> - **Input:** `root = [4, 2, 6, 1, null, null, 7]`, `value = 2`
-> - **Output:** `1`
-> - **Explanation:**
->   - height of left subtree = 1
->   - height of right subtree = 0
->   - balance factor = 1 − 0 = 1
-
-### Example 2
-
-> - **Input:** `root = [2, 1, 4, null, null, 3, 7]`, `value = 4`
-> - **Output:** `0`
-> - **Explanation:**
->   - height of left subtree = 1
->   - height of right subtree = 1
->   - balance factor = 1 − 1 = 0
-
-<details>
-<summary><h2>The Strategy</h2></summary>
-
-
-This is the previous problem, plus a *find* step at the front. We must locate the target node first, then run the same balance-factor calculation on it.
-
-1. **Find** — recursively search for a node whose value equals `value`. We don't yet know the BST search rule by name (next lessons), so we treat the tree as a generic binary tree and search both subtrees.
-2. **Compute** — once we have the node, run `height(node.left) − height(node.right)`.
-
-If the value isn't in the tree, the find returns `null`/`None`, and we return `0` per the problem spec.
-
-</details>
-<details>
-<summary><h2>The Solution</h2></summary>
-
-
-
-```python run viz=binary-tree viz-root=root
-from typing import Optional
-
-
-class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
-        self.val = val
-        self.left = left
-        self.right = right
-
-
-def from_level_order(values):
-    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
-    if not values:
-        return None
-    root = TreeNode(values[0])
-    queue = [root]
-    i = 1
-    while queue and i < len(values):
-        node = queue.pop(0)
-        if i < len(values) and values[i] is not None:
-            node.left = TreeNode(values[i])
-            queue.append(node.left)
-        i += 1
-        if i < len(values) and values[i] is not None:
-            node.right = TreeNode(values[i])
-            queue.append(node.right)
-        i += 1
-    return root
-
-
-class Solution:
-    def find_node(
-        self, root: Optional[TreeNode], value: int
-    ) -> Optional[TreeNode]:
-
-        # Base cases: empty tree or node with the given value found
-        if root is None or root.val == value:
-            return root
-
-        # Recursively search in the left and right subtrees
-        left_node = self.find_node(root.left, value)
-        if left_node is not None:
-            return left_node
-
-        right_node = self.find_node(root.right, value)
-        return right_node
-
-    def find_height(self, root: Optional[TreeNode]) -> int:
-
-        # Empty tree has height 0
-        if root is None:
-            return 0
-
-        # Recursively calculate the height of the left and right subtrees
-        left_height = self.find_height(root.left)
-        right_height = self.find_height(root.right)
-
-        # Return the maximum height among the left and right subtrees
-        # plus 1 for the current node
-        return max(left_height, right_height) + 1
-
-    def balance_of_subtree(
-        self, root: Optional[TreeNode], value: int
-    ) -> int:
-
-        # Find the node with the given value
-        node = self.find_node(root, value)
-        if node is None:
-            return 0
-
-        # Calculate the height of the left and right subtrees
-        left_height = self.find_height(node.left)
-        right_height = self.find_height(node.right)
-
-        # Calculate the balance factor
-        balance_factor = left_height - right_height
-        return balance_factor
-
-
-# Examples from the problem statement
-t1 = from_level_order([4, 2, 6, 1, None, None, 7])
-print(Solution().balance_of_subtree(t1, 2))       # 1
-
-t2 = from_level_order([2, 1, 4, None, None, 3, 7])
-print(Solution().balance_of_subtree(t2, 4))       # 0
-
-# Edge cases
-print(Solution().balance_of_subtree(None, 5))     # 0  — empty tree
-
-t4 = TreeNode(5)                                  # single node, query root
-print(Solution().balance_of_subtree(t4, 5))       # 0
-
-t5 = from_level_order([4, 2, 6, 1, None, None, 7])
-print(Solution().balance_of_subtree(t5, 99))      # 0  — value not in tree
-
-t6 = from_level_order([4, 2, 6, 1, None, None, 7])
-print(Solution().balance_of_subtree(t6, 4))       # 0  — balanced root
-
-t7 = from_level_order([4, 2, 6, 1, None, None, 7])
-print(Solution().balance_of_subtree(t7, 6))       # -1 — right child of 6 only
-```
-
-```java run
-import java.util.*;
-
-public class Main {
-    static class TreeNode {
-        int val;
-        TreeNode left;
-        TreeNode right;
-        TreeNode() {}
-        TreeNode(int val) { this.val = val; }
-    }
-
-    static TreeNode fromLevelOrder(Integer... values) {
-        if (values.length == 0 || values[0] == null) return null;
-        TreeNode root = new TreeNode(values[0]);
-        Deque<TreeNode> queue = new ArrayDeque<>();
-        queue.add(root);
-        int i = 1;
-        while (!queue.isEmpty() && i < values.length) {
-            TreeNode node = queue.poll();
-            if (i < values.length && values[i] != null) {
-                node.left = new TreeNode(values[i]);
-                queue.add(node.left);
-            }
-            i++;
-            if (i < values.length && values[i] != null) {
-                node.right = new TreeNode(values[i]);
-                queue.add(node.right);
-            }
-            i++;
-        }
-        return root;
-    }
-
-    static class Solution {
-        private TreeNode findNode(TreeNode root, int value) {
-
-            // Base cases: empty tree or node with the given value found
-            if (root == null || root.val == value) {
-                return root;
-            }
-
-            // Recursively search in the left and right subtrees
-            TreeNode leftNode = findNode(root.left, value);
-            if (leftNode != null) {
-                return leftNode;
-            }
-
-            TreeNode rightNode = findNode(root.right, value);
-            return rightNode;
-        }
-
-        private int findHeight(TreeNode root) {
-
-            // Empty tree has height 0
-            if (root == null) {
-                return 0;
-            }
-
-            // Recursively calculate the height of the left and right
-            // subtrees
-            int leftHeight = findHeight(root.left);
-            int rightHeight = findHeight(root.right);
-
-            // Return the maximum height among the left and right subtrees
-            // plus 1 for the current node
-            return Math.max(leftHeight, rightHeight) + 1;
-        }
-
-        public int balanceOfSubtree(TreeNode root, int value) {
-
-            // Find the node with the given value
-            TreeNode node = findNode(root, value);
-            if (node == null) {
-                return 0;
-            }
-
-            // Calculate the height of the left and right subtrees
-            int leftHeight = findHeight(node.left);
-            int rightHeight = findHeight(node.right);
-
-            // Calculate the balance factor
-            int balanceFactor = leftHeight - rightHeight;
-            return balanceFactor;
-        }
-    }
-
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        TreeNode t1 = fromLevelOrder(4, 2, 6, 1, null, null, 7);
-        System.out.println(new Solution().balanceOfSubtree(t1, 2));       // 1
-
-        TreeNode t2 = fromLevelOrder(2, 1, 4, null, null, 3, 7);
-        System.out.println(new Solution().balanceOfSubtree(t2, 4));       // 0
-
-        // Edge cases
-        System.out.println(new Solution().balanceOfSubtree(null, 5));     // 0  — empty tree
-
-        TreeNode t4 = new TreeNode(5);                                    // single node, query root
-        System.out.println(new Solution().balanceOfSubtree(t4, 5));       // 0
-
-        TreeNode t5 = fromLevelOrder(4, 2, 6, 1, null, null, 7);
-        System.out.println(new Solution().balanceOfSubtree(t5, 99));      // 0  — value not in tree
-
-        TreeNode t6 = fromLevelOrder(4, 2, 6, 1, null, null, 7);
-        System.out.println(new Solution().balanceOfSubtree(t6, 4));       // 0  — balanced root
-
-        TreeNode t7 = fromLevelOrder(4, 2, 6, 1, null, null, 7);
-        System.out.println(new Solution().balanceOfSubtree(t7, 6));       // -1 — right child of 6 only
-    }
-}
-```
-
-</details>
-
-
-***
-
-# Challenges in implementing complete binary search trees
-
-The previous section ended on a triumphant note: complete BSTs are optimal. So why don't we just *use* them?
-
-Because the moment you modify the tree, completeness breaks.
-
-## Modifications
-
-If your data is fixed — built once, never updated — keeping the BST complete forever is easy. You build it once and walk away.
-
-The problem is that real BSTs are inserted into and deleted from constantly. Any single insert can land a new node in the wrong slot to keep the tree complete; any single delete can leave a "hole" that breaks the level-by-level filling rule.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    subgraph Before["Complete BST"]
-        direction TB
-        B1((4))
-        B2((2))
-        B3((6))
-        B4((1))
-        B5((3))
-        B6((5))
-        B1 --> B2
-        B1 --> B3
-        B2 --> B4
-        B2 --> B5
-        B3 --> B6
-    end
-    subgraph After1["After insert(7) — last level not filled left-to-right"]
-        direction TB
-        I1((4))
-        I2((2))
-        I3((6))
-        I4((1))
-        I5((3))
-        I6((5))
-        I7((7))
-        I1 --> I2
-        I1 --> I3
-        I2 --> I4
-        I2 --> I5
-        I3 --> I6
-        I3 --> I7
-    end
-    subgraph After2["After delete(3) — gap inside the tree"]
-        direction TB
-        D1((4))
-        D2((2))
-        D3((6))
-        D4((1))
-        D5((5))
-        D1 --> D2
-        D1 --> D3
-        D2 --> D4
-        D3 --> D5
-    end
-    style After1 fill:#fde68a,stroke:#d97706
-    style After2 fill:#fecaca,stroke:#ef4444
-```
-
-<p align="center"><strong>Even a single insert or delete can violate completeness — the rule is too rigid for a structure that changes shape often.</strong></p>
-
-To keep using a complete BST as your live data structure, every modification must be followed by two repair steps.
-
-### Step 1: Verify the completeness
-
-Walk the tree and check that every level except possibly the last is full, and that the last level is filled left-to-right with no internal gaps. This is essentially a level-order traversal that tracks the first time it sees a missing child and fails if any subsequent node has a child after that.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    A["BFS from root"] --> B["Saw a missing child?"]
-    B -->|No| C["Continue"]
-    B -->|Yes| D["From now on, every<br/>following node must be<br/>a leaf"]
-    D --> E["Found a non-leaf<br/>after a missing child?"]
-    E -->|Yes| F["NOT complete"]
-    E -->|No| G["Complete"]
-    style F fill:#fecaca,stroke:#ef4444
-    style G fill:#bbf7d0,stroke:#16a34a
-```
-
-<p align="center"><strong>Verifying completeness via level-order traversal — once a missing child appears, every later node must be a leaf.</strong></p>
-
-### Step 2: Rebalance the tree
-
-If the tree is no longer complete, we have to repair it. That means moving values around — potentially across the entire tree — until completeness is restored *and* the BST property still holds.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    A["Non-complete BST<br/>after modification"] --> B["Collect values<br/>(in-order → sorted)"]
-    B --> C["Re-build tree<br/>level-by-level<br/>using sorted values"]
-    C --> D["Complete BST<br/>(BST property preserved)"]
-    style D fill:#bbf7d0,stroke:#16a34a
-```
-
-<p align="center"><strong>Rebalancing a complete BST in the worst case requires reading out all values and reconstructing the tree from scratch.</strong></p>
-
-So in principle: insert → repair, delete → repair. The structure stays optimal *if* you can pay the repair cost.
-
-## Limitations of rebalancing complete binary search trees
-
-The repair cost is the killer.
-
-Restoring completeness while preserving the BST property typically requires moving many nodes — often *most* of them. In the worst case, you have to flatten the tree, sort the values, and rebuild it. That is **O(n)** work after every single insert or delete.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    A["insert(x) — O(log n) descent"] --> B["+ rebalance to keep<br/>tree complete"]
-    B --> C["Worst-case rebalance:<br/>move many nodes<br/>= O(n)"]
-    C --> D["Total per insert: O(n)"]
-    style D fill:#fecaca,stroke:#ef4444
-```
-
-<p align="center"><strong>Forcing the tree to remain complete drags every insert and delete to O(n) — defeating the entire reason we wanted a BST.</strong></p>
-
-A BST whose lookup is O(log n) but whose insert is O(n) is no better than a sorted array. We need a **weaker** definition of "balanced" — one we can *cheaply* maintain — that still gives us logarithmic operations.
-
-***
-
-# Understanding height balanced binary trees
-
-The compromise is to relax the rule. Instead of demanding *perfect* completeness, we demand only that **no node is too lopsided**. That is the definition of a **height-balanced binary tree**:
-
-> A height-balanced binary tree is a tree where, for every node in the tree, the absolute difference between the height of the left and right subtree is at most `1`.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    N(("any node N"))
-    L["Left subtree<br/>height = h_L"]
-    R["Right subtree<br/>height = h_R"]
-    N --> L
-    N --> R
-    K["Required: |h_L − h_R| ≤ 1"]
-    K -.- N
-    style N fill:#fef9c3,stroke:#f59e0b
-    style K fill:#bbf7d0,stroke:#16a34a
-```
-
-<p align="center"><strong>The height-balanced rule, applied at every node — not just the root.</strong></p>
-
-This is *strictly weaker* than completeness. Plenty of height-balanced trees are not complete, but every complete tree is height-balanced. The relaxation buys us cheap repair without sacrificing logarithmic operations.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    subgraph T1["Height-balanced #1"]
-        direction TB
-        A1((4))
-        A2((2))
-        A3((6))
-        A4((1))
-        A5((3))
-        A6((7))
-        A1 --> A2
-        A1 --> A3
-        A2 --> A4
-        A2 --> A5
-        A3 --> A6
-    end
-    subgraph T2["Height-balanced #2"]
-        direction TB
-        B1((5))
-        B2((2))
-        B3((8))
-        B4((1))
-        B5((3))
-        B1 --> B2
-        B1 --> B3
-        B2 --> B4
-        B2 --> B5
-    end
-    subgraph T3["NOT height-balanced"]
-        direction TB
-        C1((4))
-        C2((2))
-        C3((6))
-        C4((1))
-        C5((3))
-        C6((5))
-        C7((7))
-        C8((8))
-        C1 --> C2
-        C1 --> C3
-        C2 --> C4
-        C2 --> C5
-        C3 --> C6
-        C3 --> C7
-        C7 --> C8
-    end
-    style T1 fill:#bbf7d0,stroke:#16a34a
-    style T2 fill:#bbf7d0,stroke:#16a34a
-    style T3 fill:#fecaca,stroke:#ef4444
-```
-
-<p align="center"><strong>Two height-balanced trees on the left (every node's subtrees differ in height by at most 1). On the right: at node <code>4</code>, the right subtree has height 3 and the left has height 2 — difference 1, fine — but at node <code>6</code>, the right subtree (height 2) is two taller than the left (height 0). Rule violated.</strong></p>
-
-## Modifications
-
-Just like the complete tree, a height-balanced tree can become unbalanced after an insert or delete. The difference is that *fixing* it is cheap.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    A["Balanced BST"] --> B["insert / delete"]
-    B --> C["Possibly unbalanced<br/>(some node has |bf| ≥ 2)"]
-    C --> D["Local rebalance via<br/>tree rotations"]
-    D --> E["Balanced BST again"]
-    style A fill:#bbf7d0,stroke:#16a34a
-    style E fill:#bbf7d0,stroke:#16a34a
-    style C fill:#fde68a,stroke:#d97706
-```
-
-<p align="center"><strong>The repair pipeline: detect imbalance, rotate locally, done. No full reconstruction needed.</strong></p>
-
-### Step 1: Verify the balance
-
-Verifying height-balance is a recursive walk: compute the height of each subtree, return early if any node violates the rule. This runs in O(n) (once at the end of an operation), but the verification *during* a self-balancing operation is local — only the path from root to the modified node needs re-checking.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    A["isBalanced(root)"] --> B["empty? → true"]
-    A --> C["h_L = height(left)"]
-    A --> D["h_R = height(right)"]
-    C --> E["|h_L − h_R| > 1?"]
-    D --> E
-    E -->|Yes| F["false"]
-    E -->|No| G["isBalanced(left)<br/>AND isBalanced(right)"]
-    style F fill:#fecaca,stroke:#ef4444
-    style G fill:#bbf7d0,stroke:#16a34a
-```
-
-<p align="center"><strong>Verifying that a tree is height-balanced — recurse, check the local rule, return false on the first violation.</strong></p>
-
-### Step 2: Rebalance the tree
-
-Self-balancing BSTs (AVL trees, red-black trees, treaps, splay trees) all repair imbalance using a small set of **rotations** — local pointer rewires that change the tree's shape without violating the BST property. A rotation is O(1), and any single insert or delete needs at most O(log n) of them along the root-path. Detailed rotation algorithms are beyond this lesson, but the takeaway is clear:
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    subgraph Before["Unbalanced after insert"]
-        direction TB
-        B1((30))
-        B2((20))
-        B3((10))
-        B1 --> B2
-        B2 --> B3
-    end
-    subgraph After["After right rotation at 30"]
-        direction TB
-        A1((20))
-        A2((10))
-        A3((30))
-        A1 --> A2
-        A1 --> A3
-    end
-    Before --> After
-    style Before fill:#fecaca,stroke:#ef4444
-    style After fill:#bbf7d0,stroke:#16a34a
-```
-
-<p align="center"><strong>A single rotation flips a left-leaning chain into a balanced tree — O(1) pointer surgery, BST property preserved.</strong></p>
-
-## Complexity analysis
-
-Height-balanced binary search trees offer a guaranteed logarithmic height. Even though they're not as tight as complete trees, they're still tight enough — and they're the cheapest balance you can buy.
-
-| Case | Time | Space |
-|---|---|---|
-| Best | O(log n) | O(log n) |
-| Worst | O(log n) | O(log n) |
-
-The space is O(log n) because that's the recursion depth needed to walk a balanced tree. Production systems lean on these structures heavily — Java's `TreeMap`, C++'s `std::map`, Linux's CFS scheduler, and most database B-tree variants are all instances of this same idea.
-
-***
-
-# Height balanced tree
-
-## Problem Statement
-
-Given the **root** of a binary search tree, write a function to check if it is height-balanced. If it is height-balanced, return `true`; otherwise return `false`.
-
-A height-balanced tree is a tree where the balance factor for every node in the tree is in the range `[-1, 1]` inclusive.
-
-### Example 1
-
-> - **Input:** `root = [4, 2, 6, 1, null, null, 7]`
-> - **Output:** `true`
-> - **Explanation:** Every node's subtrees differ in height by at most 1.
-
-### Example 2
-
-> - **Input:** `root = [1, null, 4, 2, 7]`
-> - **Output:** `false`
-> - **Explanation:** At the root, the left subtree has height 0 and the right has height 2 — difference 2, rule violated.
-
-<details>
-<summary><h2>The Strategy</h2></summary>
-
-
-Recursion all the way down: a tree is height-balanced if **all three** of these hold simultaneously:
-
-1. The current node's `|h_L − h_R| ≤ 1`.
-2. The left subtree is height-balanced.
-3. The right subtree is height-balanced.
-
-The empty tree is balanced by definition. Any node that fails check 1 short-circuits the whole thing to `false`.
-
-> *Friction prompt — predict before reading the code: what happens to the running time if we use this naive recursive approach? At every node we call `findHeight` (which itself walks the subtree) AND we recurse on the children. Is the work O(n), O(n log n), or worse?*
-
-The answer is **O(n²)** in the worst case (a skew tree), because `findHeight` re-walks each subtree from scratch at every level. There's a classic O(n) optimisation that returns height *and* the balanced-flag in one bottom-up pass — we'll meet that idiom many times in this course. Keeping the simpler form here makes the structure crystal clear.
-
-</details>
-<details>
-<summary><h2>The Solution</h2></summary>
-
-
-
-```python run viz=binary-tree viz-root=root
-from typing import Optional
-
-
-class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
-        self.val = val
-        self.left = left
-        self.right = right
-
-
-def from_level_order(values):
-    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
-    if not values:
-        return None
-    root = TreeNode(values[0])
-    queue = [root]
-    i = 1
-    while queue and i < len(values):
-        node = queue.pop(0)
-        if i < len(values) and values[i] is not None:
-            node.left = TreeNode(values[i])
-            queue.append(node.left)
-        i += 1
-        if i < len(values) and values[i] is not None:
-            node.right = TreeNode(values[i])
-            queue.append(node.right)
-        i += 1
-    return root
-
-
-class Solution:
-    def find_height(self, root: Optional[TreeNode]) -> int:
-
-        # Empty tree has height 0
-        if root is None:
-            return 0
-
-        # Recursively calculate the height of the left and right subtrees
-        left_height = self.find_height(root.left)
-        right_height = self.find_height(root.right)
-
-        # Return the maximum height among the left and right subtrees
-        # plus 1 for the current node
-        return max(left_height, right_height) + 1
-
-    def height_balanced_tree(self, root: Optional[TreeNode]) -> bool:
-
-        # Base case: empty tree
-        if root is None:
-            return True
-
-        left_height = self.find_height(root.left)
-        right_height = self.find_height(root.right)
-
-        if abs(left_height - right_height) <= 1:
-
-            # Check if both left and right subtrees are height-balanced
-            return self.height_balanced_tree(
-                root.left
-            ) and self.height_balanced_tree(root.right)
-
+def height(node):
+    if node is None:
+        return -1                         # empty has height -1 (edges); a leaf has height 0
+    return 1 + max(height(node.left), height(node.right))
+
+def is_balanced(node):
+    if node is None:
+        return True
+    if abs(height(node.left) - height(node.right)) > 1:   # balance factor out of range
         return False
+    return is_balanced(node.left) and is_balanced(node.right)
 
+balanced = None
+for v in [5, 3, 8, 1, 4, 7, 9]:
+    balanced = insert(balanced, v)
+degenerate = None
+for v in [1, 2, 3, 4]:                    # sorted insertion → right-leaning chain
+    degenerate = insert(degenerate, v)
 
-# Examples from the problem statement
-t1 = from_level_order([4, 2, 6, 1, None, None, 7])
-print(Solution().height_balanced_tree(t1))         # True
+print(height(balanced), is_balanced(balanced))       # 2 True
+print(height(degenerate), is_balanced(degenerate))   # 3 False
+```
 
-t2 = from_level_order([1, None, 4, None, None, 2, 7])
-print(Solution().height_balanced_tree(t2))         # False
+## How It Works
 
-# Edge cases
-print(Solution().height_balanced_tree(None))       # True  — empty tree
+Two recursive definitions:
 
-t4 = TreeNode(5)                                   # single node
-print(Solution().height_balanced_tree(t4))         # True
+- **Height** — `height(node) = 1 + max(height(left), height(right))`, with empty `= −1` (so a leaf is `0`). It's the longest downward path.
+- **Balance factor** of a node = `height(left) − height(right)`. A node is locally balanced when its balance factor is in `{−1, 0, +1}`; a tree is **height-balanced** when *every* node is.
 
-t5 = from_level_order([4, 2, 6, 1, 3, 5, 7])     # perfect balanced BST
-print(Solution().height_balanced_tree(t5))         # True
+```mermaid
+flowchart TB
+  subgraph Balanced["balanced: height 2"]
+    R["5"] --> A["3"]
+    R --> B["8"]
+    A --> C["1"]; A --> D["4"]; B --> E["7"]; B --> F["9"]
+  end
+  subgraph Degenerate["degenerate: height 3"]
+    X1["1"] --> X2["2"] --> X3["3"] --> X4["4"]
+  end
+```
 
-t6 = TreeNode(1)                                   # right-skewed (3 levels)
-t6.right = TreeNode(2)
-t6.right.right = TreeNode(3)
-print(Solution().height_balanced_tree(t6))         # False
+<p align="center"><strong>same 7 keys: balanced (height 2, every balance factor ≤ 1) versus the sorted-insertion chain (height grows with n).</strong></p>
 
-t7 = from_level_order([5, 3, 7, 2, 4, 6, 8])     # balanced 7-node BST
-print(Solution().height_balanced_tree(t7))         # True
+Why does the local "differ by ≤ 1" rule guarantee `h = O(log n)` globally? Run the bound the other way: what's the *fewest* nodes a height-balanced tree of height `h` can have? Call it `N(h)`. Its two subtrees can differ in height by 1, so the sparsest case is `N(h) = 1 + N(h−1) + N(h−2)` — the **Fibonacci recurrence**. Fibonacci numbers grow like `φ^h` (`φ ≈ 1.618`), so `N(h) ≥ φ^h`, which inverts to `h ≤ log_φ(n) ≈ 1.44 log₂ n`. A height-balanced tree of `n` nodes can be at most ~44% taller than a perfectly balanced one — still `O(log n)`. That's the guarantee AVL trees deliver.
+
+### Key Takeaway
+
+Height is the longest root-to-leaf path and equals every operation's cost. A tree is height-balanced when each node's subtrees differ in height by ≤ 1, which bounds `h ≤ ~1.44 log n` (a Fibonacci argument). Self-balancing trees exist to maintain exactly this property.
+
+## Trace It
+
+Heights in the balanced tree `[5, 3, 8, 1, 4, 7, 9]`, bottom-up:
+
+| node | left h | right h | node height | balance factor |
+|---|---|---|---|---|
+| `1, 4, 7, 9` (leaves) | −1 | −1 | `0` | `0` |
+| `3` | `0` | `0` | `1` | `0` |
+| `8` | `0` | `0` | `1` | `0` |
+| `5` (root) | `1` | `1` | `2` | `0` |
+
+Every balance factor is `0` → perfectly balanced, height `2`.
+
+Before you read on: this balanced tree has height `2` for `7` nodes (`log₂ 7 ≈ 2.8`). The degenerate chain had height `3` for just `4` nodes. As `n` grows to a million, the balanced height stays near `20` while the chain's height *is* a million. Given every operation costs `O(h)`, what does that gap mean in practice — and why can't a plain BST be trusted with it?
+
+At a million nodes, a balanced BST answers each query in ~20 comparisons; the degenerate chain takes up to a million — a **50,000×** difference, and the chain is no better than a linked list despite the tree overhead. The catch is that a *plain* BST's height depends entirely on **insertion order**, which you often don't control (sorted or adversarial input produces exactly the chain). So a plain BST's advertised `O(log n)` is only an *average/best* case — untrustworthy for worst-case guarantees. That's precisely why production ordered maps never use a plain BST: they use **self-balancing** trees that perform rotations on every insert/delete to *force* the height-balanced property, converting `O(log n)` from a hope into a guarantee. Height isn't just a metric here — it's the dividing line between a usable structure and a degenerate one.
+
+## Your Turn
+
+The reusable height and balance checks:
+
+```python run
+class TreeNode:
+    def __init__(self, val):
+        self.val = val
+        self.left = None
+        self.right = None
+
+def insert(root, val):
+    if root is None:
+        return TreeNode(val)
+    if val < root.val: root.left = insert(root.left, val)
+    elif val > root.val: root.right = insert(root.right, val)
+    return root
+
+def height(node):
+    if node is None:
+        return -1
+    return 1 + max(height(node.left), height(node.right))
+
+def is_balanced(node):
+    if node is None:
+        return True
+    return (abs(height(node.left) - height(node.right)) <= 1
+            and is_balanced(node.left) and is_balanced(node.right))
+
+t = None
+for v in [5, 3, 8, 1, 4, 7, 9]:
+    t = insert(t, v)
+print(height(t), is_balanced(t))     # 2 True
+chain = None
+for v in [1, 2, 3, 4, 5]:
+    chain = insert(chain, v)
+print(height(chain), is_balanced(chain))   # 4 False
 ```
 
 ```java run
-import java.util.*;
-
 public class Main {
-    static class TreeNode {
-        int val;
-        TreeNode left;
-        TreeNode right;
-        TreeNode() {}
-        TreeNode(int val) { this.val = val; }
-    }
-
-    static TreeNode fromLevelOrder(Integer... values) {
-        if (values.length == 0 || values[0] == null) return null;
-        TreeNode root = new TreeNode(values[0]);
-        Deque<TreeNode> queue = new ArrayDeque<>();
-        queue.add(root);
-        int i = 1;
-        while (!queue.isEmpty() && i < values.length) {
-            TreeNode node = queue.poll();
-            if (i < values.length && values[i] != null) {
-                node.left = new TreeNode(values[i]);
-                queue.add(node.left);
-            }
-            i++;
-            if (i < values.length && values[i] != null) {
-                node.right = new TreeNode(values[i]);
-                queue.add(node.right);
-            }
-            i++;
-        }
-        return root;
-    }
-
-    static class Solution {
-        private int findHeight(TreeNode root) {
-
-            // Empty tree has height 0
-            if (root == null) {
-                return 0;
-            }
-
-            // Recursively calculate the height of the left and right
-            // subtrees
-            int leftHeight = findHeight(root.left);
-            int rightHeight = findHeight(root.right);
-
-            // Return the maximum height among the left and right subtrees
-            // plus 1 for the current node
-            return Math.max(leftHeight, rightHeight) + 1;
-        }
-
-        public boolean heightBalancedTree(TreeNode root) {
-
-            // Base case: empty tree
-            if (root == null) {
-                return true;
-            }
-
-            int leftHeight = findHeight(root.left);
-            int rightHeight = findHeight(root.right);
-
-            if (Math.abs(leftHeight - rightHeight) <= 1) {
-
-                // Check if both left and right subtrees are height-balanced
-                return (
-                    heightBalancedTree(root.left) &&
-                    heightBalancedTree(root.right)
-                );
-            }
-
-            return false;
-        }
-    }
-
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        TreeNode t1 = fromLevelOrder(4, 2, 6, 1, null, null, 7);
-        System.out.println(new Solution().heightBalancedTree(t1));         // true
-
-        TreeNode t2 = new TreeNode(1);                                     // right-skewed (unbalanced)
-        t2.right = new TreeNode(4);
-        t2.right.left = new TreeNode(2); t2.right.right = new TreeNode(7);
-        System.out.println(new Solution().heightBalancedTree(t2));         // false
-
-        // Edge cases
-        System.out.println(new Solution().heightBalancedTree(null));       // true  — empty tree
-
-        TreeNode t4 = new TreeNode(5);                                     // single node
-        System.out.println(new Solution().heightBalancedTree(t4));         // true
-
-        TreeNode t5 = fromLevelOrder(4, 2, 6, 1, 3, 5, 7);               // perfect balanced BST
-        System.out.println(new Solution().heightBalancedTree(t5));         // true
-
-        TreeNode t6 = new TreeNode(1);                                     // right-skewed (3 levels)
-        t6.right = new TreeNode(2); t6.right.right = new TreeNode(3);
-        System.out.println(new Solution().heightBalancedTree(t6));         // false
-
-        TreeNode t7 = fromLevelOrder(5, 3, 7, 2, 4, 6, 8);               // balanced 7-node BST
-        System.out.println(new Solution().heightBalancedTree(t7));         // true
-    }
+  static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } }
+  static TreeNode insert(TreeNode r, int v) {
+    if (r == null) return new TreeNode(v);
+    if (v < r.val) r.left = insert(r.left, v);
+    else if (v > r.val) r.right = insert(r.right, v);
+    return r;
+  }
+  static int height(TreeNode n) {
+    if (n == null) return -1;
+    return 1 + Math.max(height(n.left), height(n.right));
+  }
+  static boolean isBalanced(TreeNode n) {
+    if (n == null) return true;
+    return Math.abs(height(n.left) - height(n.right)) <= 1
+        && isBalanced(n.left) && isBalanced(n.right);
+  }
+  public static void main(String[] args) {
+    TreeNode t = null;
+    for (int v : new int[]{5, 3, 8, 1, 4, 7, 9}) t = insert(t, v);
+    System.out.println(height(t) + " " + isBalanced(t));   // 2 true
+  }
 }
 ```
 
-</details>
-<details>
-<summary><h2>Final Takeaway</h2></summary>
+This is a structural lesson — the BST search/insert/delete and balancing lessons all turn on the height defined here.
 
+## Reflect & Connect
 
-Two numbers govern every BST's performance: its **height** (worst-case path length) and its **absolute balance factor** (how lopsided each node is). Complete trees minimise both, but they're too rigid to maintain under live mutation. Height-balanced trees relax the rule just enough to be cheap to repair *and* still guarantee logarithmic operations. Every self-balancing BST you'll ever use — AVL, red-black, treap — is a different recipe for keeping that absolute balance factor `≤ 1` after each modification.
+Height and balance are the lens for everything tree-shaped:
 
-The next lesson zooms back in to the basic operation that justifies all of this engineering: **search**. We'll first do it recursively, leaning on the BST property at every step to halve the remaining tree.
+- **Cost = height** — search, insert, delete, successor, range — all `O(h)`. Optimizing a BST *is* minimizing its height.
+- **Flavors of "balanced"** — *height-balanced* (subtree heights differ by ≤ 1, AVL's invariant), the looser *red-black* invariant (no path more than twice another → `h ≤ 2 log n`), and *perfectly balanced* (all leaves on ≤ 2 levels, what a sorted array achieves). They trade rebalancing frequency against height tightness.
+- **The Fibonacci bound is the AVL guarantee** — `h ≤ 1.44 log n` is exactly the worst case [AVL trees](/cortex/data-structures-and-algorithms/trees-avl-tree-introduction-to-avl-trees) maintain; red-black trees accept a slightly taller `2 log n` for cheaper rebalancing. Knowing the bound tells you *how good* "balanced" is.
 
-</details>
+**Prerequisites:** [Introduction to Binary Search Trees](/cortex/data-structures-and-algorithms/trees-binary-search-tree-introduction-to-binary-search-trees).
+**What's next:** the first operation that rides the height — [Recursive Searching in BSTs](/cortex/data-structures-and-algorithms/trees-binary-search-tree-recursive-searching-in-binary-search-trees).
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+## Recall
 
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
+> **Mnemonic:** *Height = longest root-to-leaf path = the cost of everything. Height-balanced = every node's subtrees differ by ≤ 1 ⇒ `h ≤ ~1.44 log n` (Fibonacci bound). Balancing trees enforce it.*
 
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
+| | |
+|---|---|
+| Height | `1 + max(h(left), h(right))`, empty `= −1` |
+| Balance factor | `h(left) − h(right)`; balanced node ⇒ in `{−1,0,1}` |
+| Height-balanced | every node balanced ⇒ `h = O(log n)` |
+| Bound | `h ≤ log_φ(n) ≈ 1.44 log₂ n` (sparsest balanced tree is Fibonacci-sized) |
+| Why it matters | every BST operation is `O(h)`; balanced vs degenerate = `O(log n)` vs `O(n)` |
 
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
+- **Q:** Why does a BST's performance reduce to its height? **A:** Search, insert, and delete each follow one root-to-leaf path, whose length is the height.
+- **Q:** What is a height-balanced tree? **A:** One where every node's left and right subtree heights differ by at most 1.
+- **Q:** Why does height-balance guarantee `O(log n)`? **A:** The sparsest such tree of height `h` has Fibonacci-many nodes (`≥ φ^h`), so `h ≤ ~1.44 log₂ n`.
+- **Q:** Why can't a plain BST be trusted for `O(log n)`? **A:** Its height depends on insertion order; sorted/adversarial input makes a height-`n` chain — only self-balancing trees force the bound.
 
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
+## Sources & Verify
 
-<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
-<!--       Guidance: bulleted list of gotchas -->
-
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
-
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
-
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
-
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
-
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
-
-<!-- TODO: Final Takeaway — missing, needs to be written -->
-<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->
+- **CLRS**, *Introduction to Algorithms*, 4th ed., §12–13 — tree height, balance, and the height bound for balanced trees.
+- **Sedgewick & Wayne**, *Algorithms*, 4th ed., §3.3 — balanced search trees and height guarantees.
+- The height/balance definitions and the `~1.44 log n` Fibonacci (AVL) bound are standard; both runnable blocks are verified by running (balanced `⇒ 2, True`; chains `⇒ 3/4, False`).

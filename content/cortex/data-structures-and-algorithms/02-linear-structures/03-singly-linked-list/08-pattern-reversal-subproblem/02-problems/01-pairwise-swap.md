@@ -196,7 +196,7 @@ print(to_list(Solution().pairwise_swap(from_list([1, 2, 3, 4, 5, 6])))) # [2, 1,
 print(to_list(Solution().pairwise_swap(from_list([5, 5, 5, 5]))))        # [5, 5, 5, 5]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {

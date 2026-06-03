@@ -108,10 +108,10 @@ object LinkedListCanonValidator:
 
   private def validatePayload(file: Path, blockIdx: Int, payloadJson: String): List[Violation] =
     parser.parse(payloadJson) match
+      // circe's parse error is always a ParsingFailure, so this covers every Left
+      // (the previous `case Left(other)` fallback was unreachable — E030).
       case Left(ParsingFailure(msg, _)) =>
         List(Violation(file, blockIdx, s"JSON parse failure: $msg"))
-      case Left(other) =>
-        List(Violation(file, blockIdx, s"JSON parse failure: ${other.message}"))
       case Right(json) =>
         validateSpec(file, blockIdx, json)
 

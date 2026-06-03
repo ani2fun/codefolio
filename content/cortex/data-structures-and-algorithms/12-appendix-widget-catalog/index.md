@@ -1,19 +1,12 @@
 # DSA Widget Catalog
 
-This appendix is the **living authoring reference** for the D3.js interactive
+This appendix is the **authoring reference** for the interactive diagrams used throughout this book. The [**Renderer Gallery**](/cortex/data-structures-and-algorithms/appendix-widget-catalog-renderer-gallery) showcases every live, trace-driven `viz=…` renderer (one per structure, driven by a real captured execution); the [**Widget Payload Reference**](/cortex/data-structures-and-algorithms/appendix-widget-catalog-widget-payload-reference) documents the hand-authored `d3 widget=…` static format (the shared VizGraph schema + one representative payload per layout). The **decision-tree** and **dp-table** chapters cover the two bespoke interactive widgets, which carry their own payload schemas.
 
-## Chapters
+> How to read this chapter: follow **Start Here** top to bottom — that is the teaching path.
 
-- [array-traversal](/cortex/data-structures-and-algorithms/appendix-widget-catalog-array-traversal)
-- [linked-list](/cortex/data-structures-and-algorithms/appendix-widget-catalog-linked-list)
-- [stack-queue](/cortex/data-structures-and-algorithms/appendix-widget-catalog-stack-queue)
-- [binary-tree](/cortex/data-structures-and-algorithms/appendix-widget-catalog-binary-tree)
-- [heap-tree](/cortex/data-structures-and-algorithms/appendix-widget-catalog-heap-tree)
-- [graph-explorer](/cortex/data-structures-and-algorithms/appendix-widget-catalog-graph-explorer)
-- [hash-table](/cortex/data-structures-and-algorithms/appendix-widget-catalog-hash-table)
-- [call-stack](/cortex/data-structures-and-algorithms/appendix-widget-catalog-call-stack)
+## Start Here — the learning path
+
+- [Renderer Gallery — all 16 structure visuals](/cortex/data-structures-and-algorithms/appendix-widget-catalog-renderer-gallery)
+- [Widget Payload Reference](/cortex/data-structures-and-algorithms/appendix-widget-catalog-widget-payload-reference)
 - [decision-tree](/cortex/data-structures-and-algorithms/appendix-widget-catalog-decision-tree)
 - [dp-table](/cortex/data-structures-and-algorithms/appendix-widget-catalog-dp-table)
-- [trie](/cortex/data-structures-and-algorithms/appendix-widget-catalog-trie)
-- [Insertion in Binary Trees](/cortex/data-structures-and-algorithms/appendix-widget-catalog-scala-scalajs-d3js-json-poc)
-- [Memorize: Appendix Widget Catalog](/cortex/data-structures-and-algorithms/appendix-widget-catalog-memorize)

@@ -1,48 +1,68 @@
 ---
 title: "Git's Merkle DAG"
-summary: "Git is, internally, a Merkle DAG of immutable objects: blobs, trees, commits. Every operation — log, diff, merge, blame — is graph traversal on this structure. The data structure that quietly powers half of software development."
+summary: "Git is, internally, a Merkle DAG of immutable content-addressed objects: blobs, trees, commits. An object's name IS the hash of its content — giving automatic dedup, tamper-evidence, and free versioning in one rule. Every command (log, diff, merge, blame) is graph traversal on this structure."
 prereqs:
   - trees-binary-tree-introduction-to-binary-trees
   - probabilistic-and-advanced-persistent-data-structures
   - concurrency-and-systems-distributed-data-structures-teaser
 ---
 
-# 4. Git's Merkle DAG
+## Why It Exists
 
-## The Hook
+Git can branch, merge, rewrite history, and *never lose your work* — and it does it with no database, just files in `.git/objects/`. The magic is one structural decision: a Git repository is a **Merkle DAG of immutable, content-addressed objects**. "Content-addressed" means an object's name is literally the hash of its contents. That single rule buys three properties at once:
 
-When you run `git commit`, Git creates a few new files in `.git/objects/`. When you run `git log`, Git walks them. When you run `git merge`, Git walks them and creates more. Git's apparent magic — that you can branch, merge, rewrite history, and never lose anything — comes from one structural fact: Git's repository is a **Merkle DAG of immutable, content-addressed objects**.
+- **Identity = content → automatic dedup.** Two files with the same bytes hash to the same id, so Git stores them once. Commit the same logo in 50 directories; there's one blob.
+- **Tamper-evidence.** Change any byte and the hash changes; since a tree references its files by hash and a commit references its tree and *parent* by hash, altering anything deep in history cascades to every id above it. You can't quietly rewrite the past ([Your Turn](#your-turn)).
+- **Free versioning via structural sharing.** A new commit re-uses every unchanged object from the old one — it's the [persistent data structure](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-persistent-data-structures) idea (path copying) applied to a whole filesystem ([Trace It](#trace-it)).
 
-The four object types — **blob**, **tree**, **commit**, **tag** — are nodes in the DAG. Each object is content-addressed: its file name is the SHA-1 of its contents. This means:
+This is the same [Merkle tree](/cortex/data-structures-and-algorithms/concurrency-and-systems-distributed-data-structures-teaser) idea from the distributed-systems teaser — hash the children into the parent — generalized from a tree to a DAG (a merge commit has two parents). Once you see it, `log`, `diff`, `merge`, and `blame` stop being magic and become graph algorithms.
 
-- **Identity = content.** Two objects with the same content are the same object. Git deduplicates automatically.
-- **Tampering is detectable.** Change a file → its blob's hash changes → its containing tree's hash changes → the commit referencing that tree's hash changes → the parent commit's hash changes ... cascade.
-- **Versions are free.** Past commits don't go anywhere. They live in `.git/objects/`, accessible by their hash.
+## See It Work
 
-This chapter is the tour: from `.git/objects/` to `git fsck`, from how `git diff` works to why `git push` is fast.
+Git has four object types; the workhorses are **blob** (a file's bytes), **tree** (a directory listing), and **commit** (a snapshot pointing at a tree + parent commits). Every object's id is the SHA-1 of `"<type> <length>\0<content>"`. Here's that exact rule — and the dedup it gives:
 
----
+```python run
+import hashlib
+def git_hash(obj_type, content):                       # Git's exact object id
+    header = f"{obj_type} {len(content)}\0".encode()    # e.g. b"blob 6\x00"
+    return hashlib.sha1(header + content.encode()).hexdigest()
 
-## Table of contents
+a = git_hash("blob", "hello\n")
+b = git_hash("blob", "hello\n")                         # identical content
+c = git_hash("blob", "world\n")
+print("blob id of 'hello\\n':", a)
+print("identical content -> same id? ", a == b)        # dedup: stored once
+print("different content -> diff id? ", a != c)
+```
 
-1. [The four object types](#the-four-object-types)
-2. [Content addressing and SHA-1](#content-addressing-and-sha-1)
-3. [The DAG of commits](#the-dag-of-commits)
-4. [Persistence and structural sharing](#persistence-and-structural-sharing)
-5. [Smart diff via tree comparison](#smart-diff-via-tree-comparison)
-6. [Pack files: compression at scale](#pack-files-compression-at-scale)
-7. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
-8. [Cross-links](#cross-links)
-9. [Final takeaway](#final-takeaway)
+```java run
+import java.security.MessageDigest;
+public class Main {
+    static String gitHash(String type, String content) throws Exception {
+        byte[] body = content.getBytes("UTF-8");
+        byte[] header = (type + " " + body.length + "\0").getBytes("UTF-8");   // "blob 6\0"
+        byte[] all = new byte[header.length + body.length];
+        System.arraycopy(header, 0, all, 0, header.length);
+        System.arraycopy(body, 0, all, header.length, body.length);
+        byte[] dig = MessageDigest.getInstance("SHA-1").digest(all);
+        StringBuilder sb = new StringBuilder();
+        for (byte b : dig) sb.append(String.format("%02x", b & 0xff));
+        return sb.toString();
+    }
+    public static void main(String[] x) throws Exception {
+        String a = gitHash("blob", "hello\n"), b = gitHash("blob", "hello\n"), c = gitHash("blob", "world\n");
+        System.out.println("blob id of 'hello\\n': " + a);
+        System.out.println("identical content -> same id?  " + a.equals(b));
+        System.out.println("different content -> diff id?  " + !a.equals(c));
+    }
+}
+```
 
-***
+Both print `blob id of 'hello\n': ce013625030ba8dba906f756967f9e9ca394464a`, then `true`, `true`. That id isn't a toy — it's **exactly** what real Git computes; run `printf 'hello\n' | git hash-object --stdin` and you'll get `ce013625030ba8dba906f756967f9e9ca394464a` byte-for-byte. Identical content yields an identical id (so Git dedups), and any change yields a different id (so nothing can be altered unnoticed).
 
-# The four object types
+## How It Works
 
-- **Blob.** A file's contents. No filename, no path — just bytes.
-- **Tree.** A directory listing. Each entry: (mode, name, hash of either a blob or another tree). Recursive: a tree contains trees, just like a filesystem directory contains directories.
-- **Commit.** A snapshot. Contains: hash of root tree, hash(es) of parent commits (zero for initial commit, two for merge commits), author, committer, message.
-- **Tag.** An annotated label pointing at a commit, with its own message and author.
+A commit points at a tree, a tree points at blobs and sub-trees, and a commit points at its parent — all by hash. Two consecutive commits, where only `main.py` changed:
 
 ```mermaid
 ---
@@ -77,230 +97,152 @@ flowchart TB
 
 <p align="center"><strong>Two consecutive Git commits. The README hasn't changed, so both trees point to the same blob. Persistence and structural sharing in one diagram.</strong></p>
 
-***
+The load-bearing ideas:
 
-# Content addressing and SHA-1
+- **The four object types are DAG nodes.** A **blob** is raw file bytes (no name). A **tree** is a directory listing — entries of `(mode, name, hash)` pointing at blobs or sub-trees, recursively, exactly like nested folders. A **commit** holds its root tree's hash, its parent commit hash(es) (zero for the first commit, two for a merge), plus author and message. A **tag** is an annotated label on a commit. Everything references everything else *by hash*.
+- **Content addressing = dedup + integrity in one rule.** Because an id is the hash of content, equality of ids means equality of content. That gives free deduplication and makes `git diff A B` fast: when two trees (or sub-trees) have the same hash, they're identical, so Git short-circuits and never descends — only changed paths are walked. `git fsck` verifies the whole repo by re-hashing every object and checking it matches its name.
+- **Structural sharing makes versions cheap.** Editing one file in a 100,000-file repo creates *one* new blob, a handful of new trees along the path to the root, and one new commit — the other ~99,999 blobs and all untouched sub-trees are **shared** with the previous commit. That's path copying from [persistent data structures](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-persistent-data-structures); Git is the most-deployed example on Earth. (At scale, `git gc` packs loose objects into pack files with delta-compression, 5–10× smaller — but the logical model is unchanged.)
 
-Each object is stored at `.git/objects/<first-2-chars>/<remaining-38-chars>` where the 40-character hex string is the SHA-1 of:
+> **Key takeaway.** Git is a Merkle DAG of immutable, content-addressed objects: an object's id is the hash of its content, so identity equals content. That one rule delivers automatic **dedup** (same bytes → same id), **tamper-evidence** (any change cascades up through tree and commit hashes), and **free versioning** via **structural sharing** (a new commit re-uses every unchanged object). Blobs, trees, and commits are the nodes; `log`/`diff`/`merge`/`blame` are graph traversals over them. It's the [Merkle tree](/cortex/data-structures-and-algorithms/concurrency-and-systems-distributed-data-structures-teaser) generalized to a DAG and applied to a filesystem.
 
+## Trace It
+
+Structural sharing is the claim that a new commit barely allocates anything. Let's watch which object ids actually change when you edit one of two files.
+
+**Predict before you run:** a commit has a tree with two files, `README.md` and `main.py`. You edit only `main.py` and commit again. Of the four object ids — README's blob, main.py's blob, the tree, the commit — which change, and which stay the same?
+
+```python run
+import hashlib
+def gid(t, c):                                          # short git object id
+    return hashlib.sha1(f"{t} {len(c)}\0".encode() + c.encode()).hexdigest()[:8]
+
+# Commit 1: README + main.py
+readme    = gid("blob", "# My Project\n")
+main_v1   = gid("blob", "print(1)\n")
+tree_v1   = gid("tree", f"{readme} README.md | {main_v1} main.py")
+commit_v1 = gid("commit", f"tree {tree_v1} | edit")
+
+# Commit 2: edit main.py; README untouched -> Git re-hashes its unchanged content
+readme2   = gid("blob", "# My Project\n")               # same bytes -> same id
+main_v2   = gid("blob", "print(2)\n")
+tree_v2   = gid("tree", f"{readme2} README.md | {main_v2} main.py")
+commit_v2 = gid("commit", f"tree {tree_v2} | parent {commit_v1} | edit")
+
+print("main.py blob changed?", main_v1 != main_v2)
+print("tree changed?        ", tree_v1 != tree_v2)
+print("commit changed?      ", commit_v1 != commit_v2)
+print("README blob reused?  ", readme == readme2)
 ```
-<type> <length>\0<content>
-```
-
-To create an object, Git computes the hash, then writes the zlib-compressed object to the path derived from the hash. To read, the reverse.
-
-SHA-1 has been deprecated cryptographically (collisions were demonstrated in 2017). Git is in transition to SHA-256 (`git init --object-format=sha256`) but most repositories still use SHA-1. The cryptographic weakness is rarely exploitable in practice — generating a Git collision still costs millions of dollars in compute.
-
-***
-
-# The DAG of commits
-
-The "history" of a Git repository is the **commit graph** — a DAG of commits linked by parent pointers. A linear history is a chain. A merge commit has two parents. An octopus merge has more.
-
-```
-        A — B — C — D (main)
-             \   /
-              E (feature)
-```
-
-`A`, `B`, `C`, `E` are normal commits. `D` is a merge commit with parents `C` and `E`. `git log` walks this DAG; `git merge` creates new commits that join two branches.
-
-Operations on the DAG:
-
-- **`git log`** — DFS or BFS from HEAD, ordering by author/committer date.
-- **`git diff A B`** — recursively compare A's tree against B's tree, descend into differing subtrees.
-- **`git merge A B`** — find the lowest common ancestor of A and B (LCA on the DAG), three-way-merge the trees.
-- **`git rebase`** — replay commits on a different parent (creating new commits with new hashes).
-- **`git blame`** — for each line of a file, find the most recent commit that introduced or changed it (a depth-first walk back through the parent chain).
-
-***
-
-# Persistence and structural sharing
-
-Git is the most-deployed [persistent data structure](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-persistent-data-structures) on the planet. Every commit is *immutable*; modifications create new objects sharing the unchanged ones.
-
-Editing one file in a 100,000-file repository creates:
-
-- 1 new blob (the modified file).
-- A handful of new trees (the modified path back to the root).
-- 1 new commit.
-
-The other 99,999 files' blobs are unchanged — they're shared with the previous commit's trees.
-
-This is the same path-copying technique covered in the [Persistent Data Structures chapter](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-persistent-data-structures). Git applied it to a filesystem.
-
-***
-
-# Smart diff via tree comparison
-
-`git diff A B` is conceptually:
-
-The early-exit "same hash → identical" is the optimisation that makes `git diff` fast even on huge trees. Subdirectories that haven't changed are short-circuited at the hash comparison; you don't have to descend.
-
-***
-
-# Pack files: compression at scale
-
-Storing every object as a separate file costs filesystem-block overhead per object. A repository with millions of objects (Linux kernel: ~6M objects) would be inefficient.
-
-Git's solution: **pack files**. After the loose-object directory grows, `git gc` (or `git push`) compacts objects into pack files: a single binary file containing many objects, plus an index file for quick lookup. Within a pack file, similar objects (e.g., consecutive versions of the same file) are stored as **deltas** — one full version plus a compressed difference for each successor.
-
-The delta encoding inside a pack is the same idea as a diff — store one base, encode the others as edits. Combined with zlib compression, pack files reduce repository size by 5-10× compared to loose objects.
-
-***
-
-# Edge cases and pitfalls
-
-- **Commit hash collisions.** SHA-1 collisions are demonstrated; Git in 2017 added the SHAttered detection logic. Practically, you won't see a collision in real-world use.
-- **Garbage collection.** Objects unreachable from any branch or tag are eligible for collection by `git gc --prune`. The default keeps them for 14 days for safety.
-- **Submodules** are pointers to other repositories — they store the *commit hash* of the submodule, not the contents. Cloning recursively follows the pointers.
-- **`.git/info/exclude` and `.gitignore`** affect what's *staged*, not what's in commits. Once committed, files are in the DAG; removing them later requires `git filter-branch` or `git filter-repo`.
-- **Force-push rewrites history.** `git push --force` replaces the remote's branch pointer with yours; old commits become unreachable, eligible for GC. Lost work, *not* lost data — until GC runs.
-- **`git reflog` is a safety net.** Local operations leave breadcrumbs in `.git/logs/HEAD`; recovery is often possible even after dramatic mistakes.
-
-***
-
-# Memorize
-
-The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Git is the most-deployed Merkle DAG on the planet; understanding the structure makes "how did Git do that?" stop being magic.
-
-## Quick recall
-
-Click any question to reveal the answer.
 
 <details>
-<summary><strong>Q:</strong> Four object types in a Git repository?</summary>
+<summary><strong>Reveal</strong></summary>
 
-**A:** **Blob** (file contents), **tree** (directory listing), **commit** (snapshot + parents + metadata), **tag** (annotated label).
-
-</details>
-<details>
-<summary><strong>Q:</strong> What hash function does Git use, and what's it computed over?</summary>
-
-**A:** SHA-1 (transitioning to SHA-256). Hash is over `<type> <length>\0<content>` — including a small header before the bytes.
-
-</details>
-<details>
-<summary><strong>Q:</strong> What does "content-addressed" mean for Git?</summary>
-
-**A:** Object's identity = SHA-1 of its content. Two objects with the same content are the same object. Deduplication and tamper detection in one rule.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Cost of editing one file in a 100k-file repo, in object terms?</summary>
-
-**A:** 1 new blob + path-length-many new trees + 1 new commit. Other ~99k blobs are *shared* with the prior commit's trees.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Why is <code>git diff A B</code> fast on huge trees?</summary>
-
-**A:** Subtrees with identical hashes are short-circuited — equal hash means equal content (modulo collisions). Only differing paths are descended into.
-
-</details>
-<details>
-<summary><strong>Q:</strong> What's a pack file?</summary>
-
-**A:** A compacted binary file containing many objects, with delta encoding for similar ones (consecutive versions of a file). Reduces repository size 5-10× over loose objects.
-
-</details>
-<details>
-<summary><strong>Q:</strong> What does `git push --force` do to history?</summary>
-
-**A:** Replaces the remote branch's pointer with yours. Old commits become unreachable, eligible for `git gc --prune` after 14 days. Lost work, *not* lost data — until GC runs.
-
-</details>
-<details>
-<summary><strong>Q:</strong> What's `git reflog`?</summary>
-
-**A:** A local-only log of where `HEAD` and branches have pointed historically. Lets you recover from `reset --hard`, force-push, branch-deletion, and many other "I lost my work" scenarios.
+`main.py blob changed? True`, `tree changed? True`, `commit changed? True`, `README blob reused? True`. Editing `main.py` makes a new blob; because the tree lists that blob *by hash*, the tree's content changed, so the tree gets a new id; and because the commit names the tree by hash, the commit gets a new id too — the change ripples *up* the path to the root. But `README.md`'s bytes never changed, so re-hashing them yields the **same id** — Git doesn't store a second copy, it points the new tree at the existing blob. That's the whole persistence story: a commit only allocates new objects along the changed path (here: blob → tree → commit), and shares everything else. In a 100k-file repo, one edit is ~3–4 new objects, not 100k. The cost of a version is proportional to what changed, not to the size of the project — which is exactly why `git commit` is instant and `.git` doesn't explode.
 
 </details>
 
-## Source pointers
+## Your Turn
 
-```
-.git/objects/<2-char>/<38-char>            — loose objects (one file per object)
-.git/objects/pack/<pack>.{pack,idx}        — packed objects + index
-.git/refs/heads/<branch>                   — branch pointers (sha hashes)
-.git/HEAD                                  — current branch ref
-.git/logs/HEAD                             — reflog
-.git/index                                 — staging area (binary)
-```
+Now the flip side of structural sharing: because every object is named by a hash that includes its *parent's* hash, history is a Merkle chain — and that makes it tamper-evident.
 
-Git source highlights:
+**Predict:** you have a 3-commit chain (`init` → `add feature` → `fix bug`), each commit's content embedding its parent's id. An attacker edits the message of commit #1 (the oldest). How many of the three commit ids change — just the first, or more?
 
-```
-object.c, object.h          — generic object handling, type tagging
-sha1-name.c                 — name resolution (HEAD~3, branch, tag → sha)
-tree.c, commit.c, blob.c    — per-type object handlers
-diff-lib.c, diff-tree.c     — tree-vs-tree diff (with hash short-circuit)
-pack-objects.c              — pack-file creation + delta selection
-fsck.c                      — integrity checker; walks the DAG verifying hashes
-```
+```python run
+import hashlib
+def gid(t, c):
+    return hashlib.sha1(f"{t} {len(c)}\0".encode() + c.encode()).hexdigest()[:8]
 
-Useful plumbing commands for understanding the DAG:
+def chain(msgs):                       # each commit embeds its parent's id
+    ids = []; parent = ""
+    for m in msgs:
+        cid = gid("commit", f"parent {parent} | {m}")
+        ids.append(cid); parent = cid
+    return ids
 
-```
-git cat-file -p <sha>          — pretty-print object contents
-git cat-file -t <sha>          — object type
-git ls-tree HEAD               — root tree of current commit
-git rev-list --all --objects   — every object reachable from any branch
-git fsck --full                — verify the entire DAG
+honest   = chain(["init", "add feature", "fix bug"])
+tampered = chain(["init (tampered)", "add feature", "fix bug"])   # change commit #1 only
+print("honest chain: ", honest)
+print("tampered chain:", tampered)
+print("ids changed:", sum(a != b for a, b in zip(honest, tampered)), "of", len(honest))
 ```
 
-## Pattern triggers
+```java run
+import java.security.MessageDigest;
+import java.util.*;
+public class Main {
+    static String gid(String t, String c) throws Exception {
+        byte[] body = c.getBytes("UTF-8");
+        byte[] header = (t + " " + body.length + "\0").getBytes("UTF-8");
+        byte[] all = new byte[header.length + body.length];
+        System.arraycopy(header, 0, all, 0, header.length);
+        System.arraycopy(body, 0, all, header.length, body.length);
+        byte[] dig = MessageDigest.getInstance("SHA-1").digest(all);
+        StringBuilder sb = new StringBuilder();
+        for (byte b : dig) sb.append(String.format("%02x", b & 0xff));
+        return sb.substring(0, 8);
+    }
+    static List<String> chain(String[] msgs) throws Exception {
+        List<String> ids = new ArrayList<>(); String parent = "";
+        for (String m : msgs) { ids.add(gid("commit", "parent " + parent + " | " + m)); parent = ids.get(ids.size() - 1); }
+        return ids;
+    }
+    public static void main(String[] x) throws Exception {
+        List<String> honest = chain(new String[]{"init", "add feature", "fix bug"});
+        List<String> tampered = chain(new String[]{"init (tampered)", "add feature", "fix bug"});
+        System.out.println("honest chain:  " + honest);
+        System.out.println("tampered chain: " + tampered);
+        int changed = 0; for (int i = 0; i < honest.size(); i++) if (!honest.get(i).equals(tampered.get(i))) changed++;
+        System.out.println("ids changed: " + changed + " of " + honest.size());
+    }
+}
+```
 
-- **"How does Git store large repos efficiently?"** → content-addressed dedup + pack-file delta encoding
-- **"Why is `git diff` instant?"** → tree hash equality short-circuits unchanged subtrees
-- **"How do I recover lost work?"** → `git reflog` + `git fsck --lost-found`
-- **"Submodule weirdness"** → submodules store *commit hashes*, not contents; recursive clone needed
-- **"Disk space too high"** → `git gc --aggressive`; pack files compact loose objects
-- **"How does Git verify integrity?"** → walk the DAG; recompute hashes; mismatch = corruption
-- **"What's the structure of a pack file?"** → header + objects (some delta-encoded) + index for fast lookup
-- **"How does CRDT-style merging work in Git?"** → it doesn't natively; merges are user-resolved or 3-way
+Both report `ids changed: 3 of 3` — **all** of them. Editing the oldest commit changes its id; commit #2 embedded that id, so commit #2's content changed and its id changed too; that cascades to commit #3. There's no way to alter an ancestor without every descendant's hash shifting, which is precisely why a `git push --force` that rewrites old history produces entirely new commit ids (and why anyone who had the old ids can tell). This is the Merkle property doing security work: integrity of the whole chain reduces to checking a single top hash.
 
-***
+## Reflect & Connect
 
-# Cross-links
+- **Content addressing is the master rule.** Identity = hash of content gives dedup, integrity, and a stable name, all at once. Reach for it whenever "same content should mean same thing" (build caches, CDNs, blockchains, container layers all do).
+- **Structural sharing makes immutability affordable.** A new version copies only the changed path and shares the rest — the [persistent data structure](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-persistent-data-structures) idea at filesystem scale. Immutable history costs proportional to the change, not the repo.
+- **The Merkle property = tamper-evidence.** Because each id folds in its children's (and parent's) hashes, one top hash certifies the entire structure — the same idea you met in the [distributed-systems teaser](/cortex/data-structures-and-algorithms/concurrency-and-systems-distributed-data-structures-teaser) for replica repair, here securing history.
+- **Every command is a graph algorithm.** `git log` is a DAG walk from HEAD; `git diff` is tree comparison with hash short-circuiting; `git merge` finds a lowest common ancestor and three-way-merges; `git blame` walks the parent chain. Learn the structure and the porcelain becomes obvious.
+- **Same lesson as the other systems.** As with [Postgres `nbtree`](/cortex/data-structures-and-algorithms/dsa-in-real-systems-postgres-b-tree-and-the-write-path), the [CFS scheduler](/cortex/data-structures-and-algorithms/dsa-in-real-systems-linux-red-black-tree-in-the-cfs-scheduler), and [Redis encodings](/cortex/data-structures-and-algorithms/dsa-in-real-systems-redis-internal-encodings), a clean data structure plus a few sharp engineering choices is the whole product.
 
-- **Prerequisites:** [Persistent Data Structures](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-persistent-data-structures), [Distributed Data Structures (Teaser)](/cortex/data-structures-and-algorithms/concurrency-and-systems-distributed-data-structures-teaser) (Merkle trees).
-- **Source reference:** [Pro Git book](https://git-scm.com/book), Chapter 10 ("Git Internals"); the Git source at [github.com/git/git](https://github.com/git/git).
+## Recall
 
-***
+<details>
+<summary><strong>Q:</strong> What does "content-addressed" mean in Git, and what does it buy?</summary>
 
-# Final takeaway
+**A:** An object's id is the SHA-1 of its content (over `"<type> <length>\0<content>"`). So identity equals content: two identical files share one object (dedup), and any change alters the id (tamper-evidence). One rule, both properties.
 
-Git is the canonical Merkle DAG. Three patterns to internalise:
+</details>
+<details>
+<summary><strong>Q:</strong> What are Git's three core object types and how do they reference each other?</summary>
 
-1. **Content addressing.** Identity = SHA-1 of contents. Deduplication and tamper detection in one rule.
-2. **Persistence via path copying.** Editing one file creates a few new tree objects; the rest of the repository is structurally shared with previous commits.
-3. **Every Git operation is a graph traversal.** `log`, `diff`, `merge`, `blame` — all walk the DAG. Once you've internalised the structure, the commands stop being magic and start being algorithms.
+**A:** Blob (raw file bytes), tree (a directory listing of `(mode, name, hash)` entries pointing at blobs/sub-trees), and commit (root tree hash + parent commit hash(es) + metadata). All references are by hash, forming a Merkle DAG.
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+</details>
+<details>
+<summary><strong>Q:</strong> In object terms, what does editing one file in a 100k-file repo cost?</summary>
 
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
+**A:** One new blob (the edited file) + a few new trees along the path to the root + one new commit. The other ~99,999 blobs and untouched sub-trees are shared with the previous commit — path copying / structural sharing.
 
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
+</details>
+<details>
+<summary><strong>Q:</strong> Why is <code>git diff A B</code> fast on a huge tree?</summary>
 
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
+**A:** Equal tree hashes mean identical content, so Git short-circuits unchanged sub-trees and never descends into them. Only paths whose hashes differ are walked.
 
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
+</details>
+<details>
+<summary><strong>Q:</strong> Why can't you quietly rewrite an old commit?</summary>
 
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+**A:** Each commit's hash folds in its parent's hash. Changing an ancestor changes its id, which changes its child's content and id, cascading to every descendant. The whole chain's integrity reduces to one top hash — the Merkle property.
 
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+</details>
 
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
+## Sources & Verify
 
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+- **Pro Git** (Chacon & Straub), Chapter 10 "Git Internals" — the object model, content addressing, and pack files; the canonical reference.
+- **Git source**: `object.c`, `tree.c`/`commit.c`/`blob.c` (per-type handlers), `diff-tree.c` (tree diff with hash short-circuit), `pack-objects.c` (delta packing), `fsck.c` (DAG integrity check). The plumbing commands `git hash-object`, `git cat-file -p`, and `git fsck` expose the structure directly.
+- **Merkle** (1987), hash trees — the integrity primitive underneath; see the [distributed-systems teaser](/cortex/data-structures-and-algorithms/concurrency-and-systems-distributed-data-structures-teaser).
+- The `hello\n` blob id (`ce013625030ba8dba906f756967f9e9ca394464a`, which matches `git hash-object`), the structural-sharing trace (README blob reused while blob/tree/commit change), and the tamper cascade (`3 of 3` ids change) all come from the runnable blocks above, which use Git's exact object-hash formula — re-run to verify, or check the blob id against your own `git`.

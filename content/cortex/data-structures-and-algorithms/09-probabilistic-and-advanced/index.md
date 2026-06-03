@@ -2,7 +2,9 @@
 
 The structures here trade certainty for **scale**. A regular hash-set tells you whether `x` is in the set; a Bloom filter tells you "definitely not, or probably yes" using 1/8th the memory. A regular count tells you the exact number of unique IPs that hit a server today; HyperLogLog tells you within 1% using 12 KB. When you can't afford the exact answer — because the data doesn't fit in memory, or it streams past too fast to store — these structures are the right tool.
 
-## Chapters
+> How to read this chapter: follow **Start Here** top to bottom — that is the teaching path.
+
+## Start Here — the learning path
 
 - [Skip List](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-skip-list)
 - [Bloom Filter](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-bloom-filter)
@@ -10,4 +12,3 @@ The structures here trade certainty for **scale**. A regular hash-set tells you 
 - [HyperLogLog](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-hyperloglog)
 - [Treap](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-treap)
 - [Persistent Data Structures](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-persistent-data-structures)
-- [Memorize: Probabilistic And Advanced](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-memorize)

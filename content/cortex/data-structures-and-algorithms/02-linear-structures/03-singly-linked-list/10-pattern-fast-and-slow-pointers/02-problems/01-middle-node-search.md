@@ -149,7 +149,7 @@ print(Solution().middle_node_search(from_list([1, 2, 3, 4])).val)           # 3
 print(Solution().middle_node_search(from_list([1, 2, 3, 4, 5, 6, 7])).val) # 4
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {

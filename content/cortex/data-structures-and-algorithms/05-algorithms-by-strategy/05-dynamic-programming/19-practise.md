@@ -1,3 +1,10 @@
+---
+title: "Practice — Mixed DP Problems"
+summary: "Seven dynamic-programming problems, one from each family the section covered — the meta-skill is naming the pattern before deriving the recurrence. Full Python and Java implementations for each."
+prereqs:
+  - 05-algorithms-by-strategy/05-dynamic-programming/01-linear-dp
+---
+
 # 19. Practice — Mixed DP Problems
 
 You've seen 18 lessons covering an array of DP shapes — linear DP, longest-subsequence variants, palindrome problems, partition problems, the knapsack family, game-theoretic adversarial DP, split-point interval DP, and three meta-patterns (edit-distance, subset-sum, 2D-grid, prefix-sum). The patterns reappear in disguise across hundreds of competitive-programming and interview problems. The goal of this final lesson is mileage: seven problems, each from a different family, with full implementations.
@@ -13,7 +20,7 @@ Each problem in this set was chosen to test pattern recognition. Before reading 
 5. [Pattern as Subsequence](#pattern-as-subsequence)
 6. [Shortest Common Supersequence](#shortest-common-supersequence)
 7. [Longest Repeated Subsequence](#longest-repeated-subsequence)
-8. [Final Takeaway](#final-takeaway)
+8. [Key Takeaway](#key-takeaway)
 
 ***
 
@@ -104,7 +111,7 @@ print(Solution().covering_distance(6))   # 24
 print(Solution().covering_distance(10))  # 274
 ```
 
-```java run
+```java run viz=array viz-root=dp
 import java.util.*;
 
 public class Main {
@@ -248,7 +255,7 @@ print(Solution().reachability_check([3, 0, 0, 0]))   # True  — jump over zeros
 print(Solution().reachability_check([1, 1, 1, 1]))   # True  — chain of 1-steps
 ```
 
-```java run
+```java run viz=array viz-root=dp
 import java.util.*;
 
 public class Main {
@@ -407,7 +414,7 @@ print(Solution().longest_bitonic_subsequence([1, 3, 1]))               # 3  — 
 print(Solution().longest_bitonic_subsequence([5, 5, 5, 5]))            # 1  — all same
 ```
 
-```java run
+```java run viz=array viz-root=arr
 import java.util.*;
 
 public class Main {
@@ -598,7 +605,7 @@ print(Solution().longest_alternating_subsequence([5, 5, 5]))               # 1  
 print(Solution().longest_alternating_subsequence([1, 2, 1, 2, 1]))         # 5  — perfect alternating
 ```
 
-```java run
+```java run viz=grid viz-root=dp
 import java.util.*;
 
 public class Main {
@@ -781,7 +788,7 @@ print(Solution().pattern_as_subsequence("aaa", "a"))           # 3  — repeated
 print(Solution().pattern_as_subsequence("abc", "abc"))         # 1  — identical
 ```
 
-```java run
+```java run viz=grid viz-root=dp
 import java.util.*;
 
 public class Main {
@@ -949,7 +956,7 @@ print(Solution().shortest_common_supersequence("a", "a"))      # 1  — identica
 print(Solution().shortest_common_supersequence("a", "b"))      # 2  — completely different single chars
 ```
 
-```java run
+```java run viz=grid viz-root=dp
 import java.util.*;
 
 public class Main {
@@ -1142,7 +1149,7 @@ print(Solution().longest_repeated_subsequence("abcd"))       # ""  — all uniqu
 print(Solution().longest_repeated_subsequence("aabb"))       # ab  — two pairs
 ```
 
-```java run
+```java run viz=graph viz-root=dp
 import java.util.*;
 
 public class Main {
@@ -1238,7 +1245,7 @@ public class Main {
 
 ***
 
-# Final Takeaway
+## Key Takeaway
 
 These seven problems map onto the patterns the entire section built:
 

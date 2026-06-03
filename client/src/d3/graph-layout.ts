@@ -30,7 +30,10 @@ const NODE_R = 22;
 const RING_R = NODE_R + 4;
 const PAD_X = 24; // gap from the outermost ring to the left / right border
 const PAD_TOP = 48; // headroom above the top row for the cursor caret
-const PAD_BOTTOM = 42; // room below the bottom row for the meta sub-label
+// Room below the bottom row for the node's TWO sub-label lines drawn outside the
+// circle (graph-render: `viz-graph__class` at NODE_R+14, `viz-graph__meta` at
+// NODE_R+26 ≈ 48 below the centre). 42 clipped the meta line of the lowest node.
+const PAD_BOTTOM = 58;
 
 // Tree strategy — centre-to-centre spacing between siblings / between depths.
 const TREE_DX = 78;

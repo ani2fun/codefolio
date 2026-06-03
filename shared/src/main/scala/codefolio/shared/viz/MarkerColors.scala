@@ -3,57 +3,88 @@ package codefolio.shared.viz
 /**
  * Role-based colour canon for cursor pointers (ADR-0016 / ADR-0018).
  *
- * A pointer's colour is decided by its *role*, not the author: `head` / `root` / `i` are blue (an entry
- * point), `current` / `mid` emerald (the active cursor), `fast` / `right` rose (the contentious second),
- * `previous` / `j` amber, `next` / `successor` violet, `tail` / `parent` slate — so a reader who has seen one
- * chapter recognises a pointer's colour everywhere.
+ * A pointer's colour is decided by its *role*, not the author: `head` / `root` / `i` are deep blue (entry
+ * point), `current` / `mid` terracotta (the active cursor), `fast` / `right` bordeaux (the contentious
+ * second), `previous` / `j` mulberry, `next` / `successor` moss-green, `tail` / `parent` bordeaux — so a
+ * reader who has seen one chapter recognises a pointer's colour everywhere.
  *
- * The bespoke widgets (`MarkerCanon`) demand canonical names. The trace-driven Visualise reads *real* Python
- * variable names, which it cannot rename — so this canon adds an `aliases` layer mapping common real-code
- * names (`cur`, `nxt`, `prev`, `lo`, …) onto canonical roles, and a `fallback` palette of distinct hues for
- * names with no role. Same colours as `MarkerCanon`, looser matching: the trace aliases liberally where the
- * widgets hard-reject.
+ * Palette is brand-aligned with the codefolio editorial identity (terracotta-on-cream); ported verbatim from
+ * the Claude Design handoff's `window.POINTER_COLORS` in `ui_kits/visualise/steps.js`. Same shape as the
+ * previous Tailwind-default palette; only the hexes change.
+ *
+ * The trace-driven Visualise reads *real* Python variable names which it cannot rename, so this canon adds
+ * an `aliases` layer mapping common real-code names (`cur`, `nxt`, `prev`, `lo`, …) onto canonical roles, and
+ * a `fallback` palette of distinct hues for names with no role at all. Was previously paired with a strict
+ * `MarkerCanon` table for hand-authored widgets that hard-rejected unknown names; that table was retired
+ * along with its callers (ArrayTraversal / BinaryTree / LinkedList / GraphExplorer / StackQueue / HeapTree)
+ * in slices 11b–15, leaving this module as the single source of truth.
  *
  * Pure data — cross-compiles to the JVM (HeapToGraph tests) and Scala.js (the adapter at runtime).
  */
 object MarkerColors:
 
-  /** Canonical pointer name → role colour. Ported from `MarkerCanon.palette` (ADR-0016). */
+  /** Canonical pointer name → role colour. Mirrors `window.POINTER_COLORS` in the design handoff. */
   val canon: Map[String, String] = Map(
-    "head"        -> "#3b82f6",
-    "root"        -> "#3b82f6",
-    "i"           -> "#3b82f6",
-    "left"        -> "#3b82f6",
-    "low"         -> "#3b82f6",
-    "slow"        -> "#3b82f6",
-    "front"       -> "#3b82f6",
-    "read"        -> "#3b82f6",
-    "base"        -> "#3b82f6",
-    "current"     -> "#10b981",
-    "mid"         -> "#10b981",
-    "top"         -> "#10b981",
-    "write"       -> "#10b981",
-    "found"       -> "#10b981",
-    "ptr"         -> "#10b981",
-    "end"         -> "#10b981",
-    "j"           -> "#f59e0b",
-    "previous"    -> "#f59e0b",
-    "p"           -> "#f59e0b",
-    "start"       -> "#f59e0b",
-    "next"        -> "#a855f7",
-    "successor"   -> "#a855f7",
-    "predecessor" -> "#a855f7",
-    "kth"         -> "#a855f7",
-    "tail"        -> "#64748b",
-    "dummy"       -> "#64748b",
-    "parent"      -> "#64748b",
-    "last"        -> "#64748b",
-    "fast"        -> "#ef4444",
-    "right"       -> "#ef4444",
-    "high"        -> "#ef4444",
-    "swap"        -> "#ef4444",
-    "back"        -> "#ef4444",
-    "q"           -> "#06b6d4"
+    // ── Deep blue #3a5a8c — entry point / opens a range / primary loop ──
+    "head"  -> "#3a5a8c",
+    "root"  -> "#3a5a8c",
+    "i"     -> "#3a5a8c",
+    "left"  -> "#3a5a8c",
+    "low"   -> "#3a5a8c",
+    "slow"  -> "#3a5a8c",
+    "front" -> "#3a5a8c",
+    "read"  -> "#3a5a8c",
+    "base"  -> "#3a5a8c",
+    // ── Terracotta #c8693e — active position / cursor of activity ──
+    "current" -> "#c8693e",
+    "mid"     -> "#c8693e",
+    "top"     -> "#c8693e",
+    "write"   -> "#c8693e",
+    "found"   -> "#c8693e",
+    "ptr"     -> "#c8693e",
+    "end"     -> "#c8693e",
+    // ── Mulberry #8a4f7d — trailing pointer / inner loop ──
+    "j"        -> "#8a4f7d",
+    "previous" -> "#8a4f7d",
+    "p"        -> "#8a4f7d",
+    "start"    -> "#8a4f7d",
+    // ── Moss green #5a8a5a — saved-aside / one step forward ──
+    "next"        -> "#5a8a5a",
+    "successor"   -> "#5a8a5a",
+    "predecessor" -> "#5a8a5a",
+    "kth"         -> "#5a8a5a",
+    // ── Bordeaux #a13e3e — explicit end / contentious second slot ──
+    "tail"   -> "#a13e3e",
+    "dummy"  -> "#a13e3e",
+    "parent" -> "#a13e3e",
+    "last"   -> "#a13e3e",
+    "fast"   -> "#a13e3e",
+    "right"  -> "#a13e3e",
+    "high"   -> "#a13e3e",
+    "swap"   -> "#a13e3e",
+    "back"   -> "#a13e3e",
+    // ── Mulberry #8a4f7d — LCA query 2 (paired with `p` for distinguishability) ──
+    "q" -> "#8a4f7d"
+  )
+
+  /**
+   * Step-event marker colours — mirrors `window.MARKER_COLORS` in the design handoff.
+   *
+   * These flag *what happened to a value* this step (changed / removed / returned), not what role a pointer
+   * plays. Read off by the canvas annotation system (call / return / exception eyebrows), the
+   * `frame__local--changed|--removed|--return` modifiers, and the `MARKER_COLORS.ref` arrow from a frame's
+   * REF row to the heap card it points at.
+   */
+  val markers: Map[String, String] = Map(
+    "changed"         -> "#6a9656", // moss green   — new / modified this step
+    "removed"         -> "#a13e3e", // bordeaux     — out of scope this step
+    "returned"        -> "#c8693e", // terracotta   — frame's return value
+    "returnedDarker"  -> "#4a6a3c", // dark moss    — canvas annotation eyebrow on light theme
+    "returnedLighter" -> "#9bbf86", // light moss   — canvas annotation eyebrow on dark theme
+    "ref"             -> "#3a5a8c", // deep blue    — REF arrow from frame row to heap card
+    "exception"       -> "#a13e3e", // bordeaux     — exception eyebrow on canvas annotation
+    "visited"         -> "#6a9656", // moss green   — graph: visited node
+    "frontier"        -> "#c8693e"  // terracotta   — graph: frontier node
   )
 
   /** Real-code variable name → a canonical name. The trace aliases liberally; the bespoke widgets reject. */
@@ -82,7 +113,7 @@ object MarkerColors:
 
   /** Distinct hues for names with no canonical role — assigned by order of first appearance. */
   val fallback: Vector[String] =
-    Vector("#3b82f6", "#10b981", "#f59e0b", "#a855f7", "#ef4444", "#06b6d4", "#64748b")
+    Vector("#3a5a8c", "#c8693e", "#a13e3e", "#8a4f7d", "#5a8a5a", "#c5a572", "#91b5c2")
 
   /** The role colour for `name`, if it has one — a direct canon hit, then an alias → canon hit. */
   def roleColor(name: String): Option[String] =

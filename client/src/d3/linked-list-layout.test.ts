@@ -201,6 +201,48 @@ describe("linkedListLayout — multiple chains", () => {
   });
 });
 
+describe("linkedListLayout — reverse-in-place pedagogy (reciprocal edges)", () => {
+  it("treats `a→b` and `b→a` (both labelled `next`) as one chain edge, keeping the row layout", () => {
+    // The union of every step in a reverse-in-place animation contains BOTH
+    // directions of each adjacent pair (step 1: n0→n1, last step: n1→n0).
+    // Before the dedupe, this trips the linear-forest check and the layout
+    // falls back to the graph layout. The fix keeps the first-seen direction
+    // (graph-render.ts feeds union edges in step order, so step 1 wins) and
+    // re-establishes the horizontal chain.
+    const nodes = [listNode("n0", 1), listNode("n1", 2), listNode("n2", 3), listNode("n3", 4)];
+    const edges = [
+      // First seen — defines the chain direction.
+      nextEdge("n0", "n1"),
+      nextEdge("n1", "n2"),
+      nextEdge("n2", "n3"),
+      // Reverse of the same edges — produced by later animation steps. Each
+      // duplicates an unordered pair already in the set, so they're dropped
+      // for layout but still rendered per-step over the fixed positions.
+      nextEdge("n1", "n0"),
+      nextEdge("n2", "n1"),
+      nextEdge("n3", "n2"),
+    ];
+    const layout = linkedListLayout(nodes, edges);
+    const ys = nodes.map((n) => layout.positions.get(n.id)!.y);
+    expect(new Set(ys).size).toBe(1); // single row
+    const x = (id: string) => layout.positions.get(id)!.x;
+    expect(x("n0")).toBeLessThan(x("n1"));
+    expect(x("n1")).toBeLessThan(x("n2"));
+    expect(x("n2")).toBeLessThan(x("n3"));
+  });
+
+  it("does NOT fall back to graphLayout when the union has reciprocal next edges", () => {
+    // Concrete regression check for the dispatch path — previously the union
+    // forced asLinearForest to return null (outDeg > 1) and the layout matched
+    // graphLayout. After the dedupe it should match a clean chain instead.
+    const nodes = [listNode("n0", 1), listNode("n1", 2)];
+    const reciprocal = [nextEdge("n0", "n1"), nextEdge("n1", "n0")];
+    expect(snapshot(linkedListLayout(nodes, reciprocal))).not.toEqual(
+      snapshot(graphLayout(nodes, reciprocal)),
+    );
+  });
+});
+
 describe("linkedListLayout — cyclic next-graphs fall back to the graph layout", () => {
   it("delegates a full cycle (the list loops onto itself) to graphLayout", () => {
     const nodes = [listNode("n0", 1), listNode("n1", 2), listNode("n2", 3)];

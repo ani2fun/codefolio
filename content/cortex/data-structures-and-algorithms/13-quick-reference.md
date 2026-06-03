@@ -106,6 +106,8 @@ flowchart TD
   class BS,BOUND,TP,FSW,VSW,PS,MS,IM,QS,FS,REV,MRG,PRE,POST,LVL,LCA,BFS,DIJK,BF,FW,TOPO,MST,DSU,BT,DP,BM,BIT,STR leaf
 ```
 
+<p align="center"><strong>A decision tree for picking a technique from the shape of the problem — follow the branches from the root question down to a highlighted leaf.</strong></p>
+
 If a problem fits two leaves, try the cheaper one first; if both have the same cost, prefer the one with simpler invariants to argue.
 
 ***

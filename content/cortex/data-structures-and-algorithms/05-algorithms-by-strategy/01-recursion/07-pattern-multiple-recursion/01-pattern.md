@@ -5,19 +5,16 @@ prereqs:
   - 05-algorithms-by-strategy/01-recursion/03-recursion
 ---
 
-# Understanding Multiple Recursion
+## Why It Exists
 
-A function exhibits **multiple recursion** when its body contains **two or more recursive calls**. The call tree branches at every node — instead of a thin line of frames, you get a fanned-out tree, often with a tree-shaped explosion of subproblems.
+A function is **multiply recursive** when its body makes **two or more recursive calls**. The call graph stops being a thin line and fans into a *tree* — and that branching is where exponential cost is born. The textbook example is Fibonacci:
 
-The simplest example is Fibonacci's classical recursive form:
-
-```
+```text
 fib(n) = fib(n-1) + fib(n-2)
 ```
 
-That single line of arithmetic — the `+` between two recursive calls — is enough to turn linear recursion into exponential recursion. The reason: each call spawns *two* children, each of which spawns two more, and so on. After `n` levels you have `2^n` leaves.
+That one `+` between two recursive calls turns linear recursion into exponential recursion. Each call spawns two children, each of those spawns two more — and, fatally, the *same* subproblems get recomputed from scratch in different branches. Recognising this pattern on sight tells you two things at once: the problem has a clean recursive definition, *and* the naive version will be catastrophically slow until you cache the overlaps (the bridge to dynamic programming).
 
-> 🖼 Diagram — Fibonacci's recursion tree for fib(4). Each non-base node spawns two children. fib(2) appears twice — that duplication is the engine of the exponential blow-up.
 ```mermaid
 ---
 config:
@@ -41,71 +38,46 @@ flowchart TB
   F2b --> F0b["fib(0)"]
 ```
 
-<p align="center"><strong>Fibonacci's recursion tree for <code>fib(4)</code>. Each non-base node spawns two children. <code>fib(2)</code> appears twice — that duplication is the engine of the exponential blow-up.</strong></p>
+<p align="center"><strong>Each non-base node spawns two children. <code>fib(2)</code> appears twice (and for larger <code>n</code>, small subproblems appear thousands of times) — that duplication is the engine of the blow-up.</strong></p>
 
-> *Before reading on — count the function calls for `fib(6)`. Is it 6? 12? 24? More? Predict before you keep reading.*
+## See It Work
 
-`fib(6)` makes 25 function calls — far more than 6, and the count grows exponentially. The exact recurrence: `T(n) = T(n-1) + T(n-2) + 1`. For `n = 30`, you're at over 1.6 million calls. For `n = 50`, you're at over 20 *billion*. The same problem runs in `O(n)` if you write it iteratively or with memoisation. Multiple recursion is *correct* but *catastrophically slow* without help. We'll address the help later (memoisation in the dynamic-programming chapter); the goal here is to *see* the explosion clearly so you recognise it on sight.
+Naive Fibonacci, instrumented with a call counter so the explosion is visible. Two base cases (`fib(0)=0`, `fib(1)=1`), two recursive calls.
 
----
+```python run
+calls = 0
+def fib(n):
+    global calls; calls += 1
+    if n < 2:                               # base cases: fib(0)=0, fib(1)=1
+        return n
+    return fib(n - 1) + fib(n - 2)          # TWO recursive calls → branching tree
 
-## What Multiple Recursion Looks Like in Code
-
-The general shape:
-
-> 🖼 Diagram — Multiple recursion: k recursive calls per frame. Each call has its own reduction h_i; the combine function g takes all k smaller answers and folds them into the answer for n.
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#777777"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-  EQ["f(n) = g(f(h₁(n)), f(h₂(n)), ..., f(h_k(n)), n)"]
-  EQ --> H1["h₁(n)<br/>first reduction"]
-  EQ --> H2["h₂(n)<br/>second reduction"]
-  EQ --> HK["...up to k reductions"]
-  EQ --> G["g<br/>combine all k smaller answers<br/>plus the current input"]
-  EQ -.->|"anchored by"| BASE["k base cases<br/>(at least)"]
+print("fib(10):", fib(10), "in", calls, "calls")
 ```
 
-<p align="center"><strong>Multiple recursion: <code>k</code> recursive calls per frame. Each call has its own reduction <code>h_i</code>; the combine function <code>g</code> takes all <code>k</code> smaller answers and folds them into the answer for <code>n</code>.</strong></p>
-
-The pseudocode follows the equation:
-
-```
-function multiple_recursion(n):
-    if n is a base case:
-        return base_case_answer(n)        ← potentially several base cases
-
-    smaller_1 = multiple_recursion(h_1(n))   ← first recursive call
-    smaller_2 = multiple_recursion(h_2(n))   ← second recursive call
-    ...
-    smaller_k = multiple_recursion(h_k(n))   ← k-th recursive call
-
-    answer = g(smaller_1, smaller_2, ..., smaller_k, n)
-    return answer
+```java run
+public class Main {
+    static int calls = 0;
+    static int fib(int n) {
+        calls++;
+        if (n < 2) return n;                    // base cases
+        return fib(n - 1) + fib(n - 2);         // two recursive calls
+    }
+    public static void main(String[] args) {
+        int r = fib(10);
+        System.out.println("fib(10): " + r + " in " + calls + " calls");
+    }
+}
 ```
 
-Notice the structural similarity to head recursion: all the recursive calls happen first, then the combine step folds them. **Multiple recursion is head recursion with `k > 1` calls.** The combine step `g` typically uses arithmetic (addition for Fibonacci, multiplication-and-sum for Catalan) or set operations (union for permutation generation).
+Both print `fib(10): 55 in 177 calls`. Fifty-five is the answer; **177 calls** to produce it — already 16× the input. That gap is the whole story of the pattern.
 
----
+## How It Works
 
-## Why It Explodes — The Tree-of-Calls Lens
+Strip the problem away and multiple recursion is `f(n) = g(f(h₁(n)), …, f(h_k(n)), n)` — make `k` recursive calls, then fold their answers with `g`. It's literally [head recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-head-recursion) with `k ≥ 2` calls; for Fibonacci `k = 2` and `g(a, b) = a + b`.
 
-The key insight: every recursive call's *own* recursive calls are separate, independent subtrees. There's no caching by default. If `fib(2)` is needed twice, both subtrees compute it from scratch.
+The blow-up comes from **no caching**: each call's subtrees are computed independently, so overlapping subproblems are redone every time. The cost is startling:
 
-Look at the Fibonacci tree above. `fib(2)` appears in two different positions — both subtrees of `fib(3)` and `fib(4)` directly. Each of those `fib(2)` nodes does the same work (computing `fib(1) + fib(0)`). That's redundant.
-
-In the full tree for `fib(n)`, the number of recomputed subproblems grows exponentially. By the time you're computing `fib(40)`, the tree has billions of redundant `fib(small)` evaluations.
-
-> 🖼 Diagram — Naive Fibonacci's call count for various n. The exponential growth is what makes fib(50) infeasible without memoisation.
 ```d2
 direction: down
 
@@ -115,307 +87,137 @@ table: "Calls vs n" {
   grid-rows: 6
   grid-columns: 2
   grid-gap: 0
-  h1: "n"           {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
-  h2: "calls"       {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
-  r1: "10"          ; v1: "177"
-  r2: "20"          ; v2: "21,891"
-  r3: "30"          ; v3: "2,692,537"
-  r4: "40"          ; v4: "331,160,281" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  r5: "50"          ; v5: "≈ 2 × 10¹⁰" {style.fill: "#fecaca"; style.stroke: "#dc2626"}
+  h1: "n"     {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
+  h2: "calls" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
+  r1: "10" ; v1: "177"
+  r2: "20" ; v2: "21,891"
+  r3: "30" ; v3: "2,692,537"
+  r4: "40" ; v4: "331,160,281" {style.fill: "#fde68a"; style.stroke: "#d97706"}
+  r5: "50" ; v5: "≈ 2 × 10¹⁰" {style.fill: "#fecaca"; style.stroke: "#dc2626"}
 }
 
-note: "Roughly multiplies by ~123× every +10 to n.\nMemoisation collapses this to O(n)."
+note: "~123× more calls for every +10 to n. Memoisation collapses it to O(n)."
 ```
 
-<p align="center"><strong>Naive Fibonacci's call count for various <code>n</code>. The exponential growth is what makes <code>fib(50)</code> infeasible without memoisation.</strong></p>
+<p align="center"><strong>Naive Fibonacci's call count explodes; memoising the overlapping subproblems collapses it to <code>O(n)</code>.</strong></p>
 
-The fix — caching previously computed answers (memoisation) — collapses the tree to `O(n)` unique subproblems. We don't fix it here; this lesson is about seeing the unfixed pattern. The fix is the bridge into dynamic programming.
+The complexity is the pattern's most counterintuitive fact: **time is exponential but stack space is only linear.** A binary tree of `≈ 2ⁿ` nodes takes `O(2ⁿ)` time, but at any instant only *one* root-to-leaf path is on the stack — the sibling subtrees run sequentially, not together — so space is `O(n)` (the depth, not the breadth).
 
----
+Three diagnostics decide if multiple recursion fits: **Q1** — does `f(n)` need *two or more* smaller answers? (Fibonacci needs both `f(n-1)` and `f(n-2)`.) **Q2** — does a *fold* combine them into one value (sum, product, max)? **Q3** — are there *enough* base cases to terminate every branch? (Fibonacci needs two — with only `fib(0)`, `fib(1)` would recurse into `fib(-1)` forever.)
 
-## Passing Data Down
+> **Key takeaway.** Multiple recursion = head recursion with `k ≥ 2` calls → a branching call tree. Time blows up to `O(kⁿ)` because overlapping subproblems are recomputed; stack space stays `O(n)` (only one root-to-leaf path is live). The cure — caching repeated subproblems (memoisation) — collapses time to `O(n)` and is the gateway to dynamic programming.
 
-Multiple recursion typically passes the input by value (or by reference for shared containers, same as head recursion). There's no accumulator — the recursion is genuinely fanning out, and an accumulator can only carry one thread of progress at a time. Each recursive call gets the same kind of input the parent got, just smaller.
+## Trace It
 
-Some multiple-recursion problems do thread additional state down (e.g. when generating combinations: pass the current partial combination), but those are usually backtracking problems, which the next major topic (the Multidimensional Recursion lesson and beyond) addresses head-on.
+The `fib(10)` run already cost 177 calls. The growth isn't linear or even polynomial — it's exponential, and adding a cache changes it by *orders of magnitude*.
 
----
-
-## Passing Data Up
-
-Each call returns its sub-answer to the caller. The combine step `g` reduces all `k` smaller answers into one value. For Fibonacci, `g(a, b) = a + b`. For Catalan, `g(...) = sum of products`. The combine is where the problem-specific arithmetic happens.
-
----
-
-## Algorithm
-
-> **multipleRecursion(n)**
->
-> 1. **Stop** — if `n` is a base case, return its known answer.
-> 2. **For each of the `k` recursive calls:**
->    - Compute the reduced input `n_i = h_i(n)`.
->    - Make the recursive call: `result_i = multipleRecursion(n_i)`.
-> 3. **Combine** — apply `g(result_1, ..., result_k, n)` to fold into the answer for `n`.
-> 4. **Return** the combined result.
-
-Step 2 is what makes this multiple recursion: instead of one call, there are `k`.
-
----
-
-## Implementation
-
-A clean, language-agnostic implementation of the generic template with two recursive calls (`k = 2`).
-
+**Predict before you run:** how many calls does naive `fib(30)` make — about 30, a few hundred, or millions? And how many does a *memoised* `fib(30)` make?
 
 ```python run
-from typing import List
+def count_naive(n):
+    c = [0]
+    def f(n):
+        c[0] += 1
+        if n < 2: return n
+        return f(n - 1) + f(n - 2)
+    return f(n), c[0]
 
-class Solution:
-    def multipleRecursion(self, N: int, aggregate: List[int]) -> int:
+def count_memo(n):
+    c = [0]; memo = {}
+    def f(n):
+        c[0] += 1
+        if n < 2: return n
+        if n in memo: return memo[n]            # cache hit → no recompute
+        memo[n] = f(n - 1) + f(n - 2)
+        return memo[n]
+    return f(n), c[0]
 
-        # Base case: If N is less than or equal to 0, we have reached
-        # the end of recursion
-        if N <= 0:
-            # Exit the function, as there are no more numbers to add
-            return 0  # Solution for the base case
+v1, n1 = count_naive(30)
+v2, n2 = count_memo(30)
+print(f"naive    fib(30) = {v1} in {n1} calls")
+print(f"memoised fib(30) = {v2} in {n2} calls")
+```
 
-        # Number of recursive calls to make at each level
-        # This is dependent on the problem
-        k = 3
+<details>
+<summary><strong>Reveal</strong></summary>
 
-        solution = 0  # Initialize solution to a default value
+Naive `fib(30)` makes **2,692,537** calls; memoised `fib(30)` makes **59**. Same answer (832,040), a ~45,000× difference in work. The naive tree recomputes `fib(28)` twice, `fib(27)` three times, `fib(26)` five times — the repeat counts are themselves Fibonacci numbers, which is why the total is exponential. Memoisation stores each subproblem's answer the first time and returns it on every later request, so each of the `n` distinct subproblems is computed exactly once: the `O(2ⁿ)` tree collapses to an `O(n)` line. That single idea — *cache the overlaps* — is the entire leap from naive multiple recursion to **dynamic programming**.
 
-        for i in range(k):
-            # Compute new input based on i, N, and aggregate
-            new_input = self.h(i, N, aggregate)
+</details>
 
-            # Add the current iteration's contribution to the aggregate
-            self.g(i, N, aggregate)
+## Your Turn
 
-            # Recursive call with new values
-            result = self.multipleRecursion(new_input, aggregate)
+**Climbing Stairs:** you can take 1 or 2 steps; how many distinct ways to climb `n`? From the bottom your first move is 1 step or 2, leaving the same problem on a smaller staircase: `climb(n) = climb(n-1) + climb(n-2)` — Fibonacci in disguise. Base cases: `climb(0) = 1` (one way: stand still), `climb(n<0) = 0` (overshot).
 
-            # Combine the result with the current solution
-            solution = self.G(N, solution, result)
+```python run
+def climb(n):
+    if n < 0: return 0                      # overshot the top
+    if n == 0: return 1                     # one way: do nothing
+    return climb(n - 1) + climb(n - 2)      # first move: 1 step or 2
 
-            # Restore aggregate if necessary
-            self.gInverse(i, N, aggregate)
-
-        return solution  # Return the final solution
-
-    # Placeholder for h - use the iteration, input and aggregate
-    # to compute the new input
-    def h(self, iteration: int, input: int, aggregate: List[int]) -> int:
-        # Implement your logic here
-        return 0
-
-    # Placeholder for g - use the iteration, input and aggregate
-    # to update aggregate
-    def g(self, iteration: int, input: int, aggregate: List[int]) -> None:
-        # Implement your logic here
-        pass
-
-    # Placeholder for gInverse - use the iteration, input and aggregate
-    # to revert the updates made by g
-    def gInverse(self, iteration: int, input: int, aggregate: List[int]) -> None:
-        # Implement your logic here
-        pass
-
-    # Placeholder for G - use the input, existing solution,
-    # and result from the recursive call to compute the new solution
-    def G(self, input: int, solution: int, result: int) -> int:
-        # Implement your logic here
-        return 0
+print("climb(4):", climb(4))                # 5
+print("climb(5):", climb(5))                # 8
 ```
 
 ```java run
-import java.util.List;
-
-class Solution {
-
-    public int multipleRecursion(int N, List<Integer> aggregate) {
-
-        // Base case: If N is less than or equal to 0, we have reached
-        // the end of recursion
-        if (N <= 0) {
-
-            // Exit the function, as there are no more numbers to add
-            return 0; // Solution for the base case
-        }
-
-        // Number of recursive calls to make at each level
-        // This is dependent on the problem
-        int k = 3;
-
-        int solution = 0; // Initialize solution to a default value
-
-        for (int i = 0; i < k; i++) {
-            // Compute new input based on i, N, and aggregate
-            int newInput = h(i, N, aggregate);
-
-            // Add the current iteration's contribution to the aggregate
-            g(i, N, aggregate);
-
-            // Recursive call with new values
-            int result = multipleRecursion(newInput, aggregate);
-
-            // Combine the result with the current solution
-            solution = G(N, solution, result);
-
-            // Restore aggregate if necessary
-            gInverse(i, N, aggregate);
-        }
-        return solution; // Return the final solution
+public class Main {
+    static int climb(int n) {
+        if (n < 0) return 0;                    // overshot
+        if (n == 0) return 1;                   // one way: do nothing
+        return climb(n - 1) + climb(n - 2);     // 1 step or 2
     }
-
-    // Placeholder for h - use the iteration, input and aggregate
-    // to compute the new input
-    private int h(int iteration, int input, List<Integer> aggregate) {
-        // Implement your logic here
-        return 0;
-    }
-
-    // Placeholder for g - use the iteration, input and aggregate
-    // to update aggregate
-    private void g(int iteration, int input, List<Integer> aggregate) {
-        // Implement your logic here
-    }
-
-    // Placeholder for gInverse - use the iteration, input and aggregate
-    // to revert the updates made by g
-    private void gInverse(int iteration, int input, List<Integer> aggregate) {
-        // Implement your logic here
-    }
-
-    // Placeholder for G - use the input, existing solution,
-    // and result from the recursive call to compute the new solution
-    private int G(int input, int solution, int result) {
-        // Implement your logic here
-        return 0;
+    public static void main(String[] args) {
+        System.out.println("climb(4): " + climb(4));   // 5
+        System.out.println("climb(5): " + climb(5));   // 8
     }
 }
 ```
 
+Both print `5` then `8` — the Fibonacci sequence, shifted. (The five ways to climb 4: `1111`, `112`, `121`, `211`, `22`.) Like naive Fibonacci, this recomputes overlaps and is exponential without a cache. The four problems in this section's **Problems** folder — Fibonacci, zigzag, climbing stairs, Catalan number — are all branching recurrences of exactly this shape.
 
----
+## Reflect & Connect
 
-## Complexity Analysis
+- **It's head recursion that branches.** All `k` calls happen first, then a fold combines them — same "work on the ascent" structure, just `k ≥ 2` children. Single-call problems are [head](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-head-recursion)/[tail](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-tail-recursion) recursion; reach for multiple recursion only when the definition genuinely needs several smaller answers.
+- **Exponential time, linear space — the surprise.** The tree is huge in *breadth* but only one root-to-leaf path is on the stack at a time, so space is `O(n)`. Don't confuse the time cost (number of nodes) with the space cost (tree height).
+- **Overlapping subproblems → memoisation → dynamic programming.** When the same subproblem recurs across branches, cache it. That single move is the seam between this lesson and the entire DP chapter — DP *is* multiple recursion plus a cache (or its bottom-up equivalent).
+- **Branch-and-build is backtracking, not folding.** Multiple recursion folds sub-answers into *one value*. When you instead need to build a *structure* (all permutations, all partitions), you branch but accumulate partial solutions with an undo step — that's backtracking, a later lesson.
 
-For a binary multiple recursion (`k = 2`) with `O(1)` combine and reduction:
+## Recall
 
-| Resource | Cost | Why |
-|---|---|---|
-| **Time** | `O(2^n)` worst case (Fibonacci-shape) | Each frame spawns 2 children; tree has `≈ 2^n` leaves. |
-| **Space (stack)** | `O(n)` | The deepest path is from root to leftmost leaf — depth `n`, not `2^n`. The sibling subtrees aren't in memory simultaneously. |
+<details>
+<summary><strong>Q:</strong> What defines multiple recursion?</summary>
 
-For a `k`-way multiple recursion (e.g. Catalan with sum over partitions, or climb-stairs with `k` step sizes):
+**A:** Two or more recursive calls per frame, producing a branching call tree. It's head recursion with `k ≥ 2` calls, folded by a combine step `g`.
 
-| Resource | Cost | Why |
-|---|---|---|
-| **Time** | `O(k^n)` worst case | Each frame spawns `k` children. |
-| **Space (stack)** | `O(n)` | Same — depth not breadth. |
+</details>
+<details>
+<summary><strong>Q:</strong> Why is naive Fibonacci exponential?</summary>
 
-The space cost is *linear* even though the time cost is exponential — this is the most counterintuitive thing about multiple recursion. The tree is huge in *width*, but at any moment only one root-to-leaf path is on the stack. Sibling subtrees are processed sequentially, not in parallel.
+**A:** Each call spawns two children and there's no caching, so overlapping subproblems (e.g. `fib(2)`) are recomputed in every branch — `≈ 2ⁿ` total calls.
 
-> **Best Case** — Time `O(2^n)`, Space `O(n)` (without memoisation)
->
-> **Worst Case** — Same — input doesn't change the tree shape
+</details>
+<details>
+<summary><strong>Q:</strong> Time vs. space for binary multiple recursion?</summary>
 
-With memoisation: time collapses to `O(n)` (each subproblem solved once). Space also `O(n)`. We'll see this in the dynamic programming section.
+**A:** Time `O(2ⁿ)` (number of tree nodes); stack space only `O(n)` (the tree's height — one root-to-leaf path is live at a time, siblings run sequentially).
 
----
+</details>
+<details>
+<summary><strong>Q:</strong> How does memoisation help, and what does it lead to?</summary>
 
-## Key Takeaway
+**A:** Caching each subproblem's answer means each of the `n` distinct subproblems is computed once — `O(2ⁿ)` time collapses to `O(n)`. That "cache the overlaps" idea is the entry point to dynamic programming.
 
-Multiple recursion = head recursion with `k ≥ 2` recursive calls per frame. The call tree branches; the work explodes; the stack stays linear. Knowing this pattern is half the battle for problems like Fibonacci, partition counting, and tree-shaped enumeration. Now we'll learn how to spot one.
+</details>
+<details>
+<summary><strong>Q:</strong> Why does Fibonacci need two base cases?</summary>
 
-# Identifying Multiple Recursion
+**A:** With two recursive calls (`fib(n-1)`, `fib(n-2)`), a single base case leaves a path uncovered — `fib(2)` would reach `fib(-1)` and never terminate. Every branch must hit a base.
 
-Three diagnostic questions decide whether a problem is a multiple-recursion candidate.
+</details>
 
-| # | Question | If "yes," multiple recursion fits because... |
-|---|---|---|
-| **Q1** | Does `f(n)` depend on **two or more** smaller subproblems? | The recursion tree must branch — that's the defining property. |
-| **Q2** | Is the combine step `g` a fold over those smaller answers (sum, product, max, etc.)? | Multiple recursion's output is one value, not a structure. |
-| **Q3** | Are there enough base cases to anchor every recursive path? | With `k > 1` recursive calls, missing a base case crashes the program in more ways. |
+## Sources & Verify
 
-### Q1 — Why "two or more smaller subproblems"?
-
-**Mental model.** Single-recursive problems (head/tail) have a thin call tree. Multiple-recursive problems are the ones whose mathematical definition genuinely *needs* multiple smaller answers to compute the larger one. Fibonacci's `F(n) = F(n-1) + F(n-2)` is the textbook two-call form. Catalan's `C(n) = sum_i C(i) * C(n-1-i)` is a `k`-call form where `k = n` (every call recurses up to `n` times).
-
-**Concrete check.** Fibonacci needs both `F(n-1)` *and* `F(n-2)`. Knowing only one isn't enough. ✓
-
-**What breaks otherwise.** If a problem only needs `f(n-1)`, it's head recursion (the Head Recursion lesson). Multiple recursion's machinery — `k` calls, exponential explosion, branching tree — is overkill for single-call problems.
-
-### Q2 — Why "fold-style combine"?
-
-**Mental model.** The combine step `g` reduces multiple sub-answers into one. Addition (Fibonacci), multiplication-and-sum (Catalan), max (game-theoretic problems), set-union (permutation-counting) — all folds. The output is *one* value per call.
-
-**Concrete check.** Fibonacci's `g(a, b) = a + b` is the simplest fold imaginable. Climb-stairs's `g = sum over all step choices` is a `k`-ary fold. ✓
-
-**What breaks otherwise.** If the problem requires building up a *structure* (a list of all permutations, a tree of all partitions), multiple recursion's "fold to one value" model doesn't fit cleanly. Those problems are usually backtracking — they branch like multiple recursion but build incremental partial solutions instead of folding values.
-
-### Q3 — Why "enough base cases"?
-
-**Mental model.** With `k > 1` recursive calls, the recursion tree has many root-to-leaf paths. Every path must terminate at a base case. Forgetting a base case for one of them is more dangerous than in head recursion because the symptoms hide in some subtrees but not others.
-
-**Concrete check.** Fibonacci needs *two* base cases: `F(0) = 0` and `F(1) = 1`. With only `F(0)`, the call `fib(2) = fib(1) + fib(0)` would recurse on `fib(1) = fib(0) + fib(-1)` — and `fib(-1)` would never terminate. ✓
-
-**What breaks otherwise.** Subtle bugs. Some inputs work because their tree happens to dodge the missing base case. Others crash. Drawing the recursion tree is the fastest way to verify all paths reach a base.
-
----
-
-## A Worked Example — Climbing Stairs
-
-> *Pause and predict — if you can climb 1 or 2 stairs at a time, how many distinct ways can you climb 4 stairs? List them.*
-
-The four ways:
-1. `1, 1, 1, 1`
-2. `1, 1, 2`
-3. `1, 2, 1`
-4. `2, 1, 1`
-5. `2, 2`
-
-Five ways, not four. The recursive insight: from the bottom, your first step is either 1 or 2 stairs. After taking it, you face the same problem on a smaller staircase: `climb(n) = climb(n-1) + climb(n-2)`. The base cases: `climb(0) = 1` (one way to "stand at the top — do nothing") and `climb(n < 0) = 0` (overshot — no valid way).
-
-That's *literally Fibonacci with shifted indices*. We'll generalise it to arbitrary step sets in **Problem 3** below.
-
----
-
-## Key Takeaway
-
-Three checks — multiple subproblems, fold-style combine, enough base cases — gate every multiple-recursion problem. Pass all three and the template snaps in (along with its exponential time blow-up). Four worked problems coming up. The first is the canonical exponential-recursion trap; the others generalise it in different directions.
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Understanding the Pattern — missing, needs to be written -->
-<!--       Guidance: umbrella H2 with the subsections below -->
-
-<!-- TODO: Why Naive Isn't Enough — missing, needs to be written -->
-<!--       Guidance: motivation for why the obvious approach fails -->
-
-<!-- TODO: The Core Idea — missing, needs to be written -->
-<!--       Guidance: one paragraph: the central trick -->
-
-<!-- TODO: How the Pointers/Window Move — missing, needs to be written -->
-<!--       Guidance: mechanics of the moving parts -->
-
-<!-- TODO: The Generic Algorithm — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
-
-<!-- TODO: Generic Implementation — missing, needs to be written -->
-<!--       Guidance: Python block + Java block of the skeleton -->
-
-<!-- TODO: Variants / Taxonomy — missing, needs to be written -->
-<!--       Guidance: enumerate sub-shapes of this pattern -->
-
-<!-- TODO: Recognition Checklist — missing, needs to be written -->
-<!--       Guidance: 4-question diagnostic — the source of the Problem-section Diagnostic Questions -->
-
-<!-- TODO: Canonical Example — missing, needs to be written -->
-<!--       Guidance: fully worked example: brute force → optimised → template fit -->
-
-<!-- TODO: Problems in This Category — missing, needs to be written -->
-<!--       Guidance: table with links to the 02-problems/ files -->
+- **Abelson & Sussman**, *Structure and Interpretation of Computer Programs*, §1.2.2 — "tree recursion": the Fibonacci call tree, why it's exponential, and the redundant-computation argument.
+- **CLRS** (Cormen, Leiserson, Rivest, Stein), *Introduction to Algorithms*, 3rd ed., §15.1 / §15.3 — overlapping subproblems and the naive-recursion-to-memoisation transition into dynamic programming.
+- **Sedgewick & Wayne**, *Algorithms*, 4th ed., §1.1 — recursion and the cost of recomputation in tree-recursive functions.
+- The `177`-call `fib(10)`, the `2,692,537`-vs-`59` `fib(30)` comparison, and `climb(4)=5` / `climb(5)=8` above come from the runnable blocks — re-run to verify.

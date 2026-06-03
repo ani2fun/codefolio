@@ -1,816 +1,198 @@
 ---
-title: "Introduction To Graphs"
-summary: "<!-- TODO: summary -->"
+title: "Introduction to Graphs"
+summary: "A graph is nodes plus the relationships between them — the structure that 'looks like the problem' for routes, networks, dependencies, and connections. The vocabulary (vertex/edge/degree/path), the families (directed/weighted/cyclic/DAG/bipartite), and why BFS/DFS read almost like the question."
+prereqs:
+  - trees-binary-tree-introduction-to-binary-trees
+  - linear-structures-hash-table-what-is-a-hash-table
 ---
 
-# 1. Introduction to graphs
+# Introduction to Graphs
 
-This section introduces the **graph** — the data structure that powers Google Maps, Facebook's friend suggestions, the dependency resolver in `npm`, and almost every "find the best route / connection / order" problem you will ever meet.
+## Why It Exists
 
-## Table of contents
+Arrays, lists, stacks, trees — every structure so far imposes a *shape*: a line, or a strict parent-child hierarchy. But most real data is a web of **many-to-many relationships** with no natural ordering or root: cities joined by flights, people by friendships, web pages by links, courses by prerequisites, tasks by dependencies. Force that into a list and you lose the connections; force it into a tree and you can't have two parents or a cycle.
 
-1. [Why every other data structure fails](#why-every-other-data-structure-fails)
-2. [Enter the graph](#enter-the-graph)
-3. [Solving the travel problem with a graph](#solving-the-travel-problem-with-a-graph)
-4. [Graph terminology](#graph-terminology)
-5. [Types of graphs](#types-of-graphs)
+A **graph** drops the shape constraint. It's just two things: **vertices** (the items — cities, people, pages) and **edges** (the relationships — flights, friendships, links). Each edge can carry a **weight** (airfare, distance, closeness). That's the whole structure — *items + the relationships between them* — and its power is that it **looks like the problem**: the napkin sketch you'd draw to explain flights between cities *is* the data structure, with no encoding step. Adding a city is one vertex; adding a flight is one edge — maintenance scales with what changed, not with the dataset size.
 
-***
+## See It Work
 
-# Why Every Other Data Structure Fails
+Six cities, six weighted flights. Store it as an **adjacency list** (each vertex → its neighbours), then answer "fewest flights from A to F?" with a breadth-first ripple. Run it.
 
-Open Google Maps and ask for directions from Bangalore to Tokyo. In about 200 milliseconds you get a route, alternates, ETAs, and a price. The system is searching through **millions of flight legs and connections** between hundreds of airports — and it does it before you blink.
+```python run
+from collections import deque
 
-Now imagine trying to store that same information in an array. Or a linked list. Or a tree. Pick any data structure you've learned so far and try to design it. You will fail — not because you aren't clever enough, but because **none of them can express what you need**.
+# undirected weighted "flights" graph (fares in $)
+edges = [("A","B",100), ("A","C",200), ("B","D",150),
+         ("C","D",250), ("C","E",300), ("D","F",400)]
+adj = {}
+for u, v, w in edges:
+    adj.setdefault(u, []).append((v, w))
+    adj.setdefault(v, []).append((u, w))    # undirected → record BOTH directions
 
-This lesson is about why they all fail, and the elegant structure that solves the problem so cleanly that it is the foundation of every modern routing, search, and recommendation system you use.
+def min_hops(src, dst):                      # BFS: ripple outward, level by level
+    seen, q = {src}, deque([(src, 0)])
+    while q:
+        node, d = q.popleft()
+        if node == dst:
+            return d
+        for nb, _ in adj[node]:
+            if nb not in seen:
+                seen.add(nb); q.append((nb, d + 1))
+    return -1
 
-> *Before reading on — picture a flight network with 6 cities. Each city connects to 2-3 others. How would you store that in a single array? Linked list? Binary tree? Spend 30 seconds on each before scrolling.*
-
----
-
-## What Linear Structures Can (And Can't) Do
-
-Every data structure you've met so far falls into one of two families:
-
-- **Linear structures** — arrays, linked lists, stacks, queues. They store data **sequentially**: each item has at most one "next" item.
-- **Hierarchical structures** — binary trees, heaps. They store data with a **parent-child** relationship: each item has one parent and possibly many children.
-
-Both families are great at what they do — but each carries a hidden assumption.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    subgraph LIN["Linear (1 → 1)"]
-      direction LR
-      A1["A"] --> A2["B"] --> A3["C"] --> A4["D"]
-    end
-    subgraph TREE["Hierarchical (1 → many)"]
-      direction TB
-      T1["A"] --> T2["B"]
-      T1 --> T3["C"]
-      T2 --> T4["D"]
-      T2 --> T5["E"]
-    end
+print("cities:", len(adj), " flights:", len(edges))
+print("fewest flights A → F:", min_hops("A", "F"))   # 3  (A→B→D→F or A→C→D→F)
 ```
 
-<p align="center"><strong>Linear structures express one-to-one chains. Trees express one-to-many hierarchies. Neither expresses many-to-many.</strong></p>
+## How It Works
 
-When the problem you're modelling is a **many-to-many relationship** — where each item connects to many others *and* those others connect to many others — both families collapse. Let's see exactly how.
+The vocabulary you'll use for the rest of your career:
 
----
+- **Vertex (node)** — one item. **Edge** — one relationship between two vertices, optionally **weighted**.
+- **Degree** — how many edges touch a vertex. In a **directed** graph, split into **indegree** / **outdegree**.
+- **Path** — a sequence of vertices joined by edges; a **cycle** is a path back to its start.
 
-## The Travel Booking Problem
+And the families you'll meet:
 
-Consider a travel booking website that shows flight connections between cities. You'll need to answer two questions:
+| Family | Meaning |
+|---|---|
+| **Undirected** | edges go both ways (friendship); store each edge from *both* endpoints |
+| **Directed (digraph)** | edges have a direction (follows, prerequisites) |
+| **Weighted** | edges carry a number (fare, distance) |
+| **Cyclic / Acyclic** | has a cycle / has none; a directed acyclic graph is a **DAG** (dependencies, schedules) |
+| **Connected / Disconnected** | one piece / several |
+| **Bipartite** | vertices split into two sides, edges only cross (jobs↔applicants) |
 
-1. *What's the minimum number of hops between two cities?*
-2. *What's the maximum number of flights I can take from city A on a $600 budget?*
+```mermaid
+flowchart LR
+    A((A)) ---|100| B((B))
+    A ---|200| C((C))
+    B ---|150| D((D))
+    C ---|250| D
+    C ---|300| E((E))
+    D ---|400| F((F))
+```
 
-The raw data is a list of direct flights — say between six cities A through F:
+<p align="center"><strong>the travel network as a weighted graph: cities are vertices, flights are edges, fares are weights.</strong></p>
 
-```d2
-direction: right
+Two foundational searches fall straight out of the picture. **Breadth-first search** ripples outward level by level (a queue) — the natural fit for *fewest hops* / shortest unweighted path. **Depth-first search** dives down one path and backtracks (a stack/recursion) — the fit for *explore everything* / reachability / cycle questions. Crucially, **once your data is a graph, the algorithm reads almost like the question**: "shortest path" → ripple outward; "most flights I can afford" → explore deep, backtrack when broke.
 
-flights: Flight Connections {
-  grid-rows: 6
-  grid-columns: 1
-  grid-gap: 0
-  f1: "A ↔ B"
-  f2: "A ↔ C"
-  f3: "B ↔ D"
-  f4: "C ↔ D"
-  f5: "C ↔ E"
-  f6: "D ↔ F"
+### Key Takeaway
+
+A graph is vertices + edges (optionally weighted/directed). It models many-to-many relationships no linear or tree structure can, and it "looks like the problem." Store it as an adjacency list (vertex → neighbours), remembering an **undirected** edge is recorded from *both* endpoints. BFS (queue, ripple) answers fewest-hops; DFS (stack, backtrack) answers explore-everything.
+
+## Trace It
+
+Second query: *starting at A with $600, what's the most flights you can take* (any destination, no city twice)? Trace it by hand and it's tempting to try `A→B→D` ($250, 2 hops) and `A→C→E` ($500, 2 hops), hit a dead end on each, and answer **2**.
+
+Before you read on: run the exhaustive search instead and the answer is **3**. Which path did the hand-trace miss — and what general lesson about depth-first search does the miss teach?
+
+The hand-trace missed that **`D` has more edges to explore**. From `A→C→D` ($450, 2 hops) you can still afford `D→B` (150) for a total of **exactly $600** and a **third** hop: `A→C→D→B`. (Equivalently `A→B→D→C` reaches 3 hops for just $500.) The hand-trace stopped at the *first* dead end it found on each branch instead of backing up and trying `D`'s other neighbours — and that's precisely the bug DFS exists to prevent. Depth-first search is "go as deep as you can, then **backtrack and try every untried branch**" — it must exhaust *all* of a node's edges before concluding, not just the first promising one. A human eyeballing a graph naturally explores a path or two and quits; the algorithm is valuable exactly because it's *complete*. This is also why you **run the code instead of trusting a hand-trace**: the graph is small, yet the obvious by-hand answer (2) is wrong. The general lesson — verify graph reasoning by execution, because the combinatorial fan-out of paths defeats eyeballing fast — is the whole reason every claim in this book ships with a runnable block.
+
+## Your Turn
+
+Both queries in both languages — BFS for fewest hops, DFS-with-backtracking for the most affordable flights:
+
+```python run
+from collections import deque
+
+edges = [("A","B",100), ("A","C",200), ("B","D",150),
+         ("C","D",250), ("C","E",300), ("D","F",400)]
+adj = {}
+for u, v, w in edges:
+    adj.setdefault(u, []).append((v, w)); adj.setdefault(v, []).append((u, w))
+
+def min_hops(src, dst):
+    seen, q = {src}, deque([(src, 0)])
+    while q:
+        node, d = q.popleft()
+        if node == dst: return d
+        for nb, _ in adj[node]:
+            if nb not in seen: seen.add(nb); q.append((nb, d + 1))
+    return -1
+
+def max_flights(node, budget, visited):              # DFS: try EVERY affordable edge
+    best = 0
+    for nb, w in adj[node]:
+        if nb not in visited and w <= budget:
+            best = max(best, 1 + max_flights(nb, budget - w, visited | {nb}))
+    return best
+
+print(min_hops("A", "F"))                            # 3
+print(max_flights("A", 600, {"A"}))                  # 3  (A→C→D→B = exactly $600)
+```
+
+```java run
+import java.util.*;
+public class Main {
+  static Map<String,List<String[]>> adj = new HashMap<>();
+  static void addEdge(String u, String v, int w) {
+    adj.computeIfAbsent(u, k -> new ArrayList<>()).add(new String[]{v, "" + w});
+    adj.computeIfAbsent(v, k -> new ArrayList<>()).add(new String[]{u, "" + w});  // undirected
+  }
+  static int minHops(String src, String dst) {
+    Set<String> seen = new HashSet<>(List.of(src));
+    Deque<String[]> q = new ArrayDeque<>(); q.add(new String[]{src, "0"});
+    while (!q.isEmpty()) {
+      String[] c = q.poll(); int d = Integer.parseInt(c[1]);
+      if (c[0].equals(dst)) return d;
+      for (String[] e : adj.get(c[0])) if (!seen.contains(e[0])) { seen.add(e[0]); q.add(new String[]{e[0], "" + (d + 1)}); }
+    }
+    return -1;
+  }
+  static int maxFlights(String node, int budget, Set<String> visited) {
+    int best = 0;
+    for (String[] e : adj.get(node)) {
+      int w = Integer.parseInt(e[1]);
+      if (!visited.contains(e[0]) && w <= budget) {
+        Set<String> nv = new HashSet<>(visited); nv.add(e[0]);
+        best = Math.max(best, 1 + maxFlights(e[0], budget - w, nv));
+      }
+    }
+    return best;
+  }
+  public static void main(String[] a) {
+    addEdge("A","B",100); addEdge("A","C",200); addEdge("B","D",150);
+    addEdge("C","D",250); addEdge("C","E",300); addEdge("D","F",400);
+    System.out.println(minHops("A","F"));                                  // 3
+    System.out.println(maxFlights("A", 600, new HashSet<>(List.of("A")))); // 3
+  }
 }
 ```
 
-<p align="center"><strong>Raw flight data — a list of city pairs that have direct connections.</strong></p>
+## Reflect & Connect
 
-This data has a property that should immediately set off alarm bells: **A connects to B and C. C connects to A, D, and E. D connects to B, C, and F.** Every city points to multiple cities, and those cities point back. There are also **cycles** — A → B → D → C → A.
+A graph is the most general relational structure — almost everything connects back to it:
 
-Now try to store this in something we already know.
+- **Trees are graphs** — a [binary tree](/cortex/data-structures-and-algorithms/trees-binary-tree-introduction-to-binary-trees) is a connected, acyclic graph with a designated root. Graphs drop *all* those restrictions: any number of edges per node, cycles, multiple components, no root. That generality is why graph algorithms subsume tree traversals.
+- **Two representations, a real trade-off** — an **adjacency list** (used here) is `O(V + E)` space and great for sparse graphs; an **adjacency matrix** is `O(V²)` but answers "is there an edge u→v?" in `O(1)`. The next two lessons ([matrix](/cortex/data-structures-and-algorithms/graphs-adjacency-matrix-representation), [list](/cortex/data-structures-and-algorithms/graphs-adjacency-list-representation)) make the choice concrete.
+- **The algorithm family ahead** — BFS/DFS [traversal](/cortex/data-structures-and-algorithms/graphs-traversing-a-graph), [cycle detection](/cortex/data-structures-and-algorithms/graphs-cycle-detection), [topological sort](/cortex/data-structures-and-algorithms/graphs-topological-sort) (order a DAG), [shortest paths](/cortex/data-structures-and-algorithms/graphs-single-source-shortest-path) (Dijkstra/Bellman-Ford), and [minimum spanning trees](/cortex/data-structures-and-algorithms/graphs-minimum-spanning-trees) (where [DSU](/cortex/data-structures-and-algorithms/trees-disjoint-set-union-introduction-to-disjoint-set-union) returns). Each is "the question, phrased as a walk."
+- **In production** — Google Maps (weighted shortest path), social graphs (BFS for "degrees of separation"), `npm`/build systems (topological sort over a dependency DAG), compilers (control-flow graphs), and spreadsheets (recalc order via a DAG).
 
-### Attempt 1 — A tree
+**Prerequisites:** [Binary Tree](/cortex/data-structures-and-algorithms/trees-binary-tree-introduction-to-binary-trees), [Hash Table](/cortex/data-structures-and-algorithms/linear-structures-hash-table-what-is-a-hash-table).
+**What's next:** the two ways to store a graph in memory, and when to pick each — [Adjacency Matrix](/cortex/data-structures-and-algorithms/graphs-adjacency-matrix-representation) and [Adjacency List](/cortex/data-structures-and-algorithms/graphs-adjacency-list-representation).
 
-A tree forbids cycles. The moment you draw `A → B → D → C → A`, you have a cycle, and the structure is no longer a tree. Most flight networks have cycles. **Trees are out.**
+## Recall
 
-### Attempt 2 — Multiple linked lists, one per edge
+> **Mnemonic:** *Graph = vertices + edges (optionally weighted/directed). It looks like the problem. Store as adjacency list (undirected ⇒ record both ends). BFS (queue, ripple) = fewest hops; DFS (stack, backtrack, exhaust every edge) = explore-all.*
 
-You could store every connection as a tiny 2-node linked list — `(A → B)`, `(A → C)`, `(B → D)`, and so on.
+| | |
+|---|---|
+| Vertex / edge | an item / a relationship (edge may carry a weight) |
+| Degree | edges touching a vertex (in/out for digraphs) |
+| Adjacency list | vertex → neighbours; `O(V+E)` space; sparse-friendly |
+| Undirected edge | recorded from **both** endpoints |
+| BFS | queue, level-by-level ripple → fewest hops / shortest unweighted |
+| DFS | stack/recursion, backtrack → reachability, cycles, "explore all" |
 
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    subgraph L1["List 1"]
-      direction LR
-      A1["A"] --> B1["B"]
-    end
-    subgraph L2["List 2"]
-      direction LR
-      A2["A"] --> C2["C"]
-    end
-    subgraph L3["List 3"]
-      direction LR
-      B3["B"] --> D3["D"]
-    end
-    subgraph LX["..."]
-      direction LR
-      X1["..."] --> X2["..."]
-    end
-```
+- **Q:** What does a graph model that a tree or list can't? **A:** Arbitrary many-to-many relationships — multiple edges per node, cycles, multiple components, no root.
+- **Q:** When you store an undirected edge in an adjacency list, how many entries does it create? **A:** Two — one in each endpoint's neighbour list (so `sum of degrees = 2·|E|`).
+- **Q:** BFS vs DFS — which for fewest hops, which for explore-everything? **A:** BFS (queue, ripples outward) for fewest hops / shortest unweighted path; DFS (backtracking) for reachability, cycles, exhaustive search.
+- **Q:** Adjacency list vs matrix? **A:** List: `O(V+E)` space, good for sparse graphs; matrix: `O(V²)` space, `O(1)` edge lookup, good for dense graphs.
+- **Q:** Why run code instead of hand-tracing graph queries? **A:** Path fan-out defeats eyeballing — the "max flights for $600" hand-trace says 2 but the real answer is 3; DFS must exhaust *every* branch.
 
-<p align="center"><strong>Storing each flight as its own 2-node linked list. Technically possible — but watch what answering a query costs.</strong></p>
+## Sources & Verify
 
-It works as **storage**. But to answer *"minimum hops from A to F"*, you'd need to:
-1. Scan every list to find one starting with A.
-2. From every neighbour found, scan every list again.
-3. Repeat until you find F — branching combinatorially.
-
-Each query forces you to re-search the entire dataset because the structure has no notion of "neighbour". **Lists are out.**
-
-### Attempt 3 — Storing airfare too
-
-Now add airfare to each connection. Where does the price live in your linked-list approach? On a list node? On a separate parallel list? Whatever you pick, you've confirmed the data structure is fighting you instead of helping.
-
-```d2
-direction: right
-
-flights: "Flight + Fare" {
-  grid-rows: 6
-  grid-columns: 1
-  grid-gap: 0
-  f1: "A ↔ B   \$100"
-  f2: "A ↔ C   \$200"
-  f3: "B ↔ D   \$150"
-  f4: "C ↔ D   \$250"
-  f5: "C ↔ E   \$300"
-  f6: "D ↔ F   \$400"
-}
-```
-
-<p align="center"><strong>Each connection now carries weight (airfare). Linear structures have no clean place to put this extra dimension.</strong></p>
-
-The pattern is now obvious: we don't need a structure that stores *items*. We need one that stores **relationships between items** — including extra data on each relationship. None of the structures we've seen does this naturally.
-
-> Linear structures store sequence. Trees store hierarchy. We need something that stores a **network**.
-
-What does a structure built around relationships even look like?
-
-***
-
-# Enter the Graph
-
-A **graph** is a non-linear data structure made of two things:
-
-- **Nodes** (also called **vertices**) — the items themselves (cities, people, web pages, courses, ...)
-- **Edges** — the connections between items (flights, friendships, hyperlinks, prerequisites, ...)
-
-Each edge represents one relationship. That's it. The whole structure is just *items + the relationships between them*.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    A((A)) --- B((B))
-    A --- C((C))
-    B --- D((D))
-    C --- D
-    C --- E((E))
-    D --- F((F))
-```
-
-<p align="center"><strong>A graph — six nodes connected by six edges. The shape is whatever the data demands; cycles, branches, and disconnected pieces are all allowed.</strong></p>
-
-Notice how this picture is *exactly* the mental model you'd draw on a napkin to explain flights between cities to a friend. That's not coincidence — it's the entire point. The graph is the data structure that **looks like the problem**.
-
----
-
-## Edges Can Carry Data
-
-A plain edge says "A connects to B". A more useful edge can carry **weight** — a number describing the connection. In flight terms, weight is airfare. In road maps, it's distance. In a social network, it could be a closeness score. A graph with weighted edges is called — predictably — a **weighted graph**.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    A((A)) ---|"100"| B((B))
-    A ---|"200"| C((C))
-    B ---|"150"| D((D))
-    C ---|"250"| D
-    C ---|"300"| E((E))
-    D ---|"400"| F((F))
-```
-
-<p align="center"><strong>A weighted graph — each edge labels its connection with a numeric value (here, dollars of airfare).</strong></p>
-
-The structure is still nodes and edges. The only difference is each edge now stores a number. Adding weight to a graph is *additive*; it doesn't change the underlying mechanics.
-
-This is already enough machinery to model the travel-booking problem cleanly. Let's go back to it.
-
-***
-
-# Solving the Travel Problem With a Graph
-
-We have six cities, six connections, and six fares. With a graph, the data structure *is* the picture. There's no encoding step — the cities become nodes, the flights become edges, the fares become weights.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    A((A)) ---|"100"| B((B))
-    A ---|"200"| C((C))
-    B ---|"150"| D((D))
-    C ---|"250"| D
-    C ---|"300"| E((E))
-    D ---|"400"| F((F))
-```
-
-<p align="center"><strong>The travel network as a weighted graph. Adding a new city is one new node; adding a new flight is one new edge.</strong></p>
-
-Adding a new city (say G) means adding one node and one edge to its neighbour. Adding a new flight is one new edge. **The maintenance cost scales with what changed**, not with the size of the dataset.
-
----
-
-## Query 1 — Minimum Hops Between Two Cities
-
-*What's the smallest number of flights from A to F?*
-
-Walk it by hand. Start at A. Every neighbour you can reach in one hop is at distance 1. Every neighbour of *those* is at distance 2. Keep expanding outward like ripples on a pond, and the moment you touch F, the number of ripples you used is the answer.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    A(("A<br/>0")) ---|"1"| B(("B<br/>1"))
-    A ---|"1"| C(("C<br/>1"))
-    B ---|"2"| D(("D<br/>2"))
-    C ---|"2"| D
-    C ---|"2"| E(("E<br/>2"))
-    D ---|"3"| F(("F<br/>3"))
-```
-
-<p align="center"><strong>Numbers inside each node show the minimum hops from A. F is reachable in 3 hops via A → B → D → F or A → C → D → F.</strong></p>
-
-You just performed (informally) the most famous graph algorithm in existence — **breadth-first search**. We'll formalise it later. Notice you did not need to learn anything new — the graph let your intuition drive the search.
-
----
-
-## Query 2 — Maximum Flights for $600
-
-Now the harder one: starting at A with a budget of $600, what's the maximum number of flights you can take? Destination doesn't matter — we want to maximise hops, not minimise.
-
-This is a different kind of search. You start at A and **trace every path you can afford**, summing fares as you go, backtracking when you run out of money.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    Start(["Start at A<br/>budget = 600"]) --> Path1
-    Start --> Path2
-
-    subgraph Path1["A → B (-100) → D (-150)"]
-      P1["350 left, 2 hops"]
-    end
-    subgraph Path2["A → C (-200) → E (-300)"]
-      P2["100 left, 2 hops"]
-    end
-
-    Path1 --> P1End["From D: → F costs 400 → broke<br/>Stop. 2 hops total."]
-    Path2 --> P2End["From E: no more reachable edges<br/>Stop. 2 hops total."]
-```
-
-<p align="center"><strong>Tracing two distinct paths, summing fares as you go. When you can't afford another hop, you record how many you took. The best result wins.</strong></p>
-
-Both routes give 2 hops. The answer is 2. (And again, you just informally simulated **depth-first search with backtracking** — another core graph algorithm.)
-
-> *Before reading on — would the answer change if we had $700 instead of $600? Try tracing one path mentally before you scroll.*
-
-The takeaway isn't the specific algorithms (we'll cover those in detail later). The takeaway is that **once your data is in a graph, the algorithm reads almost like the question itself**. "Find the shortest path" → "ripple outward from start". "Find the most flights I can afford" → "explore deep, backtrack when broke". The graph isn't fighting you anymore.
-
-But to *implement* this rather than draw it on paper, we need vocabulary — names for the parts of a graph and for the kinds of graphs we'll meet. Without those names, we'd have no way to write algorithms down precisely.
-
-***
-
-# Graph Terminology
-
-A graph can be drawn many different ways. Two graphs that look completely different on paper may be identical structurally. To talk about graphs without resorting to pictures, we need precise terms for the parts. Each term below is a piece of the same vocabulary you'll see in every graph algorithm for the rest of your career.
-
----
-
-## Vertex (Node)
-
-A **vertex** is one item in a graph. The two words *vertex* and *node* are used interchangeably. A vertex usually holds two things: the **data value** for that item (a city name, a person, a course code) and **references to its neighbours** (the other vertices it connects to).
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    V(("Vertex<br/>(data + neighbour list)"))
-```
-
-<p align="center"><strong>A vertex — the basic unit of a graph. Holds a data value and a list of references to its neighbours.</strong></p>
-
----
-
-## Edge
-
-An **edge** connects two vertices. It's the *relationship*. There are two flavours:
-
-- **Undirected edge** — a two-way connection. If A is connected to B, B is also connected to A. Think roads between two cities.
-- **Directed edge** — a one-way connection. A connects *to* B, but not necessarily back. Think Twitter follows or one-way streets.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    subgraph U["Undirected"]
-      direction LR
-      U1((A)) --- U2((B))
-    end
-    subgraph D["Directed"]
-      direction LR
-      D1((A)) --> D2((B))
-    end
-```
-
-<p align="center"><strong>Undirected edges (left) work in both directions. Directed edges (right) only one way. A graph can mix both.</strong></p>
-
-A graph can have all undirected edges, all directed edges, or even both kinds at once.
-
----
-
-## Degree
-
-The **degree** of a vertex is *how many edges touch it*. A vertex with three edges has degree 3.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    A((A))
-    B((B))
-    C((C))
-    V(("V<br/>degree = 3"))
-    A --- V
-    B --- V
-    C --- V
-```
-
-<p align="center"><strong>Vertex V touches three edges, so its degree is 3.</strong></p>
-
-Degree is the simplest "shape" measure of a graph. Sum the degrees of every vertex and you get *exactly twice* the total edge count, because each edge contributes 1 to each of its two endpoints — a small but useful sanity check.
-
----
-
-## Indegree and Outdegree
-
-In a directed graph, "how many edges touch this vertex" splits into two distinct questions:
-
-- **Indegree** — how many edges arrive *at* this vertex
-- **Outdegree** — how many edges leave *from* this vertex
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    A((A)) --> V
-    B((B)) --> V
-    V(("V<br/>in=2, out=1")) --> C((C))
-```
-
-<p align="center"><strong>Vertex V has indegree 2 (from A and B) and outdegree 1 (to C).</strong></p>
-
-This split shows up naturally in many problems. Topological sort uses indegree as its main signal; PageRank uses indegree-weighted importance.
-
----
-
-## Path
-
-A **path** is a sequence of edges that links a sequence of distinct vertices. In plainer terms: walk from one node to another using edges, never repeating a node, and the route you took is a path.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    A((A)) ===|"path"| B((B))
-    B ===|"path"| C((C))
-    C ===|"path"| D((D))
-    A --- E((E))
-    E --- D
-```
-
-<p align="center"><strong>The thick edges show one path A → B → C → D. There's also another path A → E → D — graphs usually have many paths between the same pair of nodes.</strong></p>
-
-Most "interesting" graph questions are really questions *about* paths: "is there a path?" (connectivity), "what's the shortest path?" (BFS, Dijkstra), "is there a path that returns to itself?" (cycle detection). Every algorithm we cover later in this chapter will be a clever way to find a particular kind of path.
-
-So with vocabulary in hand — what kinds of graphs will we actually meet in the wild?
-
-***
-
-# Types of Graphs
-
-Graphs aren't a single thing. The combination of *which kinds of edges they have* and *how those edges connect* gives rise to several distinct flavours, each with its own typical use cases and algorithms. The good news is the categories are **not mutually exclusive** — a single graph can be (for example) directed *and* weighted *and* acyclic all at once.
-
-> **Memory trick:** Each "type" is just a constraint or extra capability layered on the basic graph. Stack the labels you need.
-
----
-
-## Undirected Graph
-
-Every edge is bidirectional. Used for relationships that are inherently symmetric: distance between cities, mutual friendships, whether two atoms share a bond.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    A((A)) --- B((B))
-    A --- C((C))
-    B --- D((D))
-    C --- D
-    D --- E((E))
-```
-
-<p align="center"><strong>An undirected graph — every edge can be traversed in either direction.</strong></p>
-
----
-
-## Directed Graph (Digraph)
-
-Every edge is directed. Used for relationships with an asymmetric flavour: Twitter follows, web links, job dependencies, function calls.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    Wash["Wash<br/>vegetables"] --> Chop["Chop<br/>vegetables"]
-    Chop --> Cook["Cook<br/>vegetables"]
-    Boil["Boil<br/>water"] --> Cook
-    Cook --> Plate["Plate<br/>dish"]
-```
-
-<p align="center"><strong>A directed graph showing a recipe — each arrow says "do this before that". Cooking can't start until both chopping and boiling are done.</strong></p>
-
-The arrow on every edge is the direction. Reading that arrow tells you what *can* be reached and what *cannot* — a crucial difference from undirected graphs.
-
----
-
-## Weighted Graph
-
-Every edge carries a number — the weight. Used whenever the *strength* of a relationship matters: distances, costs, capacities, probabilities.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    A((A)) ---|"5"| B((B))
-    A ---|"2"| C((C))
-    B ---|"3"| D((D))
-    C ---|"7"| D
-    D ---|"1"| E((E))
-```
-
-<p align="center"><strong>A weighted graph — every edge carries a numeric value. Weights and direction are independent: you can have weighted-directed, weighted-undirected, or even mixed.</strong></p>
-
----
-
-## Connected vs Disconnected
-
-A graph is **connected** if you can reach every vertex from every other vertex (treating directed edges as bidirectional for this discussion). It is **disconnected** if at least one pair of vertices has no path between them.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    subgraph Conn["Connected"]
-      direction LR
-      C1((A)) --- C2((B))
-      C1 --- C3((C))
-      C2 --- C4((D))
-      C3 --- C4
-    end
-    subgraph Disc["Disconnected"]
-      direction LR
-      D1((A)) --- D2((B))
-      D3((C)) --- D4((D))
-    end
-```
-
-<p align="center"><strong>The connected graph (left) lets you reach any node from any other. The disconnected graph (right) splits into two isolated pieces — A↔B and C↔D — with no path between them.</strong></p>
-
-A disconnected graph is really a collection of two or more **connected components**. We'll spend a whole pattern lesson on detecting and counting them.
-
----
-
-## Cyclic Graph
-
-A **cycle** is a path that starts and ends at the same vertex without repeating any *other* vertex along the way. A graph with at least one cycle is called **cyclic**.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    A((A)) --> B((B))
-    B --> C((C))
-    C --> D((D))
-    D --> A
-    D --> E((E))
-```
-
-<p align="center"><strong>A cyclic directed graph — A → B → C → D → A is a cycle. Cycles often represent feedback loops, stuck states, or circular dependencies.</strong></p>
-
-Cycles are sometimes desired (feedback loops in control systems) and sometimes catastrophic (a circular dependency in a build system). One of the most-asked graph algorithms is *"does this graph have a cycle?"* — we'll cover it in the cycle-detection lesson.
-
----
-
-## Directed Acyclic Graph (DAG)
-
-A **DAG** is a directed graph with no cycles. DAGs are the unsung heroes of computer science — they're how we model:
-
-- Build dependencies (Make, Bazel, npm)
-- Course prerequisites
-- Family trees and ancestry
-- Spreadsheet formula evaluation
-- Git commit history
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    Animals["Animals"] --> Mammals["Mammals"]
-    Animals --> Birds["Birds"]
-    Mammals --> Carnivores["Carnivores"]
-    Mammals --> Herbivores["Herbivores"]
-    Carnivores --> Lion["Lion"]
-    Carnivores --> Tiger["Tiger"]
-    Herbivores --> Tiger
-    Herbivores --> Cow["Cow"]
-```
-
-<p align="center"><strong>A DAG modelling animal classification. Tiger has two parents (Carnivores and Herbivores) — impossible in a tree, perfectly fine in a DAG.</strong></p>
-
-A DAG superficially looks like a tree, but it isn't one: a node in a DAG can have **multiple parents** (e.g. tiger above), which a tree forbids. This extra flexibility is what makes DAGs a strict superset of trees and why so many real-world hierarchies live more naturally in DAGs.
-
----
-
-## Bipartite Graph
-
-A **bipartite graph** has two disjoint sets of vertices, with edges only between sets — never within a set. Used to model **matching** problems: assignments, allocations, pairings.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    subgraph Players["Players"]
-      direction TB
-      P1((P1))
-      P2((P2))
-      P3((P3))
-    end
-    subgraph Clubs["Clubs"]
-      direction TB
-      C1((C1))
-      C2((C2))
-      C3((C3))
-    end
-    P1 --- C1
-    P1 --- C2
-    P2 --- C2
-    P2 --- C3
-    P3 --- C1
-    P3 --- C3
-```
-
-<p align="center"><strong>A bipartite graph between players and clubs. Edges represent "this player is interested in this club". No edges run player ↔ player or club ↔ club.</strong></p>
-
-If you can colour a graph using only two colours so that no edge connects two same-coloured nodes, the graph is bipartite. This two-colouring check is itself a famous graph algorithm — and we'll meet it later in the patterns chapter.
-
----
-
-## Putting It All Together
-
-A real graph in the wild is usually **several types at once**. The travel network we started this lesson with is *undirected* (flights are symmetric), *weighted* (fares), *cyclic* (you can fly A → B → D → C → A), and probably *connected* (any city can reach any other through enough hops).
-
-The same underlying machinery — nodes and edges — handles every flavour. The richness comes from how you constrain or augment the basic structure.
-
----
-
-## Final Takeaway
-
-A graph isn't a fancier tree — it's the **most general** data structure in this whole course. Linear structures and trees are both *special cases* of graphs (a linear list is a graph where every node has at most two neighbours; a tree is a connected acyclic graph). Mastering graphs unlocks the entire family.
-
-You now have the vocabulary to describe any graph precisely: **vertices, edges, direction, weight, degree, paths, connectedness, cycles, DAGs, bipartite**. Next time you face a problem about "connections", "dependencies", "shortest path", "matching", or "reachability", you won't ask *which data structure?* — you'll already know it's a graph and the only question is *which kind*.
-
-But knowing what a graph is on paper is half the story. To run algorithms on one we need to **store it in memory**. Should each node carry a list of neighbours? Should we use a giant matrix? Each choice has different speed and memory trade-offs — and that's exactly what the next lesson tackles.
-
-> **Transfer challenge.** Pick any system around you — your contacts list, your favourite recipe, the dependencies between courses in your degree, the hyperlinks on a Wikipedia page. Try to model it as a graph. What are the nodes? What are the edges? Are the edges directed or undirected? Weighted or unweighted? Acyclic? You'll be surprised how many things look like graphs once you know how to look.
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: The Hook — missing, needs to be written -->
-<!--       Guidance: real-world story opening before any definition -->
-
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
-
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
-
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
-
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
-
-<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
-<!--       Guidance: bulleted list of gotchas -->
-
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
-
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
-
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
-
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
-
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
+- **CLRS**, *Introduction to Algorithms*, 4th ed., ch. 20 — Elementary Graph Algorithms (representations, BFS, DFS).
+- **Sedgewick & Wayne**, *Algorithms*, 4th ed., ch. 4 — Graphs (undirected, directed, the adjacency-list API).
+- Both runnable blocks are verified by running (the 6-city weighted graph: `sum of degrees = 12 = 2·|E|`; fewest flights `A → F = 3`; **max flights for $600 = 3** via `A→C→D→B` at exactly $600 — correcting a too-shallow hand-trace that yields 2).

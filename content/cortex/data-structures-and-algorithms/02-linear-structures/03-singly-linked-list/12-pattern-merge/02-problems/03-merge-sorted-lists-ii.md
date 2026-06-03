@@ -183,7 +183,7 @@ print(to_list(Solution().merge_sorted_lists_ii(from_list([1]), from_list([1]))))
 print(to_list(Solution().merge_sorted_lists_ii(from_list([5]), from_list([1, 2, 3]))))             # [5, 3, 2, 1]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {

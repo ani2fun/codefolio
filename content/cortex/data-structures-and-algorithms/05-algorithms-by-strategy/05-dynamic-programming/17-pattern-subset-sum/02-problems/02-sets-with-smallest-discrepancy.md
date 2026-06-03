@@ -1,5 +1,5 @@
 ---
-title: "Sets With Smallest Discrepancy"
+title: "Sets with Smallest Discrepancy"
 summary: "Given an array of non-negative integers, partition it into two subsets S1 and S2 such that |sum(S1) − sum(S2)| is minimum. Return that minimum."
 prereqs:
   - 17-pattern-subset-sum/01-pattern
@@ -34,7 +34,6 @@ So:
 2. Walk `s` downward from `total / 2` to `0`. The first `s` for which `dp[n][s] = true` is the largest reachable subset sum ≤ `total / 2`.
 3. Answer = `total − 2s`.
 
-> 🖼 Diagram — Three-step reduction. The DP gives the achievable-sums oracle; the scan picks the best half-sum; arithmetic recovers the discrepancy.
 ```d2
 direction: right
 flow: "Discrepancy via subset sum" {
@@ -131,7 +130,7 @@ print(Solution().sets_with_smallest_discrepancy([1, 2, 3]))        # 0  — [3] 
 print(Solution().sets_with_smallest_discrepancy([10, 1, 1, 1]))    # 7  — 13 total
 ```
 
-```java run
+```java run viz=graph viz-root=dp
 import java.util.*;
 
 public class Main {
@@ -224,30 +223,3 @@ public class Main {
 | Already balanced | `[1, 2, 3, 4, 5, 5, 4, 3, 2, 1]` | `0` | Total 30, half 15; reachable. |
 
 </details>
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
-
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
-
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
-
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
-
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
-
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table: time / space / why -->
-
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->

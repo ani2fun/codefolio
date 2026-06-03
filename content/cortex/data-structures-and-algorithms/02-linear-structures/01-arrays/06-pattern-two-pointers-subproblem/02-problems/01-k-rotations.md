@@ -52,7 +52,6 @@ What **breaks if you reach for a single two-pointer pass**? Two pointers at the 
 
 One step to the right means the **last element wraps around to the front**, and every other element shifts one position to the right.
 
-> 🖼 Diagram — Each right rotation brings the last element to the front — after k=3 steps, the last 3 elements form the new prefix.
 ```d2
 direction: right
 
@@ -134,7 +133,6 @@ Every step shares the same `reverse(arr, start, end)` helper. The whole algorith
 <summary><h2>The Three-Reversal Strategy (Visualised)</h2></summary>
 
 
-> 🖼 Diagram — Right rotation by k=3 via three in-place reversals — each reversal is an independent two-pointer subproblem.
 ```d2
 direction: right
 
@@ -222,7 +220,7 @@ Solution().k_rotations(arr, 3)
 print(arr)   # [3, 4, 5, 1, 2]
 ```
 
-```java run
+```java run viz=array viz-root=arr
 import java.util.Arrays;
 
 public class Main {

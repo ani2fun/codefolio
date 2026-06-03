@@ -39,7 +39,6 @@ Two prunes:
 
 A third structural trick avoids generating duplicate combinations: **only consider candidates from the current index onward.** This forces a canonical order on the chosen numbers (non-decreasing in input order) so that `[2, 3, 3]` is generated but `[3, 2, 3]` and `[3, 3, 2]` aren't.
 
-> 🖼 Diagram — Tree (partial) for arr = [2, 3, 5], target = 8. The "pick 5 with 3 remaining" branch is pruned — 5 overshoots. The recursion uses i to enforce non-decreasing order.
 ```mermaid
 ---
 config:
@@ -111,7 +110,7 @@ The recursion's three branches:
 
 ### The Solution
 
-```python run
+```python run viz=array viz-root=combinations
 from typing import List
 
 class Solution:
@@ -194,7 +193,7 @@ print(Solution().target_sum_combinations([5], 5))            # [[5]]
 print(Solution().target_sum_combinations([1], 3))            # [[1, 1, 1]]
 ```
 
-```java run
+```java run viz=array viz-root=combinations
 import java.util.*;
 
 public class Main {
@@ -344,33 +343,9 @@ The two-pronged pruning (sort + `continue` on overshoot) typically reduces the s
 
 </details>
 <details>
-<summary><h2>Final Takeaway</h2></summary>
+<summary><h2>Key Takeaway</h2></summary>
 
 
 Target Sum Combinations introduces constraint-bounded pruning at its cleanest: a `break` in the loop the moment future iterations would also overshoot. Combined with the index-based de-duplication trick, this is the canonical "find all sums" pattern. The next problem combines several constraints — leading-zero rejection, value-range checks, segment count — for a multi-pronged validation.
 
 </details>
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
-
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
-
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
-
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
-
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
-
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->

@@ -1,360 +1,201 @@
 ---
-title: "Infix Postfix And Prefix Notations"
-summary: "<!-- TODO: summary -->"
+tier: spine
+title: "Infix, Postfix, and Prefix Notations"
+summary: "Three ways to write the same arithmetic — operator between (infix), after (postfix), or before (prefix) its operands. They're the three DFS traversals of one expression tree. Infix reads naturally but needs precedence rules and parentheses; postfix and prefix encode order by position alone, so a stack evaluates them left-to-right in O(N)."
+prereqs:
+  - linear-structures-stack-what-is-a-stack
 ---
 
-# 4. Infix, Postfix, and Prefix Notations
+## Why It Exists
 
-## The Hook
+Type `2 + 3 * 4` into a calculator and you get **14**, not **20**. Somewhere between your keystrokes and the display the machine *reordered* the work — it ran the multiplication first, even though the addition appeared first. A human "just sees" the precedence, but a CPU does one binary operation at a time and has to *plan*: decide which op runs first, stash partial results, come back later. Infix notation (operator *between* its operands) forces that planning, because the written order isn't the evaluation order — you need precedence rules and parentheses to recover the intent.
 
-Type `2 + 3 * 4` into a calculator. The answer is **14**, not **20**. Somewhere between your keystrokes and the display, the calculator reordered the work — it solved the multiplication before the addition, even though the addition came first in the input. That reordering is *easy* for humans (we just "see" the precedence), but it's a surprisingly hard problem for a computer. The CPU can only do one binary operation at a time. It has to *plan* — pick which operation to do first, save the partial result somewhere, come back later for the rest.
+What if the written order *were* the evaluation order? **Postfix** (operator *after* its operands: `2 3 + 4 *`) and **prefix** (operator *before*: `* + 2 3 4`) encode the grouping by *position alone* — no precedence, no parentheses, no ambiguity. A [stack](/cortex/data-structures-and-algorithms/linear-structures-stack-what-is-a-stack) evaluates them in one left-to-right (or right-to-left) pass, in `O(N)`. The deep reason all three exist and agree: they're the three depth-first traversals of the same **expression tree** — infix is inorder, prefix is preorder, postfix is postorder. This lesson is why calculators, compilers, and the JVM convert your infix to postfix before running it; the next two build the stack machines that [evaluate](/cortex/data-structures-and-algorithms/linear-structures-stack-evaluating-expressions-using-stack) and [convert](/cortex/data-structures-and-algorithms/linear-structures-stack-converting-expressions-using-stack) them.
 
-What if we could write the same expression so that the order of operations is **encoded by position alone** — no precedence rules, no parentheses, no jumping around? `2 3 4 * +` says: take 3 and 4, multiply them, take the result and 2, add them. Read left-to-right, evaluate as you go, never look back. The CPU loves this; a stack-based evaluator handles it in 10 lines of code with O(N) time.
+## See It Work
 
-That's **postfix notation** — operators *after* the operands. There's also **prefix** notation (operators *before*), and the human-friendly **infix** notation (operators *between*). Three ways to write the same maths; three different complexity profiles for *evaluation*. The next two lessons will show you how to evaluate postfix with a stack (lesson 5) and how to convert infix to postfix using *two* stacks (lesson 6) — but first, we need to feel why infix is so painful for computers and why postfix and prefix are such elegant cures.
+The three notations aren't three unrelated conventions — they're one expression tree read three ways. Build the tree for `(2 + 3) * 4` and traverse it in pre-, in-, and post-order:
 
-This lesson is the smallest in the section. There's no code. Just three notations and a clear understanding of why one of them was the best thing that happened to compiler design in the 20th century.
+```python run
+class Node:
+    def __init__(self, val, left=None, right=None):
+        self.val, self.left, self.right = val, left, right
 
----
+# expression tree for (2 + 3) * 4
+tree = Node("*", Node("+", Node("2"), Node("3")), Node("4"))
 
-## Table of contents
+def preorder(n):  return [] if n is None else [n.val] + preorder(n.left) + preorder(n.right)
+def inorder(n):   return [] if n is None else inorder(n.left) + [n.val] + inorder(n.right)
+def postorder(n): return [] if n is None else postorder(n.left) + postorder(n.right) + [n.val]
 
-1. [Understanding the infix notation](#understanding-the-infix-notation)
-2. [Understanding the postfix notation](#understanding-the-postfix-notation)
-3. [Understanding the prefix notation](#understanding-the-prefix-notation)
+print("prefix  (preorder): ", " ".join(preorder(tree)))
+print("infix   (inorder):  ", " ".join(inorder(tree)))
+print("postfix (postorder):", " ".join(postorder(tree)))
+```
 
-***
-
-# Understanding the infix notation
-
-The notation we all learned in school: the operator sits **between** its two operands. `2 + 3` reads as "two plus three". `a * b - c` reads naturally left-to-right. This is **infix notation**, and it's the format every human-facing expression you'll ever see uses.
-
-```d2
-direction: right
-
-row: "" {
-  grid-columns: 3
-  grid-gap: 0
-  l: "operand₁"
-  o: "operator" {style.fill: "#fef9c3"; style.stroke: "#f59e0b"}
-  r: "operand₂"
+```java run
+import java.util.*;
+public class Main {
+    static class Node {
+        String val; Node left, right;
+        Node(String v) { val = v; }
+        Node(String v, Node l, Node r) { val = v; left = l; right = r; }
+    }
+    static void pre(Node n, List<String> o)  { if (n == null) return; o.add(n.val); pre(n.left, o); pre(n.right, o); }
+    static void in(Node n, List<String> o)   { if (n == null) return; in(n.left, o); o.add(n.val); in(n.right, o); }
+    static void post(Node n, List<String> o) { if (n == null) return; post(n.left, o); post(n.right, o); o.add(n.val); }
+    static String go(Node n, int mode) {
+        List<String> o = new ArrayList<>();
+        if (mode == 0) pre(n, o); else if (mode == 1) in(n, o); else post(n, o);
+        return String.join(" ", o);
+    }
+    public static void main(String[] x) {
+        Node tree = new Node("*", new Node("+", new Node("2"), new Node("3")), new Node("4"));  // (2+3)*4
+        System.out.println("prefix  (preorder):  " + go(tree, 0));
+        System.out.println("infix   (inorder):   " + go(tree, 1));
+        System.out.println("postfix (postorder): " + go(tree, 2));
+    }
 }
 ```
 
-<p align="center"><strong>Infix layout — operator sits <em>between</em> the operands. Natural to read; ambiguous without precedence rules and parentheses.</strong></p>
+Both print `prefix: * + 2 3 4`, `infix: 2 + 3 * 4`, `postfix: 2 3 + 4 *`. The *same* tree, walked three ways, gives the three notations — operator-before (visit node first), operator-between (visit node in the middle), operator-after (visit node last). Notice the catch: the inorder string `2 + 3 * 4` is **ambiguous** — read with normal precedence it means `2 + (3 * 4) = 14`, but the tree encodes `(2 + 3) * 4 = 20`. Infix loses the grouping unless you add parentheses. Prefix and postfix never do — their position *is* the grouping.
 
-A few examples:
+## How It Works
 
-| Infix expression | Meaning |
-|---|---|
-| `3 + 4` | three plus four |
-| `2 + 3 * 4` | two plus (three times four), thanks to precedence |
-| `(2 + 3) * 4` | (two plus three), all times four |
-| `a + b * c - d` | mixes precedence; `*` binds tighter than `+`/`-` |
-| `2 ^ 3 ^ 2` | right-associative; `^` binds right-to-left |
-
-Infix is intuitive for *us*, but it's a nightmare for a CPU. Let's see why.
-
-## Challenges with the infix notation
-
-A typical CPU performs one binary operation at a time — it consumes two operands, runs `add` (or `mul`, or `sub`), and produces one result. To evaluate any expression with more than one operator, the CPU has to break the work into a *sequence* of binary operations, in the *correct order*, saving partial results between steps.
-
-```d2
-direction: right
-
-a: "a"
-b: "b"
-cpu: |md
-  CPU
-
-  (add)
-|
-r: "result = a + b"
-
-a -> cpu
-b -> cpu
-cpu -> r
-```
-
-<p align="center"><strong>The atomic CPU operation — two operands in, one result out. Anything more complicated has to be decomposed into a chain of these.</strong></p>
-
-For a single-operator expression like `1 + 2 + 3 + 4 + 5`, the decomposition is mechanical: just chain additions left-to-right.
+One tree, three traversals, three notations:
 
 ```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    S0["1 + 2"] --> R0["3"]
-    R0 --> S1["3 + 3"] --> R1["6"]
-    R1 --> S2["6 + 4"] --> R2["10"]
-    R2 --> S3["10 + 5"] --> R3["15"]
-```
-
-<p align="center"><strong>Single-operator expression — chain left-to-right, store the running result, repeat. The CPU does <code>n − 1</code> additions for <code>n</code> operands. Easy.</strong></p>
-
-But once you mix operators of different *precedence*, the order is no longer left-to-right. `2 + 3 * 4` requires the multiplication first — even though it appears later in the expression — because `*` has higher precedence than `+`.
-
-| Operator | Precedence (high → low) | Associativity |
-|---|---|---|
-| `^` (power) | 1 (highest) | right-to-left |
-| `*`, `/` | 2 | left-to-right |
-| `+`, `-` | 3 (lowest) | left-to-right |
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    E["2 + 3 * 4"] --> S1["step 1: 3 * 4 = 12<br/>(higher precedence first)"]
-    S1 --> S2["step 2: 2 + 12 = 14"]
-    S2 --> R["result: 14"]
-    style S1 fill:#fef9c3,stroke:#f59e0b
-```
-
-<p align="center"><strong>Mixed-precedence infix — the CPU has to <em>jump</em> to the multiplication, evaluate it, store 12 somewhere, then come back to do the addition. Three steps, two of them in non-source order.</strong></p>
-
-Add parentheses and the problem gets worse. `(2 + 3) * 4` overrides the natural precedence — now the addition has to happen first because the parentheses say so. Worse still, parentheses can nest arbitrarily deep: `((a + b) * (c - d)) / e`. To evaluate this, the CPU has to *parse* the expression into a tree, walk the tree in post-order, and stitch the partial results back together.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
 flowchart TB
-    E["((2 + 3) * (4 - 1)) / 5"]
-    E --> A["step 1: 2 + 3 = 5"]
-    A --> B["step 2: 4 - 1 = 3"]
-    B --> C["step 3: 5 * 3 = 15"]
-    C --> D["step 4: 15 / 5 = 3"]
+  mul["*"] --> plus["+"]
+  mul --> four["4"]
+  plus --> two["2"]
+  plus --> three["3"]
+  style mul fill:#fde68a,stroke:#d97706
 ```
 
-<p align="center"><strong>Nested-parenthesised infix — every level of parens is a context switch. The CPU has to remember partial results from inner parens while it evaluates the surrounding expression. The expression looks linear; the evaluation is a tree walk.</strong></p>
+<p align="center"><strong>The expression tree for <code>(2+3)*4</code>. Preorder (visit node, then children) → prefix <code>* + 2 3 4</code>. Inorder → infix <code>2 + 3 * 4</code>. Postorder (children, then node) → postfix <code>2 3 + 4 *</code>. The operator's <em>position</em> relative to its operands is exactly when the traversal visits it.</strong></p>
 
-The summary: **infix is easy for humans because we can see the whole thing at once and skip around. It's hard for computers because they read linearly and can only do one operation per step.** Compilers do solve this — but the solution involves parsing the infix into a *different* representation that's easier to evaluate. That different representation is what the next two notations buy us.
+- **Infix needs precedence and parentheses; the others don't.** In infix the operator sits between operands, so the textual order doesn't determine evaluation order — you need precedence (`*` before `+`) and parentheses to override it. That's a real parsing burden: `2 + 3 * 4` and `(2 + 3) * 4` are the same tokens in the same order but different trees. Prefix and postfix put the operator adjacent to *its* operands, so the tree is recoverable from the token sequence alone — they're **unambiguous without any parentheses or precedence rules** ([Trace It](#trace-it)).
+- **A stack evaluates postfix in one left-to-right pass.** Scan tokens: push operands; on an operator, pop the top two, apply, push the result. When the scan ends, the stack holds the answer — `O(N)` time, `O(N)` space, no look-ahead, no backtracking. This is why machines prefer postfix: it maps directly onto the one-operation-at-a-time hardware, with the stack holding exactly the pending partial results.
+- **Prefix is the mirror image.** Postfix (Reverse Polish) is postorder, evaluated by scanning left-to-right. Prefix (Polish) is preorder, evaluated by scanning *right-to-left* with the same stack machine ([Your Turn](#your-turn)). The only subtlety is operand order for non-commutative ops (`-`, `/`): in postfix the second pop is the left operand; in prefix the first pop is the left operand.
 
-> *Predict before reading on — what if there were a notation where you could just read left-to-right, never look back, and the order of operations was guaranteed correct without any precedence rules or parentheses? Would that even be possible?*
+> **Key takeaway.** Infix, prefix, and postfix are the **inorder, preorder, and postorder traversals of one expression tree** — the operator's position (between / before / after its operands) is just *when* the traversal visits it. **Infix** reads naturally but needs precedence rules and parentheses because order alone doesn't fix the grouping; **postfix** and **prefix** encode the grouping by position, so they're unambiguous and a **stack evaluates them in `O(N)`** with no precedence logic — one left-to-right pass for postfix, right-to-left for prefix. That's why calculators and compilers convert to postfix before running.
 
-***
+## Trace It
 
-# Understanding the postfix notation
+The claim that postfix needs no parentheses is best felt by evaluating two expressions made of the *exact same tokens* in different orders.
 
-Yes, it's possible. In 1924 the Polish mathematician **Jan Łukasiewicz** discovered that you could move the operator *after* its operands and the resulting notation needs *no precedence rules and no parentheses*. The notation became known as **Polish notation**; the variant where operators come *after* operands is called **reverse Polish** — but in computer science we usually call it **postfix**.
+**Predict before you run:** here are two postfix expressions, both using the operands `2, 3, 4` and the operators `+, *`: `2 3 + 4 *` and `2 3 4 * +`. With no parentheses anywhere, do they evaluate to the same number — and if not, what does each give?
 
-```d2
-direction: right
+```python run
+def eval_postfix(tokens):
+    st = []
+    for t in tokens:
+        if t in "+-*/":
+            b, a = st.pop(), st.pop()                      # b = right operand, a = left
+            st.append({"+": a+b, "-": a-b, "*": a*b, "/": a//b}[t])
+        else:
+            st.append(int(t))
+    return st[-1]
 
-row: "" {
-  grid-columns: 3
-  grid-gap: 0
-  l: "operand₁"
-  r: "operand₂"
-  o: "operator" {style.fill: "#fef9c3"; style.stroke: "#f59e0b"}
+print("'2 3 + 4 *' =", eval_postfix("2 3 + 4 *".split()))   # (2+3)*4
+print("'2 3 4 * +' =", eval_postfix("2 3 4 * +".split()))   # 2+(3*4)
+```
+
+<details>
+<summary><strong>Reveal</strong></summary>
+
+`2 3 + 4 *` evaluates to **20** and `2 3 4 * +` to **14** — same six tokens, different *order*, different answers, and *no parentheses needed to tell them apart*. The first says "add 2 and 3 (→5), then multiply by 4" = `(2+3)*4`; the second says "multiply 3 and 4 (→12), then add 2" = `2+(3*4)`. The token order alone fixes which operands each operator consumes — they're different expression trees, written without a single bracket. Compare infix: `2 + 3 * 4` is one fixed token order, yet to express *both* trees you need parentheses (`(2+3)*4` vs `2+3*4`) plus precedence rules to parse them. That's the whole payoff of postfix: the parenthesization problem disappears, and the stack evaluator never has to look ahead or remember precedence — it just pushes operands and collapses operators as it meets them. The stack at each step holds exactly the operands waiting for their operator, which is why one `O(N)` pass suffices.
+
+</details>
+
+## Your Turn
+
+Postfix is postorder evaluated left-to-right. Prefix is preorder — the mirror image — evaluated **right-to-left** with the same stack trick. Let's confirm it produces the same answers as the trees from See It.
+
+**Predict:** `* + 2 3 4` is the *preorder* (prefix) of the `(2+3)*4` tree. Scanning it right-to-left with a stack, what does it evaluate to? And `+ 2 * 3 4` (the prefix of `2+(3*4)`)?
+
+```python run
+def eval_prefix(tokens):
+    st = []
+    for t in reversed(tokens):                             # scan RIGHT to left
+        if t in "+-*/":
+            a, b = st.pop(), st.pop()                      # a = left operand (pushed last), b = right
+            st.append({"+": a+b, "-": a-b, "*": a*b, "/": a//b}[t])
+        else:
+            st.append(int(t))
+    return st[-1]
+
+print("'* + 2 3 4' =", eval_prefix("* + 2 3 4".split()))   # preorder of (2+3)*4
+print("'+ 2 * 3 4' =", eval_prefix("+ 2 * 3 4".split()))   # 2+(3*4)
+```
+
+```java run
+import java.util.*;
+public class Main {
+    static int evalPrefix(String[] tokens) {
+        Deque<Integer> st = new ArrayDeque<>();
+        for (int i = tokens.length - 1; i >= 0; i--) {     // scan RIGHT to left
+            String t = tokens[i];
+            if (t.length() == 1 && "+-*/".contains(t)) {
+                int a = st.pop(), b = st.pop();             // a = left operand, b = right
+                st.push(switch (t) { case "+" -> a + b; case "-" -> a - b; case "*" -> a * b; default -> a / b; });
+            } else st.push(Integer.parseInt(t));
+        }
+        return st.peek();
+    }
+    public static void main(String[] x) {
+        System.out.println("'* + 2 3 4' = " + evalPrefix("* + 2 3 4".split(" ")));
+        System.out.println("'+ 2 * 3 4' = " + evalPrefix("+ 2 * 3 4".split(" ")));
+    }
 }
 ```
 
-<p align="center"><strong>Postfix layout — operands first, operator last. The operator "applies to the two most recent operands". Position encodes order; no parentheses needed.</strong></p>
+Both print `'* + 2 3 4' = 20` and `'+ 2 * 3 4' = 14` — the same values as the matching postfix expressions, because they're the same trees, just traversed (and scanned) in the mirror direction. The one thing to get right is operand order for `-` and `/`: scanning prefix right-to-left, the operator's left operand is the one pushed *last* (so the *first* pop), the opposite of postfix where the left operand is the *second* pop. Get that backwards and `-`/`/` silently compute the wrong thing while `+`/`*` still look fine — a classic subtle bug. Postfix and prefix are duals: pick postfix and scan forward, or prefix and scan backward; either way a single stack and one pass turn a notation into a number.
 
-## Examples
+## Reflect & Connect
 
-| Infix | Postfix |
-|---|---|
-| `3 + 4` | `3 4 +` |
-| `2 + 3 * 4` | `2 3 4 * +` |
-| `(2 + 3) * 4` | `2 3 + 4 *` |
-| `a + b * c - d` | `a b c * + d -` |
-| `(a + b) * (c - d) / e` | `a b + c d - * e /` |
+- **One tree, three readings.** Infix/prefix/postfix are inorder/preorder/postorder of the expression tree. The operator's position is just *when* the traversal emits it — that's why all three describe the same computation.
+- **Position can replace parentheses.** Infix needs precedence rules and parentheses because token order alone doesn't fix the grouping. Prefix and postfix make order *be* the grouping, so they're unambiguous with zero brackets — different trees become different token sequences.
+- **Stacks make postfix/prefix `O(N)`.** Push operands, collapse on operators; the stack holds exactly the pending partial results. One forward pass for postfix, one backward pass for prefix — no look-ahead, no precedence logic. Mind the left/right operand order for non-commutative ops.
+- **It's why machines convert before they compute.** Calculators, the JVM, CPython's bytecode, and Forth all run a postfix/stack form. Your infix source is parsed into a tree (or directly shunted to postfix) and then a stack machine evaluates it.
+- **This is the launchpad for the next two lessons.** [Evaluating expressions](/cortex/data-structures-and-algorithms/linear-structures-stack-evaluating-expressions-using-stack) deepens the stack evaluator; [converting expressions](/cortex/data-structures-and-algorithms/linear-structures-stack-converting-expressions-using-stack) is the shunting-yard algorithm that turns infix into postfix. Both are pure [stack](/cortex/data-structures-and-algorithms/linear-structures-stack-what-is-a-stack) applications, and the [linear-evaluation pattern](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-linear-evaluation) generalizes the technique.
 
-Notice two beautiful properties of postfix:
+## Recall
 
-1. **No parentheses anywhere.** They simply aren't needed — position alone determines order.
-2. **No precedence rules.** `2 3 4 * +` and `2 3 + 4 *` use the same characters in different orders, and *the order itself* tells you which to do first. There's no ambiguity about whether `*` or `+` comes first; it's whatever appears first in the postfix stream.
+<details>
+<summary><strong>Q:</strong> What are infix, prefix, and postfix, and how do they relate to a tree?</summary>
 
-## How postfix works
+**A:** Three ways to write an expression by where the operator sits: between its operands (infix), before them (prefix / Polish), after them (postfix / Reverse Polish). They are the inorder, preorder, and postorder DFS traversals of the same expression tree.
 
-The evaluation rule is comically simple: **scan left-to-right; when you see an operand, remember it; when you see an operator, apply it to the two most-recently-remembered operands and remember the result.** That "remember the most-recent operands" pattern should sound familiar — it's exactly what a *stack* does.
+</details>
+<details>
+<summary><strong>Q:</strong> Why does infix need parentheses and precedence rules while postfix and prefix don't?</summary>
 
-Let's walk through `2 3 4 * +` step by step:
+**A:** In infix the operator's textual order doesn't fix the grouping, so `2 + 3 * 4` needs precedence (and parentheses to override it) to know which tree it means. In postfix/prefix the operator is adjacent to its operands, so the token order alone determines the tree — different groupings are different token sequences, no brackets needed.
 
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    S0["read '2'<br/>stack: [2]"] --> S1["read '3'<br/>stack: [2, 3]"]
-    S1 --> S2["read '4'<br/>stack: [2, 3, 4]"]
-    S2 --> S3["read '*'<br/>pop 4, pop 3<br/>push 3*4=12<br/>stack: [2, 12]"]
-    S3 --> S4["read '+'<br/>pop 12, pop 2<br/>push 2+12=14<br/>stack: [14]"]
-    S4 --> R["result: 14"]
-    style R fill:#dcfce7,stroke:#22c55e
-```
+</details>
+<details>
+<summary><strong>Q:</strong> How does a stack evaluate a postfix expression?</summary>
 
-<p align="center"><strong>Postfix evaluation of <code>2 3 4 * +</code> — operands push, operators pop two and push one. The final stack contents <em>are</em> the answer. Notice the multiplication happens before the addition without any precedence rule — the postfix order encoded it.</strong></p>
+**A:** Scan left-to-right: push each operand; on an operator, pop the top two, apply it, push the result. After the last token the stack holds the answer — `O(N)` time and space, no look-ahead or precedence logic.
 
-Three properties of this algorithm matter:
+</details>
+<details>
+<summary><strong>Q:</strong> How does prefix evaluation differ from postfix?</summary>
 
-- **Single pass, no look-ahead.** Read each token exactly once. Never go back.
-- **The stack is the only memory.** Partial results live there until consumed by the next operator.
-- **Precedence is encoded by position.** The operator that comes first in postfix is evaluated first — full stop.
+**A:** Prefix is preorder, evaluated by scanning right-to-left with the same push-operands / pop-two-on-operator stack machine. The operand order flips for non-commutative operators: in prefix the first pop is the left operand; in postfix the second pop is the left operand.
 
-Even brutally complex expressions are linear-time to evaluate this way. We'll build the actual evaluator in lesson 5.
+</details>
+<details>
+<summary><strong>Q:</strong> Why do calculators and compilers convert infix to postfix?</summary>
 
-***
+**A:** Postfix maps directly onto one-operation-at-a-time hardware with a stack holding pending results — a single `O(N)` pass with no parsing of precedence or parentheses. So the infix source is converted (parsed to a tree or shunted to postfix) once, then evaluated cheaply.
 
-# Understanding the prefix notation
+</details>
 
-If postfix is operators-after-operands, **prefix** is operators-*before*-operands. Same Polish-notation idea, mirrored. `+ 3 4` reads as "add 3 and 4". This is also called **Polish notation** (without the "reverse").
+## Sources & Verify
 
-```d2
-direction: right
-
-row: "" {
-  grid-columns: 3
-  grid-gap: 0
-  o: "operator" {style.fill: "#fef9c3"; style.stroke: "#f59e0b"}
-  l: "operand₁"
-  r: "operand₂"
-}
-```
-
-<p align="center"><strong>Prefix layout — operator first, then operands. The operator "applies to the two operands that follow it". Same parenthesis-free, precedence-free advantages as postfix; opposite scan direction.</strong></p>
-
-> **Important caveat** — prefix is **not** simply the reverse of postfix. Reversing `2 3 4 * +` gives `+ * 4 3 2`, which is *not* a valid prefix expression. The correct prefix for `2 + 3 * 4` is `+ 2 * 3 4`. The two notations are mirror images conceptually, but converting between them requires actual rewriting, not bit-flipping.
-
-## Examples
-
-| Infix | Prefix |
-|---|---|
-| `3 + 4` | `+ 3 4` |
-| `2 + 3 * 4` | `+ 2 * 3 4` |
-| `(2 + 3) * 4` | `* + 2 3 4` |
-| `a + b * c - d` | `- + a * b c d` |
-| `(a + b) * (c - d) / e` | `/ * + a b - c d e` |
-
-## How prefix works
-
-Same idea as postfix, but **scan right-to-left** instead of left-to-right. When you see an operand, remember it. When you see an operator, apply it to the two most-recently-remembered operands and remember the result.
-
-`+ 2 * 3 4` evaluated right-to-left:
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    S0["read '4'<br/>stack: [4]"] --> S1["read '3'<br/>stack: [4, 3]"]
-    S1 --> S2["read '*'<br/>pop 3, pop 4<br/>push 3*4=12<br/>stack: [12]"]
-    S2 --> S3["read '2'<br/>stack: [12, 2]"]
-    S3 --> S4["read '+'<br/>pop 2, pop 12<br/>push 2+12=14<br/>stack: [14]"]
-    S4 --> R["result: 14"]
-    style R fill:#dcfce7,stroke:#22c55e
-```
-
-<p align="center"><strong>Prefix evaluation of <code>+ 2 * 3 4</code> — same single-pass, single-stack idea as postfix, but the scan goes right-to-left. The operator combines the two operands <em>after</em> it (which, when scanning right-to-left, are the two most recently seen operands).</strong></p>
-
-> **Why does the operand order matter when popping?**
->
-> For commutative operators (`+`, `*`) the popping order doesn't matter — `3 + 4` and `4 + 3` give the same result. But for non-commutative operators (`-`, `/`, `^`), it does. In **postfix**, the second operand popped is the *left* operand of the operator (because it was pushed first); in **prefix**, the second operand popped is the *right* operand (because the scan is reversed). Watch out for this when implementing the evaluator — getting it wrong gives correct answers for `+` and `*` but silently wrong answers for `-` and `/`.
-
-## Postfix vs. prefix
-
-In practice, **postfix is the more common choice**. Why?
-
-- The natural left-to-right reading direction matches every other text scan in computing.
-- The Forth and PostScript languages use postfix; Reverse Polish HP calculators use postfix; the JVM's bytecode operand stack is essentially postfix.
-- LISP famously uses *prefix* (every form is `(op arg1 arg2 ...)`), but with explicit parentheses — which is closer to *parenthesised prefix* than to bare prefix.
-
-For the rest of this section, we'll focus on postfix evaluation and infix-to-postfix conversion. The prefix versions are direct mirror images; once you understand postfix, prefix is a 5-minute extension.
-
-***
-
-## Final Takeaway
-
-Three notations, one piece of mathematics, three different evaluation profiles:
-
-| Notation | Operator placement | Needs parentheses? | Precedence rules? | Scan direction |
-|---|---|---|---|---|
-| **Infix** | between operands (`a + b`) | yes, for ambiguity | yes, fundamental | bidirectional / tree walk |
-| **Postfix** | after operands (`a b +`) | no | no | left → right |
-| **Prefix** | before operands (`+ a b`) | no | no | right → left |
-
-The takeaway:
-
-1. **Infix is for humans, postfix/prefix are for machines.** Compilers and calculators take infix in, parse it into postfix (or an equivalent abstract syntax tree), and evaluate the postfix.
-2. **Postfix evaluation is a stack.** Operands push; operators pop two, compute, push one. Single pass, O(N), no precedence rules anywhere in sight.
-3. **Position is the precedence.** What makes postfix and prefix work is that the *order* of tokens fully determines the order of evaluation. We don't *need* parens or precedence — they're baked in.
-
-> *Coming up — we build the postfix evaluator. Read each token, push or pop on a stack, return the lone item left at the end. Lesson 5 turns this lesson's idea into running code in Python and Java, with edge cases (operand order for non-commutative operators, malformed expressions, single-operand expressions) handled cleanly.*
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
-
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
-
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
-
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
-
-<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
-<!--       Guidance: bulleted list of gotchas -->
-
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
-
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
-
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
-
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
-
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
+- **CLRS** / **Sedgewick & Wayne**, *Algorithms* §1.3 — stacks, expression evaluation, and Dijkstra's shunting-yard. The notations trace to **Jan Łukasiewicz** (Polish notation, 1920s); **Reverse Polish** (postfix) powered HP calculators and the Forth language.
+- **Aho, Lam, Sethi & Ullman**, *Compilers: Principles, Techniques, and Tools* — expression trees and the parse-then-traverse pipeline real compilers use.
+- The three traversals of `(2+3)*4` (`* + 2 3 4` / `2 + 3 * 4` / `2 3 + 4 *`), the postfix evaluations (`20` vs `14`), and the mirror-image prefix evaluations (`20` and `14`) all come from the runnable blocks above (deterministic) — re-run to verify.

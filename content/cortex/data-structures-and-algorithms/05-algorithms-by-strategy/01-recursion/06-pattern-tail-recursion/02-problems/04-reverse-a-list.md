@@ -29,7 +29,6 @@ Output: head → 10 → 3 → 7 → 5 → null
 
 Reversing a linked list is a perfect tail-recursion candidate because we can carry both **the current node** and **the previous node** forward as accumulator parameters. Each step rewires `current.next = previous`, then advances both pointers by one. Because Python (and Java) have no TCO, the canonical implementation below collapses the tail recursion into its equivalent `while` loop — the logic and the per-step work are identical; only the frame mechanics change.
 
-> 🖼 Diagram — The conceptual tail-recursive shape: each frame saves current.next in a local, rewires current.next = previous, then tail-calls with (saved_next, current). The base case returns the last previous — the new head. The implementation below is the equivalent while loop — same per-step work, one reused frame.
 ```mermaid
 ---
 config:
@@ -78,7 +77,6 @@ After rewiring, a tail-recursive version would end with `return helper(next, cur
 
 <div class="d2-slides" data-caption="Each frame rewires one pointer and advances. The accumulator (`previous`) becomes the new head when we run off the end.">
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "Initial — current=5, previous=null" {
   list: "5 → 7 → 3 → 10 → null" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
@@ -86,7 +84,6 @@ state: "Initial — current=5, previous=null" {
 }
 ```
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "After step 1 — current=7, previous=5" {
   list: "5 → null   then   7 → 3 → 10 → null"
@@ -94,7 +91,6 @@ state: "After step 1 — current=7, previous=5" {
 }
 ```
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "After step 2 — current=3, previous=7" {
   list: "7 → 5 → null   then   3 → 10 → null"
@@ -102,7 +98,6 @@ state: "After step 2 — current=3, previous=7" {
 }
 ```
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "After step 3 — current=10, previous=3" {
   list: "3 → 7 → 5 → null   then   10 → null"
@@ -110,7 +105,6 @@ state: "After step 3 — current=10, previous=3" {
 }
 ```
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "After step 4 — current=null, previous=10" {
   list: "10 → 3 → 7 → 5 → null" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
@@ -126,7 +120,7 @@ state: "After step 4 — current=null, previous=10" {
 
 ### The Solution
 
-```python run
+```python run viz=array viz-root=out
 from typing import Optional, List, Any
 
 
@@ -192,7 +186,7 @@ print(to_list(Solution().reverse_a_list(from_list([1, 2, 3]))))        # [3, 2, 
 print(to_list(Solution().reverse_a_list(from_list([1, 1, 1]))))        # [1, 1, 1]
 ```
 
-```java run
+```java run viz=array viz-root=out
 import java.util.*;
 
 public class Main {
@@ -308,7 +302,7 @@ The trace above tracks the conceptual tail-recursive form; the implementation ho
 
 </details>
 <details>
-<summary><h2>Final Takeaway</h2></summary>
+<summary><h2>Key Takeaway</h2></summary>
 
 
 Reverse-a-List is the canonical "two-pointer rewire" recursion: walk the list, save `next` before each rewire, advance both pointers in the tail call. The pattern shows up in linked-list rotation, in cycle detection (with care), in nth-from-end problems, and in any structural transformation of a linked list. The accumulator is the partially-reversed list; the recursion ends when we run off the end.
@@ -338,27 +332,3 @@ The recursive relation `gcd(a, b) = gcd(b, a % b)` is Euclid's algorithm in pure
 </details>
 
 </details>
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
-
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
-
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
-
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
-
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
-
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->

@@ -1,174 +1,160 @@
 ---
 title: "Pattern: Top K Elements"
-summary: "Maintain a size-K heap — push each element, pop the smallest when size exceeds K, leaving the K largest in the heap."
+summary: "Keep only the K best seen so far in a size-K min-heap: push each element, and when the heap exceeds K, pop its smallest. The root is the Kth largest. O(n log K) time, O(K) space — better than sorting when K ≪ n, and it works on streams."
 prereqs:
-  - 03-trees/03-heap/01-introduction-to-heaps
+  - 03-trees/03-heap/01-what-is-a-heap
 ---
 
-# Understanding the top K elements pattern
+# Pattern: Top K Elements
 
-The pattern boils down to a counter-intuitive trick: **to track the K largest values, use a min-heap of size K, not a max-heap**.
+## Why It Exists
 
-> *Friction prompt — predict before reading on. Why min-heap for the K largest? It feels backwards.*
+"Find the K largest elements" (or the Kth largest). The obvious approach sorts everything and takes the last K — `O(n log n)` time and `O(n)` space. But when `K` is much smaller than `n`, that's wasteful: you sorted the whole array to keep a handful of values.
 
-Because the heap's job is to **identify the smallest of your top-K-so-far** — that's the value you need to compare against to decide whether a new element belongs in the club. If the new element beats the current min of the top-K, it kicks the min out and joins the heap. If not, it's worse than everything you've already accepted, so it's discarded.
+The insight: you only ever need to remember the **K best seen so far**. A **min-heap of size K** does exactly that. Its root is the *smallest* of those K — the weakest keeper, and the one easiest to compare against. Each new element either beats the root (evict the root, insert the newcomer) or doesn't (discard it). Every operation is `O(log K)`, so the whole pass is `O(n log K)` time and `O(K)` space. And because it processes one element at a time, it works on a **stream** you can't hold in memory.
 
-> 🖼 Diagram — Top-K-largest with a min-heap of size K. Each element is pushed; if the heap exceeds K, the min is popped. The min of a heap that always holds the best K candidates is the K-th largest seen so far.
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    A["Stream:<br/>3, 1, 7, 4, 9, 2, 8<br/>K = 3"] --> B["MinHeap<br/>(size ≤ K)"]
-    B --> C["At end:<br/>heap holds top-3<br/>= {7, 8, 9}"]
-    style C fill:#bbf7d0,stroke:#16a34a
+## See It Work
+
+Find the 2nd-largest element of `[3, 2, 1, 5, 6, 4]` by keeping a size-2 min-heap of the largest seen. Run it, then **Visualise** the heap hold only the top two.
+
+> ▶ Run it, then click **Visualise** — each element pushes; once the heap holds more than `K`, the smallest is popped, so only the `K` largest survive.
+
+```python run viz=array viz-root=heap viz-kind=heap
+import heapq
+
+nums = [3, 2, 1, 5, 6, 4]
+k = 2
+heap = []                          # min-heap of the K largest seen so far
+for x in nums:
+    heapq.heappush(heap, x)
+    if len(heap) > k:
+        heapq.heappop(heap)        # evict the smallest → keep only the K largest
+print(heap[0])                     # 5 — the root is the smallest keeper = Kth largest
 ```
 
-<p align="center"><strong>Top-K-largest with a min-heap of size K. Each element is pushed; if the heap exceeds K, the min is popped. The min of a heap that always holds the best K candidates is the K-th largest seen so far.</strong></p>
+## How It Works
 
-The mirror version is just as crucial: **for the K smallest, use a max-heap of size K**. The max of the top-K-smallest-so-far is the threshold you compare against.
+Maintain a min-heap capped at `K` elements:
 
-| Want | Use a heap of type | Why |
-|---|---|---|
-| K **largest** | **Min**-heap of size K | The min of the top-K is the threshold to beat |
-| K **smallest** | **Max**-heap of size K | The max of the bottom-K is the threshold to beat |
+1. **Push** the next element (`O(log K)`).
+2. **Cap** the size: if the heap now holds `K + 1`, **pop the root** — the current smallest — so the heap keeps exactly the `K` largest seen so far.
+3. **Answer**: after the pass, the heap *is* the K largest, and its **root is the Kth largest** (the smallest among the keepers).
 
-## The top K technique
-
-For each element in the stream:
-
-1. Push it into the heap.
-2. If the heap now holds more than K elements, pop the top.
-
-After the stream ends, the heap holds the K most-extreme values. To compute an aggregate (sum, average, list) over those K, drain the heap and apply your aggregation function `f`.
-
-> 🖼 Diagram — The top-K loop. Constant-size heap, O(log K) per element, single pass.
 ```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
 flowchart LR
-    A["For each element x<br/>in the input"] --> B["push(x)"]
-    B --> C{"size > K?"}
-    C -->|Yes| D["pop() — discard worst"]
-    C -->|No| E["keep"]
-    D --> A
-    E --> A
-    A -->|stream ends| F["aggregate over heap"]
-    style F fill:#bbf7d0,stroke:#16a34a
+  X["next element"] --> PU["push into min-heap"]
+  PU --> Q{"size > K?"}
+  Q -->|"yes"| PO["pop the root (smallest)"]
+  Q -->|"no"| K["keep"]
+  PO --> X
+  K --> X
 ```
 
-<p align="center"><strong>The top-K loop. Constant-size heap, O(log K) per element, single pass.</strong></p>
+<p align="center"><strong>push each element into a size-K min-heap; whenever it overflows, pop the smallest; the root ends up as the Kth largest.</strong></p>
 
-## Algorithm
+The counterintuitive part: to track the **largest** elements you use a **min**-heap, not a max-heap. The root being the *minimum* of the keepers is the feature — it's the threshold a newcomer must beat, and popping it is `O(log K)`. Total cost is **`O(n log K)` time, `O(K)` space**, which beats `O(n log n)` sorting whenever `K ≪ n`. (To find the K *smallest*, mirror it: a **max**-heap of size K, popping the largest.)
 
-> **Algorithm**
->
-> - **Step 1:** Create an empty heap (min-heap for top-K-largest, max-heap for top-K-smallest).
-> - **Step 2:** For each element `x` in the input:
->   - **Step 2.1:** Push `x` onto the heap.
->   - **Step 2.2:** If `heap.size() > K`, pop the top.
-> - **Step 3:** Drain the heap, applying `f` to each popped element to build the aggregate.
-> - **Step 4:** Return the aggregate.
+### Key Takeaway
 
-## Complexity Analysis
+Keep the K best in a size-K min-heap: push, and pop the smallest whenever the size exceeds K. The root is the Kth largest. `O(n log K)` time, `O(K)` space — and use a *min*-heap for the *largest* (its root is the threshold to beat).
 
-For an array of `n` elements with the heap capped at size `K`:
+## Trace It
 
-| Step | Cost |
+Size-2 min-heap over `[3, 2, 1, 5, 6, 4]` (root shown first):
+
+| element | push → | size > 2? pop | heap (the 2 largest so far) |
+|---|---|---|---|
+| `3` | `[3]` | — | `[3]` |
+| `2` | `[2,3]` | — | `[2,3]` |
+| `1` | `[1,3,2]` | pop `1` | `[2,3]` |
+| `5` | `[2,3,5]` | pop `2` | `[3,5]` |
+| `6` | `[3,5,6]` | pop `3` | `[5,6]` |
+| `4` | `[4,5,6]` | pop `4` | `[5,6]` |
+
+Root = `5` → the 2nd largest.
+
+Before you read on: to keep the *largest* elements, we pop the *smallest* each time, using a *min*-heap. That feels backwards. Why is a min-heap — not a max-heap — the right structure here?
+
+Because the operation you repeat is "throw away the weakest keeper." The weakest of the current top-K is their *minimum*, and a min-heap puts exactly that at the root, poppable in `O(log K)`. A max-heap would put the *largest* on top — useless here, since you never want to discard your best. The heap's job isn't to find the maximum; it's to cheaply identify and evict the *threshold* element each time a stronger candidate arrives. Matching the heap's orientation to the element you need to remove (not the one you're hunting) is the crux of every top-K solution.
+
+## Your Turn
+
+The reusable Kth-largest and K-largest:
+
+```python run
+import heapq
+
+def kth_largest(nums, k):
+    heap = []
+    for x in nums:
+        heapq.heappush(heap, x)
+        if len(heap) > k:
+            heapq.heappop(heap)
+    return heap[0]                 # root = Kth largest
+
+def k_largest(nums, k):
+    heap = []
+    for x in nums:
+        heapq.heappush(heap, x)
+        if len(heap) > k:
+            heapq.heappop(heap)
+    return sorted(heap, reverse=True)
+
+print(kth_largest([3, 2, 3, 1, 2, 4, 5, 5, 6], 4))   # 4
+print(k_largest([3, 2, 1, 5, 6, 4], 2))              # [6, 5]
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+  static int kthLargest(int[] nums, int k) {
+    PriorityQueue<Integer> heap = new PriorityQueue<>();   // min-heap
+    for (int x : nums) {
+      heap.offer(x);
+      if (heap.size() > k) heap.poll();                    // evict smallest
+    }
+    return heap.peek();                                    // root = Kth largest
+  }
+
+  public static void main(String[] args) {
+    System.out.println(kthLargest(new int[]{3, 2, 3, 1, 2, 4, 5, 5, 6}, 4));   // 4
+  }
+}
+```
+
+Drill the family in **Practice** — [Kth Largest Element](/cortex/data-structures-and-algorithms/trees-heap-pattern-top-k-elements-problems-kth-largest-element), [Kth Smallest Element](/cortex/data-structures-and-algorithms/trees-heap-pattern-top-k-elements-problems-kth-smallest-element), [K Range Sum](/cortex/data-structures-and-algorithms/trees-heap-pattern-top-k-elements-problems-k-range-sum), and [K Sorted Array Sorting](/cortex/data-structures-and-algorithms/trees-heap-pattern-top-k-elements-problems-k-sorted-array-sorting).
+
+## Reflect & Connect
+
+The size-K heap is the go-to for "best few out of many":
+
+- **The family** — Kth largest/smallest, the K largest, sorting a *nearly-sorted* (each element ≤ K from its place) array with a size-K heap, and streaming top-K where the data won't fit in memory.
+- **Match the heap to what you evict** — *largest* → min-heap (pop the smallest); *smallest* → max-heap (pop the largest). The root is always the element on the chopping block, not the one you're seeking.
+- **vs sorting and vs quickselect** — sorting is `O(n log n)`; the heap is `O(n log K)`, better for small `K` and the only option on a stream. Quickselect finds the Kth element in `O(n)` average but needs the whole array in memory and isn't online. Pick by whether `K` is small and whether data streams.
+
+**Prerequisites:** [What Is a Heap?](/cortex/data-structures-and-algorithms/trees-heap-what-is-a-heap).
+**What's next:** order a heap by a custom key — frequency, distance, or a composite — in [Comparator](/cortex/data-structures-and-algorithms/trees-heap-pattern-comparator-pattern).
+
+## Recall
+
+> **Mnemonic:** *Size-K min-heap for the K largest. Push; if size > K pop the root (smallest). Root = Kth largest. `O(n log K)`. Min-heap for largest — match the heap to what you evict.*
+
+| | |
 |---|---|
-| Push + possible pop, per element | O(log K) |
-| Total across `n` elements | **O(n log K)** |
-| Final drain of the heap | O(K log K) |
-| Space (heap of size K) | **O(K)** |
+| Structure | min-heap capped at K (for the K *largest*) |
+| Per element | push; if `size > K`, pop the root |
+| Answer | heap = K largest; root = Kth largest |
+| Orientation | largest → min-heap · smallest → max-heap |
+| Cost | `O(n log K)` time, `O(K)` space |
 
-When `K << n`, that's dramatically better than `O(n log n)` from a full sort. When `K = n`, the two are equal. **You can never lose with the top-K trick.**
+- **Q:** Why use a min-heap to track the *largest* elements? **A:** Its root is the smallest keeper — the threshold a newcomer must beat and the element you evict, both in `O(log K)`.
+- **Q:** What's the cost, and when does it beat sorting? **A:** `O(n log K)` vs `O(n log n)` — better when `K ≪ n`, and it works on streams.
+- **Q:** Where is the Kth largest after the pass? **A:** At the heap's root (the smallest of the K largest).
+- **Q:** How do you adapt it to the K smallest? **A:** Use a max-heap of size K and pop the largest each time.
 
-# Identifying the top k elements pattern
+## Sources & Verify
 
-The pattern fits whenever the problem mentions:
-
-- **"K largest" / "K smallest" / "K most/least frequent"** — the canonical phrasing.
-- **"K-th"** anything — the K-th largest, K-th smallest, K-th frequent. (Just take the heap's top *after* processing the stream.)
-- **"Closest K"** — for points to a target, words to a query, etc. The "score" is the distance, and you want the smallest distances.
-- **"Top-K aggregate"** — average, sum, set of the top-K values.
-
-If the problem boils down to *"compute something over the K extreme values of a stream/array"*, reach for the fixed-size heap.
-
-## Worked example — average of K largest
-
-> **Problem:** Given an array of integers and an integer K, return the average of the K largest values.
-
-The fit:
-
-- **Aggregation function `f`** = "running sum, divide by K at the end".
-- **Heap type** = min-heap of size K (we want largest).
-
-> 🖼 Diagram — Average of the K largest. The pattern handles the "select" step; the aggregation step is whatever the problem needs.
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    A["arr = [3, 1, 7, 4, 9, 2, 8], K = 3"] --> B["Run top-K with min-heap"]
-    B --> C["Heap at end: {7, 8, 9}"]
-    C --> D["sum = 24, avg = 24/3 = 8"]
-    style D fill:#bbf7d0,stroke:#16a34a
-```
-
-<p align="center"><strong>Average of the K largest. The pattern handles the "select" step; the aggregation step is whatever the problem needs.</strong></p>
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Why Naive Isn't Enough — missing, needs to be written -->
-<!--       Guidance: motivation for why the obvious approach fails -->
-
-<!-- TODO: The Core Idea — missing, needs to be written -->
-<!--       Guidance: one paragraph: the central trick -->
-
-<!-- TODO: How the Pointers/Window Move — missing, needs to be written -->
-<!--       Guidance: mechanics of the moving parts -->
-
-<!-- TODO: The Generic Algorithm — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
-
-<!-- TODO: Generic Implementation — missing, needs to be written -->
-<!--       Guidance: Python block + Java block of the skeleton -->
-
-<!-- TODO: Variants / Taxonomy — missing, needs to be written -->
-<!--       Guidance: enumerate sub-shapes of this pattern -->
-
-<!-- TODO: Recognition Checklist — missing, needs to be written -->
-<!--       Guidance: 4-question diagnostic — the source of the Problem-section Diagnostic Questions -->
-
-<!-- TODO: Canonical Example — missing, needs to be written -->
-<!--       Guidance: fully worked example: brute force → optimised → template fit -->
-
-<!-- TODO: Problems in This Category — missing, needs to be written -->
-<!--       Guidance: table with links to the 02-problems/ files -->
+- **CLRS**, *Introduction to Algorithms*, 4th ed., §6 — heaps, heap operations, and priority queues.
+- **Sedgewick & Wayne**, *Algorithms*, 4th ed., §2.4 — priority queues; the "keep the M largest in a min-heap" application is given explicitly.
+- The size-K heap for top-K (and `O(n log K)` cost) is standard; both runnable blocks are verified by running (`kth_largest ⇒ 5` then `4`, `k_largest ⇒ [6, 5]`).

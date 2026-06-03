@@ -22,6 +22,71 @@ Given a string `s` of `(` and `)` only, return the minimum number of insertions 
 > -   **Input:** `s = "(((())))"` → **Output:** `0`
 
 <details>
+<summary><strong>Examples</strong></summary>
+
+**Example 1**
+```
+Input:  s = "())"
+Output: 1
+Explanation: '(' matches the first ')'. The second ')' has no opener
+left → one unmatched closer. One edit fixes it.
+```
+
+**Example 2**
+```
+Input:  s = "))"
+Output: 2
+Explanation: both ')' arrive with an empty stack — two unmatched
+closers, two edits.
+```
+
+**Example 3**
+```
+Input:  s = "(((())))"
+Output: 0
+Explanation: every '(' finds a later ')'. The stack drains to empty
+and no closer is ever orphaned → zero edits.
+```
+
+**Example 4**
+```
+Input:  s = ")()("
+Output: 2
+Explanation: the leading ')' is unmatched (+1 edit), then "()" cancels,
+then the trailing '(' is left on the stack (+1). Total 2.
+```
+
+</details>
+
+## Intuition
+
+This is a **sequence-validation** problem because `(` and `)` pair up, and an edit is needed for every bracket that cannot find a partner. The pairing must respect order: a `)` matches the most recent unmatched `(`. The minimum number of fixes is exactly the number of brackets left unpaired after a single matching pass.
+
+The stack holds the **unmatched `(` seen so far**. When a `)` arrives with a `(` on top, the pair cancels and you pop — that closer is free. When a `)` arrives with nothing to match, it is an orphan; you count one edit, because either inserting a `(` before it or deleting it costs one. After the pass, whatever `(` remain on the stack are also orphans, each needing one edit. The total is leftover openers plus orphaned closers.
+
+A counting shortcut that tracks only a single balance fails on order-sensitive inputs. Consider `")("`: the balance dips to `-1` then returns to `0`, suggesting validity, yet both brackets are unpaired and the answer is `2`. The stack — or its arithmetic equivalent of an opener count plus a separate orphan-closer count — is what correctly separates the two unmatched sides.
+
+## Applying the Diagnostic Questions
+
+| Check | Answer for Minimum Edits |
+|---|---|
+| **Q1.** Does the input pair up — openers matched by later closers? | **Yes** — each `(` seeks a later `)`; unpaired brackets on either side need an edit. |
+| **Q2.** Must a closer match the *most recent* unmatched opener? | **Yes** — a `)` cancels the freshest `(` on the stack; order decides what stays unmatched. |
+| **Q3.** Is one pass with `O(1)` work per token enough? | **Yes** — each character drives a single push, pop, or counter bump. |
+| **Q4.** Is the answer decided by the stack's contents and an orphan count? | **Yes** — leftover `(` on the stack plus closers counted on the fly give the total edits. |
+
+## Approach in Words
+
+Match what you can in one pass; count what is left over.
+
+1. **Initialise an empty stack** of `(` and an `edits` counter at `0`.
+2. **Walk the string left to right**, classifying each character as `(` or `)`.
+3. **`(` → push.** Record it as a pending opener awaiting a closer.
+4. **`)` with a matching top → pop.** A `(` is available, so the pair cancels and the closer is matched for free.
+5. **`)` with an empty stack → count an edit.** No opener is available, so this closer is an orphan; add `1` to `edits`.
+6. **After the pass, return `len(stack) + edits`.** The leftover `(` each need one edit, plus the orphaned closers already counted.
+
+<details>
 <summary><h2>Approach</h2></summary>
 
 
@@ -38,7 +103,7 @@ At end of input, the stack holds every unmatched `(`. Each one needs an edit (in
 
 
 
-```python run
+```python run viz=array viz-root=stack viz-kind=stack
 from typing import List
 
 class Solution:
@@ -91,7 +156,7 @@ print(Solution().minimum_edits("(("))        # 2
 print(Solution().minimum_edits(")()("))      # 2
 ```
 
-```java run
+```java run viz=array viz-root=stack viz-kind=stack
 import java.util.*;
 
 public class Main {
@@ -156,35 +221,53 @@ public class Main {
 
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+## Dry Run
 
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
+Walk Example 1 — `s = "())"`. The stack tracks unmatched `(`; `edits` counts orphaned `)`:
 
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
+```
+s = "())"          stack=[]  edits=0
 
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
+'('  push                 → stack: (      edits=0
+')'  top='(' matches, pop → stack: (empty) edits=0
+')'  stack empty, orphan  → stack: (empty) edits=1
 
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
+end of input: len(stack)=0, edits=1 → return 0 + 1 = 1 ✓
+```
 
-<!-- TODO: Solution — missing, needs to be written -->
-<!--       Guidance: Python block then Java block -->
+A mixed case `s = ")()("` shows both kinds of orphan contributing:
 
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
+```
+s = ")()("         stack=[]  edits=0
 
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table: time / space / why -->
+')'  stack empty, orphan  → stack: (empty) edits=1
+'('  push                 → stack: (      edits=1
+')'  top='(' matches, pop → stack: (empty) edits=1
+'('  push                 → stack: (      edits=1
 
-<!-- TODO: Edge Cases — missing, needs to be written -->
-<!--       Guidance: table, min 5 rows -->
+end of input: len(stack)=1, edits=1 → return 1 + 1 = 2 ✓
+```
 
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->
+## Complexity Analysis
+
+| Measure | Value | Why |
+|---|---|---|
+| Time  | **O(N)** | One pass over `N` characters; each does `O(1)` push, pop, or counter bump. |
+| Space | **O(N)** worst, **O(1)** best | All-opener input (`"((("`) pushes every character; all-closer input pushes nothing. |
+
+The runtime is `O(N)` time: a single left-to-right pass with constant work per character, and no second scan. The space is `O(N)` in the worst case — a string of only `(` pushes all `N` and never pops — and `O(1)` in the best case, where a string of only `)` pushes nothing and only increments `edits`.
+
+## Edge Cases
+
+| Case | Example | Expected | Reasoning |
+|---|---|---|---|
+| Empty string | `s = ""` | `0` | Already valid; no unmatched brackets. |
+| Single opener | `s = "("` | `1` | One `(` left on the stack at the end → one edit. |
+| Single closer | `s = ")"` | `1` | One orphaned `)` counted on the fly → one edit. |
+| Already valid | `s = "()"` | `0` | The pair cancels; stack empty and no orphans. |
+| All openers | `s = "(("` | `2` | Two `(` remain on the stack, each needing one edit. |
+| Closer-then-opener | `s = ")()("` | `2` | One orphaned `)` plus one leftover `(` — the `()` between them cancels. |
+
+## Key Takeaway
+
+The minimum edits equal the count of unpaired brackets: orphaned closers counted during the pass, plus leftover openers on the stack at the end. The new idea over the bracket checker is returning a *count* of unmatched items rather than a yes/no — failure no longer stops the scan, it accumulates.

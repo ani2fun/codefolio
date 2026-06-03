@@ -57,17 +57,45 @@ object HeapToGraph:
     "top"
   )
 
-  /** Function-name prefixes for builder frames whose steps are dropped before adapting. */
+  /** Python-style (snake_case) builder-frame prefixes whose steps are dropped before adapting. */
   private val HelperFnPrefixes = List("from_", "to_", "build_")
+
+  /**
+   * Java-style (camelCase) builder-frame prefixes. Matched with an uppercase-next-char gate so a local with a
+   * natural name like `total` / `top` / `make` isn't accidentally pruned — only `fromList`, `toArray`,
+   * `buildTree`, `makeNode`, `createGraph`, … match (the next character after the prefix must be uppercase).
+   * Skip the prefix-equals case (an exact match like `make` is almost certainly the *algorithm* method, not
+   * scaffolding).
+   */
+  private val JavaBuilderPrefixes = List("from", "to", "build", "make", "create")
+
+  private def isJavaBuilderFrame(fn: String): Boolean =
+    JavaBuilderPrefixes.exists(p =>
+      fn.length > p.length && fn.startsWith(p) && Character.isUpperCase(fn.charAt(p.length))
+    )
 
   /**
    * A builder / constructor frame, whose steps are dropped before adapting so the trace steps through the
    * *algorithm*, not the scaffolding that builds the input or constructs each node. The objects such frames
-   * create still appear, fully formed, in the surviving steps (decision 8 of the pilot-polish design —
-   * extended to `__init__`, since per-node construction is the same kind of noise as the named builders).
+   * create still appear, fully formed, in the surviving steps. `__init__` is the Python constructor name and
+   * `<init>` is what the JVM tracer emits for Java constructors (ADR-0021 §"Slice 5") — both treated as
+   * helper frames.
    */
   private def isHelperFrame(fn: String): Boolean =
-    fn == "__init__" || HelperFnPrefixes.exists(fn.startsWith)
+    fn == "__init__" || fn == "<init>" ||
+      HelperFnPrefixes.exists(fn.startsWith) || isJavaBuilderFrame(fn)
+
+  /**
+   * The active (innermost) frame's locals — `frames.head.locals` if any, else `Nil`. ADR-0021 made the call
+   * stack explicit in [[HeapStep]] but the adapter still reads only the active frame; recursion-aware UI
+   * would walk the full `frames` list.
+   */
+  private def headLocals(step: HeapStep): List[(String, HeapValue)] =
+    step.frames.headOption.fold(List.empty)(_.locals)
+
+  /** The active (innermost) frame's function name — `frames.head.fn` if any, else the empty string. */
+  private def headFn(step: HeapStep): String =
+    step.frames.headOption.fold("")(_.fn)
 
   /**
    * Adapt a whole trace into one [[VizGraph]] per test case ([[VizCases]]).
@@ -89,6 +117,12 @@ object HeapToGraph:
    *   (`viz-case=1` collapses an over-segmented trace back to a single animation)
    * @param title
    *   the modal title
+   * @param vizKind
+   *   optional `viz-kind=<name>` hint from the markdown fence attribute (ADR-0024). When set, every step's
+   *   [[VizGraphStep.structureType]] is stamped with this value — overriding the segment-wide inference. The
+   *   client-side RENDERERS registry reads `structureType` to pick a bespoke chrome (e.g. `"stack"` →
+   *   StackRenderer). `None` falls back to inference; failure to infer leaves `structureType = None` and the
+   *   generic renderer takes over.
    */
   def adapt(
       trace: HeapTrace,
@@ -96,20 +130,63 @@ object HeapToGraph:
       layoutHint: String,
       rootHint: Option[String],
       vizCase: Option[Int],
-      title: String
+      title: String,
+      vizKind: Option[String] = None
   ): Either[String, VizCases] =
     if trace.steps.isEmpty then Left("The trace produced no steps.")
     else
+      val prepared = synthesizeStringArrays(trace, rootHint)
       val srcLines = source.split("\n", -1).toVector
-      val kept     = trace.steps.filterNot(s => isHelperFrame(s.fn))
+      val kept     = prepared.steps.filterNot(s => isHelperFrame(headFn(s)))
       if kept.isEmpty then Left("The trace stepped only through builder frames.")
       else
         val segments = segment(kept, rootHint, vizCase)
         val results =
-          segments.map(seg => adaptOne(seg, srcLines, layoutHint, rootHint, title, trace.truncated))
+          segments.map(seg =>
+            adaptOne(seg, srcLines, layoutHint, rootHint, title, prepared.truncated, vizKind)
+          )
         val graphs = results.collect { case Right(g) => g }
         if graphs.nonEmpty then Right(VizCases(graphs))
         else Left(results.collectFirst { case Left(m) => m }.getOrElse("The trace produced no steps."))
+
+  /**
+   * When `rootHint` names a string scalar in the active frame's locals, materialise that string as a heap
+   * `Arr` of single-char cells so the existing array layout + `indexCursors` (which draws `left` / `right`
+   * etc. as pointers) work out of the box. Without this, string-based two-pointer problems like
+   * `palindromeChecker(s)` have nothing in the heap — the viz canvas is empty.
+   *
+   * The synthesised object keeps a stable id `__cf_str_<name>` per step, so when the string is unchanged
+   * across steps the diff logic sees a stable structure (and pointers move over fixed cells). When the string
+   * mutates (rebound to a new value), the items list changes — the diff highlights that naturally.
+   *
+   * Skipped if the hint is dotted (instance path), the named local is already a `Ref`, or no frame holds a
+   * string scalar with that name.
+   */
+  private def synthesizeStringArrays(trace: HeapTrace, rootHint: Option[String]): HeapTrace =
+    rootHint match
+      case Some(name) if !name.contains('.') =>
+        val synthId = s"__cf_str_$name"
+        val rewritten = trace.steps.map { step =>
+          val maybeStr = step.frames.headOption.flatMap(_.locals.collectFirst {
+            case (n, HeapValue.Scalar(HeapScalar.S(v))) if n == name => v
+          })
+          maybeStr match
+            case None => step
+            case Some(s) =>
+              val items   = s.iterator.map(c => HeapValue.Scalar(HeapScalar.S(c.toString))).toList
+              val newHeap = step.heap + (synthId -> HeapObject.Arr(ArrKind.Lst, items))
+              val newFrames = step.frames match
+                case Nil => Nil
+                case head :: tail =>
+                  val newLocals = head.locals.map {
+                    case (n, _) if n == name => (n, HeapValue.Ref(synthId))
+                    case other               => other
+                  }
+                  head.copy(locals = newLocals) :: tail
+              step.copy(heap = newHeap, frames = newFrames)
+        }
+        trace.copy(steps = rewritten)
+      case _ => trace
 
   /**
    * Adapt one segment — the steps of a single test case — into a [[VizGraph]]. This is the pre-segmentation
@@ -122,7 +199,8 @@ object HeapToGraph:
       layoutHint: String,
       rootHint: Option[String],
       title: String,
-      truncated: Boolean
+      truncated: Boolean,
+      vizKind: Option[String]
   ): Either[String, VizGraph] =
     resolveRootId(HeapTrace(seg, truncated), rootHint) match
       case None =>
@@ -131,12 +209,63 @@ object HeapToGraph:
             "naming the variable that holds the data structure."
         )
       case Some(rootId) =>
-        val built   = seg.map(step => buildStep(step, rootId, srcLines))
+        val layoutOverride =
+          if KnownLayoutKinds.contains(layoutHint) then Some(layoutHint) else None
+        // ADR-0024 — segment-wide structure-type hint, computed once and stamped on every step. An explicit
+        // markdown `viz-kind=<name>` attribute wins; otherwise we scan the segment for marker locals on the
+        // root object (works for the simple Arr-as-stack/queue/deque case). Inference for instance-chain
+        // shapes (Heap, Trie, UnionFind, …) is deferred — those chapters set `viz-kind=` explicitly.
+        val structureType = vizKind.orElse(inferSegmentStructureType(seg, rootId))
+        // Per-step root (ADR-0027 — in-place restructuring). The segment root is
+        // resolved once from the first step, but a rotation / re-parenting rebinds
+        // the root variable mid-segment (an AVL `rotateRight` sets `root = child`).
+        // If we kept the fixed `rootId`, the post-rotation steps would render from
+        // the STALE root — which is now a leaf — greying the real tree as "removed"
+        // (ADR-0025). So each step uses the hint's CURRENT target instead.
+        //
+        // Guard: only adopt the new target if it still REACHES the original root.
+        // A rotation reorganises but keeps every node reachable from the new root,
+        // so `reachableFrom(newRoot)` contains the old root → switch. A recursive
+        // descent (`insert(node.left, …)` with viz-root=`node`) rebinds to a child
+        // subtree that does NOT reach back up to the original root → keep the
+        // segment root, so the whole tree still renders. Stable-root traces are
+        // unaffected (the target equals `rootId` every step).
+        def stepRootFor(step: HeapStep): String =
+          rootHint
+            .flatMap(h => rootIdInStep(step, h))
+            .filter(t => reachableFrom(t, step.heap).contains(rootId))
+            .getOrElse(rootId)
+        val built =
+          seg.map(step => buildStep(step, stepRootFor(step), srcLines, layoutOverride, structureType))
         val visible = carryForward(dropEmptyEnds(built))
         val steps   = colorizeCursors(diffSteps(coalesce(visible)))
         if steps.forall(_.nodes.isEmpty) then
           Left("The chosen root never held a structure during the trace.")
         else Right(VizGraph(steps, layoutHint, title, truncated))
+
+  /**
+   * Marker-local detection for the bespoke-renderer dispatch (ADR-0024). When the root object is an Arr,
+   * inspect the union of every step's frame locals + function names: a `top` local OR a `push` / `pop` call
+   * is a stack; `front` + `back` (both) OR `addFirst` / `pollLast` / `addLast` / `pollFirst` calls is a
+   * deque; `front` alone OR `enqueue` / `dequeue` calls is a queue. Inference is intentionally conservative —
+   * misses fall back to the generic renderer, mis-tags would mis-render — so authors are expected to set
+   * `viz-kind=` explicitly for anything ambiguous.
+   */
+  private def inferSegmentStructureType(seg: List[HeapStep], rootId: String): Option[String] =
+    val rootEverArr = seg.exists(_.heap.get(rootId).exists(_.isInstanceOf[HeapObject.Arr]))
+    if !rootEverArr then None
+    else
+      val localNames = seg.iterator.flatMap(_.frames.iterator.flatMap(_.locals.iterator.map(_._1))).toSet
+      val fnNames    = seg.iterator.flatMap(_.frames.iterator.map(_.fn)).toSet
+      val stackFns   = Set("push", "pop", "peek")
+      val dequeFns   = Set("addFirst", "addLast", "pollFirst", "pollLast", "offerFirst", "offerLast")
+      val queueFns   = Set("enqueue", "dequeue", "offer", "poll")
+      if localNames.contains("top") || stackFns.exists(fnNames.contains) then Some("stack")
+      else if (localNames.contains("front") && localNames.contains("back")) ||
+        dequeFns.exists(fnNames.contains)
+      then Some("deque")
+      else if localNames.contains("front") || queueFns.exists(fnNames.contains) then Some("queue")
+      else None
 
   /**
    * Split the kept steps into one sub-trace per test case. With no `rootHint` there is no variable to track,
@@ -192,11 +321,11 @@ object HeapToGraph:
       hint.split("\\.").toList match
         case Nil => None
         case head :: rest =>
-          step.locals
+          headLocals(step)
             .collectFirst { case (n, HeapValue.Ref(id)) if n == head => id }
             .flatMap(followFields(_, rest, step.heap))
     else
-      step.locals
+      headLocals(step)
         .collectFirst { case (n, HeapValue.Ref(id)) if n == hint => id }
         .orElse(
           step.heap.values.iterator.flatMap {
@@ -212,12 +341,17 @@ object HeapToGraph:
     bounds.sliding(2).collect { case List(a, b) => v.slice(a, b).toList }.toList
 
   /**
-   * Drop the empty steps off both ends of a built segment — the driver's setup lines before the case's
-   * structure exists, and its teardown / next-case lines after the structure leaves scope. Interior empty
-   * steps stay; [[carryForward]] fills them with the surrounding structure.
+   * Trim empty steps off both ends of a built segment — the driver's setup lines before the case's structure
+   * exists, and its teardown / next-case lines after the structure leaves scope — but KEEP the LAST leading
+   * empty step. That one frame is the structure's empty / just-declared state, so the animation opens BLANK
+   * and visibly grows as elements are added, instead of opening already-populated on the first mutation.
+   * Interior empty steps stay; [[carryForward]] fills them with the surrounding structure (it leaves this
+   * leading one blank — there is no prior step to carry forward from).
    */
   private def dropEmptyEnds(steps: List[VizGraphStep]): List[VizGraphStep] =
-    steps.dropWhile(_.nodes.isEmpty).reverse.dropWhile(_.nodes.isEmpty).reverse
+    val noTrailing      = steps.reverse.dropWhile(_.nodes.isEmpty).reverse
+    val (leading, rest) = noTrailing.span(_.nodes.isEmpty)
+    leading.lastOption.toList ::: rest
 
   /**
    * The structure root. A `rootHint` is resolved three ways, so it can name more than "a local pointing at a
@@ -235,7 +369,7 @@ object HeapToGraph:
 
   /** The object id of the first local variable named `name` that holds a reference. */
   private def resolveLocal(trace: HeapTrace, name: String): Option[String] =
-    trace.steps.iterator.flatMap(_.locals).collectFirst {
+    trace.steps.iterator.flatMap(headLocals).collectFirst {
       case (n, HeapValue.Ref(id)) if n == name => id
     }
 
@@ -256,7 +390,7 @@ object HeapToGraph:
       case Nil => None
       case head :: rest =>
         trace.steps.iterator.flatMap { step =>
-          step.locals
+          headLocals(step)
             .collectFirst { case (n, HeapValue.Ref(id)) if n == head => id }
             .flatMap(followFields(_, rest, step.heap))
         }.nextOption()
@@ -286,23 +420,219 @@ object HeapToGraph:
       val pool       = if roots.nonEmpty then roots else heap.keySet
       pool.maxByOption(id => reachableFrom(id, heap).size)
 
+  /**
+   * The eyebrow kind for a trace step's `event`. Maps the harness's raw event string into one of the four
+   * canvas-annotation eyebrows (call / line / return / exception); anything unrecognised collapses to
+   * `"line"` so the annotation still renders with neutral muted colour.
+   */
+  private def eyebrowOf(event: String): String = event match
+    case "call"      => "call"
+    case "return"    => "return"
+    case "exception" => "exception"
+    case _           => "line"
+
   /** One step → the subgraph of objects reachable from `rootId`, each expanded to its node(s). */
-  private def buildStep(step: HeapStep, rootId: String, srcLines: Vector[String]): VizGraphStep =
-    val annotation =
+  private def buildStep(
+      step: HeapStep,
+      rootId: String,
+      srcLines: Vector[String],
+      layoutOverride: Option[String],
+      structureType: Option[String]
+  ): VizGraphStep =
+    val srcLine =
       if step.line >= 1 && step.line <= srcLines.size then srcLines(step.line - 1).trim else ""
-    if !step.heap.contains(rootId) then VizGraphStep(Nil, Nil, Nil, Nil, Nil, Nil, annotation, step.line)
+    val annotation = Annotation(eyebrow = eyebrowOf(step.event), title = "", body = srcLine)
+    val vizFrames  = buildFrames(step)
+    if !step.heap.contains(rootId) then
+      VizGraphStep(
+        Nil,
+        Nil,
+        Nil,
+        Nil,
+        Nil,
+        Nil,
+        annotation,
+        step.line,
+        frames = vizFrames,
+        structureType = structureType
+      )
     else
       val reachable = reachableFrom(rootId, step.heap)
-      val nodes =
+      val rawNodes =
         reachable.flatMap(id => step.heap.get(id).toList.flatMap(nodesOf(id, _, step.heap)))
-      val nodeIds = nodes.iterator.map(_.id).toSet
+      val nodeIds = rawNodes.iterator.map(_.id).toSet
       val edges =
         reachable.flatMap(id => step.heap.get(id).toList.flatMap(edgesOf(id, _, step.heap, nodeIds)))
-      val refCursors = step.locals.collect {
+      val cardByObj  = groupCards(reachable, step.heap)
+      val kindByCard = inferLayoutKinds(reachable, step.heap, cardByObj, layoutOverride)
+      val nodes      = rawNodes.map(n => annotateCard(n, cardByObj, kindByCard))
+      val refCursors = headLocals(step).collect {
         case (name, HeapValue.Ref(id)) if nodeIds.contains(id) => VizCursor(name, id)
       }
       val cursor = (refCursors ::: indexCursors(step, rootId, nodeIds)).distinct
-      VizGraphStep(nodes, edges, cursor, Nil, Nil, Nil, annotation, step.line)
+      // Slice 4 — card-level cursors (separate from per-node `cursor`). An Arr / Dict
+      // doesn't emit a parent node — only its cells / entries — so a Ref local like
+      // `arr` can't appear in `cursor` (there's nothing to mark). We surface it here
+      // instead: every active-frame Ref whose target is a card root (an Arr / Dict /
+      // Instance that the renderer groups into a card) becomes a `cardCursor`. The
+      // client's ArrowLayer reads this and aims at the matching `data-node-id`
+      // element (the specific Instance node a Ref points at) — falling back to
+      // `data-card-id` for Arr / Dict whose ids match the whole card rather than a
+      // single node. Emitting the heap-object id (not the card-group representative)
+      // is what lets the arrow tip land *on* a specific tree node instead of in the
+      // card's empty padding.
+      val cardCursors = headLocals(step).collect {
+        case (name, HeapValue.Ref(id)) if cardByObj.contains(id) =>
+          VizCursor(name, id)
+      }
+      VizGraphStep(
+        nodes,
+        edges,
+        cursor,
+        Nil,
+        Nil,
+        Nil,
+        annotation,
+        step.line,
+        frames = vizFrames,
+        cardCursor = cardCursors.distinct,
+        structureType = structureType
+      )
+
+  /**
+   * The set of layoutKind names this adapter recognises (Slice 3, auto-dispatch). When [[adapt]]'s
+   * `layoutHint` argument is one of these, it's treated as a per-trace override: every card's `layoutKind` is
+   * forced to it instead of being inferred per heap object. An empty or unrecognised hint triggers inference.
+   * Includes the new shape-driven names AND the older overlap names so existing `viz=` fences (`binary-tree`,
+   * `array`, `linked-list`, `grid`, `graph`) keep their previous override behaviour.
+   */
+  private val KnownLayoutKinds: Set[String] = Set(
+    "tree-binary",
+    "list-single",
+    "list-double",
+    "hashmap",
+    "array-1d",
+    "array-2d",
+    "graph-generic",
+    "binary-tree",
+    "linked-list",
+    "array",
+    "grid",
+    "graph"
+  )
+
+  /**
+   * Group reachable heap objects into "cards" — units the renderer dispatches as one shape (Slice 3). Each
+   * `Arr` and each `Dict` is its own card (their cells / entries always lay out as a single collection).
+   * `Instance`s are merged by union-find over instance-to-instance reference edges, so a binary-tree's nodes
+   * or a linked-list's nodes form one card together; an `Instance`-to-`Arr` / `Instance`-to-`Dict` reference
+   * does *not* merge (the structures render as adjacent cards). The card id is the lexicographically-smallest
+   * heap-object id in the group, for deterministic ordering downstream.
+   */
+  private def groupCards(
+      reachable: List[String],
+      heap: Map[String, HeapObject]
+  ): Map[String, String] =
+    val parent = mutable.Map.empty[String, String]
+    reachable.foreach(id => parent(id) = id)
+
+    def find(id: String): String =
+      var root = id
+      while parent(root) != root do root = parent(root)
+      var cur = id
+      while parent(cur) != root do
+        val next = parent(cur)
+        parent(cur) = root
+        cur = next
+      root
+
+    def union(a: String, b: String): Unit =
+      val ra = find(a)
+      val rb = find(b)
+      if ra != rb then
+        // Lexicographically-smaller id becomes the root, so the representative is deterministic.
+        if ra < rb then parent(rb) = ra else parent(ra) = rb
+
+    reachable.foreach { id =>
+      heap.get(id) match
+        case Some(HeapObject.Instance(_, fields)) =>
+          fields.foreach {
+            case (_, HeapValue.Ref(toId))
+                if heap.get(toId).exists(_.isInstanceOf[HeapObject.Instance]) =>
+              union(id, toId)
+            case _ => ()
+          }
+        case _ => ()
+    }
+
+    reachable.iterator.map(id => id -> find(id)).toMap
+
+  /**
+   * Per-card layout kind (Slice 3). For each unique card id, pick a representative heap object and infer its
+   * shape; if `layoutOverride` is set (the trace's `vizHint`), every card uses it instead. Arr / Dict cards
+   * always have one member, so the representative is that array / dict. Instance cards may have many members;
+   * the representative is the lowest-id instance (matches the card id), and its field names drive the
+   * inference per the plan §5 table:
+   *
+   *   - `left` + `right` → `tree-binary`
+   *   - `next` + `prev` → `list-double`
+   *   - `next` only → `list-single`
+   *   - else → `graph-generic`
+   */
+  private def inferLayoutKinds(
+      reachable: List[String],
+      heap: Map[String, HeapObject],
+      cardByObj: Map[String, String],
+      layoutOverride: Option[String]
+  ): Map[String, String] =
+    val byCard = reachable.groupBy(cardByObj)
+    byCard.map { case (cardId, _) =>
+      val kind = layoutOverride.getOrElse(inferOneCard(cardId, heap))
+      cardId -> kind
+    }
+
+  // Layout kind is inferred from the card's ROOT heap object (the array's
+  // shape, the instance's field names), not its members — so no member list.
+  private def inferOneCard(
+      cardId: String,
+      heap: Map[String, HeapObject]
+  ): String =
+    heap.get(cardId) match
+      case Some(HeapObject.Arr(_, items)) =>
+        val allArrItems = items.nonEmpty && items.forall {
+          case HeapValue.Ref(id) => heap.get(id).exists(_.isInstanceOf[HeapObject.Arr])
+          case _                 => false
+        }
+        if allArrItems then "array-2d" else "array-1d"
+      case Some(HeapObject.Dict(_)) => "hashmap"
+      case Some(HeapObject.Instance(_, fields)) =>
+        val fieldNames = fields.iterator.map(_._1).toSet
+        val hasLeft    = fieldNames.contains("left")
+        val hasRight   = fieldNames.contains("right")
+        val hasNext    = fieldNames.contains("next")
+        val hasPrev    = fieldNames.contains("prev")
+        if hasLeft && hasRight then "tree-binary"
+        else if hasNext && hasPrev then "list-double"
+        else if hasNext then "list-single"
+        else "graph-generic"
+      case None => "graph-generic"
+
+  /**
+   * Annotate one [[VizNode]] with its `cardId` and `layoutKind`. The node's owning heap object id is the `id`
+   * itself for an instance, or everything before the first `#` for a cell / entry (the synthesised suffix
+   * added by [[nodesOf]]). Falls back gracefully when the parent isn't in `cardByObj` — leaves the fields
+   * empty so the renderer treats the trace as legacy (single-layout via `VizGraph.layoutHint`).
+   */
+  private def annotateCard(
+      node: VizNode,
+      cardByObj: Map[String, String],
+      kindByCard: Map[String, String]
+  ): VizNode =
+    val ownerId = node.id.takeWhile(_ != '#')
+    cardByObj.get(ownerId) match
+      case Some(cardId) =>
+        node.copy(cardId = cardId, layoutKind = kindByCard.getOrElse(cardId, ""))
+      case None => node
 
   /**
    * Frame-local *integer* indices, drawn as cursors on an array's cells. An array algorithm advances integer
@@ -319,7 +649,7 @@ object HeapToGraph:
     step.heap.get(rootId) match
       case Some(HeapObject.Arr(_, items)) =>
         val len = items.size
-        step.locals.collect {
+        headLocals(step).collect {
           case (name, HeapValue.Scalar(HeapScalar.I(v)))
               if IndexNames.contains(name) && v >= 0 && v < len && nodeIds.contains(s"$rootId#$v") =>
             VizCursor(name, s"$rootId#$v")
@@ -421,10 +751,22 @@ object HeapToGraph:
       case Some(HeapValue.Scalar(s)) => scalarLabel(s)
       case Some(HeapValue.Ref(_))    => RefLabel
       case None                      => inst.cls
-    val meta = inst.fields.collect {
+    val nonValueScalars = inst.fields.collect {
       case (name, HeapValue.Scalar(s)) if !valueField.contains(name) && s != HeapScalar.Null =>
         VizField(name, scalarLabel(s))
     }
+    // Multi-scalar classes (e.g. AVL `val` + `height`) include the value field's
+    // name in meta too, so the user can map the unlabeled "1" in the circle to
+    // its attribute name alongside the other fields. Single-scalar classes
+    // (e.g. plain TreeNode with just `val`) skip the duplicate — the value in
+    // the circle plus the class label below is unambiguous on its own.
+    val meta =
+      if nonValueScalars.isEmpty then Nil
+      else
+        val primary = valueField.flatMap { vf =>
+          byName.get(vf).collect { case HeapValue.Scalar(s) => VizField(vf, scalarLabel(s)) }
+        }
+        primary.toList ++ nonValueScalars
     (label, meta)
 
   private def scalarLabel(s: HeapScalar): String = s match
@@ -433,6 +775,56 @@ object HeapToGraph:
     case HeapScalar.B(v) => v.toString
     case HeapScalar.S(v) => v
     case HeapScalar.Null => "null"
+
+  /** The type-name badge shown in the StackFramesPanel for a scalar local. */
+  private def scalarTypeName(s: HeapScalar): String = s match
+    case HeapScalar.I(_) => "int"
+    case HeapScalar.D(_) => "float"
+    case HeapScalar.B(_) => "bool"
+    case HeapScalar.S(_) => "str"
+    case HeapScalar.Null => "None"
+
+  /**
+   * A local variable's display-ready `(typeName, value)` pair for the StackFramesPanel.
+   *
+   * Scalars use [[scalarTypeName]] / [[scalarLabel]]; references resolve the referenced object from the heap
+   * — an instance shows its primary-value field (same as the diagram node label); a list / array is
+   * abbreviated to at most three elements; a dict shows its entry count.
+   */
+  private def localDisplay(v: HeapValue, heap: Map[String, HeapObject]): (String, String) =
+    v match
+      case HeapValue.Scalar(s) => (scalarTypeName(s), scalarLabel(s))
+      case HeapValue.Ref(id) =>
+        heap.get(id) match
+          case Some(inst @ HeapObject.Instance(cls, _)) =>
+            val (label, _) = nodeView(inst)
+            (cls, label)
+          case Some(HeapObject.Arr(_, items)) =>
+            val preview  = items.take(3).map(valueLabel).mkString(", ")
+            val ellipsis = if items.size > 3 then ", …" else ""
+            ("list", s"[$preview$ellipsis]")
+          case Some(HeapObject.Dict(entries)) =>
+            val n = entries.size
+            ("dict", if n == 1 then "{1 entry}" else s"{$n entries}")
+          case None => ("?", "?")
+
+  /**
+   * Builds the [[VizFrame]] list for a single [[HeapStep]]. Helper frames ([[isHelperFrame]]) and the Python
+   * `self` variable are excluded; `isActive` is true only for the innermost frame.
+   */
+  private def buildFrames(step: HeapStep): List[VizFrame] =
+    step.frames
+      .filterNot(f => isHelperFrame(f.fn))
+      .zipWithIndex
+      .map { case (frame, i) =>
+        val locals = frame.locals
+          .filterNot { case (name, _) => name == "self" }
+          .map { case (name, v) =>
+            val (typeName, valueStr) = localDisplay(v, step.heap)
+            VizLocal(name, typeName, valueStr, changed = false)
+          }
+        VizFrame(frame.fn, locals, isActive = i == 0)
+      }
 
   /** Every object id referenced directly by an object's fields / items / entries. */
   private def outRefs(obj: HeapObject): List[String] = obj match
@@ -504,7 +896,7 @@ object HeapToGraph:
   private def diffSteps(steps: List[VizGraphStep]): List[VizGraphStep] =
     val v = steps.toVector
     v.indices.map { i =>
-      if i == 0 then v(i).copy(annotation = narrate(None, v(i)))
+      if i == 0 then v(i).copy(annotation = v(i).annotation.copy(title = narrate(None, v(i))))
       else
         val prev      = v(i - 1).nodes.iterator.map(n => n.id -> n.label).toMap
         val cur       = v(i).nodes.iterator.map(n => n.id -> n.label).toMap
@@ -514,19 +906,44 @@ object HeapToGraph:
           .filter(id => prev.get(id).exists(_ != cur(id)))
           .toList
         val removedNodes = v(i - 1).nodes.filterNot(n => cur.contains(n.id))
+        // Mark which frame locals changed compared with the previous step.
+        // Key: (fn, localName) → previous value; a local that newly appeared counts as changed.
+        val prevLocals: Map[(String, String), String] =
+          v(i - 1).frames.flatMap(f => f.locals.map(l => (f.fn, l.name) -> l.value)).toMap
+        val updatedFrames = v(i).frames.map { frame =>
+          val updatedLocals = frame.locals.map { local =>
+            local.copy(changed = prevLocals.get((frame.fn, local.name)).exists(_ != local.value))
+          }
+          frame.copy(locals = updatedLocals)
+        }
+        // Slice 6 — `unchanged` = only the source line advanced; heap + active-frame locals identical.
+        // Checked before re-emitting removed nodes: a step that fades a node out is structurally
+        // significant and must not be filtered. Cursor comparison uses (name, target) pairs so colour
+        // changes (assigned later by colorizeCursors) don't flip the flag.
+        val prevCursorPairs = v(i - 1).cursor.iterator.map(c => (c.name, c.target)).toSet
+        val curCursorPairs  = v(i).cursor.iterator.map(c => (c.name, c.target)).toSet
+        val prevHeadLocals =
+          v(i - 1).frames.headOption.map(_.locals.map(l => (l.name, l.typeName, l.value))).getOrElse(Nil)
+        val curHeadLocals =
+          v(i).frames.headOption.map(_.locals.map(l => (l.name, l.typeName, l.value))).getOrElse(Nil)
+        val stepUnchanged =
+          highlight.isEmpty && changed.isEmpty && removedNodes.isEmpty &&
+            prevCursorPairs == curCursorPairs && prevHeadLocals == curHeadLocals
         val diffed = v(i).copy(
           nodes = v(i).nodes ++ removedNodes,
           highlight = highlight,
           changed = changed,
-          removed = removedNodes.map(_.id)
+          removed = removedNodes.map(_.id),
+          frames = updatedFrames,
+          unchanged = stepUnchanged
         )
-        diffed.copy(annotation = narrate(Some(v(i - 1)), diffed))
+        diffed.copy(annotation = diffed.annotation.copy(title = narrate(Some(v(i - 1)), diffed)))
     }.toList
 
   /**
    * A short, human phrase describing what a step did — the diagram's caption. Reads the already-computed diff
    * (removed, then a freshly inserted node, then a value change) and finally cursor movement; a dict entry is
-   * named by its key, so its insert reads `key → value`. The raw source line it replaces still shows,
+   * named by its key, so its insert reads `key = value`. The raw source line it replaces still shows,
    * highlighted, in the modal's code pane.
    */
   private def narrate(prev: Option[VizGraphStep], step: VizGraphStep): String =
@@ -539,7 +956,7 @@ object HeapToGraph:
     else if step.highlight.nonEmpty then
       val id = step.highlight.find(i => lbl(i) != RefLabel).getOrElse(step.highlight.head)
       keyOf(id) match
-        case Some(k) => s"$k → ${lbl(id)}"
+        case Some(k) => s"$k = ${lbl(id)}"
         case None =>
           step.edges.find(e => e.to == id && e.label.nonEmpty) match
             case Some(e) => s"inserted ${lbl(id)} as ${lbl(e.from)}.${e.label}"
@@ -548,16 +965,16 @@ object HeapToGraph:
       val id  = step.changed.head
       val was = prev.flatMap(_.nodes.find(_.id == id)).map(_.label)
       (keyOf(id), was) match
-        case (Some(k), Some(w)) => s"$k: $w → ${lbl(id)}"
-        case (None, Some(w))    => s"$w → ${lbl(id)}"
+        case (Some(k), Some(w)) => s"$k changed from $w to ${lbl(id)}"
+        case (None, Some(w))    => s"$w changed to ${lbl(id)}"
         case (_, None)          => s"set ${lbl(id)}"
     else
       val prevTargets =
         prev.map(_.cursor.iterator.map(c => c.name -> c.target).toMap).getOrElse(Map.empty)
       val moved = step.cursor.filter(c => !prevTargets.get(c.name).contains(c.target))
-      if moved.nonEmpty then moved.map(c => s"${c.name} → ${lbl(c.target)}").mkString(", ")
+      if moved.nonEmpty then moved.map(c => s"${c.name} moves to ${lbl(c.target)}").mkString(", ")
       else if prev.isEmpty then "initial structure"
-      else step.annotation
+      else step.annotation.body
 
   /**
    * Give every cursor its role colour ([[MarkerColors]]) — resolved once across the whole trace so a pointer
@@ -565,6 +982,14 @@ object HeapToGraph:
    * appearance.
    */
   private def colorizeCursors(steps: List[VizGraphStep]): List[VizGraphStep] =
-    val names  = steps.iterator.flatMap(_.cursor.iterator.map(_.name)).toList
+    val names =
+      steps.iterator
+        .flatMap(s => s.cursor.iterator.map(_.name) ++ s.cardCursor.iterator.map(_.name))
+        .toList
     val colors = MarkerColors.assignColors(names)
-    steps.map(s => s.copy(cursor = s.cursor.map(c => c.copy(color = colors.getOrElse(c.name, "")))))
+    steps.map { s =>
+      s.copy(
+        cursor = s.cursor.map(c => c.copy(color = colors.getOrElse(c.name, ""))),
+        cardCursor = s.cardCursor.map(c => c.copy(color = colors.getOrElse(c.name, "")))
+      )
+    }

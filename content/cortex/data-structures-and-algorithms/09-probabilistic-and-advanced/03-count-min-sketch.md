@@ -1,329 +1,251 @@
 ---
 title: Count-Min Sketch
-summary: A probabilistic data structure for streaming frequency estimation. Estimates "how many times has X appeared in this stream?" in sublinear memory. The structure behind real-time analytics dashboards and DDoS detection.
+summary: "Bloom filter's count-valued cousin — estimate how often each item appeared in a stream using a fixed d×w counter grid and d hashes. Increment d cells per item; estimate by the MIN of those cells. Over-counts only (never under), so the min is the tightest estimate."
 prereqs:
   - probabilistic-and-advanced-bloom-filter
+  - algorithms-by-strategy-randomized-algorithms-introduction-to-randomized-algorithms
 ---
 
-# 3. Count-Min Sketch
+## Why It Exists
 
-## The Hook
+A [bloom filter](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-bloom-filter) answers *is this item present?* in tiny space. A **count-min sketch** answers the next question — *how many times has this item appeared?* — under the same budget. You're a CDN watching a million requests a second and you need the top talkers; you're a database tracking the hottest keys; you're counting words in a firehose. An exact counter per item works until the number of *distinct* items explodes (billions of IPs, the long tail of language), at which point the hash map of counters no longer fits in memory.
 
-You're running a CDN. Each second, a million HTTP requests stream past. You need to answer, in real time: *which IPs are hitting us most often, and how often?* A counter per IP works for thousands of IPs but fails for billions of IPs (the long tail of the global internet).
+The sketch trades exactness for a *fixed* footprint: a small `d × w` grid of counters plus `d` hash functions. Each item bumps one counter per row; you estimate its count by reading those `d` counters and taking the **minimum**. Like the bloom filter, the error is **one-sided** — the estimate is *always ≥* the true count, never below — because counters only ever get added to. That makes it a [Monte Carlo](/cortex/data-structures-and-algorithms/algorithms-by-strategy-randomized-algorithms-introduction-to-randomized-algorithms) structure, and it's the engine behind real-time analytics, heavy-hitter detection, and DDoS monitoring.
 
-The **Count-Min Sketch (CMS)** estimates frequencies in a stream using fixed memory, regardless of how many distinct items appear. Like the Bloom filter, it's probabilistic — it returns "frequency at most X" with high probability, with overestimation possible (never underestimation).
+## See It Work
 
-The structure: a 2D grid of counters of size `d × w`, plus `d` independent hash functions. To **add** an item, hash it `d` times; increment each of the `d` cells. To **query** an item's frequency, hash it `d` times; return the *minimum* of the `d` cells.
+Each item hashes to one column per row. `add` increments those `d` cells; `estimate` reads them and returns the smallest. With a wide enough grid (few collisions) the estimate is exact.
 
-Compared to a hash map: CMS is `O(d × w)` memory regardless of stream size. Compared to a Bloom filter: CMS counts (not just membership). The error grows with the stream's "weight"; tuning `d` and `w` controls the error bounds.
-
----
-
-## Table of contents
-
-1. [The 2D counter grid](#the-2d-counter-grid)
-2. [Why "min"](#why-min)
-3. [Tuning `d` and `w`](#tuning-d-and-w)
-4. [Implementation](#implementation)
-5. [Heavy hitters extension](#heavy-hitters-extension)
-6. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
-7. [Production reality](#production-reality)
-8. [Cross-links](#cross-links)
-9. [Final takeaway](#final-takeaway)
-
-***
-
-# The 2D counter grid
-
-A CMS is a `d × w` matrix of integer counters, all initially 0, plus `d` independent hash functions `h_1, h_2, …, h_d`, each mapping items to `[0, w)`.
-
-```
-sketch[d=4, w=8]:
-       col 0  col 1  col 2  col 3  col 4  col 5  col 6  col 7
-row 0:    0      0      0      0      0      0      0      0
-row 1:    0      0      0      0      0      0      0      0
-row 2:    0      0      0      0      0      0      0      0
-row 3:    0      0      0      0      0      0      0      0
-```
-
-`add(x)`: `for i in 0..d: sketch[i][h_i(x)] += 1`.
-
-`query(x)`: `min over i of sketch[i][h_i(x)]`.
-
-***
-
-# Why "min"
-
-Each counter cell `sketch[i][h_i(x)]` *overestimates* the count of `x` because it accumulates from any other item `y` that happens to hash to the same cell. By taking the minimum across the `d` cells, we get the tightest upper bound — the cell with the *fewest* accidental hits.
-
-Formally: if `f(x)` is the true count, the CMS query returns `f̂(x)` such that `f(x) ≤ f̂(x) ≤ f(x) + ε · ||T||_1` with probability ≥ `1 − δ`, where `||T||_1` is the total stream weight (count of all items). `ε` and `δ` are controlled by `w` and `d`.
-
-***
-
-# Tuning `d` and `w`
-
-For target additive error `ε · N` (where `N` is total stream count) and confidence `1 − δ`:
-
-```
-w = ⌈e / ε⌉
-d = ⌈ln(1/δ)⌉
-```
-
-Example: `ε = 0.001` (error within 0.1% of N), `δ = 0.01` (1% chance of exceeding the bound). `w ≈ 2718`, `d ≈ 5`. Total memory: `~14k` 32-bit counters = **56 KB**, *regardless of how many distinct items appear*.
-
-For an alternative with more variance but better practical accuracy, "Conservative Update" only increments the *smallest* cells in the row — but the analysis is more complex.
-
-***
-
-# Implementation
-
-```python run viz=grid viz-root=table
-import hashlib
-
+```python run
+MOD = (1 << 31) - 1
 class CountMinSketch:
-    def __init__(self, w=2718, d=5):
+    BASES = [131, 137, 139]                          # one hash per row (so d = 3 rows)
+    def __init__(self, w):
         self.w = w
-        self.d = d
-        self.table = [[0] * w for _ in range(d)]
-
-    def _hashes(self, x):
-        data = str(x).encode()
-        for i in range(self.d):
-            h = int(hashlib.sha256(data + str(i).encode()).hexdigest()[:16], 16)
-            yield h % self.w
-
+        self.grid = [[0] * w for _ in range(len(self.BASES))]
+    def _pos(self, x, i):
+        h = 0
+        for c in x:
+            h = (h * self.BASES[i] + ord(c)) % MOD
+        return h % self.w
     def add(self, x, count=1):
-        for i, h in enumerate(self._hashes(x)):
-            self.table[i][h] += count
+        for i in range(len(self.BASES)):             # bump one counter per row
+            self.grid[i][self._pos(x, i)] += count
+    def estimate(self, x):
+        return min(self.grid[i][self._pos(x, i)] for i in range(len(self.BASES)))   # MIN of the d cells
 
-    def query(self, x):
-        return min(self.table[i][h] for i, h in enumerate(self._hashes(x)))
-
-
-if __name__ == "__main__":
-    cms = CountMinSketch(w=2718, d=5)
-
-    # Stream simulation: skewed distribution
-    import random
-    random.seed(42)
-    stream = []
-    for _ in range(100_000):
-        if random.random() < 0.1:
-            stream.append("hot_item")
-        elif random.random() < 0.5:
-            stream.append(f"warm_{random.randint(0, 9)}")
-        else:
-            stream.append(f"cold_{random.randint(0, 99_999)}")
-
-    for x in stream:
-        cms.add(x)
-
-    # True count for verification
-    from collections import Counter
-    truth = Counter(stream)
-    print(f"hot_item:  truth={truth['hot_item']}      cms={cms.query('hot_item')}")
-    print(f"warm_3:    truth={truth['warm_3']}      cms={cms.query('warm_3')}")
-    print(f"cold_50:   truth={truth.get('cold_50', 0)}      cms={cms.query('cold_50')}")
-    print(f"never_seen: truth=0      cms={cms.query('never_seen')}")
-    print(f"Memory: {cms.w * cms.d * 4 / 1024:.1f} KB for any stream size")
+cms = CountMinSketch(w=64)
+for x in ["apple"] * 5 + ["banana"] * 3 + ["date"] * 7:
+    cms.add(x)
+print(cms.estimate("apple"))     # 5
+print(cms.estimate("banana"))    # 3
+print(cms.estimate("date"))      # 7
 ```
 
 ```java run
-import java.util.*;
-
 public class Main {
-    int w = 2718, d = 5;
-    int[][] table = new int[d][w];
-
-    int[] hashes(String x) {
-        int[] out = new int[d];
-        long h = x.hashCode();
-        for (int i = 0; i < d; i++) {
-            h = (h * 31 + i * 0xdeadbeefL) & 0xffffffffL;
-            out[i] = (int) (Math.abs(h) % w);
+    static final long MOD = (1L << 31) - 1;
+    static final int[] BASES = {131, 137, 139};
+    static class CMS {
+        int w; long[][] grid;
+        CMS(int w) { this.w = w; grid = new long[BASES.length][w]; }
+        int pos(String x, int i) {
+            long h = 0;
+            for (int j = 0; j < x.length(); j++) h = (h * BASES[i] + x.charAt(j)) % MOD;
+            return (int) (h % w);
         }
-        return out;
+        void add(String x, long c) { for (int i = 0; i < BASES.length; i++) grid[i][pos(x, i)] += c; }
+        long estimate(String x) {
+            long m = Long.MAX_VALUE;
+            for (int i = 0; i < BASES.length; i++) m = Math.min(m, grid[i][pos(x, i)]);
+            return m;
+        }
     }
-
-    void add(String x) {
-        int[] hs = hashes(x);
-        for (int i = 0; i < d; i++) table[i][hs[i]]++;
-    }
-
-    int query(String x) {
-        int[] hs = hashes(x);
-        int min = Integer.MAX_VALUE;
-        for (int i = 0; i < d; i++) min = Math.min(min, table[i][hs[i]]);
-        return min;
-    }
-
     public static void main(String[] args) {
-        Main cms = new Main();
-        for (int i = 0; i < 100_000; i++) cms.add("hot");
-        System.out.println("query('hot') -> " + cms.query("hot"));
+        CMS cms = new CMS(64);
+        for (int i = 0; i < 5; i++) cms.add("apple", 1);
+        for (int i = 0; i < 3; i++) cms.add("banana", 1);
+        for (int i = 0; i < 7; i++) cms.add("date", 1);
+        System.out.println(cms.estimate("apple"));    // 5
+        System.out.println(cms.estimate("banana"));   // 3
+        System.out.println(cms.estimate("date"));     // 7
     }
 }
 ```
 
-***
+Both print `5`, `3`, `7` — exact, because a 3×64 grid leaves these few items collision-free. The sketch stores `3 × 64` counters no matter how many distinct items stream through; only the *accuracy* degrades as collisions rise, never the footprint.
 
-# Heavy hitters extension
+## How It Works
 
-A common application: find the **top-K** most-frequent items in a stream — the "heavy hitters". The naive approach (sorted hash map of all items) costs `O(distinct items)` memory. The CMS approach:
+Every counter is a *sum over all items that hash there*, so each cell **over-counts** the target by whatever else collided with it. The minimum picks the least-polluted cell:
 
-1. Maintain a min-heap of size K.
-2. For each incoming item, query its CMS estimate.
-3. If it's larger than the heap minimum, push it.
-
-`O(N log K + d × N)` time, `O(K + d × w)` memory. Used in network monitoring, real-time recommendation systems, and DDoS detection.
-
-***
-
-# Edge cases and pitfalls
-
-- **Overestimation only.** CMS never underestimates. If your application can tolerate underestimates (which would be unusual), use a different sketch.
-- **Cold items get inflated counts.** An item that appeared 0 times might query as 5+ if it happens to collide in every row. The min reduces but doesn't eliminate this. For low-frequency items, the relative error is large.
-- **Hash function quality.** Like Bloom filters, CMS depends on independent uniform hashes. Bad hashes correlate cells and inflate errors.
-- **Counter overflow.** With 32-bit counters, you can fit `~4 × 10⁹` total updates before any cell overflows. For longer streams or higher rates, use 64-bit counters or periodic decay.
-- **Decay over time.** For "frequency in the last hour" rather than "all-time frequency", you need *windowed* sketches. Two CMS instances rotated periodically, or "exponential decay" multiplying counters by 0.99 per second.
-
-***
-
-# Production reality
-
-- **Real-time analytics.** Druid, Pinot, ClickHouse, and other OLAP databases use CMS-style sketches for top-K queries on cardinality data.
-- **DDoS detection.** Cloudflare, Akamai monitor IP-traffic frequencies in real time using sketches; high-frequency IPs trigger rate-limiting.
-- **Network telemetry.** Cisco, Juniper switches use CMS-like sketches for "heavy flows" detection on telemetry streams.
-- **Recommendation systems.** "Items seen with this user" frequency estimation in online recommender systems uses sketches when the catalog is huge.
-- **Apache DataSketches.** A widely-used Java/C++ library implementing CMS, HyperLogLog, KLL quantiles, and other sketches. Used at Yahoo, Twitter, etc.
-- **Redis Stream Data Types** (since v6.2) include `cms.*` commands for Count-Min Sketch as a first-class data type.
-
-***
-
-# Memorize
-
-The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. CMS is the streaming-frequency partner of the Bloom filter — fixed memory, overestimation only.
-
-## Quick recall
-
-Click any question to reveal the answer.
-
-<details>
-<summary><strong>Q:</strong> CMS structure — what does the 2D grid hold?</summary>
-
-**A:** `d` rows of `w` counters. Each item hashes to one cell per row.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Update operation?</summary>
-
-**A:** For each row `i`, increment `sketch[i][h_i(x)]`. `O(d)` per update.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Query operation?</summary>
-
-**A:** Return the *minimum* of `sketch[i][h_i(x)]` over all `d` rows. `O(d)`.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Why "min"?</summary>
-
-**A:** Each cell *overestimates* (collisions inflate). The minimum gives the tightest upper bound across rows.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Tuning formulas — additive error <code>ε · N</code>, confidence <code>1 − δ</code>?</summary>
-
-**A:** `w = ⌈e / ε⌉`, `d = ⌈ln(1/δ)⌉`. For `ε = 0.001`, `δ = 0.01`: `w ≈ 2718`, `d ≈ 5` → ~14k counters → ~56 KB.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Does CMS underestimate?</summary>
-
-**A:** Never. Always `f̂(x) ≥ f(x)`. The "min over rows" gives the tightest upper bound; the actual count can't be larger.
-
-</details>
-<details>
-<summary><strong>Q:</strong> How do you find heavy hitters with CMS?</summary>
-
-**A:** Maintain a min-heap of size K alongside the sketch. For each incoming item, query its CMS estimate; push if it exceeds the heap minimum.
-
-</details>
-
-## Code template
-
-```python
-import hashlib
-
-class CountMinSketch:
-    def __init__(self, w=2718, d=5):
-        self.w, self.d = w, d
-        self.table = [[0] * w for _ in range(d)]
-
-    def _hashes(self, x):
-        b = str(x).encode()
-        for i in range(self.d):
-            h = int(hashlib.sha256(b + bytes([i])).hexdigest()[:16], 16)
-            yield h % self.w
-
-    def add(self, x, count=1):
-        for i, h in enumerate(self._hashes(x)):
-            self.table[i][h] += count
-
-    def query(self, x):
-        return min(self.table[i][h] for i, h in enumerate(self._hashes(x)))
+```d2
+direction: right
+add: "add(x): for each row i, grid[i][hi(x)] += 1\n(one counter bumped per row)" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
+cells: "estimate reads x's d cells.\nEach = true_count(x) + collisions in that cell\n-> every cell is >= the true count" {style.fill: "#fde68a"; style.stroke: "#d97706"}
+mn: "estimate = MIN of the d cells\n-> the least-collided row\n-> tightest over-estimate, still >= true" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
+err: "no under-counts ever; error <= eps*N with\nw = ceil(e/eps), d = ceil(ln(1/delta)),\nfailing with prob <= delta" {style.fill: "#f3e8ff"; style.stroke: "#9333ea"}
+add -> cells
+cells -> mn
+mn -> err
 ```
 
-## Pattern triggers
+<p align="center"><strong>Each of an item's <code>d</code> counters equals its true count plus whatever collided into that cell — so every cell is an over-estimate. Taking the <em>minimum</em> across rows finds the least-collided one: the tightest over-estimate, and never below the truth.</strong></p>
 
-- **"Top-K most frequent in a stream"** → CMS + heap
-- **"How many times has IP X hit me?"** → CMS
-- **"Real-time analytics dashboard"** → CMS / HLL combination
-- **"DDoS rate-limiting per source"** → CMS for frequency
-- **"Network heavy-flow detection"** → CMS for packet counts
-- **"How many distinct?"** → not CMS — use HyperLogLog
-- **"Approximate quantiles"** → not CMS — use KLL or t-digest
-- **"Fixed memory regardless of stream cardinality"** → CMS / HLL / Bloom
+Three load-bearing facts:
 
-***
+- **Estimates only over-count, so MIN is correct.** A counter accumulates *every* item that hashes to it; it can never be *below* the target's true count (the target itself added to it), but it can be *above* (collisions). Every one of the `d` cells is therefore `≥ true`, and the **minimum** is the closest to truth while still safe — taking the *min* of over-estimates is exactly right; summing or averaging would *compound* the collision error.
+- **`w` controls collision noise, `d` controls confidence.** Wider rows (`w = ⌈e/ε⌉`) make any single collision rarer, so each cell over-counts less; more rows (`d = ⌈ln(1/δ)⌉`) give more independent chances for a *clean* cell, so the min is tight with probability `1 − δ`. The guarantee: estimate ≤ true `+ εN` (where `N` is the total stream count) with probability `≥ 1 − δ`.
+- **It's the bloom filter for counts.** Bloom: `k` bits per item, "present" can be a false positive, "absent" is certain. Count-min: `d` counters per item, the estimate can be too *high*, never too *low*. Same one-sided philosophy, lifted from membership to frequency — and it composes linearly (merge two sketches by adding their grids), which is why it's perfect for distributed stream aggregation.
 
-# Cross-links
+> **Key takeaway.** A count-min sketch is a `d × w` counter grid + `d` hashes: `add` increments one cell per row; `estimate` returns the **min** of an item's `d` cells. Counters only over-count (collisions add), so every cell is `≥ true` and the **min is the tightest safe estimate** — never an under-count. Error `≤ εN` with prob `1 − δ` for `w = ⌈e/ε⌉`, `d = ⌈ln(1/δ)⌉`. Fixed memory, mergeable, Monte Carlo.
 
-- **Sibling structures:** [Bloom Filter](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-bloom-filter) (membership), [HyperLogLog](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-hyperloglog) (cardinality estimation).
-- **Used by:** real-time analytics, network monitoring, recommendation systems.
+## Trace It
 
-***
+Why the *minimum*, specifically — not a single row, not the sum, not the average? Because a collision in one row shouldn't pollute the estimate if another row is clean.
 
-# Final takeaway
+**Predict before you run:** in a narrow `3 × 5` sketch, you add a *rare* key `"aa"` once and a *heavy* key `"bb"` twenty times. It happens that `"aa"` and `"bb"` collide in exactly one of `"aa"`'s three rows. So `"aa"`'s three counters read `[1, 1, 21]`. What does `estimate("aa")` return — and what would summing the cells give?
 
-Count-Min Sketch is the streaming frequency estimator. Three patterns to internalise:
+```python run
+MOD = (1 << 31) - 1
+class CountMinSketch:
+    BASES = [131, 137, 139]
+    def __init__(self, w):
+        self.w = w; self.grid = [[0] * w for _ in range(len(self.BASES))]
+    def _pos(self, x, i):
+        h = 0
+        for c in x: h = (h * self.BASES[i] + ord(c)) % MOD
+        return h % self.w
+    def add(self, x, count=1):
+        for i in range(len(self.BASES)): self.grid[i][self._pos(x, i)] += count
+    def cells(self, x):
+        return [self.grid[i][self._pos(x, i)] for i in range(len(self.BASES))]
+    def estimate(self, x):
+        return min(self.cells(x))
 
-1. **Sublinear memory regardless of distinct items.** `d × w` cells; doesn't grow with stream cardinality.
-2. **Overestimation only.** The "min over d rows" gives the tightest upper bound. Underestimation is impossible.
-3. **The standard pair with Bloom filters.** Bloom: "is X in the set?". CMS: "how often is X in the stream?". Both probabilistic, both production-deployed, both tunable to your error budget.
+cms = CountMinSketch(w=5)
+cms.add("aa", 1)                                      # true count of 'aa' is 1
+cms.add("bb", 20)                                     # heavy key, collides in one of aa's rows
+print("'aa' cells per row:", cms.cells("aa"))
+print("estimate (MIN)    :", cms.estimate("aa"))
+print("if we summed cells:", sum(cms.cells("aa")))
+print("the collided row alone:", max(cms.cells("aa")))
+```
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+<details>
+<summary><strong>Reveal</strong></summary>
 
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
+`estimate("aa")` is `1` — *exactly* the true count — even though one of its counters reads `21`. The three cells are `[1, 1, 21]`: two rows where `"aa"` sits alone (reading its true count of 1), and one row where the heavy `"bb"` collided into the same cell (`1 + 20 = 21`). The **minimum**, `1`, ignores the polluted row entirely and reads the truth off a clean one. Now look at the alternatives: a *single* row might be the unlucky `21` (a 21× over-estimate); the **sum** is `23` (it triple-counts `"aa"` and folds in the whole collision); the **average** is ~`7.7` (still way over). Only the `min` works, and it works precisely *because* every cell is an over-estimate: the smallest over-estimate is the closest to the truth, and it's guaranteed not to dip below it. The `d` rows aren't redundancy for averaging — they're `d` independent chances to find a *collision-free* counter, and the `min` cashes in the best one. Widen the grid and collisions like this one grow rarer; the estimate only ever gets tighter, never wrong in the other direction.
 
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
+</details>
 
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
+## Your Turn
 
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
+**Heavy hitters** — find the most frequent item in a stream, and confirm the one-sided guarantee. Add a stream with known true counts, then verify every estimate is `≥` its true count (never under) and that the sketch fingers the heaviest key.
 
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+```python run
+MOD = (1 << 31) - 1
+class CountMinSketch:
+    BASES = [131, 137, 139]
+    def __init__(self, w):
+        self.w = w; self.grid = [[0] * w for _ in range(len(self.BASES))]
+    def _pos(self, x, i):
+        h = 0
+        for c in x: h = (h * self.BASES[i] + ord(c)) % MOD
+        return h % self.w
+    def add(self, x, count=1):
+        for i in range(len(self.BASES)): self.grid[i][self._pos(x, i)] += count
+    def estimate(self, x):
+        return min(self.grid[i][self._pos(x, i)] for i in range(len(self.BASES)))
 
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
+cms = CountMinSketch(w=16)
+truth = {"x": 50, "y": 12, "z": 3, "p": 7, "q": 1}
+for k, c in truth.items():
+    cms.add(k, c)
+print("every estimate >= true?:", all(cms.estimate(k) >= truth[k] for k in truth))   # True
+heavy = max(truth, key=cms.estimate)
+print("heavy hitter:", heavy, "->", cms.estimate(heavy))                              # x -> 50
+```
 
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+```java run
+public class Main {
+    static final long MOD = (1L << 31) - 1;
+    static final int[] BASES = {131, 137, 139};
+    static class CMS {
+        int w; long[][] grid;
+        CMS(int w) { this.w = w; grid = new long[BASES.length][w]; }
+        int pos(String x, int i) {
+            long h = 0;
+            for (int j = 0; j < x.length(); j++) h = (h * BASES[i] + x.charAt(j)) % MOD;
+            return (int) (h % w);
+        }
+        void add(String x, long c) { for (int i = 0; i < BASES.length; i++) grid[i][pos(x, i)] += c; }
+        long estimate(String x) {
+            long m = Long.MAX_VALUE;
+            for (int i = 0; i < BASES.length; i++) m = Math.min(m, grid[i][pos(x, i)]);
+            return m;
+        }
+    }
+    public static void main(String[] args) {
+        CMS cms = new CMS(16);
+        String[] ks = {"x", "y", "z", "p", "q"}; long[] cs = {50, 12, 3, 7, 1};
+        for (int i = 0; i < ks.length; i++) cms.add(ks[i], cs[i]);
+        boolean ok = true; String heavy = ks[0];
+        for (int i = 0; i < ks.length; i++) {
+            if (cms.estimate(ks[i]) < cs[i]) ok = false;
+            if (cms.estimate(ks[i]) > cms.estimate(heavy)) heavy = ks[i];
+        }
+        System.out.println("every estimate >= true?: " + ok);            // true
+        System.out.println("heavy hitter: " + heavy + " -> " + cms.estimate(heavy));   // x -> 50
+    }
+}
+```
+
+Both print `True` then `x -> 50`. Every estimate honours the floor (never below the true count), and the argmax over estimates is the genuine heavy hitter `x`. This is the production pattern: a count-min sketch maintains approximate counts for *every* key in fixed memory, and a small heap of the top estimates surfaces the heavy hitters — exactly how stream processors find the trending hashtag or the IP flooding your servers.
+
+## Reflect & Connect
+
+- **Over-count only, so take the min.** Each counter is true-count plus collisions, hence `≥ true`. The minimum of the `d` cells is the tightest estimate and never dips below the truth — the one-sided error that makes it safe.
+- **`d` rows are clean-cell chances, not averaging.** More rows give more independent shots at a collision-free counter; the `min` grabs the best. Wider rows shrink each collision. Tune `w = ⌈e/ε⌉`, `d = ⌈ln(1/δ)⌉` for error `εN` with confidence `1 − δ`.
+- **Bloom filter's count cousin.** Bloom answers membership with possible false positives; count-min answers frequency with possible over-estimates. Same one-sided Monte Carlo bargain, lifted to counts — and **mergeable** (add two grids cell-wise) for distributed aggregation.
+- **Heavy hitters fall out.** Maintain the sketch plus a small top-k heap of estimates; the argmax is the most frequent item. The basis of trending-topic, hot-key, and DDoS detection at stream scale.
+- **The probabilistic-structures family.** [Skip list](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-skip-list) (Las Vegas, exact), [bloom filter](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-bloom-filter) (membership), count-min (frequency), and HyperLogLog (cardinality, next) all share one idea — *hash into a small fixed array and accept a bounded, one-sided approximation* — applied to a different question each time.
+
+## Recall
+
+<details>
+<summary><strong>Q:</strong> What does a count-min sketch estimate, and with what structure?</summary>
+
+**A:** The frequency of each item in a stream, using a `d × w` grid of counters and `d` hash functions (one per row). `add` increments one counter per row; `estimate` takes the minimum of an item's `d` counters.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is the estimate the minimum of the cells, not the sum or average?</summary>
+
+**A:** Every cell over-counts (collisions only add), so each is `≥` the true count. The minimum is the least-collided cell — the tightest over-estimate, still never below the truth. Summing or averaging would compound the collision error.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Can a count-min sketch ever under-count?</summary>
+
+**A:** No. The item itself added to all its counters, and counters never decrease, so every cell — and thus their minimum — is `≥` the true count. The error is strictly one-sided (over-estimates only).
+
+</details>
+<details>
+<summary><strong>Q:</strong> What do the dimensions `w` and `d` control?</summary>
+
+**A:** `w` (columns) controls collision noise — wider rows make each cell over-count less (`w = ⌈e/ε⌉` bounds error to `εN`). `d` (rows) controls confidence — more rows give more chances for a clean cell, so the min is tight with probability `1 − δ` (`d = ⌈ln(1/δ)⌉`).
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does a count-min sketch find heavy hitters?</summary>
+
+**A:** Maintain the sketch over the stream and a small heap of the highest estimates; the items with the largest estimated counts are the heavy hitters. Estimates never under-count, so a true heavy hitter is never missed.
+
+</details>
+
+## Sources & Verify
+
+- **Cormode & Muthukrishnan** (2005), "An improved data stream summary: the count-min sketch and its applications", *J. Algorithms* — the original, with the `(ε, δ)` guarantees and heavy-hitter use.
+- **Cormode** (2011), "Sketch techniques for approximate query processing" — count-min in the broader sketching landscape (vs HyperLogLog, AMS).
+- **Apache** Spark/Flink and stream processors implement count-min for approximate frequency; the `5`/`3`/`7` exact estimates, the `[1,1,21]`-cells / `1`-min trace, and the `x -> 50` heavy hitter above come from the runnable blocks — re-run to verify (deterministic hashes; Python's built-in `hash` is per-process salted and unsuitable).

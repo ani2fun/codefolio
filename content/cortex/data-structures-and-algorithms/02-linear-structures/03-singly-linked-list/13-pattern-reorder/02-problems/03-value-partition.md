@@ -215,7 +215,7 @@ print(to_list(Solution().value_partition(from_list([1, 2, 2]), 3)))            #
 print(to_list(Solution().value_partition(from_list([5, 1, 3, 2, 4]), 3)))      # [1, 2, 5, 3, 4]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {

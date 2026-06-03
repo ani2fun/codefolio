@@ -68,7 +68,6 @@ The two pointers are `start` and `end`, with the aggregate held in a single inte
 
 What breaks if you use the naive nested-loop approach is the same O(N × k) cost as before: each window re-scans `k` elements for the sign check, despite sharing `k − 1` of them with the previous window. The sliding window saves that wasted work and runs in O(N) time, with the only extra space being the O(N − k + 1) result list that the problem itself demands.
 
-> 🖼 Diagram — Each slide removes the outgoing element's contribution and adds the incoming one. The count updates in O(1) — one conditional check per side per step.
 ```d2
 direction: right
 
@@ -124,7 +123,7 @@ w2 -> w3: "remove 2 (+0), add -5 (+1) → neg=2"
 
 ### Solution
 
-```python run
+```python run viz=array viz-root=result
 from typing import List
 
 class Solution:
@@ -184,7 +183,7 @@ print(Solution().negative_window([1, 2, 3, 4], 2))            # [0, 0, 0]  — a
 print(Solution().negative_window([-1, -2, -3, -4], 3))        # [3, 3]  — all negative
 ```
 
-```java run
+```java run viz=array viz-root=result
 import java.util.*;
 
 public class Main {

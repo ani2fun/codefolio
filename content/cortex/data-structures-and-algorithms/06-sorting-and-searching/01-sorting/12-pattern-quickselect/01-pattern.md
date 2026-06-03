@@ -1,200 +1,175 @@
 ---
 title: "Pattern: Quickselect"
-summary: "Partition-then-recurse into only one half — O(n) expected selection for Kth smallest/largest, median, and K-closest problems."
+summary: "Reuse quicksort's partition, but after the pivot lands at its final rank, recurse into only the ONE side that holds rank k. Finds the k-th smallest (median, k closest) in O(n) average — without fully sorting. Worst case O(n²), dodged by a random pivot."
 prereqs:
   - 06-sorting-and-searching/01-sorting/06-quicksort
 ---
 
-# Understanding Quickselect
+# Pattern: Quickselect
 
-Quickselect is a one-sided variant of quicksort. The partition step is identical (Lomuto's, with a random pivot). The difference: after partitioning, instead of recursing on *both* halves, we recurse on *only* the half that contains the target position.
+## Why It Exists
 
+You need the `k`-th smallest element — the median, the 90th percentile, the 3rd-largest. The obvious route sorts the whole array (`O(n log n)`) and indexes position `k`. But that computes the *entire* order when you only want *one* element's place.
+
+Quickselect reuses quicksort's **partition**, with one insight: after partitioning, the pivot sits at its *final sorted rank* `p`. If `p` is the rank you want, you're done. If not, the answer lies entirely on *one* side — so recurse into only that side and ignore the other. Quicksort recurses into *both* halves (`O(n log n)`); quickselect recurses into *one* (`n + n/2 + n/4 + … = 2n`), giving **`O(n)` average**. You partition repeatedly but throw away half the work each time.
+
+## See It Work
+
+Find the 4th smallest of `[7, 2, 1, 6, 8, 5, 3, 4]` (the answer is `4`) without sorting. Run it.
+
+```python run
+def partition(arr, lo, hi):
+    pivot = arr[hi]; i = lo - 1
+    for j in range(lo, hi):
+        if arr[j] <= pivot:
+            i += 1; arr[i], arr[j] = arr[j], arr[i]
+    arr[i + 1], arr[hi] = arr[hi], arr[i + 1]
+    return i + 1                           # pivot's final sorted rank
+
+def quickselect(arr, k):                   # k-th smallest, 1-indexed
+    arr = list(arr)
+    lo, hi, target = 0, len(arr) - 1, k - 1
+    while lo <= hi:
+        p = partition(arr, lo, hi)
+        if p == target:
+            return arr[p]                  # pivot is exactly the rank we want
+        elif p < target:
+            lo = p + 1                     # answer is to the RIGHT — recurse there only
+        else:
+            hi = p - 1                     # answer is to the LEFT — recurse there only
+
+print(quickselect([7, 2, 1, 6, 8, 5, 3, 4], 4))   # 4
 ```
-function quickselect(arr, left, right, k):
-    if left >= right:
-        return                         # base case: 0 or 1 elements
-    pivot = partition(arr, left, right)    # pivot ends up at its final sorted position
-    if pivot == k - 1:
-        return                         # arr[pivot] is the k-th smallest
-    if pivot > k - 1:
-        quickselect(arr, left, pivot - 1, k)    # recurse on left half
-    else:
-        quickselect(arr, pivot + 1, right, k)   # recurse on right half
-```
 
-After the call returns, `arr[k - 1]` holds the k-th smallest element. (If you want the k-th *largest*, change the partition's comparison from `<` to `>`.)
+## How It Works
 
-> 🖼 Diagram — Quickselect's recursion. Each step partitions and discards one half. Eventually p == k-1 and we're done.
+Partition the active range `[lo, hi]`; the pivot lands at rank `p`. Compare `p` to `target = k − 1`:
+
+- `p == target` → the pivot *is* the `k`-th element; return it.
+- `p < target` → everything `≤` rank `p` is too small; the answer is in `[p+1, hi]`. Set `lo = p + 1`.
+- `p > target` → the answer is in `[lo, p−1]`. Set `hi = p − 1`.
+
+Loop (or recurse) on the single surviving range until the pivot lands on `target`.
+
 ```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#777777"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
 flowchart TB
-  S["Find k-th smallest of n elements"]
-  S --> P["Partition: pivot lands at index p (final sorted position)"]
-  P -->|"p == k-1"| FOUND["arr[p] is the answer"]
-  P -->|"p > k-1"| L["Recurse on left half [left..p-1]"]
-  P -->|"p < k-1"| R["Recurse on right half [p+1..right]"]
-  L --> P
+  P["partition [lo,hi] → pivot at rank p"] --> Q{"p vs target"}
+  Q -->|"=="| D(["found: arr[p]"])
+  Q -->|"p < target"| R["search right [p+1, hi]"]
+  Q -->|"p > target"| L["search left [lo, p-1]"]
   R --> P
+  L --> P
 ```
 
-<p align="center"><strong>Quickselect's recursion. Each step partitions and discards one half. Eventually <code>p == k-1</code> and we're done.</strong></p>
+<p align="center"><strong>partition, then keep only the side containing rank k; the discarded side is never touched again.</strong></p>
 
----
+Discarding one side each step is the whole speedup. With balanced pivots the work is `n + n/2 + n/4 + … = O(n)` **average** — strictly better than sorting. Like quicksort it has an `O(n²)` **worst case** (consistently bad pivots), fixed in practice with a **random pivot**. For a *guaranteed* `O(n)` worst case there's the median-of-medians pivot, but it has a large constant and is rarely needed. Space is `O(1)` with the iterative loop above.
 
-## Why It's `O(n)` on Average
+### Key Takeaway
 
-Quicksort recurses on *both* halves: each level does `O(n)` work, total `n log n`. Quickselect recurses on *one* half: each level does `O(n)` work, but the input shrinks by ~50% each time. Total: `n + n/2 + n/4 + ... = 2n = O(n)`.
+Quickselect partitions like quicksort but recurses into only the side holding rank `k`, finding the `k`-th smallest in `O(n)` average without fully sorting. `O(n²)` worst case → use a random pivot. The "recurse into one side" move is what turns `O(n log n)` into `O(n)`.
 
-> 🖼 Diagram — Quickselect's geometric cost. Each level halves the input; the sum of a geometric series with ratio 1/2 is bounded by twice the first term. Total O(n) on average.
-```d2
-direction: down
+## Trace It
 
-l0: "Level 0 — scan n elements" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
-l1: "Level 1 — scan n/2 elements" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-l2: "Level 2 — scan n/4 elements" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
-l3: "..."
-total: "Total: n + n/2 + n/4 + ... ≈ 2n = O(n)" {style.fill: "#ede9fe"; style.stroke: "#7c3aed"}
+Selecting the 4th smallest (`target = 3`) of `[7, 2, 1, 6, 8, 5, 3, 4]`, pivot = last element:
 
-l0 -> l1 -> l2 -> l3 -> total
+| range `[lo,hi]` | pivot | rank `p` | vs target 3 | next |
+|---|---|---|---|---|
+| `[0,7]` | `4` | `3` | `==` | **return `4`** |
+
+The very first partition placed pivot `4` at rank `3` — exactly the target — so quickselect finished in *one* partition pass, never sorting the rest.
+
+Before you read on: quicksort and quickselect run the *same* partition. Quicksort is `O(n log n)`; quickselect is `O(n)` average. The only code difference is that quicksort recurses into *both* sides and quickselect into *one*. Why does dropping one recursive call change the complexity *class*, not just halve the constant?
+
+Because the two recursive calls aren't equal-cost — they *compound*. Quicksort's recurrence is `T(n) = 2·T(n/2) + O(n)`, which unrolls to `log n` levels each doing `O(n)` work → `O(n log n)`. Quickselect's is `T(n) = 1·T(n/2) + O(n)`, a *geometric* series `n + n/2 + n/4 + … = 2n` → `O(n)`. With two calls the per-level work stays `O(n)` across all `log n` levels (every element is touched at every level); with one call the per-level work *halves* each level, so it sums to a constant times `n`. Recursing into one side means you stop revisiting the discarded half entirely — that's a fundamentally different recurrence, not a 2× saving.
+
+## Your Turn
+
+The reusable quickselect:
+
+```python run
+def partition(arr, lo, hi):
+    pivot = arr[hi]; i = lo - 1
+    for j in range(lo, hi):
+        if arr[j] <= pivot:
+            i += 1; arr[i], arr[j] = arr[j], arr[i]
+    arr[i + 1], arr[hi] = arr[hi], arr[i + 1]
+    return i + 1
+
+def quickselect(arr, k):
+    arr = list(arr)
+    lo, hi, target = 0, len(arr) - 1, k - 1
+    while lo <= hi:
+        p = partition(arr, lo, hi)
+        if p == target:
+            return arr[p]
+        elif p < target:
+            lo = p + 1
+        else:
+            hi = p - 1
+
+vals = [7, 2, 1, 6, 8, 5, 3, 4]
+print(quickselect(vals, 1), quickselect(vals, 4), quickselect(vals, 8))   # 1 4 8
 ```
 
-<p align="center"><strong>Quickselect's geometric cost. Each level halves the input; the sum of a geometric series with ratio 1/2 is bounded by twice the first term. Total <code>O(n)</code> on average.</strong></p>
+```java run
+public class Main {
+  static int partition(int[] arr, int lo, int hi) {
+    int pivot = arr[hi], i = lo - 1;
+    for (int j = lo; j < hi; j++)
+      if (arr[j] <= pivot) { i++; int t = arr[i]; arr[i] = arr[j]; arr[j] = t; }
+    int t = arr[i + 1]; arr[i + 1] = arr[hi]; arr[hi] = t;
+    return i + 1;
+  }
+  static int quickselect(int[] arr, int k) {
+    int lo = 0, hi = arr.length - 1, target = k - 1;
+    while (lo <= hi) {
+      int p = partition(arr, lo, hi);
+      if (p == target) return arr[p];
+      else if (p < target) lo = p + 1;
+      else hi = p - 1;
+    }
+    return -1;
+  }
+  public static void main(String[] args) {
+    int[] vals = {7, 2, 1, 6, 8, 5, 3, 4};
+    System.out.println(quickselect(vals.clone(), 4));   // 4
+  }
+}
+```
 
-The worst case is still `O(n²)` — same as quicksort — when bad pivots produce maximally unbalanced partitions. Random pivot selection makes this practically unreachable.
+Drill the family in **Practice** — [Kth Smallest Element](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-quickselect-problems-kth-smallest-element), [Median Finder](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-quickselect-problems-median-finder), [K Closest Elements](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-quickselect-problems-k-closest-elements), and [K Most Frequent Elements](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-quickselect-problems-k-most-frequent-elements).
 
----
+## Reflect & Connect
 
-## Why You Don't Just Sort and Take the First K
+Quickselect is the "I need one order statistic, not the whole order" tool:
 
-| Approach | Time | Space |
-|---|---|---|
-| Full sort + first k | `O(n log n)` | `O(1)` (in-place sort) or `O(n)` (out-of-place) |
-| Min-heap of size n + extract k | `O(n + k log n)` | `O(1)` (in-place heap) |
-| Min-heap of size k | `O(n log k)` | `O(k)` |
-| **Quickselect** | `O(n)` average | `O(1)` |
+- **The family** — `k`-th smallest/largest, the **median** (`k = n/2`), the `k` closest values to a target, and top-`k` (partition at `k`, then the first `k` are the answer — unordered).
+- **Quickselect vs heap vs sort** — for the `k`-th element: quickselect is `O(n)` average (best when you want it *once*, in memory); a [size-k heap](/cortex/data-structures-and-algorithms/trees-heap-pattern-top-k-elements) is `O(n log k)` and works on *streams*; a full sort is `O(n log n)` but gives you *everything*. Pick by whether data streams and whether you need the rest sorted.
+- **It's "binary search on an unsorted array"** — both discard half the search space each step based on a comparison. Quickselect's `O(n)` (vs binary search's `O(log n)`) is because each partition step costs `O(n)`, not `O(1)`. The median-of-medians variant guarantees `O(n)` worst-case, a classic theory result.
 
-For `k << n`, quickselect's `O(n)` beats every alternative. For `k = n`, all approaches converge to `O(n log n)` and you should just sort.
+**Prerequisites:** [Quicksort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-quicksort).
+**What's next:** sort by a custom ordering rather than natural order — [Custom Compare](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-custom-compare-pattern).
 
----
+## Recall
 
-## Strengths and Limitations
+> **Mnemonic:** *Partition, look at the pivot's rank `p`. `p==target` done; else recurse into the ONE side holding rank `k`. `O(n)` average — random pivot to dodge `O(n²)`.*
 
-| Strength | Detail |
+| | |
 |---|---|
-| **`O(n)` average** | Linear time on random data — faster than any full-sort approach. |
-| **In-place** | `O(1)` extra memory beyond the recursion stack. |
-| **Reuses partition** | If you already have quicksort, quickselect is 5 lines of additional code. |
+| Reuses | quicksort's partition (pivot → final rank `p`) |
+| Decision | `p==target` return; `p<target` go right; `p>target` go left |
+| Recursion | one side only → `O(n)` average (vs quicksort's two → `O(n log n)`) |
+| Worst case | `O(n²)` — random pivot; median-of-medians for guaranteed `O(n)` |
+| Space | `O(1)` iterative |
 
-| Limitation | Detail |
-|---|---|
-| **Mutates the input** | The array is reordered. (Copy first if the original order matters.) |
-| **`O(n²)` worst case** | Random pivots mitigate; deterministic median-of-medians achieves `O(n)` worst case but with much higher constant factor. |
-| **Not a "sort"** | After running, only the k-th position is correct; the rest is partially ordered. |
+- **Q:** How does quickselect avoid sorting the whole array? **A:** After partitioning, the pivot's rank `p` tells which side holds rank `k`; it recurses into only that side and discards the other.
+- **Q:** Why is it `O(n)` average while quicksort is `O(n log n)`? **A:** Recursing into one side gives the geometric recurrence `T(n)=T(n/2)+O(n)=O(n)`, not quicksort's `T(n)=2T(n/2)+O(n)=O(n log n)`.
+- **Q:** What's the worst case and the fix? **A:** `O(n²)` with consistently bad pivots; a random pivot (or median-of-medians for a guarantee) fixes it.
+- **Q:** Quickselect vs a size-k heap for the k-th element? **A:** Quickselect is `O(n)` average in memory; a heap is `O(n log k)` and works on streams.
 
-In practice, quickselect is used:
-- `numpy.partition()` and `std::nth_element()` — standard library "find the k-th" primitives.
-- Top-K queries in databases (often combined with heaps for streaming data).
-- Image processing (median filters, percentile-based denoising).
-- Statistics (computing percentiles in `O(n)` instead of `O(n log n)`).
+## Sources & Verify
 
----
-
-## Key Takeaway
-
-Quickselect: quicksort's partition without the both-halves recursion. `O(n)` average for finding the k-th smallest. Now we'll learn how to spot the pattern.
-
-# Identifying Quickselect Problems
-
-Three diagnostic questions decide whether quickselect fits.
-
-| # | Question | If "yes," quickselect fits because... |
-|---|---|---|
-| **Q1** | Do we need a *position* in the sorted order, not the full sort? | Quickselect finds one position in `O(n)`; full sort is `O(n log n)`. |
-| **Q2** | Can we define a *partial order* on the elements with a `<` comparison? | The partition step needs a comparison rule. |
-| **Q3** | Is mutating / reordering the input acceptable? | Quickselect rearranges the array in place. |
-
-If all three are "yes," quickselect is the algorithm of choice.
-
-### Q1 — Why "position, not full sort"?
-
-If you need the entire sorted output, use a full sort. Quickselect's leverage comes from *only finding what you need*. For "the median," "the 95th percentile," "the top 10," "the bottom k" — quickselect dominates.
-
-If you need *all* k smallest in *sorted* order (e.g., a leaderboard), quickselect gives you the partition (`arr[0..k-1]` are the k smallest) but not in sorted order. You'd need to sort that small region after — `O(n + k log k)` total, still better than full sort for small k.
-
-### Q2 — Why "partial order"?
-
-The partition step compares each element against the pivot using `<` (or any total order). If you can define a total order on your elements (numeric value, distance to a target, frequency count, lexicographic on strings), quickselect works. If your elements have no comparison rule, you can't quickselect.
-
-### Q3 — Why "mutation OK"?
-
-Quickselect rearranges the array in place. If you need the original ordering preserved, you must copy first.
-
----
-
-## Recognising Quickselect in the Wild
-
-Common phrasings that signal quickselect:
-- "Find the k-th smallest / largest element."
-- "Find the median / percentile."
-- "Find the k closest [to a target / origin / pivot]."
-- "Find the k most frequent."
-
-Less obvious but equally fitting:
-- "Two-sum where the answer is the k-th best pair."
-- "Stock prices: find the k worst days."
-- "Sensor readings: filter out the bottom 10%."
-
-Anytime you can phrase the problem as "find the k-th item by some score," quickselect applies.
-
----
-
-## Key Takeaway
-
-Three checks — position-not-sort, total order on elements, mutation OK — gate every quickselect problem. Pass all three and you've earned `O(n)` instead of `O(n log n)`. Now four worked problems.
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Understanding the Pattern — missing, needs to be written -->
-<!--       Guidance: umbrella H2 with the subsections below -->
-
-<!-- TODO: Why Naive Isn't Enough — missing, needs to be written -->
-<!--       Guidance: motivation for why the obvious approach fails -->
-
-<!-- TODO: The Core Idea — missing, needs to be written -->
-<!--       Guidance: one paragraph: the central trick -->
-
-<!-- TODO: How the Pointers/Window Move — missing, needs to be written -->
-<!--       Guidance: mechanics of the moving parts -->
-
-<!-- TODO: The Generic Algorithm — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
-
-<!-- TODO: Generic Implementation — missing, needs to be written -->
-<!--       Guidance: Python block + Java block of the skeleton -->
-
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table -->
-
-<!-- TODO: Variants / Taxonomy — missing, needs to be written -->
-<!--       Guidance: enumerate sub-shapes of this pattern -->
-
-<!-- TODO: Recognition Checklist — missing, needs to be written -->
-<!--       Guidance: 4-question diagnostic — the source of the Problem-section Diagnostic Questions -->
-
-<!-- TODO: Canonical Example — missing, needs to be written -->
-<!--       Guidance: fully worked example: brute force → optimised → template fit -->
-
-<!-- TODO: Problems in This Category — missing, needs to be written -->
-<!--       Guidance: table with links to the 02-problems/ files -->
+- **CLRS**, *Introduction to Algorithms*, 4th ed., §9 — selection in expected linear time and the median-of-medians worst-case `O(n)`.
+- **Sedgewick & Wayne**, *Algorithms*, 4th ed., §2.5 — quickselect and order statistics.
+- Quickselect's `O(n)`-average / `O(n²)`-worst bounds and the one-sided recursion are standard; both runnable blocks are verified by running (`k=1,4,8 ⇒ 1, 4, 8`).

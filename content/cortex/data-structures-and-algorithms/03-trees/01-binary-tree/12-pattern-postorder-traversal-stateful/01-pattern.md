@@ -1,151 +1,173 @@
 ---
 title: "Pattern: Postorder Traversal (Stateful)"
-summary: "Bottom-up postorder with a shared mutable state that accumulates answers as sub-results bubble up."
+summary: "Bottom-up, but the answer lives at some interior node and uses BOTH subtrees — so the recursion returns a single-branch contribution upward while updating a shared accumulator with the through-the-node value. Diameter, max path sum, distribute-coins."
 prereqs:
   - 03-trees/01-binary-tree/11-pattern-postorder-traversal-stateless/01-pattern
 ---
 
-# The stateful postorder pattern
+# Pattern: Postorder Traversal (Stateful)
 
-```text
-recurse(node):
-  if node is null: return baseCase
-  leftAnswer  = recurse(node.left)
-  rightAnswer = recurse(node.right)
+## Why It Exists
 
-  # ★ side-channel update: refine global state using leftAnswer, rightAnswer, node
-  globalState = update(globalState, leftAnswer, rightAnswer, node)
+[Postorder-stateless](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-pattern) returned one value per node, and the answer was the *root's* return. But a whole class of problems — the **diameter** (longest path between any two nodes), the **maximum path sum**, "distribute coins" — has an answer that lives at *some interior node* and combines **both** of that node's subtrees, yet **can't be passed up**: a path through a node uses both its children, but the *parent* can only extend through *one* of them.
 
-  return feedUp(leftAnswer, rightAnswer, node)
+So you split the two roles. The recursion **returns** the single-branch contribution (a height, a one-sided gain — "what I can offer my parent if it extends through me"), while a **shared accumulator** (an outer variable) is updated with the *through-the-node* value that uses both subtrees. The answer is the accumulator, not the return value. That separation — return one thing, track another — is the signature of stateful postorder, and the heart of tree DP.
+
+## See It Work
+
+The **diameter**: the longest root-to-root path measured in edges. At each node, the path *through* it is `left_height + right_height`; track the max of that while returning height upward. Run it.
+
+```python run viz=binary-tree viz-root=root
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+def diameter(root):
+    best = 0
+    def height(node):
+        nonlocal best
+        if node is None:
+            return 0
+        lh = height(node.left)
+        rh = height(node.right)
+        best = max(best, lh + rh)        # path THROUGH this node (uses BOTH children)
+        return 1 + max(lh, rh)            # height returned UP (parent extends ONE side)
+    height(root)
+    return best
+
+root = TreeNode(1, TreeNode(2, TreeNode(4), TreeNode(5)), TreeNode(3, None, TreeNode(6)))
+print(diameter(root))     # 4   (the path 4 → 2 → 1 → 3 → 6)
 ```
 
-Two distinct things happen at each node:
+## How It Works
 
-1. **Side-channel update** — refine a global accumulator using the children's results and the current node. This is what your *answer* is built from.
-2. **Feed-up** — return some value to the parent. This is what enables the *next* level up to do its own update.
+A postorder recursion with two distinct outputs:
 
-The genius of the pattern is that the value returned to the parent and the value tracked globally **don't have to be the same**. In the diameter problem, the function returns *height* (so the parent can extend the path through it), but it tracks *diameter* (the global best). One traversal, two answers.
+1. **An outer accumulator** (`best`), declared in the enclosing scope.
+2. At each node, recurse both children for their **single-branch** values (`lh`, `rh`).
+3. **Update the accumulator** with the *combined* value — `lh + rh` (diameter), or `node.val + leftGain + rightGain` (max path sum) — the answer measured *through* this node.
+4. **Return** the *single-branch* value upward — `1 + max(lh, rh)` (height), or `node.val + max(gains)` — because the parent can only continue through one child.
 
-> 🖼 Diagram — Stateful postorder for diameter — each call returns its height to the parent (so the parent can compute its own); separately, each call updates a global maxDiameter with leftHeight + rightHeight. Two answers per call, one traversal.
 ```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
 flowchart TB
-    R(("(1)<br/>height returned: 3<br/>diameter tracked: 4"))
-    A(("(2)<br/>height: 2"))
-    B(("(3)<br/>height: 2"))
-    C(("(4)<br/>height: 1"))
-    D(("(7)<br/>height: 1"))
-    R --> A
-    R --> B
-    A --> C
-    B --> D
-    style R fill:#fef9c3,stroke:#f59e0b
+  C["children return single-branch values (lh, rh)"] --> U["update accumulator: best = max(best, lh + rh)"]
+  C --> R["return 1 + max(lh, rh) to parent"]
 ```
 
-<p align="center"><strong>Stateful postorder for diameter — each call returns its <em>height</em> to the parent (so the parent can compute its own); separately, each call updates a global <em>maxDiameter</em> with <code>leftHeight + rightHeight</code>. Two answers per call, one traversal.</strong></p>
+<p align="center"><strong>the recursion returns a one-branch value to the parent; on the side, it updates a shared accumulator with the two-branch "through this node" value.</strong></p>
 
-> **Why is the global state safe to share?** Because postorder updates are *monotone* — typically a `max` or `min` or a counter `+= 1`. Order of updates doesn't matter, and there's no need for "undo" because no later subtree's result can invalidate an earlier one's. This is the structural difference from stateful preorder (lesson 9), where state had to be pushed and popped to keep sibling subtrees from polluting each other.
+Why can't you just return the through-value? Because a path is **linear** — once it passes through a node it can go down *one* child, not both. The through-the-node path (left + node + right) *bends* at the node and can never be extended by the parent, so it's a *candidate answer* recorded in the accumulator, while the *extendable* part (one branch) is what's returned. Each node is visited once → `O(n)` time, `O(h)` stack. The same shape solves **max path sum** (clamp negative gains to 0: `max(gain, 0)`) and **longest univalue path**.
 
-## Generic pattern
+### Key Takeaway
 
-The template — diameter of a tree, since it's the canonical example.
+When the answer combines both subtrees at an interior node but can't be passed up (a path bends there), use stateful postorder: **return** the single-branch contribution for the parent, and **update an outer accumulator** with the both-branches through-value. Return one thing, track another — `O(n)`/`O(h)`.
 
+## Trace It
+
+`diameter(root)` — `best` updates as heights fold up:
+
+| node | `lh` | `rh` | `best = max(best, lh+rh)` | returns `1+max(lh,rh)` |
+|---|---|---|---|---|
+| `4,5,6` (leaves) | 0 | 0 | 0 | `1` |
+| `2` | `1` | `1` | `2` | `2` |
+| `3` | `0` | `1` | `2` | `2` |
+| `1` (root) | `2` | `2` | **`4`** | `3` |
+
+The diameter `4` is found at the root (path `4→2→1→3→6`), but the root *returns* height `3` — the two values differ.
+
+Before you read on: the root *records* a diameter of `4` (`lh + rh = 2 + 2`) into `best`, but *returns* `3` (`1 + max(lh, rh)`) to its caller. Why must these be two different numbers — what would break if the function returned the `4` instead?
+
+Because the two numbers answer two different questions. `lh + rh = 4` is "the longest path that **bends at** this node, using both its subtrees" — a complete path, a candidate for the global answer, so it goes into `best`. But `1 + max(lh, rh) = 3` is "the longest **downward** path *starting* at this node and going into **one** subtree" — that's the only thing a *parent* can usefully extend, because attaching the parent turns it into `parent → this node → one child → …`, a path that can't also dip into this node's *other* child (that would visit this node twice, and a path is a simple line). If you returned `4` up, the parent would compute `1 + 4` and count a "path" that revisits this node's left subtree after coming from the right — a non-path. So the recursion must hand the parent only the *extendable* one-branch value, while the *non-extendable* two-branch value is captured on the side in the accumulator. Conflating "the best answer here" with "what I can contribute upward" is the single most common bug in diameter/max-path-sum; keeping them separate is the whole pattern.
+
+## Your Turn
+
+Diameter plus the maximum path sum (same shape, clamp negatives):
 
 ```python run
-from typing import Optional
-
 class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
-        self.val, self.left, self.right = val, left, right
+    def __init__(self, val, left=None, right=None):
+        self.val = val; self.left = left; self.right = right
 
-def diameter(root: Optional[TreeNode]) -> int:
-    best = [0]                                      # global state (in a list to mutate from inner fn)
+def diameter(root):
+    best = 0
     def height(node):
+        nonlocal best
         if node is None: return 0
-        l = height(node.left); r = height(node.right)
-        best[0] = max(best[0], l + r)               # update global state (diameter)
-        return 1 + max(l, r)                        # return height to parent
+        lh, rh = height(node.left), height(node.right)
+        best = max(best, lh + rh)
+        return 1 + max(lh, rh)
     height(root)
-    return best[0]
+    return best
+
+def max_path_sum(root):
+    best = float('-inf')
+    def gain(node):
+        nonlocal best
+        if node is None: return 0
+        lg = max(gain(node.left), 0)        # drop negative branches
+        rg = max(gain(node.right), 0)
+        best = max(best, node.val + lg + rg)  # through this node
+        return node.val + max(lg, rg)         # extendable one-branch gain
+    gain(root)
+    return best
+
+root = TreeNode(-10, TreeNode(9), TreeNode(20, TreeNode(15), TreeNode(7)))
+print(diameter(root), max_path_sum(root))   # 3 42
 ```
 
 ```java run
-static int best;
-static int height(TreeNode n) {
+public class Main {
+  static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } TreeNode(int v, TreeNode l, TreeNode r){ val=v; left=l; right=r; } }
+  static int best;
+  static int height(TreeNode n) {
     if (n == null) return 0;
-    int l = height(n.left), r = height(n.right);
-    best = Math.max(best, l + r);                   // update global state
-    return 1 + Math.max(l, r);                      // return height
-}
-public static int diameter(TreeNode root) {
-    best = 0;
-    height(root);
-    return best;
+    int lh = height(n.left), rh = height(n.right);
+    best = Math.max(best, lh + rh);          // through-node (both branches)
+    return 1 + Math.max(lh, rh);             // single-branch up
+  }
+  static int diameter(TreeNode root) { best = 0; height(root); return best; }
+  public static void main(String[] args) {
+    TreeNode root = new TreeNode(1, new TreeNode(2, new TreeNode(4), new TreeNode(5)),
+                                    new TreeNode(3, null, new TreeNode(6)));
+    System.out.println(diameter(root));   // 4
+  }
 }
 ```
 
-# How to recognise it
+Drill the family in **Practice** — [Diameter of Tree](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateful-problems-diameter-of-tree), [Descendants Sum Count](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateful-problems-descendants-sum-count), [Distribute Coins](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateful-problems-distribute-coins), and [Longest Monotonic Path](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateful-problems-longest-monotonic-path).
 
-The pattern fits when:
+## Reflect & Connect
 
-- The answer at each node depends on **both children's results** (postorder), *and*
-- The "best result anywhere in the tree" might differ from "the result feeding up to my parent". The two are *related* but not the *same* number.
+Stateful postorder is bottom-up recursion where the answer and the return value diverge:
 
-Concrete cues:
+- **The family** — diameter, maximum path sum, longest univalue/monotonic path, distribute-coins (return the surplus/deficit a subtree passes up, accumulate the moves). All return a one-branch value while tracking a through-node answer.
+- **Return one thing, track another** — the return is "what I contribute to my parent" (one branch, extendable); the accumulator gets "the best complete answer here" (both branches, not extendable). Conflating them is the classic bug.
+- **It's tree DP** — this *is* dynamic programming on a tree: each node's contribution is computed once from its children's, and a global optimum is tracked across all nodes. The same "local return + global best" structure recurs in interval and graph DP. Combined with [preorder](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-pattern)'s push-down, it covers nearly all single-pass tree computations.
 
-- *"Find the longest / largest / maximum X in the tree"* — track the global best.
-- *"Count nodes / subtrees / paths satisfying property Y"* — track a global counter.
-- *"The path can start and end anywhere"* — definitely "track best while feeding height up".
-- *"Compute X for every subtree, then find the most-frequent / largest / smallest"* — track globals across all subtree computations.
+**Prerequisites:** [Postorder Traversal (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-pattern).
+**What's next:** root-to-leaf paths the stateless way — carrying the path down by argument — [Root-to-Leaf Path (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateless-pattern).
 
-Anti-pattern: if a single returned value suffices (like simple sum-of-leaves or height), use the *stateless* postorder. If you really only need information from above (no global), use the preorder patterns instead.
+## Recall
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+> **Mnemonic:** *Answer bends at an interior node (both subtrees) but a path is linear — so RETURN the one-branch value (extendable) and UPDATE an outer accumulator with the two-branch through-value. Return one thing, track another.*
 
-<!-- TODO: Understanding the Pattern — missing, needs to be written -->
-<!--       Guidance: umbrella H2 with the subsections below -->
+| | |
+|---|---|
+| Accumulator | outer variable holding the best through-node answer |
+| Update with | both branches: `lh + rh` (diameter) / `val + lg + rg` (max sum) |
+| Return upward | one branch: `1 + max(lh, rh)` / `val + max(gains)` |
+| Why split | a path is linear — the parent can extend only one branch |
+| Family | diameter, max path sum, longest univalue path, distribute coins |
 
-<!-- TODO: Why Naive Isn't Enough — missing, needs to be written -->
-<!--       Guidance: motivation for why the obvious approach fails -->
+- **Q:** Why does stateful postorder return a different value than it records? **A:** The through-node answer uses both subtrees (a bent path) and can't be extended by the parent; the parent can only extend a single-branch value, so that's what's returned.
+- **Q:** What goes in the accumulator vs the return? **A:** Accumulator: the both-branches "through this node" answer; return: the one-branch extendable contribution.
+- **Q:** What's the classic bug? **A:** Returning the through-node (two-branch) value upward, which lets a parent build an impossible path that revisits a subtree.
+- **Q:** Why is this "tree DP"? **A:** Each node's value is computed once from its children's, while a global optimum is tracked across all nodes — dynamic programming on the tree.
 
-<!-- TODO: The Core Idea — missing, needs to be written -->
-<!--       Guidance: one paragraph: the central trick -->
+## Sources & Verify
 
-<!-- TODO: How the Pointers/Window Move — missing, needs to be written -->
-<!--       Guidance: mechanics of the moving parts -->
-
-<!-- TODO: The Generic Algorithm — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
-
-<!-- TODO: Generic Implementation — missing, needs to be written -->
-<!--       Guidance: Python block + Java block of the skeleton -->
-
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table -->
-
-<!-- TODO: Variants / Taxonomy — missing, needs to be written -->
-<!--       Guidance: enumerate sub-shapes of this pattern -->
-
-<!-- TODO: Identifying — missing, needs to be written -->
-<!--       Guidance: per-variant: recognition checklist + canonical example -->
-
-<!-- TODO: Recognition Checklist — missing, needs to be written -->
-<!--       Guidance: 4-question diagnostic — the source of the Problem-section Diagnostic Questions -->
-
-<!-- TODO: Canonical Example — missing, needs to be written -->
-<!--       Guidance: fully worked example: brute force → optimised → template fit -->
-
-<!-- TODO: Problems in This Category — missing, needs to be written -->
-<!--       Guidance: table with links to the 02-problems/ files -->
+- **CLRS**, *Introduction to Algorithms*, 4th ed., §10.4 / §15 — recursive tree computation; DP on trees.
+- **Sedgewick & Wayne**, *Algorithms*, 4th ed., §3.2 — recursive aggregates over trees.
+- Diameter and max-path-sum via "return one branch, track through-node" (LeetCode 543, 124) are standard; both runnable blocks are verified by running (`diameter ⇒ 4`/`3`; `max_path_sum ⇒ 42`, the classic `[-10,9,20,15,7]` case).

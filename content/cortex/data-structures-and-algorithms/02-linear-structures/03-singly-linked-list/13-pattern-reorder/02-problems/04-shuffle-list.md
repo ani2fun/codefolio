@@ -230,7 +230,7 @@ h7 = from_list([1, 2, 3, 4, 5, 6])
 Solution().shuffle_list(h7); print(to_list(h7))       # [1, 6, 2, 5, 3, 4]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -457,7 +457,7 @@ The output contains exactly `n` nodes — every input node appears in the output
 
 </details>
 <details>
-<summary><strong>Final Takeaway</strong></summary>
+<summary><strong>Key Takeaway</strong></summary>
 
 Reorder is the composition of two patterns you already know:
 

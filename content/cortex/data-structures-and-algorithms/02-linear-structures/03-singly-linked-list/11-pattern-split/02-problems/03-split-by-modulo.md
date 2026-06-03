@@ -168,7 +168,7 @@ r = Solution().split_by_modulo(from_list([1]), 1)
 print([to_list(x) for x in r])   # [[1]]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {

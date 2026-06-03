@@ -25,6 +25,57 @@ Given an array of strings `strs`, group all anagrams together. Return the groups
 > -   **Output:** `[]`
 
 <details>
+<summary><strong>Examples</strong></summary>
+
+**Example 1**
+```
+Input:  ["abc", "cab", "def", "dfe", "hij"]
+Output: [["abc", "cab"], ["def", "dfe"], ["hij"]]
+Explanation: "abc"/"cab" share a letter-count signature, as do "def"/"dfe";
+"hij" stands alone. Group order is unspecified.
+```
+
+**Example 2**
+```
+Input:  ["a", "b", "c", "d", "e"]
+Output: [["a"], ["b"], ["c"], ["d"], ["e"]]
+Explanation: every string has a distinct signature → five singleton groups.
+```
+
+**Example 3**
+```
+Input:  []
+Output: []
+Explanation: no strings means no groups.
+```
+
+**Example 4**
+```
+Input:  ["eat", "tea", "tan", "ate", "nat", "bat"]
+Output: [["ate", "eat", "tea"], ["nat", "tan"], ["bat"]]
+Explanation: eat/tea/ate collide on one signature; tan/nat on another; bat alone.
+```
+
+</details>
+
+## Intuition
+
+The structural property that makes this a **counting** problem is that two strings are anagrams exactly when their letter-frequency maps match. So a string's *frequency signature* is a grouping key — any two anagrams produce the same signature, the collision the counting pattern exploits.
+
+The hash map keys on that signature and values a list of the strings sharing it. For lowercase input, a 26-slot tuple `(count_a, …, count_z)` is the cleanest key, costing `O(K)` per string of length `K`. Walk the input once, compute each string's signature, and append the string to its bucket. The buckets *are* the anagram groups, so no comparison between strings is ever needed.
+
+The naive approach breaks the time budget. Comparing every string to every other to test anagram-hood is `O(N² · K)` time. Counting assigns each string to a bucket in `O(K)`, so the whole grouping is `O(N · K)` — the per-pair comparison vanishes into a single hash lookup.
+
+## Applying the Diagnostic Questions
+
+| Check | Answer for Cluster Anagrams |
+|---|---|
+| **Q1.** Does the answer depend on how *often* items appear? | **Yes** — anagrams are defined by matching letter counts. |
+| **Q2.** Is the input a linear sequence? | **Yes** — an array of strings, walked one string at a time. |
+| **Q3.** Can the answer be read off the counts after one pass? | **Yes** — each string's frequency signature is its group key. |
+| **Q4.** Is the per-item work `O(1)` amortised? | **Yes** — building the signature is `O(K)`; the bucket insert is amortised `O(1)`. |
+
+<details>
 <summary><h2>Approach</h2></summary>
 
 
@@ -32,7 +83,6 @@ Two strings are anagrams iff their character frequency maps match. So the **freq
 
 For lowercase-only inputs, a 26-element tuple `(count_a, count_b, …, count_z)` is the cleanest key. For the general case, the **sorted string** (e.g. `"cab"` → `"abc"`) is an equivalent key — anagrams sort to the same canonical form.
 
-> 🖼 Diagram — Cluster anagrams — the canonical form (sorted letters or letter-frequency tuple) is the same for every anagram, so anagrams collide into the same hash-map bucket. The buckets are the groups.
 ```mermaid
 ---
 config:
@@ -68,12 +118,23 @@ flowchart LR
 <p align="center"><strong>Cluster anagrams — the canonical form (sorted letters or letter-frequency tuple) is the same for every anagram, so anagrams collide into the same hash-map bucket. The buckets <em>are</em> the groups.</strong></p>
 
 </details>
+
+## Approach in Words
+
+Key each string by its letter-count signature, then read the buckets out as groups.
+
+1. **Prepare the bucket map.** Use a map from frequency signature to a list of string indices.
+2. **Walk the input.** For each string, build its 26-slot letter-count signature.
+3. **Bucket by signature.** Append the string's index to the list under its signature, creating the list on first sight.
+4. **Collect the groups.** For each bucket, map its stored indices back to the original strings to form one anagram group.
+5. **Return the groups.** The list of buckets is the answer; group order is unspecified.
+
 <details>
 <summary><h2>Solution</h2></summary>
 
 
 
-```python run
+```python run viz=array viz-root=frequency
 from typing import List, Tuple
 
 class Solution:
@@ -140,7 +201,7 @@ r5 = Solution().cluster_anagrams(["a"])
 print(r5)                                # [['a']]
 ```
 
-```java run
+```java run viz=array viz-root=frequency
 import java.util.*;
 import java.util.stream.*;
 
@@ -235,8 +296,52 @@ public class Main {
 **Complexity:** O(N · K) where N is the number of strings and K is the average length — this implementation builds a 26-element frequency tuple per string, which costs O(K) and avoids the O(K log K) of sorting each string.
 
 </details>
+
+## Dry Run
+
+Walk Example 1 — `["abc", "cab", "def", "dfe", "hij"]`. Each signature is the letter-count tuple, shown here as the equivalent sorted form for readability:
+
+```
+i=0  "abc"  signature (a:1,b:1,c:1)  new bucket  → { abc-sig: [0] }
+i=1  "cab"  signature (a:1,b:1,c:1)  matches i=0 → { abc-sig: [0,1] }
+i=2  "def"  signature (d:1,e:1,f:1)  new bucket  → { …, def-sig: [2] }
+i=3  "dfe"  signature (d:1,e:1,f:1)  matches i=2 → { …, def-sig: [2,3] }
+i=4  "hij"  signature (h:1,i:1,j:1)  new bucket  → { …, hij-sig: [4] }
+
+collect buckets → indices [0,1] → ["abc","cab"]
+                  indices [2,3] → ["def","dfe"]
+                  indices [4]   → ["hij"]
+
+result = [["abc","cab"], ["def","dfe"], ["hij"]]
+```
+
+The result matches the expected output — anagrams collide into shared buckets while group order stays unspecified.
+
+## Complexity Analysis
+
+| Measure | Value | Why |
+|---|---|---|
+| Time  | **O(N · K)** | For `N` strings of average length `K`, each builds a 26-slot signature in `O(K)`; the bucket insert is amortised `O(1)`. |
+| Space | **O(N · K)** | Every input string is stored across the buckets, plus one signature key per distinct group. |
+
+Building a fixed 26-slot tuple per string avoids the `O(K log K)` cost of sorting each string into a canonical key.
+
+## Edge Cases
+
+| Case | Example | Expected | Reasoning |
+|---|---|---|---|
+| Empty input | `[]` | `[]` | No strings, so no groups. |
+| Single string | `["a"]` | `[["a"]]` | One string forms one singleton group. |
+| All distinct | `["a", "b", "c"]` | `[["a"], ["b"], ["c"]]` | Every signature differs → all singletons. |
+| All anagrams | `["abc", "cab", "bca"]` | `[["abc", "cab", "bca"]]` | One shared signature collapses every string into one group. |
+| Mixed groups | `["eat", "tea", "tan", "nat", "bat"]` | `[["eat", "tea"], ["tan", "nat"], ["bat"]]` | Three signatures yield three buckets of differing sizes. |
+
+## Key Takeaway
+
+This is the canonical-form-key shape: hash each string on its letter-count signature so anagrams collide into the same bucket, then read the buckets out as groups. The signature replaces all pairwise anagram comparison with one hash lookup per string.
+
 <details>
-<summary><h2>Final Takeaway</h2></summary>
+<summary><h2>Key Takeaway</h2></summary>
 
 
 Counting is the gateway pattern of hash-table problem solving. The **template** — *build a frequency map first, then answer the question* — is so common that you'll see it in dozens of interview problems and hundreds of production codebases. Five lessons in one paragraph:
@@ -250,36 +355,3 @@ Counting is the gateway pattern of hash-table problem solving. The **template** 
 > *Coming up — the **key-generation pattern**. Counting answers "how often did X appear?". Key generation answers "have I seen *something equivalent to* X before?" — where "equivalent" means *the same key under some canonical transformation*. We just used it to cluster anagrams (sorted-string key); the next lesson generalises it to deduplication, isomorphism checks, and a host of "is this the same as that?" problems.*
 
 </details>
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
-
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
-
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
-
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
-
-<!-- TODO: Solution — missing, needs to be written -->
-<!--       Guidance: Python block then Java block -->
-
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
-
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table: time / space / why -->
-
-<!-- TODO: Edge Cases — missing, needs to be written -->
-<!--       Guidance: table, min 5 rows -->
-
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->

@@ -1,332 +1,273 @@
 ---
 title: HyperLogLog
-summary: Estimate the number of distinct items in a stream using ~12 KB of memory, regardless of stream size. The trick: count leading zeros in hash values. Used by Redis, Google BigQuery, and every major analytics platform.
+summary: "Estimate how many DISTINCT items a stream had, in a few KB regardless of stream size. The trick — count leading zeros in hashes: a hash with k leading zeros appears about once per 2^k distinct items, so max-leading-zeros ≈ log2(distinct). Buckets plus a harmonic mean tame the variance. Used by Redis and BigQuery."
 prereqs:
   - probabilistic-and-advanced-count-min-sketch
-  - bit-tricks-pattern-kth-bit
+  - algorithms-by-strategy-randomized-algorithms-introduction-to-randomized-algorithms
 ---
 
-# 4. HyperLogLog
+## Why It Exists
 
-## The Hook
+The [count-min sketch](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-count-min-sketch) estimates *how often* each item appeared. HyperLogLog answers a different streaming question: *how many **distinct** items were there?* — the cardinality. Counting unique visitors, distinct search queries, unique IPs. The exact way is a hash set of everything you've seen, costing memory proportional to the *number of distinct items* — gigabytes for a billion uniques.
 
-You run a website. You want to answer: "how many *distinct* visitors did we have today?" Naive: hash set of visitor IDs. For 10 million distinct visitors with 16-byte UUIDs, that's 160 MB of memory just for one day's count. For multi-day rollups, gigabytes.
+HyperLogLog estimates the same number in a **fixed few kilobytes**, whatever the stream size, at a small relative error. The whole thing rests on one beautiful observation about randomness: if you hash items to uniform bit strings, the **maximum number of leading zeros** you ever see is evidence of how many distinct items there were. A hash starting with `k` zeros happens with probability `2⁻ᵏ`, so spotting one is like flipping `k` heads in a row — you'd expect to need about `2ᵏ` tries. See a maximum of `k` leading zeros, and you've probably seen about `2ᵏ` distinct items. It's a [randomized estimator](/cortex/data-structures-and-algorithms/algorithms-by-strategy-randomized-algorithms-introduction-to-randomized-algorithms), and it powers Redis `PFCOUNT`, BigQuery's `APPROX_COUNT_DISTINCT`, and essentially every analytics platform.
 
-**HyperLogLog (HLL)** estimates this count using **~12 KB**, regardless of whether you've seen 10 thousand or 10 billion distinct visitors. Standard error: ~2%. The compression ratio is *millions to one*.
+## See It Work
 
-The trick: hash every item to a uniform 64-bit value. The number of leading zeros in the hash is a proxy for "rarity" — by chance, hashes with `k` leading zeros appear about `1/2^k` of the time, so seeing a hash with 30 leading zeros suggests roughly `2^30 ≈ 10⁹` distinct items have been seen. Multiple counter "buckets" reduce the variance.
+Hash each item; the first `p` bits choose a bucket (register), and the leading-zero count of the rest updates that register's max. The cardinality estimate combines all registers via a bias-corrected harmonic mean.
 
-This chapter is the algorithm. By the end you'll be able to estimate cardinality in 12 KB, recognise where HLL is used in production, and tune for the error you can tolerate.
-
----
-
-## Table of contents
-
-1. [The leading-zero trick](#the-leading-zero-trick)
-2. [Bucketed estimation](#bucketed-estimation)
-3. [The HLL algorithm](#the-hll-algorithm)
-4. [Implementation](#implementation)
-5. [Tuning `m`](#tuning-m)
-6. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
-7. [Production reality](#production-reality)
-8. [Cross-links](#cross-links)
-9. [Final takeaway](#final-takeaway)
-
-***
-
-# The leading-zero trick
-
-Hash every item to a uniform 64-bit value. For a uniformly-random hash, the probability of seeing `k` or more leading zeros is `1/2^k`.
-
-If you've hashed `n` distinct items and the maximum number of leading zeros across all hashes is `R`, then `n ≈ 2^R`.
-
-That's the entire idea. A single counter — "max leading zeros so far" — gives a rough estimate of the cardinality. **2 bytes** of memory.
-
-The catch: a single counter has *enormous* variance. You might have seen 100 distinct items but happened to hash one to a value with 30 leading zeros (probability `1/10⁹` × 100 trials, very rare but possible). Estimate: `2^30 ≈ 10⁹`. Off by 7 orders of magnitude.
-
-***
-
-# Bucketed estimation
-
-Split incoming items into `m` buckets based on the first few bits of the hash. Each bucket maintains its own "max leading zeros" counter. Average across buckets to reduce variance.
-
-```
-hash(x) = (b₁b₂...b_log_m) (rest of hash bits)
-       └─────────────┘ └────────────────────┘
-       bucket index    leading-zero count
-```
-
-Estimate `n ≈ α_m · m² / Σ 2^(-R_j)`, where the sum is over all `m` buckets and `α_m` is a bias-correction constant (~0.7).
-
-The standard error scales as `1.04 / √m`. For 2% error, `m ≈ 2700` buckets. With 6-bit counters per bucket, that's `~2 KB` total memory.
-
-Industry-standard "HyperLogLog++" uses `m = 16384` (2^14) buckets, 6-bit counters → 12 KB total, with ~1% error.
-
-***
-
-# The HLL algorithm
-
-The Z-formula is the harmonic mean of `2^R[j]` — gives lower variance than arithmetic mean. The bias corrections are small adjustments for extreme cardinalities.
-
-***
-
-# Implementation
-
-```python run viz=graph viz-root=E
-import hashlib, math
+```python run
+import math, hashlib
+def _hash32(x):                                        # deterministic, well-mixed: top 32 bits of MD5
+    return int.from_bytes(hashlib.md5(x.encode()).digest()[:4], "big")
 
 class HyperLogLog:
-    def __init__(self, p=14):
-        self.p = p
-        self.m = 1 << p                                            # 2^p buckets
-        self.R = [0] * self.m
-        # Bias-correction constant
-        if self.m == 16: self.alpha = 0.673
-        elif self.m == 32: self.alpha = 0.697
-        elif self.m == 64: self.alpha = 0.709
-        else: self.alpha = 0.7213 / (1 + 1.079 / self.m)
-
+    def __init__(self, p):
+        self.p = p; self.m = 1 << p                    # m = 2^p registers
+        self.reg = [0] * self.m
     def add(self, x):
-        h = int(hashlib.sha256(str(x).encode()).hexdigest(), 16) & ((1 << 64) - 1)
-        j = h >> (64 - self.p)                                     # top p bits
-        w = (h << self.p) & ((1 << 64) - 1)                        # remaining bits, padded
-        # Count leading zeros in w (in 64-bit space)
-        if w == 0:
-            rho = 64 - self.p + 1
-        else:
-            rho = 64 - w.bit_length() + 1
-        self.R[j] = max(self.R[j], rho)
-
-    def estimate(self):
-        Z = sum(2.0 ** (-r) for r in self.R)
-        E = self.alpha * self.m * self.m / Z
-        # Small-cardinality correction
-        if E <= 2.5 * self.m:
-            zeros = self.R.count(0)
-            if zeros > 0:
-                E = self.m * math.log(self.m / zeros)
+        h = _hash32(x)
+        idx = h >> (32 - self.p)                        # first p bits -> bucket
+        w = h & ((1 << (32 - self.p)) - 1)             # remaining bits
+        rank = (32 - self.p) - w.bit_length() + 1 if w else (32 - self.p) + 1   # leading zeros + 1
+        self.reg[idx] = max(self.reg[idx], rank)        # keep the max per bucket
+    def count(self):
+        alpha = 0.7213 / (1 + 1.079 / self.m) if self.m >= 128 else 0.673
+        Z = sum(2.0 ** (-r) for r in self.reg)         # harmonic-mean denominator
+        E = alpha * self.m * self.m / Z
+        if E <= 2.5 * self.m:                           # small-range correction
+            V = self.reg.count(0)
+            if V:
+                E = self.m * math.log(self.m / V)
         return E
 
-
-if __name__ == "__main__":
-    import random
-    random.seed(7)
-
-    # Stress test: insert n distinct items, estimate
-    for n in [100, 1_000, 10_000, 100_000, 1_000_000]:
-        hll = HyperLogLog(p=14)
-        for i in range(n):
-            hll.add(f"item_{i}")
-        est = hll.estimate()
-        err = abs(est - n) / n * 100
-        print(f"n={n:>10,d}  estimate={est:>12,.0f}  error={err:.2f}%   memory=12 KB")
+hll = HyperLogLog(p=10)                                 # 1024 registers (~1 KB)
+for i in range(10000):
+    hll.add(f"item{i}")
+print(round(hll.count()))                               # ~10482 (true 10000)
+for i in range(10000):
+    hll.add(f"item{i}")                                # re-add everything
+print(round(hll.count()))                               # ~10482 — duplicates don't change cardinality
 ```
 
 ```java run
 import java.security.MessageDigest;
-
 public class Main {
-    final int p = 14;
-    final int m = 1 << p;
-    final byte[] R = new byte[m];
-    final double alpha = 0.7213 / (1 + 1.079 / m);
-
-    void add(String x) throws Exception {
-        MessageDigest sha = MessageDigest.getInstance("SHA-256");
-        byte[] d = sha.digest(x.getBytes());
-        long h = 0;
-        for (int i = 0; i < 8; i++) h = (h << 8) | (d[i] & 0xff);
-        int j = (int) (h >>> (64 - p));
-        long w = h << p;
-        int rho = (w == 0) ? 64 - p + 1 : Long.numberOfLeadingZeros(w) + 1;
-        if (rho > R[j]) R[j] = (byte) rho;
+    static long hash32(String x) {
+        try {
+            byte[] d = MessageDigest.getInstance("MD5").digest(x.getBytes("UTF-8"));
+            return ((d[0]&0xFFL)<<24) | ((d[1]&0xFFL)<<16) | ((d[2]&0xFFL)<<8) | (d[3]&0xFFL);
+        } catch (Exception e) { throw new RuntimeException(e); }
     }
-
-    double estimate() {
-        double Z = 0;
-        for (byte r : R) Z += Math.pow(2, -r);
-        return alpha * m * m / Z;
+    static class HLL {
+        int p, m; int[] reg;
+        HLL(int p) { this.p = p; this.m = 1 << p; reg = new int[m]; }
+        void add(String x) {
+            long h = hash32(x);
+            int idx = (int) (h >>> (32 - p));
+            long w = h & ((1L << (32 - p)) - 1);
+            int bitlen = (w == 0) ? 0 : (64 - Long.numberOfLeadingZeros(w));
+            int rank = (w != 0) ? (32 - p) - bitlen + 1 : (32 - p) + 1;
+            if (rank > reg[idx]) reg[idx] = rank;
+        }
+        double count() {
+            double alpha = m >= 128 ? 0.7213 / (1 + 1.079 / m) : 0.673;
+            double Z = 0; int V = 0;
+            for (int r : reg) { Z += Math.pow(2, -r); if (r == 0) V++; }
+            double E = alpha * m * m / Z;
+            if (E <= 2.5 * m && V > 0) E = m * Math.log((double) m / V);
+            return E;
+        }
     }
-
-    public static void main(String[] args) throws Exception {
-        Main hll = new Main();
-        for (int i = 0; i < 1_000_000; i++) hll.add("item_" + i);
-        System.out.printf("estimate ~%.0f (true 1,000,000)%n", hll.estimate());
+    public static void main(String[] args) {
+        HLL hll = new HLL(10);
+        for (int i = 0; i < 10000; i++) hll.add("item" + i);
+        System.out.println(Math.round(hll.count()));   // ~10482
+        for (int i = 0; i < 10000; i++) hll.add("item" + i);
+        System.out.println(Math.round(hll.count()));   // ~10482
     }
 }
 ```
 
-***
+Both print about `10482` twice — a ~5% estimate of the true `10000`, in 1024 small registers (~1 KB), and re-adding every item leaves the estimate unchanged (it counts *distinct* items, not occurrences). A real Redis HLL uses `m = 16384` registers (~12 KB) for ~0.8% error on cardinalities up to billions.
 
-# Tuning `m`
+## How It Works
 
-| `p` | `m = 2^p` | Standard error | Memory |
-|---|---|---|---|
-| 10 | 1024 | 3.25% | 768 bytes |
-| 12 | 4096 | 1.625% | 3 KB |
-| 14 | 16384 | 0.81% | 12 KB |
-| 16 | 65536 | 0.41% | 48 KB |
-| 18 | 262144 | 0.20% | 192 KB |
+The leading-zero idea works, but a *single* counter is wildly noisy — one lucky hash with many zeros throws it off. HyperLogLog fixes that by splitting the stream into `m` independent buckets and averaging cleverly:
 
-`p = 14` is the standard production setting (Redis HLL, Google's HyperLogLog++ paper). Below 1% error with 12 KB of memory is the sweet spot.
-
-***
-
-# Edge cases and pitfalls
-
-- **Hash quality matters.** A bad hash function biases the leading-zero distribution and wrecks the estimate. Use SHA-256, MurmurHash3, or xxHash — never `hashCode()`.
-- **Small cardinalities are inaccurate.** The basic estimator is wildly off for `n < 5m/2`. Use linear counting (count of empty buckets) for small `n`.
-- **Cardinality overflow.** Beyond ~2^32 distinct items, the estimator can saturate. HyperLogLog++ extends to higher ranges with a slightly different encoding.
-- **Don't add the same item twice and expect a different estimate.** HLL only tracks "max leading zeros seen". Re-adding has no effect. This is what makes HLL a *cardinality* estimator — it counts distinct.
-- **Merging HLLs.** HLLs are *mergeable*: take the per-bucket max across two HLLs to get an HLL of their union. This is enormously useful for distributed systems — each shard maintains its own HLL, merge them at query time.
-
-***
-
-# Production reality
-
-- **Redis `PFADD` / `PFCOUNT` / `PFMERGE`** — HyperLogLog as a first-class data type. ~12 KB per HLL. Used by major sites for unique-visitor counts.
-- **Google BigQuery's `APPROX_COUNT_DISTINCT`** — under the hood, HLL with `p = 14`. The `EXACT` variant uses a hash set; `APPROX` is up to 100× faster on large inputs.
-- **Apache Spark, Flink, Druid, Pinot** — all expose HyperLogLog primitives for distinct-counting in distributed analytics.
-- **Apache DataSketches.** Yahoo's open-source library; the canonical HLL implementation in Java/C++.
-- **Stripe, Cloudflare, Twitter** — use HLL for rolling windowed analytics where exact counts are too expensive.
-- **Counting unique IPs hitting a CDN.** HLL is the only approach that scales to billions of IPs in tens of KB of memory per time-window.
-
-***
-
-# Memorize
-
-The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. HLL is the magic of "1% error in 12 KB regardless of cardinality" — once you've internalised the leading-zero trick, every distinct-count question becomes "should I use HLL?"
-
-## Quick recall
-
-Click any question to reveal the answer.
-
-<details>
-<summary><strong>Q:</strong> What does HLL estimate?</summary>
-
-**A:** Cardinality (number of distinct items) of a stream, regardless of stream size.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Memory at <code>p = 14</code> (industry standard)?</summary>
-
-**A:** ~12 KB (16384 buckets × 6 bits). Standard error ~0.81%.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Core trick?</summary>
-
-**A:** Hash each item to a uniform 64-bit value. Track the *maximum number of leading zeros* per bucket. By chance, max leading zeros ≈ log₂(distinct items).
-
-</details>
-<details>
-<summary><strong>Q:</strong> Why bucket?</summary>
-
-**A:** A single counter has huge variance. `m` buckets reduce standard error to `1.04 / √m`.
-
-</details>
-<details>
-<summary><strong>Q:</strong> What's the harmonic mean for and why?</summary>
-
-**A:** `n ≈ α · m² / Σ 2^(-R[j])`. Harmonic mean of `2^R[j]` reduces variance vs arithmetic mean.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Are HLLs mergeable?</summary>
-
-**A:** Yes! Take per-bucket max across two HLLs to get the union's HLL. Critical for distributed analytics.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Tradeoff space — error vs memory at p?</summary>
-
-**A:** `p = 12`: 1.625% error, 3 KB. `p = 14`: 0.81%, 12 KB. `p = 16`: 0.41%, 48 KB. `p = 18`: 0.20%, 192 KB.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Where does HLL ship in production?</summary>
-
-**A:** **Redis** (`PFADD`/`PFCOUNT`/`PFMERGE`), **BigQuery** (`APPROX_COUNT_DISTINCT`), **Apache Druid / Pinot / Spark / Flink**.
-
-</details>
-
-## Code template
-
-```python
-import hashlib, math
-
-class HyperLogLog:
-    def __init__(self, p=14):
-        self.p = p
-        self.m = 1 << p
-        self.R = [0] * self.m
-        self.alpha = 0.7213 / (1 + 1.079 / self.m) if self.m > 64 else 0.709
-
-    def add(self, x):
-        h = int(hashlib.sha256(str(x).encode()).hexdigest(), 16) & ((1 << 64) - 1)
-        j = h >> (64 - self.p)
-        w = (h << self.p) & ((1 << 64) - 1)
-        rho = (64 - self.p + 1) if w == 0 else 64 - w.bit_length() + 1
-        if rho > self.R[j]: self.R[j] = rho
-
-    def estimate(self):
-        Z = sum(2.0 ** (-r) for r in self.R)
-        E = self.alpha * self.m * self.m / Z
-        if E <= 2.5 * self.m:                                 # small-cardinality correction
-            zeros = self.R.count(0)
-            if zeros > 0: E = self.m * math.log(self.m / zeros)
-        return E
+```d2
+direction: down
+hash: "hash(item) -> uniform bit string" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
+split: "first p bits -> bucket index (m = 2^p buckets)\nremaining bits -> count leading zeros (the 'rank')" {style.fill: "#fde68a"; style.stroke: "#d97706"}
+reg: "each register keeps the MAX rank it has seen\n(max leading zeros ~ log2(items in that bucket))" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
+combine: "estimate = alpha * m^2 / SUM(2^-register)\n(HARMONIC mean of 2^rank, bias-corrected)\n-> relative error ~ 1.04 / sqrt(m)" {style.fill: "#f3e8ff"; style.stroke: "#9333ea"}
+hash -> split
+split -> reg
+reg -> combine
 ```
 
-## Pattern triggers
+<p align="center"><strong>One leading-zero counter is too noisy; HyperLogLog runs <code>m</code> of them (bucketed by the hash's first bits) and combines them with a bias-corrected harmonic mean, shrinking the error to about <code>1.04/√m</code>.</strong></p>
 
-- **"How many distinct visitors today?"** → HLL
-- **"Unique IPs hitting our CDN"** → HLL
-- **"Count distinct across many shards"** → HLL per shard, merge at query time
-- **"Rolling 24h windowed unique counts"** → HLL per minute, merge over the window
-- **"Need exact distinct count under 100k"** → hash set is fine; HLL only wins at scale
-- **"Bias on small cardinalities"** → linear-counting correction (count zero buckets)
-- **"Approximate set membership"** → not HLL — use Bloom filter
-- **"Approximate frequency"** → not HLL — use Count-Min Sketch
+Three load-bearing facts:
 
-***
+- **Max leading zeros ≈ log₂(cardinality).** A uniformly random hash has `k` leading zeros with probability `2⁻ᵏ`. Across `n` distinct hashes, the *maximum* leading-zero count is about `log₂ n`. So one register storing "most zeros I've seen" already estimates `2^{max}` ≈ the count — crudely. (Duplicates don't matter: the same item hashes the same way and can't raise the max twice, which is why HLL counts *distinct* items.)
+- **Buckets + harmonic mean kill the variance.** A single estimator has huge variance (one freak hash ruins it). Split into `m = 2^p` registers by the hash's first `p` bits, each tracking its own max-rank, and combine with the **harmonic mean** of `2^{rank}` (bias-corrected by `α_m`). Averaging `m` independent estimates cuts the relative error to `≈ 1.04/√m` — `m = 16384` gives ~0.8%.
+- **Fixed, tiny, and mergeable.** Memory is `m` registers of ~6 bits each — kilobytes, *independent of stream size or cardinality*. And two HLLs over different streams **merge** by taking the element-wise **max** of their registers, yielding the cardinality of the *union* with no recomputation ([Your Turn](#your-turn)) — perfect for distributed counting (per-shard HLLs merged at query time).
 
-# Cross-links
+> **Key takeaway.** HyperLogLog estimates distinct-count from the **maximum leading zeros** in item hashes (a `k`-zero hash implies ~`2ᵏ` distinct items). It buckets into `m = 2^p` registers (each keeping its max rank) and combines them with a bias-corrected **harmonic mean**, for `≈ 1.04/√m` error in a *fixed* few KB regardless of stream size. Registers **merge** by element-wise max → union cardinality.
 
-- **Sibling structures:** [Bloom Filter](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-bloom-filter), [Count-Min Sketch](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-count-min-sketch).
-- **Bit trick reference:** [Pattern: Kth Bit](/cortex/data-structures-and-algorithms/bit-tricks-pattern-kth-bit) — leading-zero counting is a hardware-supported bit operation.
+## Trace It
 
-***
+The leading-zero intuition is the soul of the algorithm, and it's worth seeing the relationship directly before trusting the machinery on top.
 
-# Final takeaway
+**Predict before you run:** you hash a stream of distinct items and track the maximum number of leading zeros any hash has had. After a stream of `1000` distinct items, roughly what's that maximum — about `3`, about `10`, or about `100`?
 
-HyperLogLog estimates cardinality in 12 KB. Three patterns to internalise:
+```python run
+import hashlib, math
+def _hash32(x):
+    return int.from_bytes(hashlib.md5(x.encode()).digest()[:4], "big")
 
-1. **Leading zeros encode rarity.** The number of leading zeros in a uniform random hash is geometrically distributed; the max over `n` items grows as `log₂ n`.
-2. **Bucketing reduces variance.** A single counter has enormous variance; `m` buckets with harmonic mean reduces standard error to `1.04/√m`.
-3. **Mergeable.** Two HLLs of disjoint sets merge into an HLL of their union by taking per-bucket max. This is what makes HLL the right primitive for distributed analytics.
+def max_leading_zeros(n):
+    mx = 0
+    for i in range(n):
+        h = _hash32(f"x{i}")
+        lz = 32 - h.bit_length() if h else 32         # leading zeros in the 32-bit hash
+        mx = max(mx, lz)
+    return mx
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+for n in (100, 1000, 10000):
+    mx = max_leading_zeros(n)
+    print(f"n={n:>5} distinct -> max leading zeros = {mx}  (log2(n) = {math.log2(n):.1f},  2^max = {2**mx})")
+```
 
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
+<details>
+<summary><strong>Reveal</strong></summary>
 
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
+After `1000` distinct items the maximum is about **11** — close to `log₂(1000) ≈ 10`, *not* 3 or 100. Across the three sizes the max leading-zero count is `8, 11, 13` while `log₂ n` is `6.6, 10, 13.3`: it tracks the logarithm of the cardinality, growing by roughly one each time the distinct count *doubles*. That's the entire engine — the rarest event you witness (the longest run of leading zeros) encodes the *scale* of how many distinct things you've seen, in a single small integer. But notice the crude single-estimator `2^max` reads `256, 2048, 8192` for true counts `100, 1000, 10000` — right order of magnitude, badly off in detail. *One* leading-zero counter is far too noisy to use directly: a single freakishly-zero-heavy hash inflates it. HyperLogLog's contribution is the *averaging* — `m` independent registers combined by a harmonic mean — which turns this noisy `log₂` signal into a cardinality estimate good to a couple of percent. The leading-zero trick supplies the idea; the buckets supply the accuracy.
 
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
+</details>
 
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
+## Your Turn
 
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+**Merge two sketches into a union count.** HyperLogLog's superpower for distributed systems: combine per-stream sketches by taking the element-wise *max* of their registers, and read off the cardinality of the union — no access to the original items needed.
 
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
+```python run
+import hashlib, math
+def _hash32(x):
+    return int.from_bytes(hashlib.md5(x.encode()).digest()[:4], "big")
+class HyperLogLog:
+    def __init__(self, p):
+        self.p = p; self.m = 1 << p; self.reg = [0] * self.m
+    def add(self, x):
+        h = _hash32(x); idx = h >> (32 - self.p); w = h & ((1 << (32 - self.p)) - 1)
+        rank = (32 - self.p) - w.bit_length() + 1 if w else (32 - self.p) + 1
+        self.reg[idx] = max(self.reg[idx], rank)
+    def count(self):
+        alpha = 0.7213 / (1 + 1.079 / self.m) if self.m >= 128 else 0.673
+        Z = sum(2.0 ** (-r) for r in self.reg)
+        E = alpha * self.m * self.m / Z
+        if E <= 2.5 * self.m:
+            V = self.reg.count(0)
+            if V: E = self.m * math.log(self.m / V)
+        return E
+    def merge(self, other):                            # union = element-wise max of registers
+        out = HyperLogLog(self.p)
+        out.reg = [max(a, b) for a, b in zip(self.reg, other.reg)]
+        return out
 
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+A = HyperLogLog(p=10)
+B = HyperLogLog(p=10)
+for i in range(0, 1000):
+    A.add(f"u{i}")                                     # A = {u0 .. u999}
+for i in range(500, 1500):
+    B.add(f"u{i}")                                     # B = {u500 .. u1499}, overlapping 500..999
+print(round(A.count()), round(B.count()))              # ~1004, ~945  (each true 1000)
+print(round(A.merge(B).count()))                       # ~1465  (true union 1500)
+```
+
+```java run
+import java.security.MessageDigest;
+public class Main {
+    static long hash32(String x) {
+        try {
+            byte[] d = MessageDigest.getInstance("MD5").digest(x.getBytes("UTF-8"));
+            return ((d[0]&0xFFL)<<24)|((d[1]&0xFFL)<<16)|((d[2]&0xFFL)<<8)|(d[3]&0xFFL);
+        } catch (Exception e) { throw new RuntimeException(e); }
+    }
+    static class HLL {
+        int p, m; int[] reg;
+        HLL(int p) { this.p = p; this.m = 1 << p; reg = new int[m]; }
+        void add(String x) {
+            long h = hash32(x); int idx = (int)(h >>> (32 - p)); long w = h & ((1L << (32 - p)) - 1);
+            int bitlen = (w == 0) ? 0 : (64 - Long.numberOfLeadingZeros(w));
+            int rank = (w != 0) ? (32 - p) - bitlen + 1 : (32 - p) + 1;
+            if (rank > reg[idx]) reg[idx] = rank;
+        }
+        double count() {
+            double alpha = m >= 128 ? 0.7213 / (1 + 1.079 / m) : 0.673;
+            double Z = 0; int V = 0;
+            for (int r : reg) { Z += Math.pow(2, -r); if (r == 0) V++; }
+            double E = alpha * m * m / Z;
+            if (E <= 2.5 * m && V > 0) E = m * Math.log((double) m / V);
+            return E;
+        }
+        HLL merge(HLL o) { HLL out = new HLL(p); for (int i = 0; i < m; i++) out.reg[i] = Math.max(reg[i], o.reg[i]); return out; }
+    }
+    public static void main(String[] args) {
+        HLL A = new HLL(10), B = new HLL(10);
+        for (int i = 0; i < 1000; i++) A.add("u" + i);
+        for (int i = 500; i < 1500; i++) B.add("u" + i);
+        System.out.println(Math.round(A.count()) + " " + Math.round(B.count()));   // ~1004 ~945
+        System.out.println(Math.round(A.merge(B).count()));                        // ~1465
+    }
+}
+```
+
+Both estimate the two streams near `1000` each and their union near `1465` (true `1500`) — computed from the registers alone, never touching the original `u*` items. Element-wise max works because a register holds the *deepest* leading-zero run seen in its bucket, and the union's deepest run is just the max of the two. That mergeability is why HyperLogLog scales horizontally: every shard keeps its own tiny sketch, and a coordinator merges them for a global distinct-count.
+
+## Reflect & Connect
+
+- **Cardinality from the rarest event.** The maximum leading-zero count ≈ `log₂(distinct)`; a `k`-zero hash implies ~`2ᵏ` distinct items. One small integer per bucket captures the *scale* of the stream.
+- **Buckets + harmonic mean buy the accuracy.** A single estimator is hopeless (huge variance); `m` registers combined by a bias-corrected harmonic mean give `≈ 1.04/√m` error. The leading-zero trick is the idea, averaging is the engineering.
+- **Fixed memory, any cardinality.** `m` registers of ~6 bits — kilobytes regardless of stream size. Redis uses 16384 registers (~12 KB) for ~0.8% error up to ~`2⁶⁴`.
+- **Mergeable by max → distributed counting.** Union two HLLs by element-wise max of registers. Per-shard sketches merge into a global count with no re-scan — the property that makes it production infrastructure.
+- **The probabilistic-structures arc.** [Bloom](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-bloom-filter) (membership), [count-min](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-count-min-sketch) (frequency), HyperLogLog (cardinality) — three different streaming questions, all answered by *hash into a small fixed structure and accept a bounded approximation*. Its lineage: Flajolet-Martin → LogLog → HyperLogLog.
+
+## Recall
+
+<details>
+<summary><strong>Q:</strong> What does HyperLogLog estimate, and what's the core observation?</summary>
+
+**A:** The number of *distinct* items (cardinality) in a stream. Core observation: a uniform hash has `k` leading zeros with probability `2⁻ᵏ`, so the maximum leading-zero count seen ≈ `log₂(distinct)` — seeing `k` zeros implies ~`2ᵏ` distinct items.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why aren't a single leading-zero counter's results usable directly?</summary>
+
+**A:** Huge variance — one freakishly zero-heavy hash inflates the estimate. HyperLogLog runs `m` independent registers (bucketed by the hash's first bits) and combines them with a bias-corrected harmonic mean, reducing relative error to `≈ 1.04/√m`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why don't duplicate items change the estimate?</summary>
+
+**A:** A duplicate hashes to the same value and the same bucket, and can't raise that register's max-rank beyond what the first occurrence already set. So HLL counts *distinct* items, ignoring repeats — by construction.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How do you merge two HyperLogLogs, and why does it work?</summary>
+
+**A:** Take the element-wise maximum of their registers. Each register holds the deepest leading-zero run in its bucket; the union's deepest run is just the larger of the two, so the merged sketch estimates the union's cardinality — without the original items.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is the memory fixed regardless of how many items stream through?</summary>
+
+**A:** It stores only `m` registers of ~6 bits each — a function of the chosen accuracy (`m`), not of the stream size or cardinality. Whether you see a thousand or a billion distinct items, the footprint is the same few KB.
+
+</details>
+
+## Sources & Verify
+
+- **Flajolet, Fusy, Gandouet & Meunier** (2007), "HyperLogLog: the analysis of a near-optimal cardinality estimation algorithm" — the algorithm, the `α_m` bias correction, and the `1.04/√m` error.
+- **Flajolet & Martin** (1985, probabilistic counting) and **Durand & Flajolet** (2003, LogLog) — the lineage HyperLogLog refines.
+- **Redis** `PFADD`/`PFCOUNT`/`PFMERGE` and **Google BigQuery** `APPROX_COUNT_DISTINCT` — production HLLs; the `~10482` estimate of 10000, the `8/11/13` max-leading-zeros, and the `~1465` merged union above come from the runnable blocks — re-run to verify (deterministic MD5 hashing; the estimates are approximate by design — within a few percent, not exact).

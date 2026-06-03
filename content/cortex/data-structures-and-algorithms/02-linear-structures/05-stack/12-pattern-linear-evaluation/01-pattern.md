@@ -1,93 +1,162 @@
 ---
 title: "Pattern: Linear Evaluation"
-summary: "Evaluate a linearised expression left-to-right by pushing operands and computing on operator or delimiter events."
+summary: "Scan a linearised expression once, pushing operands and computing whenever an operator (or delimiter) fires. The stack holds pending operands and intermediate results — postfix evaluation in O(n), no precedence juggling."
 prereqs:
-  - 02-linear-structures/05-stack/01-introduction-to-stacks
+  - 02-linear-structures/05-stack/01-what-is-a-stack
 ---
 
-# Understanding the evaluation pattern
+# Pattern: Linear Evaluation
 
-Three primitive operations:
+## Why It Exists
 
-- **Push** a token (operand, marker, or partial result) onto the stack.
-- **Trigger** evaluation when a "closer" event fires (e.g., `]`, `)`, `..`, end-of-token).
-- **Combine** the popped chunk into a single new value and push it back onto the stack.
+You want to *evaluate* a sequence, not just validate it: compute `(2 + 1) * 3`, expand `3[ab]` to `ababab`, canonicalise the path `/a/./b/../c` to `/a/c`. The hard part of an infix expression like `3 + 4 * 2` is operator **precedence** — you can't just go left to right.
 
-> 🖼 Diagram — Linear evaluation — every input token either pushes a new partial result or triggers a "fold" of recently pushed parts into one combined result. The stack always holds a list of partial answers; the closer event collapses some of them.
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    R["read token"] --> Q{"closer event?"}
-    Q -->|"no"| P["push token<br/>(or accumulate into top)"]
-    Q -->|"yes"| TRIG["pop until matching opener<br/>(or condition)"]
-    TRIG --> EVAL["combine popped pieces<br/>into one new value"]
-    EVAL --> PUSH["push the combined value"]
-    P --> R
-    PUSH --> R
+But in **postfix** form (Reverse Polish Notation), `3 4 2 * +`, precedence is already baked into the order. Now a single left-to-right scan suffices: operands wait on a stack until an operator arrives and consumes the right number of them. Push operands; when an operator fires, pop its operands, compute, and push the result back as a new operand. After the scan, the one value left on the stack is the answer. The stack is doing the bookkeeping that precedence rules would otherwise force you to manage by hand.
+
+## See It Work
+
+Evaluate the postfix expression `2 1 + 3 *` — that's `(2 + 1) * 3 = 9`. Run it, then **Visualise** operands pile up and collapse as each operator fires.
+
+> ▶ Run it, then click **Visualise** — numbers push; an operator pops two operands, computes, and pushes the result back.
+
+```python run viz=array viz-root=stack viz-kind=stack
+def eval_rpn(tokens):
+    ops = {'+': lambda a, b: a + b, '-': lambda a, b: a - b,
+           '*': lambda a, b: a * b, '/': lambda a, b: int(a / b)}
+    stack = []
+    for t in tokens:
+        if t in ops:
+            b = stack.pop()              # right operand (popped first)
+            a = stack.pop()              # left operand
+            stack.append(ops[t](a, b))   # push the result back
+        else:
+            stack.append(int(t))         # operand → wait on the stack
+    return stack[-1]
+
+print(eval_rpn(["2", "1", "+", "3", "*"]))   # 9
 ```
 
-<p align="center"><strong>Linear evaluation — every input token either pushes a new partial result or triggers a "fold" of recently pushed parts into one combined result. The stack always holds a list of partial answers; the closer event collapses some of them.</strong></p>
+## How It Works
 
-## Algorithm
+Scan the tokens once, keeping a stack of operands and intermediate results:
 
-> **Algorithm**
->
-> -   **Step 1:** Initialise an empty stack.
-> -   **Step 2:** For each token in the input:
->     -   Decide its kind (operand, opener, closer, multiplier, …).
->     -   Push directly, or pop-and-combine, depending on the kind.
-> -   **Step 3:** After the scan, the stack holds the answer (often joined or summed across remaining elements).
+1. **Operand** → push it. It's pending work, waiting for an operator.
+2. **Operator** → it needs operands. Pop the two most recent, apply the operation, and push the result — which is itself now an operand for whatever comes next.
+3. **End** → exactly one value remains; that's the result.
 
-# Identifying the linear evaluation pattern
+```mermaid
+flowchart TB
+  T["next token"] --> Q{"operand or operator?"}
+  Q -->|"operand"| PU["push"]
+  Q -->|"operator"| OP["pop operands → compute → push result"]
+  PU --> T
+  OP --> T
+  T -->|"end"| R(["stack top = answer"])
+```
 
-Look for problems with all three of these:
+<p align="center"><strong>operands push and wait; each operator pops the operands it needs, computes, and pushes the result back as a new operand.</strong></p>
 
-1. **Single linear scan over a string or sequence.**
-2. **Nesting** — sub-expressions can contain sub-sub-expressions, recursively.
-3. **A "closer" token** that triggers reducing a chunk of the stack into one result.
+The order of the two pops matters for **non-commutative** operators: the *first* value popped is the **right** operand, the second is the **left**. Get it backwards and `-` and `/` silently compute `b − a` instead of `a − b`. Each token is handled once with `O(1)` stack work → **`O(n)` time, `O(n)` space.**
 
-If the input is a flat list with no nesting, you don't need this pattern. But anywhere brackets, paths, encoded substrings, or grouping operators appear, the linear-evaluation stack lights up.
+### Key Takeaway
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+Evaluate postfix in one pass: push operands, and on each operator pop its operands, compute, and push the result back. The stack replaces precedence bookkeeping — just mind the pop order (first popped = right operand) for `-` and `/`.
 
-<!-- TODO: Why Naive Isn't Enough — missing, needs to be written -->
-<!--       Guidance: motivation for why the obvious approach fails -->
+## Trace It
 
-<!-- TODO: The Core Idea — missing, needs to be written -->
-<!--       Guidance: one paragraph: the central trick -->
+Evaluating `2 1 + 3 *`:
 
-<!-- TODO: How the Pointers/Window Move — missing, needs to be written -->
-<!--       Guidance: mechanics of the moving parts -->
+| token | action | stack (bottom → top) |
+|---|---|---|
+| `2` | push | `2` |
+| `1` | push | `2 1` |
+| `+` | pop `1`, `2` → `3` → push | `3` |
+| `3` | push | `3 3` |
+| `*` | pop `3`, `3` → `9` → push | `9` |
+| end | answer = `9` | — |
 
-<!-- TODO: The Generic Algorithm — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
+Before you read on: at `+` we popped `1` then `2`. For `+` the order doesn't matter, but suppose the operator were `-`. Which of `1` and `2` is the *left* operand, and what would the result be if you mixed them up?
 
-<!-- TODO: Generic Implementation — missing, needs to be written -->
-<!--       Guidance: Python block + Java block of the skeleton -->
+The *second* value popped (`2`) is the left operand and the *first* popped (`1`) is the right, so `-` gives `2 − 1 = 1`. Swap them and you'd compute `1 − 2 = −1` — wrong. The stack returns operands in reverse of how they were pushed, so the later-pushed value (the right operand in the original expression) comes off first. Commutative operators (`+`, `*`) hide this bug; `-` and `/` expose it immediately, which is why getting the pop order right is the one thing to be careful about in this pattern.
 
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table -->
+## Your Turn
 
-<!-- TODO: Variants / Taxonomy — missing, needs to be written -->
-<!--       Guidance: enumerate sub-shapes of this pattern -->
+The reusable postfix evaluator:
 
-<!-- TODO: Recognition Checklist — missing, needs to be written -->
-<!--       Guidance: 4-question diagnostic — the source of the Problem-section Diagnostic Questions -->
+```python run
+def eval_rpn(tokens):
+    ops = {'+': lambda a, b: a + b, '-': lambda a, b: a - b,
+           '*': lambda a, b: a * b, '/': lambda a, b: int(a / b)}
+    stack = []
+    for t in tokens:
+        if t in ops:
+            b = stack.pop(); a = stack.pop()
+            stack.append(ops[t](a, b))
+        else:
+            stack.append(int(t))
+    return stack[-1]
 
-<!-- TODO: Canonical Example — missing, needs to be written -->
-<!--       Guidance: fully worked example: brute force → optimised → template fit -->
+print(eval_rpn(["4", "13", "5", "/", "+"]))                  # 4 + (13/5=2) = 6
+print(eval_rpn(["5", "1", "2", "+", "4", "*", "+", "3", "-"]))   # 14
+```
 
-<!-- TODO: Problems in This Category — missing, needs to be written -->
-<!--       Guidance: table with links to the 02-problems/ files -->
+```java run
+import java.util.*;
+
+public class Main {
+  static int evalRpn(String[] tokens) {
+    Deque<Integer> stack = new ArrayDeque<>();
+    for (String t : tokens) {
+      switch (t) {
+        case "+": case "-": case "*": case "/": {
+          int b = stack.pop(), a = stack.pop();   // first popped = right operand
+          stack.push(t.equals("+") ? a + b : t.equals("-") ? a - b : t.equals("*") ? a * b : a / b);
+          break;
+        }
+        default: stack.push(Integer.parseInt(t));
+      }
+    }
+    return stack.peek();
+  }
+
+  public static void main(String[] args) {
+    System.out.println(evalRpn(new String[]{"4", "13", "5", "/", "+"}));   // 6
+    System.out.println(evalRpn(new String[]{"5", "1", "2", "+", "4", "*", "+", "3", "-"}));   // 14
+  }
+}
+```
+
+Drill the family in **Practice** — [Canonicalise Path](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-linear-evaluation-problems-canonicalise-path), [Bracketed Reversal](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-linear-evaluation-problems-bracketed-reversal), [String Expansion](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-linear-evaluation-problems-string-expansion), and [Formula Parsing](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-linear-evaluation-problems-formula-parsing).
+
+## Reflect & Connect
+
+"Push pending work, resolve it when a trigger fires" is the shape of every linear evaluator:
+
+- **The family** — postfix arithmetic (above), **path canonicalisation** (push directory names; `..` pops one; `.` is a no-op), **string expansion** (`3[ab]` — push counts and segments, resolve on `]`), and **formula parsing**. The "trigger" is an operator, a delimiter, or a closing bracket.
+- **The stack holds deferred work** — operands and partial results wait until there's enough context to combine them. That's the same instinct as the validation pattern, but now you *compute* on pop instead of merely matching.
+- **It's the back half of a calculator** — convert infix to postfix (the shunting-yard algorithm, which uses an *operator* stack to resolve precedence), then evaluate the postfix with this pattern. Together they're how calculators and compilers turn `3 + 4 * 2` into `11`.
+
+**Prerequisites:** [What Is a Stack?](/cortex/data-structures-and-algorithms/linear-structures-stack-what-is-a-stack).
+
+## Recall
+
+> **Mnemonic:** *Operand → push. Operator → pop operands, compute, push result. First popped = right operand. End: one value = the answer.*
+
+| | |
+|---|---|
+| Operand | push (pending work) |
+| Operator | pop the operands → compute → push the result |
+| Pop order | first popped = **right** operand, second = **left** (matters for `−`, `/`) |
+| End | a single value on the stack = the result |
+| Cost | `O(n)` time, `O(n)` space |
+
+- **Q:** Why is postfix easier to evaluate than infix? **A:** Postfix encodes precedence in the token order, so a single left-to-right pass with a stack needs no precedence rules.
+- **Q:** What does the stack hold during evaluation? **A:** Operands and intermediate results — pending work waiting for an operator to combine them.
+- **Q:** Which popped value is the left operand, and why care? **A:** The *second* popped is the left operand; mixing up the order breaks non-commutative `−` and `/`.
+- **Q:** How does a full calculator use this? **A:** Convert infix → postfix (shunting-yard, an operator stack), then evaluate the postfix with this pattern.
+
+## Sources & Verify
+
+- **CLRS**, *Introduction to Algorithms*, 4th ed., §10.1 — stacks.
+- **Sedgewick & Wayne**, *Algorithms*, 4th ed., §1.3 — stacks; Dijkstra's two-stack expression evaluation and the shunting-yard algorithm.
+- Postfix (RPN) evaluation via a stack is the canonical example; both runnable blocks are verified by running (`2 1 + 3 * = 9`, `4 13 5 / + = 6`, and `5 1 2 + 4 * + 3 - = 14`).

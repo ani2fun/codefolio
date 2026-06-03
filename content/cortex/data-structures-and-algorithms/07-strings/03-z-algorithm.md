@@ -1,305 +1,233 @@
 ---
 title: Z-Algorithm
-summary: A sibling of KMP at the same O(n + m) cost via a different array. The Z-array tells you, for each position, the length of the longest substring starting there that matches a prefix of the string. One of the cleanest string-algorithm implementations.
+summary: "KMP's sibling at the same O(n + m) cost via a different array. z[i] is the length of the longest substring starting at i that matches a prefix of the string; the Z-box reuse keeps it linear. Matching concatenates pattern + separator + text and looks for z[i] == pattern length."
 prereqs:
   - strings-kmp
 ---
 
-# 3. Z-Algorithm
+## Why It Exists
 
-## The Hook
+[KMP](/cortex/data-structures-and-algorithms/strings-kmp) reaches `O(n + m)` with the failure function. The **Z-algorithm** reaches the same bound with a different precomputed array — and it's arguably easier to remember and reason about. The **Z-array** answers, for every position `i`: *how long is the substring starting at `i` that matches a prefix of the whole string?* That single definition powers pattern matching, periodicity tests, and counting distinct substrings.
 
-KMP gives you `O(n + m)` matching via the failure function. The **Z-algorithm** gives you the same `O(n + m)` matching via a different precomputed array — the **Z-array** — which has independent uses beyond pattern matching.
+Where KMP's `lps` looks *backward* (longest prefix that's also a suffix *ending* at `i`), the Z-array looks *forward* (longest prefix-match *starting* at `i`). They're two views of the same self-similarity, and the Z-array's framing makes one of the cleanest linear-time string algorithms — once you see the **Z-box** trick that stops it being quadratic.
 
-For a string `S`, the Z-array `Z` is defined: `Z[i]` is the length of the longest substring starting at position `i` that matches a *prefix* of `S`. By convention `Z[0] = 0` (or sometimes `n`, depending on the variant).
+## See It Work
 
-To match a pattern `P` in text `T`, build the Z-array of the concatenated string `S = P + "$" + T` (using a separator `$` not in either). Any position `i > m` with `Z[i] = m` means the pattern starts at position `i - m - 1` in `T`. Done.
+`z_array(s)` computes the prefix-match lengths; matching a pattern in a text concatenates `P + separator + T` (a separator that appears in neither) and looks for positions where `z[i]` equals the pattern's length.
 
-The implementation is shorter than KMP's — about 20 lines — and the algorithm has applications beyond matching: counting distinct substrings, periodic-string analysis, and a few competitive-programming standards.
-
----
-
-## Table of contents
-
-1. [The Z-array defined](#the-z-array-defined)
-2. [Computing the Z-array](#computing-the-z-array)
-3. [Pattern matching via Z-array](#pattern-matching-via-z-array)
-4. [Implementation](#implementation)
-5. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
-6. [Production reality](#production-reality)
-7. [Practice ladder](#practice-ladder)
-8. [Cross-links](#cross-links)
-9. [Final takeaway](#final-takeaway)
-
-***
-
-# The Z-array defined
-
-For a string `S` of length `n`:
-
-> `Z[i]` = length of the longest substring `S[i..i+k-1]` that equals `S[0..k-1]`.
-
-Examples for `S = "aabcaabxaaaz"`:
-
-```
-i:    0  1  2  3  4  5  6  7  8  9  10 11
-S[i]: a  a  b  c  a  a  b  x  a  a  a  z
-Z:    0  1  0  0  3  1  0  0  2  2  1  0
-```
-
-- `Z[1] = 1`: `S[1] = 'a'` matches `S[0]`; `S[2] = 'b'` ≠ `S[1] = 'a'`.
-- `Z[4] = 3`: `S[4..6] = "aab"` matches `S[0..2]`; `S[7] = 'x'` ≠ `S[3] = 'c'`.
-- `Z[8] = 2`: `S[8..9] = "aa"` matches `S[0..1]`; `S[10] = 'a'` ≠ `S[2] = 'b'`.
-
-`Z[0]` is undefined or set to `n` by convention (the string trivially matches itself).
-
-***
-
-# Computing the Z-array
-
-The naive computation: for each `i`, compare character-by-character with the prefix until mismatch. `O(n²)` worst case. The Z-algorithm reduces this to `O(n)` by maintaining a *Z-box* — the rightmost `[l, r]` interval discovered so far that matches a prefix of `S`.
-
-The cleverness is the `min(r - i, Z[i - l])` step. If `i` lies within the current Z-box `[l, r]`, then `S[i..r-1]` is a known prefix of `S` (specifically `S[i-l..r-l-1]`). So `Z[i]` is at least `min(r - i, Z[i - l])`. If `Z[i - l]` is small enough that the inferred match doesn't reach `r`, we can copy `Z[i - l]` exactly. Otherwise we need to verify by scanning — but only past `r`, which the amortisation argument shows happens linearly often.
-
-**Cost.** `O(n)`. Each character of `S` is "examined for the first time" at most twice — once when extending `r`, once when used in a copied `Z[i - l]`.
-
-***
-
-# Pattern matching via Z-array
-
-To find all occurrences of `P` in `T`:
-
-1. Build `S = P + "$" + T` where `$` is a separator that doesn't appear in `P` or `T`.
-2. Compute `Z` for `S`.
-3. For each position `i` in the `T` part of `S`, if `Z[i] = m` (length of `P`), then `P` occurs at position `i - m - 1` in `T`.
-
-`O(n + m)` total: `O(m + 1 + n)` to build the Z-array of `S`.
-
-***
-
-# Implementation
-
-```python run viz=array viz-root=Z
-def z_array(S):
-    n = len(S)
-    Z = [0] * n
-    l, r = 0, 0
+```python run
+def z_array(s):
+    n = len(s)
+    z = [0] * n
+    l = r = 0                                        # [l, r] = rightmost prefix-match window (the Z-box)
     for i in range(1, n):
         if i < r:
-            Z[i] = min(r - i, Z[i - l])
-        while i + Z[i] < n and S[Z[i]] == S[i + Z[i]]:
-            Z[i] += 1
-        if i + Z[i] > r:
-            l, r = i, i + Z[i]
-    return Z
+            z[i] = min(r - i, z[i - l])              # reuse the mirror value, capped at the box edge
+        while i + z[i] < n and s[z[i]] == s[i + z[i]]:
+            z[i] += 1                                # extend past the box by direct comparison
+        if i + z[i] > r:
+            l, r = i, i + z[i]                        # this match reaches furthest -> new box
+    return z
 
-def find_pattern(T, P):
-    if not P: return list(range(len(T) + 1))
-    sep = '$'
-    S = P + sep + T
-    Z = z_array(S)
-    m = len(P)
-    return [i - m - 1 for i in range(m + 1, len(S)) if Z[i] == m]
+SEP = chr(0)                                         # sentinel: a char in NEITHER pattern nor text
+def z_search(text, pattern):
+    s = pattern + SEP + text
+    z = z_array(s)
+    m = len(pattern)
+    return [i - m - 1 for i in range(len(s)) if z[i] == m]   # z[i] == |P| means a full match
 
-
-if __name__ == "__main__":
-    print(f"Z('aabcaabxaaaz') = {z_array('aabcaabxaaaz')}")
-    print(f"matches of 'ab' in 'ababab': {find_pattern('ababab', 'ab')}")     # [0, 2, 4]
-    print(f"matches of 'aab' in 'aabaaaabaaab': {find_pattern('aabaaaabaaab', 'aab')}")  # [0, 4, 8]
+print(z_array("aabaab"))                             # [0, 1, 0, 3, 1, 0]
+print(z_search("abxabcabcaby", "abcaby"))            # [6]
 ```
 
 ```java run
 import java.util.*;
-
 public class Main {
-    static int[] zArray(String S) {
-        int n = S.length();
-        int[] Z = new int[n];
-        int l = 0, r = 0;
+    static final char SEP = '\u0000';                // sentinel char absent from inputs
+    static int[] zArray(String s) {
+        int n = s.length(); int[] z = new int[n]; int l = 0, r = 0;
         for (int i = 1; i < n; i++) {
-            if (i < r) Z[i] = Math.min(r - i, Z[i - l]);
-            while (i + Z[i] < n && S.charAt(Z[i]) == S.charAt(i + Z[i])) Z[i]++;
-            if (i + Z[i] > r) { l = i; r = i + Z[i]; }
+            if (i < r) z[i] = Math.min(r - i, z[i - l]);
+            while (i + z[i] < n && s.charAt(z[i]) == s.charAt(i + z[i])) z[i]++;
+            if (i + z[i] > r) { l = i; r = i + z[i]; }
         }
-        return Z;
+        return z;
     }
-
-    static List<Integer> findPattern(String T, String P) {
-        String S = P + "$" + T;
-        int[] Z = zArray(S);
-        int m = P.length();
-        List<Integer> matches = new ArrayList<>();
-        for (int i = m + 1; i < S.length(); i++) {
-            if (Z[i] == m) matches.add(i - m - 1);
-        }
-        return matches;
+    static List<Integer> zSearch(String text, String pattern) {
+        String s = pattern + SEP + text;
+        int[] z = zArray(s); int m = pattern.length();
+        List<Integer> hits = new ArrayList<>();
+        for (int i = 0; i < s.length(); i++) if (z[i] == m) hits.add(i - m - 1);
+        return hits;
     }
-
     public static void main(String[] args) {
-        System.out.println(findPattern("ababab", "ab"));
+        System.out.println(Arrays.toString(zArray("aabaab")));   // [0, 1, 0, 3, 1, 0]
+        System.out.println(zSearch("abxabcabcaby", "abcaby"));   // [6]
     }
 }
 ```
 
-***
+Both print the Z-array `[0, 1, 0, 3, 1, 0]` then `[6]`. The `3` at index 3 of `"aabaab"` says `"aab"` (starting at index 3) matches the prefix `"aab"`; the pattern matches the text only at index 6. Build and search are each linear, `O(n + m)` overall.
 
-# Edge cases and pitfalls
+## How It Works
 
-- **Choosing the separator.** The `$` (or `#`, or `\0`) must *not* appear in either the pattern or the text. For binary strings or arbitrary alphabets, find a sentinel value outside the alphabet, or use a different boundary check.
-- **`Z[0]` convention.** Most implementations set `Z[0] = 0` (the chapter's). Some set it to `n`. Both are fine if you're consistent; the matching algorithm doesn't read `Z[0]`.
-- **The `min(r - i, Z[i - l])` step.** Easy to flip the inequality. `r` is *exclusive* in some references and *inclusive* in others; check before copying.
-- **Comparing Z-array vs failure function.** Both are `O(n)` precomputations giving `O(n + m)` matching. Z-array tends to be slightly faster in practice (simpler inner loop), and the array has more standalone uses.
+The naive Z-array recomputes each `z[i]` by scanning from scratch — `O(n²)`. The **Z-box** makes it linear by remembering the prefix-match that reaches furthest right and *reusing* it:
 
-***
-
-# Production reality
-
-- **Competitive programming.** Z-array is the more popular tool than KMP because the implementation fits in a few lines and the array itself answers many queries (counting distinct substrings, finding longest common prefix of suffixes, etc.).
-- **Suffix-array construction.** Some `O(n log n)` suffix-array algorithms use Z-array as a subroutine.
-- **Periodic string analysis.** A string `S` of length `n` has period `p` iff `Z[p] + p ≥ n`. Used in pattern-detection in DNA (tandem repeats), audio analysis (period detection).
-- **Less common in production code than KMP** — most language standard libraries use Boyer-Moore-Horspool, Two-Way, or KMP-like methods. Z-algorithm is more an *educational and research* tool.
-
-***
-
-# Practice ladder
-
-1. **Implement Z-array.** Test on `"aabcaabxaaaz"` and verify against the chapter's table.
-   > *Hint:* the chapter's algorithm; print the array and check term-by-term.
-
-2. **Pattern matching via Z-array.** Implement and verify identical results to KMP on stress tests.
-   > *Hint:* generate random strings and patterns; compare against `T.find(P)` repeated calls.
-
-3. **Count distinct substrings.** Use Z-array to count distinct substrings of `S` in `O(n²)`.
-   > *Hint:* for each suffix `S[i..]`, count substrings starting there that haven't appeared in any earlier suffix. Z-array on suffix concatenation gives the longest prefix of an earlier suffix matching this one.
-
-4. **Find all periods of a string.** A *period* of `S` is a value `p` such that `S[i] = S[i + p]` for `0 ≤ i < n − p`.
-   > *Hint:* `p` is a period iff `Z[p] + p ≥ n`. Iterate over `p` from 1 to `n - 1`.
-
-5. **Shortest period of a string.** Find the smallest `p` such that `S` is a prefix of `(S[0..p-1])*`.
-   > *Hint:* the answer is `n − Z[?]` where `?` is the position whose Z-value reaches the end. Or: `n − (longest border of S)`. Both are derivable from Z-array.
-
-***
-
-# Memorize
-
-The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Z-array is the cleaner-looking sibling of KMP — once you've internalised the Z-box invariant, every prefix-or-period question reduces to one Z-array build.
-
-## Quick recall
-
-Click any question to reveal the answer.
-
-<details>
-<summary><strong>Q:</strong> What does <code>Z[i]</code> represent?</summary>
-
-**A:** The length of the longest substring starting at `i` that matches a *prefix* of `S`. By convention `Z[0] = 0`.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Time complexity of building Z-array?</summary>
-
-**A:** `O(n)`. Amortised: the Z-box's right edge `r` only moves forward across the loop.
-
-</details>
-<details>
-<summary><strong>Q:</strong> What's the Z-box?</summary>
-
-**A:** The interval `[l, r]` representing the rightmost discovered substring matching a prefix of `S`. Maintained across the loop to reuse work.
-
-</details>
-<details>
-<summary><strong>Q:</strong> How do you match pattern <code>P</code> in text <code>T</code> using Z-array?</summary>
-
-**A:** Build Z-array for `S = P + '$' + T` (where `$` doesn't appear in either). Any position `i > m` with `Z[i] = m` is a match in `T` at offset `i - m - 1`.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Why does the separator <code>$</code> matter?</summary>
-
-**A:** It prevents the Z-array from continuing the match past the pattern boundary into `T`. Must be a character not in `P` or `T`.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Smallest period of <code>S</code> via Z-array?</summary>
-
-**A:** Smallest `p` such that `Z[p] + p ≥ n`. The whole string is then a prefix of `(S[0..p-1])^k`.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Z-array vs KMP failure function — equivalent or different?</summary>
-
-**A:** Equivalent matching power, both `O(n + m)`. Different mental model. Z-array tends to be slightly faster in practice; KMP is more universally taught.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Compute Z for <code>"aabcaabxaaaz"</code>.</summary>
-
-**A:** `[0, 1, 0, 0, 3, 1, 0, 0, 2, 2, 1, 0]`.
-
-</details>
-
-## Code template
-
-```python
-def z_array(S):
-    n = len(S)
-    Z = [0] * n
-    l, r = 0, 0
-    for i in range(1, n):
-        if i < r:
-            Z[i] = min(r - i, Z[i - l])              # reuse work inside the Z-box
-        while i + Z[i] < n and S[Z[i]] == S[i + Z[i]]:
-            Z[i] += 1
-        if i + Z[i] > r:
-            l, r = i, i + Z[i]                       # extend the Z-box
-    return Z
-
-# Pattern matching: build Z for P + "$" + T; any Z[i] == m means a match.
+```d2
+direction: right
+box: "Z-box [l, r] = the prefix-match seen so far\nthat extends furthest right (s[l..r] is a prefix)" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
+inside: "i inside the box (i < r):\nz[i] = min(r - i, z[i - l])\nthe mirror position z[i-l] already told us the answer\n(capped at the box edge r)" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
+extend: "then extend past r by direct comparison only\n-> each char is compared O(1) amortized times" {style.fill: "#fde68a"; style.stroke: "#d97706"}
+outside: "i outside the box: scan fresh from i\n(and open a new box if it reaches past r)" {style.fill: "#f3e8ff"; style.stroke: "#9333ea"}
+box -> inside
+inside -> extend
+box -> outside
 ```
 
-## Pattern triggers
+<p align="center"><strong>Inside the Z-box, position <code>i</code> mirrors an earlier position <code>i − l</code> whose Z-value is already known — copy it (capped at the box edge) and only extend past the edge by real comparison. Every character is compared O(1) amortized times, giving O(n).</strong></p>
 
-- **"Find pattern in text"** → Z-array of `P + "$" + T`
-- **"Period / shortest repeating prefix"** → Z-array; smallest `p` with `Z[p] + p ≥ n`
-- **"Distinct substring counting"** → suffix array (Z is more limited here)
-- **"Need both prefix-match and period info"** → one Z-build does both
-- **"Sibling of KMP, different mental model"** → Z-array
-- **"Implementation should fit in 15 lines"** → Z-array beats KMP on brevity
+Three things to hold onto:
 
-***
+- **`z[i]` looks forward; `lps[i]` looks backward.** The Z-array's `z[i]` = longest prefix-match *starting* at `i`. KMP's `lps[i]` = longest proper prefix that's also a suffix *ending* at `i`. Same self-similarity, opposite direction — and you can convert between them. (`z[0]` is left 0 by convention; the whole string trivially matches itself.)
+- **The Z-box is why it's `O(n)`.** When `i` falls inside `[l, r]`, the substring `s[i..r]` already equals the prefix substring `s[i-l..r-l]`, so `z[i-l]` *is* the answer — unless it would run past the box edge, where you cap at `r - i` and extend by direct comparison. Those direct comparisons only ever advance `r`, so they total `O(n)` across the whole run.
+- **Matching needs a separator.** Build `z` over `P + SEP + T` where `SEP` occurs in neither. Then `z[i] == |P|` pinpoints a full occurrence of `P` starting at text position `i - |P| - 1`. The separator is load-bearing — the [Trace It](#trace-it) shows what breaks without it.
 
-# Cross-links
+> **Key takeaway.** The Z-array `z[i]` = length of the longest substring starting at `i` that matches a prefix of `s`, computed in `O(n)` via the **Z-box** (reuse the mirror value `z[i-l]` inside `[l, r]`, extend only past the edge). Pattern matching: run `z` over `P + SEP + T` and report every `z[i] == |P|`. It's KMP's forward-looking twin.
 
-- **Sibling:** [KMP](/cortex/data-structures-and-algorithms/strings-kmp) — equivalent matching power, different mental model.
-- **Used by:** suffix-array construction, periodic-string analysis.
+## Trace It
 
-***
+Z-matching glues the pattern and text together and reads off the Z-array — so the glue matters. The separator must be a character that appears in *neither* string. Skip it, and matches near the join can vanish.
 
-# Final takeaway
+**Predict before you run:** to find `"ab"` in `"abab"`, you build the Z-array of `"ab" + "abab"` and look for `z[i] == 2`. With a separator (`"ab" + SEP + "abab"`) you correctly get matches at text positions `[0, 2]`. Without the separator — just `"ababab"` — which matches does `z[i] == 2` report?
 
-The Z-algorithm is the cleaner-looking sibling of KMP. Three patterns to internalise:
+```python run
+def z_array(s):
+    n = len(s); z = [0] * n; l = r = 0
+    for i in range(1, n):
+        if i < r:
+            z[i] = min(r - i, z[i - l])
+        while i + z[i] < n and s[z[i]] == s[i + z[i]]:
+            z[i] += 1
+        if i + z[i] > r:
+            l, r = i, i + z[i]
+    return z
 
-1. **Z-array is a useful object on its own.** Beyond pattern matching, it answers periodicity, distinct-substring counting, and prefix-suffix-overlap questions cleanly.
-2. **The Z-box is the trick.** Maintain the rightmost confirmed prefix-match interval; reuse it via `min(r - i, Z[i - l])`. The amortisation gives `O(n)`.
-3. **Pattern match via concatenation.** `S = P + "$" + T` reduces matching to a Z-array computation. Sentinel choice matters; pick a character not in either string.
+def z_search(text, pattern, sep=chr(0)):             # correct: with a separator
+    s = pattern + sep + text
+    z = z_array(s); m = len(pattern)
+    return [i - m - 1 for i in range(len(s)) if z[i] == m]
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+def z_search_no_sep(text, pattern):                  # bug: pattern + text, no separator
+    s = pattern + text
+    z = z_array(s); m = len(pattern)
+    return [i - m for i in range(m, len(s)) if z[i] == m]
 
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
+print("z('ababab')        :", z_array("ababab"))
+print("with separator     :", z_search("abab", "ab"))
+print("no separator (bug) :", z_search_no_sep("abab", "ab"))
+```
 
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
+<details>
+<summary><strong>Reveal</strong></summary>
 
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
+With the separator the answer is `[0, 2]`; without it you get only `[2]` — the match at position 0 vanishes. Look at `z("ababab") = [0, 0, 4, 0, 2, 0]`. At index 2 (the start of the text region), the prefix `"ab"` doesn't just match `"ab"` — it keeps matching `"abab"`, so `z[2] = 4`, *not* 2. The exact test `z[i] == |P|` fails (`4 ≠ 2`), so the occurrence at text position 0 is missed. The separator fixes this by force: since `SEP` appears in neither string, no prefix can match past the join, so every Z-value in the text region is *capped* at `|P|`, and `z[i] == |P|` fires exactly at true matches. (You could instead test `z[i] >= |P|`, but that breaks other cases and conflates pattern-internal overlaps with real matches — the separator is the clean, standard fix.) The lesson: the Z-matching trick is only correct *because* of that sentinel character.
 
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
+</details>
 
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+## Your Turn
 
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+**Count occurrences** of a pattern in a text — the Z-matcher with a `len()` on the hit list. It's how you'd answer "how many times does this motif appear?" in `O(n + m)`.
+
+```python run
+def z_array(s):
+    n = len(s); z = [0] * n; l = r = 0
+    for i in range(1, n):
+        if i < r:
+            z[i] = min(r - i, z[i - l])
+        while i + z[i] < n and s[z[i]] == s[i + z[i]]:
+            z[i] += 1
+        if i + z[i] > r:
+            l, r = i, i + z[i]
+    return z
+
+def z_count(text, pattern, sep=chr(0)):
+    s = pattern + sep + text
+    z = z_array(s); m = len(pattern)
+    return sum(1 for v in z if v == m)
+
+print(z_count("mississippi", "issi"))    # 2
+print(z_count("aaaa", "aa"))             # 3
+```
+
+```java run
+public class Main {
+    static int[] zArray(String s) {
+        int n = s.length(); int[] z = new int[n]; int l = 0, r = 0;
+        for (int i = 1; i < n; i++) {
+            if (i < r) z[i] = Math.min(r - i, z[i - l]);
+            while (i + z[i] < n && s.charAt(z[i]) == s.charAt(i + z[i])) z[i]++;
+            if (i + z[i] > r) { l = i; r = i + z[i]; }
+        }
+        return z;
+    }
+    static int zCount(String text, String pattern) {
+        String s = pattern + '\u0000' + text;
+        int[] z = zArray(s); int m = pattern.length(), c = 0;
+        for (int v : z) if (v == m) c++;
+        return c;
+    }
+    public static void main(String[] args) {
+        System.out.println(zCount("mississippi", "issi"));   // 2
+        System.out.println(zCount("aaaa", "aa"));            // 3
+    }
+}
+```
+
+Both print `2` then `3`. `"issi"` occurs twice in `"mississippi"` (indices 1 and 4); `"aa"` occurs three times in `"aaaa"` (indices 0, 1, 2 — overlaps included, which Z-matching counts naturally). Same `z[i] == |P|` test, just totalled instead of collected — a reminder that find-all, find-first, and count are one algorithm with a different tally.
+
+## Reflect & Connect
+
+- **Forward twin of KMP.** `z[i]` = longest prefix-match *starting* at `i`; `lps[i]` = longest prefix that's also a suffix *ending* at `i`. Same `O(n + m)`, same self-similarity, opposite direction — pick whichever you find clearer (many prefer the Z-array's definition).
+- **The Z-box is the linearity.** Reusing `z[i-l]` inside `[l, r]` and only extending past the edge bounds total comparisons to `O(n)`. Drop the box and you're back to `O(n²)` on repetitive input.
+- **The separator is mandatory.** Matching via `P + SEP + T` only works because `SEP` (absent from both) caps Z-values at `|P|`, making `z[i] == |P|` an exact match test. It's the most common Z-matching bug.
+- **Standalone power.** Beyond matching, the Z-array gives string periodicity, the number of distinct substrings (with suffix structures), and competitive-programming staples — often in fewer lines than KMP.
+- **Where it sits.** [Naive](/cortex/data-structures-and-algorithms/strings-string-matching-naive) → [KMP](/cortex/data-structures-and-algorithms/strings-kmp) (backward failure function) → Z (forward prefix-match) → [Rabin-Karp](/cortex/data-structures-and-algorithms/strings-rabin-karp-and-rolling-hash) (hashing). Four routes to fast matching, each with a different mental model.
+
+## Recall
+
+<details>
+<summary><strong>Q:</strong> What does <code>z[i]</code> mean?</summary>
+
+**A:** The length of the longest substring starting at index `i` that matches a prefix of the whole string. (`z[0]` is conventionally 0.) Computed in `O(n)`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What is the Z-box, and why does it make the algorithm linear?</summary>
+
+**A:** `[l, r]` is the prefix-match interval seen so far that extends furthest right. For `i` inside it, `s[i..r]` already equals the prefix `s[i-l..r-l]`, so `z[i] = min(r-i, z[i-l])` — no rescan. You only do direct comparisons past `r`, and those just advance `r`, totalling `O(n)`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How do you match a pattern in a text with the Z-array?</summary>
+
+**A:** Build `z` over `P + SEP + T` (a separator absent from both). Every index `i` with `z[i] == |P|` marks an occurrence of `P` at text position `i - |P| - 1`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is the separator necessary?</summary>
+
+**A:** Without it, a prefix can match *past* the pattern into the text, pushing Z-values above `|P|` and breaking the exact `z[i] == |P|` test (e.g. matching `"ab"` in `"abab"` misses position 0). The separator caps every text-region Z-value at `|P|`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does the Z-array relate to KMP's failure function?</summary>
+
+**A:** They encode the same self-similarity in opposite directions: Z looks forward (prefix-match starting at `i`), `lps` looks backward (prefix=suffix ending at `i`). Both give `O(n + m)` matching; one is convertible to the other.
+
+</details>
+
+## Sources & Verify
+
+- **Gusfield**, *Algorithms on Strings, Trees, and Sequences* (1997), §1.3–1.5 — the Z-algorithm and the fundamental preprocessing it enables.
+- **CP-Algorithms**, "Z-function" — the canonical Z-box implementation and its `O(n)` argument.
+- **LeetCode** 28 (Find the Index of the First Occurrence) is the matching drill; the `[0,1,0,3,1,0]` Z-array, the `[6]` match, the with-vs-without-separator `[0,2]`/`[2]`, and the `2`/`3` occurrence counts above come from the runnable blocks — re-run to verify.

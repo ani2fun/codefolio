@@ -48,7 +48,6 @@ The structural property is that `arr1` is both the source AND the destination �
 
 To make this concrete: with `arr1 = [1, 2, 5, 0, 0]` and `arr2 = [3, 4]`, the largest overall value is `5` (from `arr1`), so slot `4` gets `5` first. Then the next-largest is `4` (from `arr2`), filling slot `3`. Then `3` (from `arr2`) fills slot `2`. At that point `arr2` is exhausted, and `arr1[0..1] = [1, 2]` are already sitting in the correct positions — no further work needed. The naive front-to-back merge would have needed an extra array of size `m + n` to avoid overwrites, costing `O(m + n)` extra space and missing the whole point of in-place merging.
 
-> 🖼 Diagram — Writing from the front overwrites unread data. Writing from the back fills the pre-allocated zero slots — already free, never destructive.
 ```d2
 direction: right
 
@@ -109,7 +108,6 @@ The fix is to flip the direction entirely. The last `n` positions of `arr1` are 
 5. Decrement `i3` after either branch — the next free slot moves one position to the left.
 6. When the main loop exits, exactly one of the read pointers is `-1`. If `i2 >= 0`, drain the leftover `arr2` into the front of `arr1` with a single loop — these elements are all smaller than everything already placed. If `i1 >= 0`, the leftover `arr1` elements are already in their correct positions; no action needed.
 
-> 🖼 Diagram — Three-pointer backward fill — i1 and i2 compete for each slot; i3 always fills the next free position from the back. No element is ever overwritten before being read.
 ```mermaid
 ---
 config:
@@ -157,7 +155,7 @@ flowchart TB
 
 ### The Solution
 
-```python run
+```python run viz=array viz-root=a1
 from typing import List
 
 class Solution:
@@ -220,7 +218,7 @@ a6 = [1, 3, 5, 0, 0, 0]
 Solution().merge_sorted_arrays(a6, 3, [2, 4, 6], 3); print(a6) # [1, 2, 3, 4, 5, 6]
 ```
 
-```java run
+```java run viz=array viz-root=a1
 import java.util.Arrays;
 
 public class Main {

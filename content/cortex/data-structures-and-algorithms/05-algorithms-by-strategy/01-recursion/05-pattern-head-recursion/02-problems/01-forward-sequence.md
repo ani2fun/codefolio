@@ -37,7 +37,6 @@ The natural temptation is to loop: `for i in 1..n: append(i)`. The point of this
 
 The recursive idea: **build the list for `n-1` first, then append `n` to it.** That's `[1, 2, ..., n-1] ++ [n]`. The base case is `n == 0`, returning the empty list.
 
-> 🖼 Diagram — Recursion tree for forward(5). Descent is silent; the appends happen on the ascent — classic head recursion.
 ```mermaid
 ---
 config:
@@ -93,42 +92,36 @@ The build happens during stack unwinding. We use the *output-by-reference* style
 
 <div class="d2-slides" data-caption="Each frame appends its value on the way back up. The list grows as the stack unwinds.">
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "After forward(0) returns" {
   list: "result = []"
 }
 ```
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "forward(1) appends 1" {
   list: "result = [1]" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
 }
 ```
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "forward(2) appends 2" {
   list: "result = [1, 2]" {style.fill: "#fde68a"; style.stroke: "#d97706"}
 }
 ```
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "forward(3) appends 3" {
   list: "result = [1, 2, 3]" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
 }
 ```
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "forward(4) appends 4" {
   list: "result = [1, 2, 3, 4]" {style.fill: "#fecaca"; style.stroke: "#dc2626"}
 }
 ```
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "forward(5) appends 5 — final" {
   list: "result = [1, 2, 3, 4, 5]" {style.fill: "#ede9fe"; style.stroke: "#7c3aed"}
@@ -143,7 +136,7 @@ state: "forward(5) appends 5 — final" {
 
 ### The Solution
 
-```python run
+```python run viz=array viz-root=result
 from typing import List
 
 class Solution:
@@ -187,7 +180,7 @@ print(Solution().forward_sequence(3))   # [1, 2, 3]
 print(Solution().forward_sequence(10))  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 ```
 
-```java run
+```java run viz=array viz-root=result
 import java.util.*;
 
 public class Main {
@@ -282,33 +275,9 @@ The output-reference style avoids the `O(n²)` cost of "build the list then retu
 
 </details>
 <details>
-<summary><h2>Final Takeaway</h2></summary>
+<summary><h2>Key Takeaway</h2></summary>
 
 
 Forward Sequence is the head-recursion template applied with `g = append` and `h = decrement`. The recursive call goes first, the append happens on the way back, and the list assembles bottom-up — the same scaffolding-unwind picture from the Memory Model lesson producing observable output this time. The next problem looks similar — until you notice the combine step is *multiplication*, and one base case decision changes everything.
 
 </details>
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
-
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
-
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
-
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
-
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
-
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->

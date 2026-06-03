@@ -68,7 +68,6 @@ The naive approach — peak-concurrency framing — answers a different question
 
 Imagine you have a stack of meeting requests that **all want the same single room**. Some clash with others; some don't. You want to **honour as many as possible**, which is the same as **cancelling as few as possible**. The answer is: total intervals minus the largest subset of mutually non-overlapping ones.
 
-> 🖼 Diagram — Removing the fewest intervals so the survivors are pairwise non-overlapping is equivalent to keeping the largest non-overlapping subset. The answer is n − count(largest subset).
 ```d2
 direction: right
 
@@ -107,7 +106,6 @@ cap -> after
 
 Among intervals that compete for a slot, the one that **ends earliest** leaves the most room afterwards for future picks. Anything that ends later would block more of the future timeline for no extra benefit.
 
-> 🖼 Diagram — Sorting by end time turns the problem into a one-pass greedy: always extend the kept set with the next interval whose start is at or after the last kept end.
 ```mermaid
 ---
 config:
@@ -182,7 +180,6 @@ This is a classic **exchange argument**: in any optimal subset, you can swap its
 <summary><h2>The Greedy Sweep (Visualised)</h2></summary>
 
 
-> 🖼 Diagram — Sort by end ascending; greedily keep every interval whose start is at or after the last kept end; the answer is total minus kept.
 ```mermaid
 ---
 config:
@@ -279,7 +276,7 @@ print(Solution().remove_intervals([[1, 2], [3, 4]]))                    # 0  —
 print(Solution().remove_intervals([[1, 4], [1, 2], [2, 3], [3, 4]]))   # 1  — one containing others
 ```
 
-```java run
+```java run viz=grid viz-root=intervals
 import java.util.*;
 
 public class Main {

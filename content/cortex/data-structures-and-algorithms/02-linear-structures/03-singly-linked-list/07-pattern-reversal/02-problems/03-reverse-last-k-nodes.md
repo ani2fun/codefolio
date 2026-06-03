@@ -87,7 +87,7 @@ Measure the length, walk to the splice point, reverse the suffix, stitch.
 ### Solution
 
 
-```python run
+```python run viz=linked-list viz-root=head
 from typing import Optional
 
 
@@ -197,7 +197,7 @@ print(to_list(Solution().reverse_last_k_nodes(from_list([1, 2, 3, 4, 5]), 5)))  
 print(to_list(Solution().reverse_last_k_nodes(from_list([1, 2, 3, 4, 5]), 10)))  # [5, 4, 3, 2, 1]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {

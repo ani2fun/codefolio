@@ -2,7 +2,7 @@
 title: "Memorize: Split"
 summary: "Pattern recognition triggers, template code, common mistakes, and quick recall."
 prereqs:
-  - 11-pattern-split/02-problems
+  - 11-pattern-split/01-pattern
 ---
 
 # Memorize: Split
@@ -30,8 +30,6 @@ Picture a mail-sorting room. Letters arrive on a single conveyor belt (the input
 ---
 
 ## Visual Summary
-
-> 🖼 Diagram — TODO: 3 frames — (1) initial state with input chain `1 → 2 → 3 → 4 → 5 → 6 → null` and `k = 3` empty buckets (each bucket showing `dummy[i]` with `tail[i]` pointer); (2) mid-walk after routing the first three nodes, showing each `tail[i]` parked on its most recently appended node and the walker `current` pointing at node 4; (3) terminal state with three sealed output chains derived from `dummy[i].next` (e.g. bucket 0 = `1 → 4`, bucket 1 = `2 → 5`, bucket 2 = `3 → 6`) and the original chain fully partitioned.
 
 ---
 

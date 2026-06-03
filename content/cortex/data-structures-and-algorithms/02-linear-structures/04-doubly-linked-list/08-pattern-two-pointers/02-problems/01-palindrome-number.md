@@ -23,13 +23,81 @@ Input:  head = [1, 2, 3, 4, 5]
 Output: false
 ```
 
+---
+
+<details>
+<summary><strong>Examples</strong></summary>
+
+**Example 1**
+```
+Input:  head = [1, 2, 3, 2, 1]
+Output: true
+Explanation: Reads identically forwards and backwards — the outer 1s match, the inner 2s match, the middle 3 is its own mirror.
+```
+
+**Example 2**
+```
+Input:  head = [6, 6, 6]
+Output: true
+Explanation: Every value is identical, so every mirror pair trivially matches.
+```
+
+**Example 3**
+```
+Input:  head = [1, 2, 3, 4, 5]
+Output: false
+Explanation: The outermost pair (1, 5) already disagrees — the algorithm returns false on the very first comparison.
+```
+
+**Example 4**
+```
+Input:  head = [1, 2, 2, 1]
+Output: true
+Explanation: Even-length palindrome — the pointers never land on the same node; they cross past each other after the inner (2, 2) match passes.
+```
+
+</details>
+
+---
+
+## Intuition
+
+The **structural property** that makes this a two-pointer problem is that a palindrome is defined by *mirror equality* across the centre of the list. Position `i` from the head must equal position `i` from the tail for every valid `i`. A DLL gives both ends in `O(1)` (the caller already passes `head` and `tail`) and a backward step from the tail in `O(1)` via `tail.prev`. The work splits naturally into `n / 2` independent comparisons — exactly the shape a converging two-pointer pass eats for breakfast.
+
+The **pointer placement** is `left = head`, `right = tail`. Each iteration reads the pair `(left.val, right.val)` and decides: if they disagree, the list cannot be a palindrome and we return early; if they match, the inner sub-list `(left.next, right.prev)` must also be a palindrome, so step both pointers inward and continue. The loop terminates when `left == right` (odd-length list, pointers meet on the middle node) or when `left.prev == right` (even-length list, pointers have just crossed). Both termination conditions mean every required pair has been checked.
+
+What **breaks if you reach for the naive approach**? Copying the list into an array and comparing `arr[i]` with `arr[n - 1 - i]` works in `O(n)` time but pays `O(n)` extra space for the copy. Reversing a clone of the list and walking both in parallel hits the same `O(n)` space cost. The two-pointer pass keeps the space at `O(1)` and gains an early-exit on the first mismatch — a list like `[1, 2, 3, 4, 5]` rejects after one comparison, not five.
+
+---
+
+## Applying the Diagnostic Questions
+
+| Check | Answer for Palindrome Number |
+|---|---|
+| **Q1.** Are two nodes inspected at the same time, one from each end? | **Yes** — every iteration reads `left.val` and `right.val` together and checks equality. |
+| **Q2.** Does one pointer start near `head` and the other near `tail`? | **Yes** — `left = head` and `right = tail` are the initial positions. |
+| **Q3.** Do both pointers move strictly inward? | **Yes** — on a match, `left = left.next` and `right = right.prev`; neither pointer ever reverses. |
+| **Q4.** Is the per-step work `O(1)`? | **Yes** — one value comparison and two pointer steps per iteration; no inner scan. |
+
+---
+
+## Approach
+
+Run the converging two-pointer loop until the pointers meet or cross.
+
+1. **Handle the trivial guards.** If `head` is `null` or `head == tail` (empty or single-node list), return `true` — both are vacuously palindromic.
+2. **Initialise the pointers.** Set `left = head` and `right = tail`. These will walk inward in lockstep.
+3. **Loop until the pointers meet or cross.** Continue while `left != right` (odd-length not yet collided) **and** `left.prev != right` (even-length not yet crossed). The pair guard catches both parities.
+4. **Compare the current pair.** If `left.val != right.val`, the list cannot be a palindrome — return `false` immediately.
+5. **Step both pointers inward.** Set `left = left.next` and `right = right.prev`. The unprocessed span has shrunk by one node on each side.
+6. **Return `true` when the loop exits.** Every pair matched, so the list reads the same forwards and backwards.
+
 <details>
 <summary><h2>The Mirror Strategy (Visualised)</h2></summary>
 
 
 Plant `left` at the start, `right` at the end. At each step, compare the two values; if they ever differ, return `false`. Otherwise step inward and keep going until the pointers meet (odd length) or cross (even length).
 
-> 🖼 Diagram — Palindrome check — mirror comparison from both ends until pointers meet or cross.
 ```mermaid
 ---
 config:
@@ -57,7 +125,7 @@ flowchart TB
 
 ### The Solution
 
-```python run
+```python run viz=linked-list viz-root=head
 from typing import Optional
 
 class ListNode:
@@ -146,7 +214,7 @@ h = from_list([1, 2, 3])
 print(Solution().palindrome_number(h, get_tail(h)))   # False
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -294,26 +362,6 @@ We've used both pointers symmetrically. Up next: a problem where the *decision* 
 
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+## Key Takeaway
 
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
-
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
-
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
-
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
-
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
-
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->
+The palindrome check is the simplest mirror-equality variant — both pointers always move every iteration because the per-pair decision is binary (match or fail). Early exit on the first mismatch is what beats the array-copy baseline in both time and space.

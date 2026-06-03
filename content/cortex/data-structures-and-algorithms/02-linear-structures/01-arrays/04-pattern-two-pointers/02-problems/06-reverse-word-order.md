@@ -64,7 +64,6 @@ Two sequential reversals cancel inside each word and compound across words. Afte
 
 A direct approach — split on whitespace, reverse the resulting list, join with single spaces — works but allocates `O(n)` extra space for the token list and its reversed copy. The two-pass trick does the same work in place on the mutable character array, with `O(n)` time (each character visited at most twice) and `O(1)` extra space beyond the array itself. The whitespace normalisation step at the end handles redundant spaces in the input — the two-pointer machinery never has to special-case them.
 
-> 🖼 Diagram — The two-step trick — reversing the whole string flips word order but scrambles each word; reversing each word individually unscrambles the characters while keeping the new word order.
 ```mermaid
 ---
 config:
@@ -97,51 +96,448 @@ flowchart TB
 
 Let's trace exactly what each step does to `"the sky"`:
 
-> ▶ Interactive Diagram — Step-by-step on "the sky" — Step 1 reverses the whole string (flipping word order but scrambling each word); Step 2 reverses each word, unscrambling letters while keeping the new word order.
-```d3 widget=array-traversal
+```d3 widget=array-1d
 {
-  "items": ["t", "h", "e", " ", "s", "k", "y"],
-  "title": "Reversing word order in \"the sky\"",
   "steps": [
     {
-      "items":   ["t", "h", "e", " ", "s", "k", "y"],
-      "markers": [
-        { "name": "left",  "index": 0, "color": "#3b82f6" },
-        { "name": "right", "index": 6, "color": "#f59e0b" }
+      "nodes": [
+        {
+          "id": "0",
+          "label": "t",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "h",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "e",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": " ",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "s",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "k",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "y",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "range":   { "lo": 0, "hi": 6 },
-      "msg": "Step 1: reverse the entire string. Pointers start at the two ends."
-    },
-    {
-      "items":   ["y", "k", "s", " ", "e", "h", "t"],
-      "markers": [],
-      "range":   { "lo": 0, "hi": 6 },
-      "msg": "After Step 1: the string is reversed to 'yks eht'. Word order is flipped; each word's letters are also flipped."
-    },
-    {
-      "items":   ["y", "k", "s", " ", "e", "h", "t"],
-      "markers": [
-        { "name": "left",  "index": 0, "color": "#3b82f6" },
-        { "name": "right", "index": 2, "color": "#f59e0b" }
+      "edges": [],
+      "cursor": [
+        {
+          "name": "left",
+          "target": "0",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "right",
+          "target": "6",
+          "color": "#f59e0b"
+        }
       ],
-      "range":   { "lo": 0, "hi": 2 },
-      "msg": "Step 2a: scan finds the first word at indices [0..2]. Reverse it."
-    },
-    {
-      "items":   ["s", "k", "y", " ", "e", "h", "t"],
-      "markers": [
-        { "name": "left",  "index": 4, "color": "#3b82f6" },
-        { "name": "right", "index": 6, "color": "#f59e0b" }
+      "highlight": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
       ],
-      "range":   { "lo": 4, "hi": 6 },
-      "msg": "Step 2b: scan finds the second word at indices [4..6]. Reverse it."
+      "changed": [],
+      "removed": [],
+      "annotation": "Step 1: reverse the entire string. Pointers start at the two ends.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "items":   ["s", "k", "y", " ", "t", "h", "e"],
-      "markers": [],
-      "msg": "Final: 'sky the' — words are in reverse order, characters intact."
+      "nodes": [
+        {
+          "id": "0",
+          "label": "y",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "k",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "s",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": " ",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "e",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "h",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "t",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [],
+      "highlight": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "After Step 1: the string is reversed to 'yks eht'. Word order is flipped; each word's letters are also flipped.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "y",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "k",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "s",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": " ",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "e",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "h",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "t",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "left",
+          "target": "0",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "right",
+          "target": "2",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "0",
+        "1",
+        "2"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "Step 2a: scan finds the first word at indices [0..2]. Reverse it.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "s",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "k",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "y",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": " ",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "e",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "h",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "t",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "left",
+          "target": "4",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "right",
+          "target": "6",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "4",
+        "5",
+        "6"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "Step 2b: scan finds the second word at indices [4..6]. Reverse it.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "s",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "k",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "y",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": " ",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "t",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "h",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "e",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Final: 'sky the' — words are in reverse order, characters intact.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Reversing word order in \"the sky\""
 }
 ```
 
@@ -254,7 +650,7 @@ print(Solution().reverse_word_order("one two three"))        # three two one
 print(Solution().reverse_word_order("hello world"))          # world hello
 ```
 
-```java run
+```java run viz=array viz-root=arr
 public class Main {
     static class Solution {
         private String removeExtraSpaces(String s) {
@@ -401,7 +797,6 @@ public class Main {
 
 You've now seen every direct-application two-pointer problem in this section. They all share the same skeleton — what changes is the work done inside the loop:
 
-> 🖼 Diagram — All six direct-application problems — one template, six variations in the loop body.
 ```mermaid
 ---
 config:

@@ -1,840 +1,201 @@
 ---
-title: "Iterators In Binary Search Trees"
-summary: "<!-- TODO: summary -->"
+title: "Iterators in Binary Search Trees"
+summary: "Emit a BST's keys in sorted order one at a time, on demand, using an explicit stack that holds only the current left-spine — O(h) space (not O(n)) and O(1) amortized per next(). It's a recursive in-order traversal made pausable."
+prereqs:
+  - 03-trees/01-binary-tree/05-iterative-traversals-in-binary-trees
 ---
 
-# 9. Iterators in Binary Search Trees
+# Iterators in Binary Search Trees
 
-## The Hook
+## Why It Exists
 
-Every problem in this chapter so far has answered a single question. *Find this value. Insert this. Delete that.* But many real workloads need something different — they need to **walk through the entries** of a sorted structure one at a time, and stop early as soon as they have what they need.
+A recursive in-order traversal prints a BST's keys in sorted order — but all at once, in one uninterruptible call. Often you want them **one at a time, on demand**: `has_next()` / `next()`. That's what lets you merge two BSTs lazily, run "two-sum on a BST" with a front and back iterator, or pull the k-th smallest without materializing the rest.
 
-Imagine paging through your contacts in alphabetical order, but only loading the next contact when you scroll to it. Or running a `SELECT … ORDER BY price LIMIT 10` against a database — the engine doesn't sort everything; it pulls items off an **iterator** until it has 10. Or running a streaming join over two sorted sets — you only ever look at the next value of each.
+The naive iterator flattens the whole tree into a sorted list up front — `O(n)` space, and `O(n)` work before the first `next()`. The better design **simulates the recursion's call stack explicitly**: keep a stack holding only the nodes on the current *left spine*. The top is always the next-smallest key. That's `O(h)` space (one root-to-leaf path), `O(1)` *amortized* per `next()`, and the first key is ready immediately. An iterator is just an in-order traversal you can pause and resume.
 
-A naive in-order traversal of a BST can compute the sorted sequence — but it does *all of it*, *all at once*, and uses O(n) extra storage to hold the result. That's a non-starter when the tree has a million nodes and you only need the first three.
+## See It Work
 
-The fix is to build an **iterator**: an object that exposes two operations, `hasNext()` and `next()`, and lazily computes the in-order sequence one node at a time. The trick is that the recursive in-order traversal isn't actually pausable — the recursion runs to completion. We have to *unroll* the recursion into an explicit stack we control, so that we can stop, pause, hand a single value back, and resume later.
+Iterate the BST and pull keys one at a time — they come out sorted. Run it.
 
-This lesson builds two such iterators — a **forward** iterator that walks ascending order and a **reverse** iterator that walks descending order — and analyses why each `next()` call is amortised O(1) despite worst-case O(h) work.
-
----
-
-## Table of Contents
-
-1. [Understanding iterators in binary search trees](#understanding-iterators-in-binary-search-trees)
-2. [Understanding the forward BST iterator](#understanding-the-forward-bst-iterator)
-3. [Design a forward BST iterator](#design-a-forward-bst-iterator)
-4. [Understanding the reverse BST iterator](#understanding-the-reverse-bst-iterator)
-5. [Design a reverse BST iterator](#design-a-reverse-bst-iterator)
-
-***
-
-# Understanding iterators in binary search trees
-
-Recall: an **in-order** traversal of a BST visits values in ascending order; a **reverse in-order** traversal visits them in descending order. Both produce the *correct* sequence — but a naive recursive (or fully iterative) implementation visits every node before returning anything. We need a *lazy* version.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    A["Tree:<br/>[7, 3, 15, null, null, 9, 20]"] --> B["Inorder (ascending)<br/>3, 7, 9, 15, 20"]
-    A --> C["Reverse inorder (descending)<br/>20, 15, 9, 7, 3"]
-    style B fill:#bbf7d0,stroke:#16a34a
-    style C fill:#fde68a,stroke:#d97706
-```
-
-<p align="center"><strong>The same tree produces ascending order via in-order, descending via reverse in-order. Each is the foundation of one iterator.</strong></p>
-
-> An **iterator** is an abstraction over a data structure that lets you traverse it one element at a time, on demand, by calling `next()` whenever the next element is wanted. Internally it carries just enough state to *resume* the traversal in O(1) (or amortised O(1)).
-
-The contract we'll implement everywhere in this lesson:
-
-
-```python run
-"""
-Definition for a binary tree node.
+```python run viz=binary-tree viz-root=root
 class TreeNode:
     def __init__(self, val):
         self.val = val
         self.left = None
         self.right = None
-"""
 
-from typing import Optional
+def insert(root, val):
+    if root is None: return TreeNode(val)
+    if val < root.val: root.left = insert(root.left, val)
+    elif val > root.val: root.right = insert(root.right, val)
+    return root
 
 class BSTIterator:
-    def __init__(self, root: Optional[TreeNode]) -> None:
-        pass
+    def __init__(self, root):
+        self.stack = []
+        self._push_left(root)              # seed with the leftmost spine
 
-    def has_next(self) -> bool:
-        # Is there a next item?
-        pass
-
-    def next(self) -> TreeNode:
-        # Return the next node
-        pass
-```
-
-```java run
-/**
- * Definition for a binary tree node.
- * class TreeNode {
- *      int val;
- *      TreeNode left;
- *      TreeNode right;
- *      TreeNode() {}
- *      TreeNode(int val) { this.val = val; }
- * }
- */
-
-class BSTIterator {
-    public BSTIterator(TreeNode root) {
-
-    }
-
-    public boolean hasNext() {
-        // Is there a next item?
-    }
-
-    public TreeNode next() {
-        // Return the next node
-    }
-}
-```
-
-
-That's the surface area. The interesting work is in the constructor and `next()`, which together must produce the right values without ever walking the whole tree at once.
-
-***
-
-# Understanding the forward BST iterator
-
-The standard *iterative* in-order traversal of a binary tree uses a stack like this:
-
-1. Push the root and all its left descendants onto the stack.
-2. Pop the top — that's the next in-order value.
-3. Push that node's right child and all *its* left descendants.
-4. Repeat until the stack is empty.
-
-Look at the structure: between any two values, the entire algorithm is "pop one, push the right-spine". That's an *interruptable* pattern. We can stop the moment we pop a value, hand it to the caller, and resume (with the right-spine push) on the next call to `next()`.
-
-So a forward BST iterator is just *the iterative in-order traversal, sliced into one-step calls*.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    subgraph Init["Constructor: pushAllLeft(root)"]
-        I1["root = 7"]
-        I1 --> I2["push 7"]
-        I2 --> I3["go left → 3"]
-        I3 --> I4["push 3"]
-        I4 --> I5["3.left = null → stop"]
-        I5 --> I6["stack = [7, 3]"]
-        style I6 fill:#bbf7d0,stroke:#16a34a
-    end
-    subgraph N1["next() #1"]
-        S1["top = 3"]
-        S1 --> S2["pop → return 3"]
-        S2 --> S3["pushAllLeft(3.right) — none"]
-        S3 --> S4["stack = [7]"]
-    end
-    subgraph N2["next() #2"]
-        T1["top = 7"]
-        T1 --> T2["pop → return 7"]
-        T2 --> T3["pushAllLeft(7.right = 15)"]
-        T3 --> T4["push 15, push 9"]
-        T4 --> T5["stack = [15, 9]"]
-    end
-```
-
-<p align="center"><strong>Lazy in-order traversal of the tree <code>[7, 3, 15, null, null, 9, 20]</code>. The constructor primes the stack with the leftmost path; each <code>next()</code> pops, returns, then pushes the right-spine.</strong></p>
-
-The state held between calls is the **stack** — at any moment it contains exactly the *right-spine* path from the next-to-visit node up toward the root. The size of the stack is at most the height of the tree.
-
-## Algorithm
-
-> **ForwardBstIterator**
->
-> **constructor(root):**
->
-> - **Step 1:** Initialise an empty stack `stack` as a member.
-> - **Step 2:** Call `pushAllLeft(root)`.
->
-> **pushAllLeft(node):**
->
-> - **Step 1:** While `node` is not `null`, push it onto `stack` and set `node = node.left`.
->
-> **hasNext():**
->
-> - **Step 1:** Return `true` if `stack` is non-empty, else `false`.
->
-> **next():**
->
-> - **Step 1:** If the stack is empty, return `null`.
-> - **Step 2:** Pop the top of the stack — call it `node`.
-> - **Step 3:** `pushAllLeft(node.right)`.
-> - **Step 4:** Return `node`.
-
-## Why is `next()` amortised O(1)?
-
-> *Friction prompt — predict before reading on. The worst-case cost of a single `next()` call is O(h), because `pushAllLeft` may walk down the tree all the way to a leaf. But we say each `next()` is *amortised* O(1). What's the argument?*
-
-Each node is pushed onto the stack **exactly once** over the lifetime of the iterator. It is popped **exactly once**. So the total work over the entire iteration of `n` nodes is `2n` push/pop operations — `O(n)` total. Spread across `n` calls to `next()`, that's an amortised `O(1)` per call.
-
-A specific call may do `O(h)` work (when it has to push a long left-spine), but every push it makes is a push that some *later* call won't have to do. The bookkeeping balances out.
-
-## Complexity
-
-| Operation | Time | Space |
-|---|---|---|
-| `constructor()` | O(h) | — |
-| `hasNext()` | O(1) | — |
-| `next()` | **amortised O(1)** | — |
-| Iterator state | — | O(h) |
-
-The space is O(h) because the stack only holds the path of unvisited ancestors of the next-to-emit node — at most one per level.
-
-***
-
-# Design a forward BST iterator
-
-## Problem Statement
-
-Given the skeleton of a `ForwardBstIterator` class, complete it by implementing the operations below.
-
-> - **ForwardBstIterator(TreeNode root)** — initialise the iterator with the BST root.
-> - **hasNext()** — return `true` if more nodes remain to be visited, `false` otherwise.
-> - **next()** — advance the iterator and return the next node in in-order sequence.
-
-### Example
-
-> - **Input ops:** `[ForwardBstIterator, next, next, hasNext, next, hasNext, next, hasNext, next, hasNext]`
-> - **Input args:** `[[7, 3, 15, null, null, 9, 20], [], [], [], [], [], [], [], [], []]`
-> - **Output:** `[null, 3, 7, true, 9, true, 15, true, 20, false]`
-
-<details>
-<summary><h2>The Solution</h2></summary>
-
-
-
-```python run
-from typing import Optional, List
-
-
-class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
-        self.val = val
-        self.left = left
-        self.right = right
-
-
-def from_level_order(values):
-    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
-    if not values:
-        return None
-    root = TreeNode(values[0])
-    queue = [root]
-    i = 1
-    while queue and i < len(values):
-        node = queue.pop(0)
-        if i < len(values) and values[i] is not None:
-            node.left = TreeNode(values[i])
-            queue.append(node.left)
-        i += 1
-        if i < len(values) and values[i] is not None:
-            node.right = TreeNode(values[i])
-            queue.append(node.right)
-        i += 1
-    return root
-
-
-class ForwardBstIterator:
-    def __init__(self, root: Optional[TreeNode]):
-
-        # Create a stack to store tree nodes
-        self.stack: List[TreeNode] = []
-        self.push_all_left(root)
-
-    # Helper function to push all left child nodes of the current node
-    # onto the stack
-    def push_all_left(self, node: Optional[TreeNode]) -> None:
-        while node:
-
-            # Push the node onto the stack
+    def _push_left(self, node):
+        while node:                        # remember the path down to the minimum
             self.stack.append(node)
-
-            # Move to the left child
             node = node.left
 
-    def has_next(self) -> bool:
+    def has_next(self):
+        return len(self.stack) > 0
 
-        # If the stack is not empty, there are more elements
-        return bool(self.stack)
+    def next(self):
+        node = self.stack.pop()            # top = smallest unvisited key
+        self._push_left(node.right)        # then descend its right subtree's left spine
+        return node.val
 
-    def next(self) -> Optional[TreeNode]:
+root = None
+for v in [5, 3, 8, 1, 4, 7, 9]:
+    root = insert(root, v)
 
-        # If there are no more nodes to visit in the BST, return null
-        # to indicate that next() has no valid node to return.
-        if not self.has_next():
-            return None
-
-        # Get the top node from the stack
-        node = self.stack.pop()
-
-        # Push all left child nodes of the right subtree onto the stack
-        self.push_all_left(node.right)
-
-        # Return the current node
-        return node
-
-
-# Example from problem statement: [7, 3, 15, null, null, 9, 20]
-it1 = ForwardBstIterator(from_level_order([7, 3, 15, None, None, 9, 20]))
-print(it1.next().val)    # 3
-print(it1.next().val)    # 7
-print(it1.has_next())    # True
-print(it1.next().val)    # 9
-print(it1.has_next())    # True
-print(it1.next().val)    # 15
-print(it1.has_next())    # True
-print(it1.next().val)    # 20
-print(it1.has_next())    # False
-
-# Edge cases
-it2 = ForwardBstIterator(None)                         # empty tree
-print(it2.has_next())    # False
-
-it3 = ForwardBstIterator(from_level_order([5]))        # single node
-print(it3.next().val)    # 5
-print(it3.has_next())    # False
-
-# Right-skew: 1 -> 2 -> 3
-it4 = ForwardBstIterator(from_level_order([1, None, 2, None, 3]))
-seq4 = []
-while it4.has_next():
-    seq4.append(it4.next().val)
-print(seq4)              # [1, 2, 3]
+it = BSTIterator(root)
+out = []
+while it.has_next():
+    out.append(it.next())
+print(out)                                 # [1, 3, 4, 5, 7, 8, 9] — sorted, on demand
 ```
 
-```java run
-import java.util.*;
+## How It Works
 
-public class Main {
-    static class TreeNode {
-        int val;
-        TreeNode left;
-        TreeNode right;
-        TreeNode() {}
-        TreeNode(int val) { this.val = val; }
-    }
+The stack always holds the ancestors-yet-to-visit on the path to the current smallest key:
 
-    static TreeNode fromLevelOrder(Integer... values) {
-        if (values.length == 0 || values[0] == null) return null;
-        TreeNode root = new TreeNode(values[0]);
-        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
-        queue.add(root);
-        int i = 1;
-        while (!queue.isEmpty() && i < values.length) {
-            TreeNode node = queue.poll();
-            if (i < values.length && values[i] != null) {
-                node.left = new TreeNode(values[i]);
-                queue.add(node.left);
-            }
-            i++;
-            if (i < values.length && values[i] != null) {
-                node.right = new TreeNode(values[i]);
-                queue.add(node.right);
-            }
-            i++;
-        }
-        return root;
-    }
-
-    static class ForwardBstIterator {
-
-        // Create a stack to store tree nodes
-        private Stack<TreeNode> stack;
-
-        public ForwardBstIterator(TreeNode root) {
-            stack = new Stack<>();
-
-            // Push all left child nodes of the root onto the stack
-            pushAllLeft(root);
-        }
-
-        // Helper function to push all left child nodes of the current node
-        // onto the stack
-        private void pushAllLeft(TreeNode node) {
-            while (node != null) {
-
-                // Push the node onto the stack
-                stack.push(node);
-
-                // Move to the left child
-                node = node.left;
-            }
-        }
-
-        public boolean hasNext() {
-
-            // If the stack is not empty, there are more elements
-            return !stack.empty();
-        }
-
-        public TreeNode next() {
-
-            // If there are no more nodes to visit in the BST, return null
-            // to indicate that next() has no valid node to return.
-            if (!hasNext()) {
-                return null;
-            }
-
-            // Get the top node from the stack
-            TreeNode node = stack.pop();
-
-            // Push all left child nodes of the right subtree onto the stack
-            pushAllLeft(node.right);
-
-            // Return the current node
-            return node;
-        }
-    }
-
-    public static void main(String[] args) {
-        // Example from problem statement: [7, 3, 15, null, null, 9, 20]
-        ForwardBstIterator it1 = new ForwardBstIterator(
-            fromLevelOrder(7, 3, 15, null, null, 9, 20));
-        System.out.println(it1.next().val);  // 3
-        System.out.println(it1.next().val);  // 7
-        System.out.println(it1.hasNext());   // true
-        System.out.println(it1.next().val);  // 9
-        System.out.println(it1.hasNext());   // true
-        System.out.println(it1.next().val);  // 15
-        System.out.println(it1.hasNext());   // true
-        System.out.println(it1.next().val);  // 20
-        System.out.println(it1.hasNext());   // false
-
-        // Edge cases
-        ForwardBstIterator it2 = new ForwardBstIterator(null); // empty tree
-        System.out.println(it2.hasNext());   // false
-
-        ForwardBstIterator it3 = new ForwardBstIterator(fromLevelOrder(5)); // single node
-        System.out.println(it3.next().val);  // 5
-        System.out.println(it3.hasNext());   // false
-
-        // Right-skew: 1 -> 2 -> 3
-        ForwardBstIterator it4 = new ForwardBstIterator(
-            fromLevelOrder(1, null, 2, null, 3));
-        List<Integer> seq4 = new ArrayList<>();
-        while (it4.hasNext()) seq4.add(it4.next().val);
-        System.out.println(seq4);            // [1, 2, 3]
-    }
-}
-```
-
-</details>
-
-
-***
-
-# Understanding the reverse BST iterator
-
-A **reverse BST iterator** produces values in **descending** order. The mirror image of forward iteration: instead of pre-loading the *left*-spine and then pushing the *right*-spine after each pop, we pre-load the *right*-spine and push the *left*-spine after each pop.
+1. **Init / `_push_left`** — from a node, push it and keep going left. After seeding from the root, the stack's top is the global minimum.
+2. **`next()`** — pop the top (the smallest unvisited key, since everything left of it is already consumed). Before returning it, push the **left spine of its right child** — those are the keys that come *just after* it in sorted order.
+3. **`has_next()`** — true while the stack is non-empty.
 
 ```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
 flowchart TB
-    subgraph Init["Constructor: pushAllRight(root)"]
-        I1["root = 7"]
-        I1 --> I2["push 7"]
-        I2 --> I3["go right → 15"]
-        I3 --> I4["push 15"]
-        I4 --> I5["go right → 20"]
-        I5 --> I6["push 20"]
-        I6 --> I7["20.right = null → stop"]
-        I7 --> I8["stack = [7, 15, 20]"]
-        style I8 fill:#fde68a,stroke:#d97706
-    end
-    subgraph N1["next() #1"]
-        S1["top = 20"]
-        S1 --> S2["pop → return 20"]
-        S2 --> S3["pushAllRight(20.left) — none"]
-        S3 --> S4["stack = [7, 15]"]
-    end
+  N["next(): pop top (smallest)"] --> R["push left-spine of popped node's right child"]
+  R --> E["return popped value"]
 ```
 
-<p align="center"><strong>Lazy reverse in-order traversal: pre-load the right-spine, then on each <code>next()</code> pop the top and push the left-spine of its left child.</strong></p>
+<p align="center"><strong>the stack mirrors a paused in-order recursion: pop the next-smallest, then push the left spine of its right subtree to queue up its successors.</strong></p>
 
-## Algorithm
+Why `O(1)` *amortized* when `next()` sometimes pushes several nodes? Because **each node is pushed exactly once and popped exactly once** over the iterator's entire life. A single `next()` might push a whole spine, but those pushes are "paid for" by future pops — across `n` calls there are `n` pushes and `n` pops total, so the average per `next()` is `O(1)`. Space is `O(h)`: the stack never holds more than one root-to-leaf path. (An alternative, **Morris traversal**, achieves `O(1)` space by temporarily threading the tree, at the cost of mutating it during iteration.)
 
-> **ReverseBstIterator**
->
-> **constructor(root):**
->
-> - **Step 1:** Initialise empty stack.
-> - **Step 2:** Call `pushAllRight(root)`.
->
-> **pushAllRight(node):**
->
-> - **Step 1:** While `node` is not `null`, push it and set `node = node.right`.
->
-> **hasNext():**
->
-> - **Step 1:** Return `stack` not empty.
->
-> **next():**
->
-> - **Step 1:** If stack is empty, return `null`.
-> - **Step 2:** Pop top — call it `node`.
-> - **Step 3:** `pushAllRight(node.left)`.
-> - **Step 4:** Return `node`.
+### Key Takeaway
 
-## Complexity
+A BST iterator simulates a paused in-order recursion with an explicit stack of the current left-spine: `next()` pops the smallest and pushes its right child's left-spine. `O(1)` amortized per call, `O(h)` space, sorted output on demand — far better than flattening to an `O(n)` list.
 
-Same as the forward iterator — every node is pushed and popped exactly once over the iterator's life.
+## Trace It
 
-| Operation | Time | Space |
-|---|---|---|
-| `constructor()` | O(h) | — |
-| `hasNext()` | O(1) | — |
-| `next()` | amortised O(1) | — |
-| Iterator state | — | O(h) |
+First two `next()` calls on the tree (init pushes the left spine `5 → 3 → 1`, so stack = `[5, 3, 1]`, top `1`):
 
-***
+| call | pop | push left-spine of `pop.right` | stack after | returned |
+|---|---|---|---|---|
+| `next()` | `1` | `1.right` is None → push nothing | `[5, 3]` | `1` |
+| `next()` | `3` | `3.right = 4` → push `4` | `[5, 4]` | `3` |
+| `next()` | `4` | `4.right` None | `[5]` | `4` |
+| `next()` | `5` | `5.right = 8` → push `8, 7` | `[8, 7]` | `5` |
 
-# Design a reverse BST iterator
+Before you read on: one `next()` call (popping `5`) pushed *two* nodes (`8`, `7`), while another (popping `1`) pushed *zero*. So an individual `next()` is clearly not `O(1)` worst-case. Why is it still correct to call the iterator `O(1)` *amortized* — and what's the total work over a full iteration?
 
-## Problem Statement
+Because the cost is bounded *across the whole sequence*, not per call. Every node enters the stack **once** (when some `next()` pushes it as part of a left-spine) and leaves **once** (when a later `next()` pops it to return it). So over a complete iteration of `n` keys, there are exactly `n` pushes and `n` pops — `2n` stack operations total, regardless of how they cluster. Dividing total work by the `n` calls gives `O(1)` *average*, i.e. amortized. The occasional expensive `next()` (pushing a long spine) is balanced by the many cheap ones that just pop and push nothing — the same accounting that made the array two-pointer and monotonic-stack patterns amortized-linear. "A few calls do a lot, but each unit of work happens exactly once" is the signature of an amortized bound, and it's why you analyze the *sequence*, not the worst single operation.
 
-Given the skeleton of a `ReverseBstIterator` class, complete it. Same surface as the forward iterator, but `next()` returns nodes in *descending* order.
+## Your Turn
 
-### Example
-
-> - **Input ops:** `[ReverseBstIterator, next, next, hasNext, next, hasNext, next, hasNext, next, hasNext]`
-> - **Input args:** `[[7, 3, 15, null, null, 9, 20], [], [], [], [], [], [], [], [], []]`
-> - **Output:** `[null, 20, 15, true, 9, true, 7, true, 3, false]`
-
-<details>
-<summary><h2>The Solution</h2></summary>
-
-
+The reusable BST iterator:
 
 ```python run
-from typing import Optional, List
-
-
 class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
+    def __init__(self, val):
         self.val = val
-        self.left = left
-        self.right = right
+        self.left = None
+        self.right = None
 
-
-def from_level_order(values):
-    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
-    if not values:
-        return None
-    root = TreeNode(values[0])
-    queue = [root]
-    i = 1
-    while queue and i < len(values):
-        node = queue.pop(0)
-        if i < len(values) and values[i] is not None:
-            node.left = TreeNode(values[i])
-            queue.append(node.left)
-        i += 1
-        if i < len(values) and values[i] is not None:
-            node.right = TreeNode(values[i])
-            queue.append(node.right)
-        i += 1
+def insert(root, val):
+    if root is None: return TreeNode(val)
+    if val < root.val: root.left = insert(root.left, val)
+    elif val > root.val: root.right = insert(root.right, val)
     return root
 
-
-class ReverseBstIterator:
-    def __init__(self, root: Optional[TreeNode]):
-
-        # Create a stack to store tree nodes
-        self.stack: List[TreeNode] = []
-        self.push_all_right(root)
-
-    # Helper function to push all right child nodes of the current node
-    # onto the stack
-    def push_all_right(self, node: Optional[TreeNode]) -> None:
+class BSTIterator:
+    def __init__(self, root):
+        self.stack = []
+        self._push_left(root)
+    def _push_left(self, node):
         while node:
-
-            # Push the node onto the stack
             self.stack.append(node)
-
-            # Move to the right child
-            node = node.right
-
-    def has_next(self) -> bool:
-
-        # If the stack is not empty, there are more elements
+            node = node.left
+    def has_next(self):
         return bool(self.stack)
-
-    def next(self) -> Optional[TreeNode]:
-
-        # If there are no more nodes to visit in the BST, return null
-        # to indicate that next() has no valid node to return.
-        if not self.has_next():
-            return None
-
-        # Get the top node from the stack
+    def next(self):
         node = self.stack.pop()
+        self._push_left(node.right)
+        return node.val
 
-        # Push all left child nodes of the left subtree onto the stack
-        self.push_all_right(node.left)
-
-        # Return the current node
-        return node
-
-
-# Example from problem statement: [7, 3, 15, null, null, 9, 20]
-it1 = ReverseBstIterator(from_level_order([7, 3, 15, None, None, 9, 20]))
-print(it1.next().val)    # 20
-print(it1.next().val)    # 15
-print(it1.has_next())    # True
-print(it1.next().val)    # 9
-print(it1.has_next())    # True
-print(it1.next().val)    # 7
-print(it1.has_next())    # True
-print(it1.next().val)    # 3
-print(it1.has_next())    # False
-
-# Edge cases
-it2 = ReverseBstIterator(None)                          # empty tree
-print(it2.has_next())    # False
-
-it3 = ReverseBstIterator(from_level_order([5]))         # single node
-print(it3.next().val)    # 5
-print(it3.has_next())    # False
-
-# Left-skew: 3 <- 2 <- 1
-it4 = ReverseBstIterator(from_level_order([3, 2, None, 1]))
-seq4 = []
-while it4.has_next():
-    seq4.append(it4.next().val)
-print(seq4)              # [3, 2, 1]
+root = None
+for v in [5, 3, 8, 1, 4, 7, 9]:
+    root = insert(root, v)
+it = BSTIterator(root)
+print([it.next() for _ in range(3)], it.has_next())   # [1, 3, 4] True
 ```
 
 ```java run
 import java.util.*;
 
 public class Main {
-    static class TreeNode {
-        int val;
-        TreeNode left;
-        TreeNode right;
-        TreeNode() {}
-        TreeNode(int val) { this.val = val; }
-    }
-
-    static TreeNode fromLevelOrder(Integer... values) {
-        if (values.length == 0 || values[0] == null) return null;
-        TreeNode root = new TreeNode(values[0]);
-        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
-        queue.add(root);
-        int i = 1;
-        while (!queue.isEmpty() && i < values.length) {
-            TreeNode node = queue.poll();
-            if (i < values.length && values[i] != null) {
-                node.left = new TreeNode(values[i]);
-                queue.add(node.left);
-            }
-            i++;
-            if (i < values.length && values[i] != null) {
-                node.right = new TreeNode(values[i]);
-                queue.add(node.right);
-            }
-            i++;
-        }
-        return root;
-    }
-
-    static class ReverseBstIterator {
-
-        // Create a stack to store tree nodes
-        private Stack<TreeNode> stack;
-
-        public ReverseBstIterator(TreeNode root) {
-            stack = new Stack<>();
-
-            // Push all right child nodes of the root onto the stack
-            pushAllRight(root);
-        }
-
-        // Helper function to push all right child nodes of the current node
-        // onto the stack
-        private void pushAllRight(TreeNode node) {
-            while (node != null) {
-
-                // Push the node onto the stack
-                stack.push(node);
-
-                // Move to the right child
-                node = node.right;
-            }
-        }
-
-        public boolean hasNext() {
-
-            // If the stack is not empty, there are more elements
-            return !stack.empty();
-        }
-
-        public TreeNode next() {
-
-            // If there are no more nodes to visit in the BST, return null
-            // to indicate that next() has no valid node to return.
-            if (!hasNext()) {
-                return null;
-            }
-
-            // Get the top node from the stack
-            TreeNode node = stack.pop();
-
-            // Push all left child nodes of the left subtree onto the stack
-            pushAllRight(node.left);
-
-            // Return the current node
-            return node;
-        }
-    }
-
-    public static void main(String[] args) {
-        // Example from problem statement: [7, 3, 15, null, null, 9, 20]
-        ReverseBstIterator it1 = new ReverseBstIterator(
-            fromLevelOrder(7, 3, 15, null, null, 9, 20));
-        System.out.println(it1.next().val);  // 20
-        System.out.println(it1.next().val);  // 15
-        System.out.println(it1.hasNext());   // true
-        System.out.println(it1.next().val);  // 9
-        System.out.println(it1.hasNext());   // true
-        System.out.println(it1.next().val);  // 7
-        System.out.println(it1.hasNext());   // true
-        System.out.println(it1.next().val);  // 3
-        System.out.println(it1.hasNext());   // false
-
-        // Edge cases
-        ReverseBstIterator it2 = new ReverseBstIterator(null); // empty tree
-        System.out.println(it2.hasNext());   // false
-
-        ReverseBstIterator it3 = new ReverseBstIterator(fromLevelOrder(5)); // single node
-        System.out.println(it3.next().val);  // 5
-        System.out.println(it3.hasNext());   // false
-
-        // Left-skew: 3 <- 2 <- 1
-        ReverseBstIterator it4 = new ReverseBstIterator(
-            fromLevelOrder(3, 2, null, 1));
-        List<Integer> seq4 = new ArrayList<>();
-        while (it4.hasNext()) seq4.add(it4.next().val);
-        System.out.println(seq4);            // [3, 2, 1]
-    }
+  static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } }
+  static TreeNode insert(TreeNode r, int v) {
+    if (r == null) return new TreeNode(v);
+    if (v < r.val) r.left = insert(r.left, v);
+    else if (v > r.val) r.right = insert(r.right, v);
+    return r;
+  }
+  static class BSTIterator {
+    Deque<TreeNode> stack = new ArrayDeque<>();
+    BSTIterator(TreeNode root) { pushLeft(root); }
+    void pushLeft(TreeNode n) { while (n != null) { stack.push(n); n = n.left; } }
+    boolean hasNext() { return !stack.isEmpty(); }
+    int next() { TreeNode n = stack.pop(); pushLeft(n.right); return n.val; }
+  }
+  public static void main(String[] args) {
+    TreeNode root = null;
+    for (int v : new int[]{5, 3, 8, 1, 4, 7, 9}) root = insert(root, v);
+    BSTIterator it = new BSTIterator(root);
+    List<Integer> out = new ArrayList<>();
+    while (it.hasNext()) out.add(it.next());
+    System.out.println(out);   // [1, 3, 4, 5, 7, 8, 9]
+  }
 }
 ```
 
+This is a structural lesson — completing the BST's structural operations; the BST pattern lessons build on ordered iteration.
 
-<details>
-<summary><strong>Trace — root = [7, 3, 15, null, null, 9, 20], reverse iteration</strong></summary>
+## Reflect & Connect
 
-```
-Constructor → pushAllRight(7) → push 7 → push 15 → push 20 → 20.right=null → stop
-            stack = [7, 15, 20]
+The BST iterator is "recursion made resumable," and the technique transfers widely:
 
-next() #1 │ pop 20 → pushAllRight(20.left = null) → stack = [7, 15]   → return 20
-next() #2 │ pop 15 → pushAllRight(15.left = 9) → push 9 → 9.right=null → stack = [7, 9]
-                                                                       → return 15
-next() #3 │ pop 9  → pushAllRight(9.left = null)                        → stack = [7]
-                                                                       → return 9
-next() #4 │ pop 7  → pushAllRight(7.left = 3) → push 3 → 3.right=null   → stack = [3]
-                                                                       → return 7
-next() #5 │ pop 3  → pushAllRight(3.left = null)                        → stack = []
-                                                                       → return 3
-hasNext() → false ✓
-```
+- **Explicit stack = pausable recursion** — the iterator is exactly the [iterative in-order traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-iterative-traversals-in-binary-trees) you saw on binary trees, frozen between steps. Any recursion can be made step-by-step by managing its stack yourself; iterators do this to yield values lazily.
+- **It unlocks two-iterator tricks** — "is there a pair summing to `k` in this BST?" becomes the [array two-pointer](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-pattern) with a forward iterator (ascending) and a reverse one (descending) — `O(n)` time, `O(h)` space, no flattening. Merging `k` BSTs in sorted order uses `k` iterators in a heap.
+- **Amortized `O(1)`, `O(h)` space is the win** — better than flatten-to-list (`O(n)` space, eager) whenever you might stop early or interleave with other work. Morris traversal trades to `O(1)` space but mutates the tree mid-walk — usually not worth it.
 
-</details>
+**Prerequisites:** [Iterative Traversals in Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-iterative-traversals-in-binary-trees).
+**What's next:** the BST pattern layer begins — exploit in-order = sorted in [Sorted Traversal](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-sorted-traversal-pattern).
 
-</details>
-<details>
-<summary><h2>Final Takeaway</h2></summary>
+## Recall
 
+> **Mnemonic:** *Stack = current left-spine; top is the next-smallest. `next()`: pop it, push its right child's left-spine. `O(1)` amortized, `O(h)` space. Pausable in-order traversal.*
 
-A BST iterator is a recursive in-order traversal *paused at every yield* — implemented by holding the recursion's call stack as an **explicit stack of ancestors**. The forward variant pre-loads the left-spine and pushes the right-spine after each pop; the reverse variant mirrors it. Each `next()` is **amortised O(1)** because every node is pushed and popped exactly once across the iterator's life.
+| | |
+|---|---|
+| State | a stack of the current left-spine nodes |
+| Init | push the leftmost path from the root |
+| `next()` | pop the top (smallest), push left-spine of its right child |
+| Cost | `O(1)` amortized per call (each node pushed/popped once), `O(h)` space |
+| vs flatten | `O(h)` lazy vs `O(n)` eager list; better if you stop early |
 
-Three big patterns:
+- **Q:** What does the iterator's stack hold? **A:** The current left-spine — the unvisited ancestors on the path to the next-smallest key; the top is that key.
+- **Q:** What does `next()` do? **A:** Pops the smallest unvisited node and pushes the left-spine of its right child (its in-order successors).
+- **Q:** Why is `next()` `O(1)` amortized despite sometimes pushing many nodes? **A:** Each node is pushed and popped exactly once over the whole iteration — `2n` ops across `n` calls.
+- **Q:** Iterator vs flattening to a sorted list? **A:** The iterator is `O(h)` space and lazy (first key ready immediately, can stop early); flattening is `O(n)` space and eager.
 
-1. **Lazy traversal via explicit stack** — appears whenever you need to walk a recursive structure on demand: parsing, JSON streaming, generators in Python, `IEnumerator` in C#, the `Iterator` trait in Rust.
-2. **Forward and reverse are mirrors** — every iterator in this lesson is one swap (`left ↔ right`) away from its dual. Whenever you write code that works for one order, the descending version is a mechanical mirror.
-3. **Amortised analysis is the right lens for iterators** — the per-operation worst case is misleading; what matters is the total work across the full iteration, which the stack-once invariant pins down nicely.
+## Sources & Verify
 
-The next four lessons turn this iterator into a tool for solving problems. Lesson 10 (sorted traversal) uses *one* forward iterator to handle problems like "validate a BST" and "find the k-th smallest". Lesson 11 (reversed sorted traversal) does the same with a reverse iterator. Lesson 12 (range postorder) uses the BST property to *prune* during traversal. And lesson 13 (two-pointer) uses *both* iterators at once — a forward and a reverse — running toward each other across the sorted sequence the BST silently encodes.
-
-</details>
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
-
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
-
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
-
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
-
-<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
-<!--       Guidance: bulleted list of gotchas -->
-
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
-
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
-
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
-
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
-
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
-
-<!-- TODO: Final Takeaway — missing, needs to be written -->
-<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->
+- **CLRS**, *Introduction to Algorithms*, 4th ed., §12.2 — in-order traversal and successor; the explicit-stack iterative form.
+- **Sedgewick & Wayne**, *Algorithms*, 4th ed., §3.2 — ordered iteration over BSTs.
+- The stack-based BST iterator with `O(1)`-amortized `next()` is the standard design (LeetCode "BST Iterator"); both runnable blocks are verified by running (full iteration `⇒ [1,3,4,5,7,8,9]`; first three `⇒ [1,3,4]`).

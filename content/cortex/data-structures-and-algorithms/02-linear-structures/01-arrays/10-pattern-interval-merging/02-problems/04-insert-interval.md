@@ -112,7 +112,6 @@ The single linear pass partitions the existing intervals into **three groups** r
 2. **Overlap with** `newInterval` — absorb them into `newInterval` by stretching its `start` and `end`.
 3. **Strictly after** `newInterval` — keep them as-is.
 
-> 🖼 Diagram — Three contiguous groups: copy-as-is, absorb, copy-as-is. The middle group collapses into a single grown newInterval before being appended.
 ```d2
 direction: right
 
@@ -226,7 +225,7 @@ print(Solution().insert_interval([[3, 5], [7, 9]], [1, 2]))            # [[1, 2]
 print(Solution().insert_interval([[1, 3], [4, 6], [7, 9]], [2, 8]))   # [[1, 9]]  — merge all
 ```
 
-```java run
+```java run viz=grid viz-root=intervals
 import java.util.*;
 
 public class Main {

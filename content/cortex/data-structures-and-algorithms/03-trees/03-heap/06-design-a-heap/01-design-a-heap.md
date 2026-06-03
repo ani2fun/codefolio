@@ -2,36 +2,21 @@
 title: "Design a Heap"
 summary: "Implement a max heap and a min heap from scratch using an array, supporting insert, extract-max/min, and heapify."
 prereqs:
-  - 03-trees/03-heap/01-introduction-to-heaps
-  - 03-trees/03-heap/02-array-implementation-of-heaps
+  - 03-trees/03-heap/01-what-is-a-heap
 difficulty: hard
 ---
 
-## The Hook
+Real engineering rarely stops at "use the library priority queue" — it's "design a class that wraps one or two heaps to support a non-standard API". This lesson builds three heap-based structures from scratch:
 
-The previous four lessons built the heap, drilled the operations, and applied them through patterns. This last lesson asks the harder question: **can you design a heap-based data structure from scratch?** Most real engineering work isn't "use the library priority queue" — it's "design a class that wraps one (or two) priority queues to support a non-standard API". Median over a stream. Sliding-window maximum. K-most-frequent-recent. Top-K with deletion. Every one of these is a custom data structure layered on top of one or more heaps.
+1. **Max Heap** — implement the structure itself, no library shortcuts.
+2. **Min Heap** — the mirror, from scratch.
+3. **Median Finder** — the canonical **two-heaps** pattern: a max-heap of the "small half" and a min-heap of the "big half", so the running median is always at one of the two roots.
 
-This lesson covers three design problems that appear in interviews and real systems alike:
+The median finder is the payoff — the **dual-heap balancing** technique you reach for whenever a problem says "running median", "running middle K", or "online order-statistics".
 
-1. **Design a Max Heap** — implement the data structure itself, no library shortcuts. Tests whether you internalised lesson 2.
-2. **Design a Min Heap** — the mirror, again from scratch. Cements the symmetry.
-3. **Design a Median Finder** — the canonical *two-heaps* design pattern, where you balance a max-heap of "small half" and a min-heap of "big half" so the median is always at one of the two roots.
+## Design a Max Heap
 
-This third one is the payoff. It teaches the **dual-heap balancing** technique that you'll reach for whenever a problem says "running median", "running middle K", or "online order-statistics".
-
----
-
-## Table of Contents
-
-1. [Design a max heap](#design-a-max-heap)
-2. [Design a min heap](#design-a-min-heap)
-3. [Design a median finder](#design-a-median-finder)
-
-***
-
-# Design a max heap
-
-## Problem Statement
+### Problem Statement
 
 Implement a `MaxHeap` class **without using any built-in heap library**. The class should support:
 
@@ -74,7 +59,7 @@ This is exactly the implementation we built in lesson 2, packaged as a class. Th
 
 
 
-```python run
+```python run viz=array viz-root=heap
 from typing import List
 
 class MaxHeap:
@@ -191,7 +176,7 @@ mh5.insert(3); mh5.insert(3); mh5.insert(3)
 print(mh5.extract_max()) # 3 — all same
 ```
 
-```java run
+```java run viz=array viz-root=heap
 import java.util.*;
 
 public class Main {
@@ -328,9 +313,9 @@ public class Main {
 
 ***
 
-# Design a min heap
+## Design a Min Heap
 
-## Problem Statement
+### Problem Statement
 
 Mirror image: implement a `MinHeap` class without built-in libraries. API:
 
@@ -358,7 +343,7 @@ Identical to the max-heap, with `<` swapped for `>`. We name the helper "smalles
 
 
 
-```python run
+```python run viz=array viz-root=heap
 from typing import List
 
 class MinHeap:
@@ -477,7 +462,7 @@ mh5.insert(7); mh5.insert(7); mh5.insert(7)
 print(mh5.extract_min()) # 7 — all same
 ```
 
-```java run
+```java run viz=array viz-root=heap
 import java.util.*;
 
 public class Main {
@@ -614,9 +599,9 @@ public class Main {
 
 ***
 
-# Design a median finder
+## Design a Median Finder
 
-## Problem Statement
+### Problem Statement
 
 Implement a `MedianFinder` class that maintains the median of a *running stream* of integers. API:
 
@@ -642,7 +627,6 @@ The naive approach maintains a sorted list and inserts in O(N) per `addNum` — 
 
 **The core trick — two heaps:**
 
-> 🖼 Diagram — Two-heap median: a max-heap for the lower half, a min-heap for the upper half. The roots of the two heaps are the candidates for the median.
 ```mermaid
 ---
 config:
@@ -692,7 +676,6 @@ Pushing a new number is a two-step rebalance:
 2. **Order rebalance:** if `lower.top() > upper.top()`, swap the tops by extracting both and re-inserting on the opposite side. (This keeps invariant 2.)
 3. **Size rebalance:** if `len(lower) > len(upper) + 1`, move `lower.top()` to `upper`. Conversely, if `len(upper) > len(lower)`, move `upper.top()` to `lower`. (This keeps invariant 1.)
 
-> 🖼 Diagram — Two-step rebalance: order first, then size. Each step touches at most one element on each side.
 ```mermaid
 ---
 config:
@@ -823,7 +806,7 @@ mf5.add_num(100)
 print(mf5.find_median())  # 100.0 — single element
 ```
 
-```java run
+```java run viz=array viz-root=min_heap
 import java.util.*;
 
 public class Main {
@@ -964,24 +947,12 @@ Result: 2.0 ✓
 </details>
 
 </details>
-<details>
-<summary><h2>Final Takeaway</h2></summary>
+## Key Takeaway
 
+The **two-heap pattern** is the lever to remember:
 
-You've now built three pieces of heap-based machinery from scratch: a max-heap, a min-heap, and the **two-heap median finder** — the canonical illustration of how to compose two heaps into a higher-level data structure.
+- **Two complementary heaps** — a max-heap on the *small* side and a min-heap on the *large* side — give O(log N) updates with O(1) access to the *middle* of the sorted stream.
+- **Two invariants** — order (`lower.top() ≤ upper.top()`) and size (sizes equal, or `lower` ahead by 1). Every update restores order, then size.
+- **It generalises** to the K-th order statistic in a stream, windowed median over the last K, and balanced-workload problems.
 
-The two-heap pattern is the lever to remember:
-
-- **Two complementary heaps** — typically a max-heap on the *small* side and a min-heap on the *large* side — give you O(log N) updates with O(1) access to the *middle* of the sorted stream.
-- **Two invariants** — order (`lower.top() ≤ upper.top()`) and size (sizes equal, or `lower` ahead by 1). Every update first restores order, then size.
-- **It generalises.** The same idea solves "find the K-th order statistic in a stream", "windowed median over the last K elements", and "balanced workload between two queues" problems.
-
-Three closing patterns from the chapter:
-
-1. **Heap = sorted-stream-with-cheap-updates.** When you need partial order on dynamic data, the heap is almost always the right answer.
-2. **K-bounded heaps win on streams.** Top-K, K-way merge, K-sorted sort — every one of these wraps a small heap around an unboundedly large input. Memory bounded by K, time `O(N log K)`.
-3. **Custom orderings via comparators.** Once you can plug in a comparator, the heap works on records, structs, distances, frequencies, anything totally ordered. The same five operations cover them all.
-
-The next chapter takes the heap's "implicit tree in an array" idea even further: **graphs** — the most general structure of all, where nodes connect to arbitrary other nodes and the heap reappears as the workhorse inside Dijkstra, Prim, A*, and every weighted-shortest-path algorithm.
-
-</details>
+Three closing patterns: a heap is a **sorted stream with cheap updates** (partial order on dynamic data); **K-bounded heaps win on streams** (top-K / K-way merge in `O(N log K)`, memory bounded by K); and **custom orderings via comparators** let the same five operations work on any totally-ordered record.

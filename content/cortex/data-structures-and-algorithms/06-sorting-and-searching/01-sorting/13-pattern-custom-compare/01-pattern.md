@@ -1,290 +1,145 @@
 ---
 title: "Pattern: Custom Compare"
-summary: "Sort by a derived key instead of natural order — bit count, frequency, composite string concatenation, or any monotone criterion."
+summary: "Supply a comparator (or key) that defines the order you want — by frequency, by a composite criterion, by digit concatenation — and the sort algorithm is unchanged. The catch: the comparator must be a consistent total order (transitive), or the sort produces garbage or crashes."
 prereqs:
   - 06-sorting-and-searching/01-sorting/01-introduction-to-sorting
 ---
 
-# Understanding Custom Comparators
+# Pattern: Custom Compare
 
-A **comparator** is a function (or callable object) that takes two elements `a` and `b` and returns:
+## Why It Exists
 
-- **Negative** if `a` should come before `b`.
-- **Zero** if `a` and `b` are equivalent.
-- **Positive** if `a` should come after `b`.
+Default sorting uses *natural* order — ascending numbers, alphabetical strings. But the order you actually need is often custom: sort tasks by priority *then* deadline, characters by frequency, or numbers so their concatenation is largest. You don't write a new sort for each — you keep the same `O(n log n)` algorithm and just hand it a **comparator** (or a **key function**) that defines "which element comes first."
 
-The exact convention varies by language — some use `(a, b) → bool` returning "is `a < b`?" — but the underlying idea is the same: the algorithm asks "which one comes first?" and the comparator answers.
+The power is that *any* ordering reduces to "given two elements, which is smaller?" The catch — and the reason this is a pattern worth studying — is that the comparator must define a **consistent total order**: it has to be *transitive* (if `a < b` and `b < c`, then `a < c`) and self-consistent. A comparator that contradicts itself doesn't just sort wrong; in Java it throws `IllegalArgumentException: Comparison method violates its general contract`. Designing a *valid* ordering is the real skill.
 
-> 🖼 Diagram — The comparator interface. Every sort algorithm in this section can be adapted to a new ordering rule by swapping out the comparator.
-```d2
-direction: right
+## See It Work
 
-elem_a: "a (one element)" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
-elem_b: "b (another element)" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-cmp: "comparator(a, b)" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
-result: "negative / zero / positive"
+Arrange numbers to form the **largest** possible concatenation. `[3, 30, 34, 5, 9]` → `"9534330"`. Naive descending sort fails (it puts `3` before `30`, giving `…3030…`); the right comparator asks "does `a+b` or `b+a` read larger?". Run it.
 
-elem_a -> cmp
-elem_b -> cmp
-cmp -> result
+```python run
+import functools
+
+def largest_number(nums):
+    strs = list(map(str, nums))
+    def cmp(a, b):                       # a before b iff a+b concatenates larger
+        if a + b > b + a: return -1
+        if a + b < b + a: return 1
+        return 0
+    strs.sort(key=functools.cmp_to_key(cmp))
+    result = "".join(strs)
+    return "0" if result[0] == "0" else result   # e.g. [0,0] → "0", not "00"
+
+print(largest_number([3, 30, 34, 5, 9]))   # 9534330
+print(largest_number([10, 2]))             # 210
 ```
 
-<p align="center"><strong>The comparator interface. Every sort algorithm in this section can be adapted to a new ordering rule by swapping out the comparator.</strong></p>
+## How It Works
 
-The comparator must implement a **total order**:
-- *Antisymmetric* — `cmp(a, b)` and `cmp(b, a)` should have opposite signs.
-- *Transitive* — if `a < b` and `b < c`, then `a < c`.
-- *Total* — every pair has a defined ordering (not always equal).
+Two ways to specify the order:
 
-Violating any of these breaks the sort — you'll get incorrect results or, worse, infinite loops in some algorithms. The most common bug is **forgetting to handle ties**: a comparator that returns `0` for equal-key elements is correct, but one that always returns `-1` or always `1` is not.
+- **Key function** — map each element to a sortable key, sort by that. Simplest when the order is "by some attribute": `sort(key=len)`, `sort(key=lambda p: (p.priority, p.deadline))`. A tuple key gives multi-level ordering for free (sort by the first field, ties broken by the second).
+- **Comparator** — a function `cmp(a, b)` returning negative / 0 / positive for "a before / equal / after b". Needed when the order is a *pairwise* relationship that isn't a simple attribute — like "which concatenation is larger," where there's no single key for one element in isolation.
 
----
-
-## Why the Sort Algorithm Doesn't Care What You Compare
-
-Every comparison sort in this section — bubble, selection, insertion, quicksort, merge sort, heapsort — uses comparisons like `arr[i] < arr[j]` exactly four to ten times. *Replace those comparisons with `cmp(arr[i], arr[j]) < 0`* and the algorithm sorts by the comparator's rule instead of the natural numeric order.
-
-This is what library `sort` functions do. They have a single implementation (typically quicksort or TimSort) and accept a comparator as an argument. The user supplies the comparator; the algorithm does the rest.
-
----
-
-## A Concrete Example
-
-Sort points `[(3, 1), (1, 2), (2, 4), (1, 1)]` by x-coordinate, breaking ties by y-coordinate.
-
-The comparator: "compare `a.x` to `b.x`; if equal, compare `a.y` to `b.y`."
-
-```python run viz=array viz-root=points
-points = [(3, 1), (1, 2), (2, 4), (1, 1)]
-points.sort(key=lambda p: (p[0], p[1]))   # tuple comparison gives lex order
-print(points)   # [(1, 1), (1, 2), (2, 4), (3, 1)]
+```mermaid
+flowchart LR
+  S["any O(n log n) sort"] --> C{"compare(a, b)"}
+  C -->|"custom rule:<br/>key or comparator"| O["order you want"]
 ```
 
-The `key=` parameter transforms each element into a sort-key, and Python compares tuples lexicographically. The same effect can be achieved with `functools.cmp_to_key` and an explicit comparator function.
+<p align="center"><strong>the sort algorithm is unchanged; only the comparison swaps from natural order to your custom rule.</strong></p>
 
----
+For the largest-number problem the comparator is "`a` before `b` iff `a+b > b+a`" (compare the two concatenations as strings). This *is* a valid total order — it's provably transitive — which is why the sort produces a coherent result. The cost is the underlying sort's: **`O(n log n)`** comparisons, each now costing whatever the comparator costs (here `O(len)` for string concatenation).
 
-## Strengths and Limitations
+### Key Takeaway
 
-| Strength | Detail |
+Custom-compare keeps the sort algorithm and swaps the comparison: a key function for "order by an attribute" (tuples for multi-level), a comparator for pairwise rules. The comparator must be a consistent, transitive total order — an inconsistent one yields garbage or, in Java, throws.
+
+## Trace It
+
+Sorting `[3, 30, 34, 5, 9]` by the `a+b vs b+a` rule, focus on the tricky pair `3` vs `30`:
+
+| pair | `a+b` | `b+a` | larger | order |
+|---|---|---|---|---|
+| `3`, `30` | `"330"` | `"303"` | `330` | `3` before `30` |
+| `9`, `5` | `"95"` | `"59"` | `95` | `9` before `5` |
+| `34`, `3` | `"343"` | `"334"` | `343` | `34` before `3` |
+
+Sorted: `9, 5, 34, 3, 30` → `"9534330"`.
+
+Before you read on: a naive "sort the numbers in descending order" would place `34` then `30` then `9`… and even on the pair `3` vs `30`, plain descending sees `30 > 3` and puts `30` first — giving `"30330…"` somewhere. Why does descending-by-value get this wrong, and what does the `a+b vs b+a` comparator capture that value-comparison can't?
+
+Because the goal isn't "biggest number first" — it's "biggest *concatenation*," and a longer number isn't necessarily a better prefix. `30` is numerically larger than `3`, but placing `3` first gives `"330…"` which beats `"303…"`; the extra digit of `30` (`0`) drags the concatenation down. Value-comparison judges each number in isolation; the concatenation goal depends on *how two numbers read when glued together*, which is inherently a **pairwise** property. The `a+b vs b+a` test compares exactly the two gluings, so it captures "which ordering of this pair contributes more to the final string" — something no per-element key can express, which is precisely when you need a comparator rather than a key.
+
+## Your Turn
+
+The reusable largest-number (a comparator) plus a multi-key sort (a key):
+
+```python run
+import functools
+
+def largest_number(nums):
+    strs = list(map(str, nums))
+    strs.sort(key=functools.cmp_to_key(lambda a, b: -1 if a + b > b + a else (1 if a + b < b + a else 0)))
+    out = "".join(strs)
+    return "0" if out[0] == "0" else out
+
+# multi-level key: sort people by height descending, ties by name ascending
+people = [("bob", 175), ("amy", 180), ("cy", 175)]
+people.sort(key=lambda p: (-p[1], p[0]))
+
+print(largest_number([3, 30, 34, 5, 9]))   # 9534330
+print(people)                               # [('amy', 180), ('bob', 175), ('cy', 175)]
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+  static String largestNumber(int[] nums) {
+    String[] s = new String[nums.length];
+    for (int i = 0; i < nums.length; i++) s[i] = String.valueOf(nums[i]);
+    Arrays.sort(s, (a, b) -> (b + a).compareTo(a + b));   // descending by concatenation
+    return s[0].equals("0") ? "0" : String.join("", s);
+  }
+  public static void main(String[] args) {
+    System.out.println(largestNumber(new int[]{3, 30, 34, 5, 9}));   // 9534330
+    System.out.println(largestNumber(new int[]{10, 2}));             // 210
+  }
+}
+```
+
+Drill the family in **Practice** — [Bitwise Sort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-custom-compare-problems-bitwise-sort), [Sort Characters by Frequency](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-custom-compare-problems-sort-characters-by-frequency), [Largest Number](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-custom-compare-problems-largest-number), and [Sort People by Height](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-custom-compare-problems-sort-people-by-height).
+
+## Reflect & Connect
+
+Custom-compare is "the sort stays, the order changes":
+
+- **The family** — sort by a derived attribute (length, bit-count, frequency), multi-level (tuple key: primary then tiebreak), reverse, and pairwise rules like largest-number concatenation.
+- **Key vs comparator** — prefer a **key** when each element has a self-contained sort value (`-p.height, p.name`); it's simpler and Python evaluates it once per element (decorate-sort-undecorate). Use a **comparator** when the order is a relationship *between* two elements with no per-element key — largest-number is the canonical case.
+- **Validity is non-negotiable** — the comparator must be a transitive, consistent total order. A broken one (e.g. `a - b` that overflows, or `return a.x > b.x ? 1 : -1` with no equal case) gives nondeterministic results and Java throws "comparison contract violated." This same comparator idea orders a [heap](/cortex/data-structures-and-algorithms/trees-heap-pattern-comparator) — the rule travels with the data structure.
+
+**Prerequisites:** [Introduction to Sorting](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-introduction-to-sorting).
+
+## Recall
+
+> **Mnemonic:** *Same sort, custom comparison. Key for "order by an attribute" (tuple = multi-level); comparator for pairwise rules. The comparator MUST be a transitive total order.*
+
+| | |
 |---|---|
-| **Universal** | Works with any sorting algorithm — the algorithm just calls the comparator. |
-| **Composable** | Multi-key sorts compose: `(primary_key, secondary_key, ...)`. |
-| **Decouples sort from data** | The same sort works on integers, strings, structs, anything orderable. |
-
-| Limitation | Detail |
-|---|---|
-| **Comparator overhead** | Function-call cost per comparison. Slower than inline `<` for primitives. |
-| **Easy to bug** | Non-transitive or non-antisymmetric comparators silently produce wrong sorts. |
-| **Stability depends on the algorithm** | A custom comparator preserves stability only if the underlying sort is stable. |
-
-In practice, custom compare is used:
-- Every time you `sort([{...}, {...}, ...])` with a non-trivial key.
-- Database `ORDER BY` clauses (each column is a comparator stage).
-- Sorting search results by relevance score, then date, then ID.
-- Sorting versions, paths, custom domain objects.
-
----
-
-## Key Takeaway
-
-A comparator is a function that defines "which element comes first." Any sort algorithm can use any comparator. This decoupling is what makes sorting universal. Now we'll see the three syntactic styles for providing a comparator.
-
-# The Three Styles
-
-Most languages support three syntactic styles for custom compare. Each has its place.
-
----
-
-## Style 1 — Operator Overloading
-
-Make the *type* itself orderable by overloading `<` (or implementing the language's "comparable" interface). The sort uses the type's natural order.
-
-**Use when:** the order is intrinsic to the type — e.g., `Money` always compares by amount, `Date` always compares chronologically.
-
-**Languages:** C++ (`operator<`), Python (`__lt__`), Java (`Comparable<T>`).
-
-```python run viz=array viz-root=arr
-class Entry:
-    def __init__(self, x, y):
-        self.x, self.y = x, y
-    def __lt__(self, other):
-        return (self.x, self.y) < (other.x, other.y)
-
-arr = [Entry(2, 3), Entry(1, 4), Entry(2, 1)]
-arr.sort()   # uses __lt__
-```
-
----
-
-## Style 2 — Lambda / Inline Function
-
-Pass an anonymous function inline at the call site. Most flexible; doesn't require modifying the type.
-
-**Use when:** the order is *context-specific* — different parts of your code want different orderings of the same data.
-
-```python run viz=array viz-root=arr
-arr = [(2, 3), (1, 4), (2, 1)]
-arr.sort(key=lambda t: (t[0], -t[1]))   # by x ascending, then y descending
-```
-
----
-
-## Style 3 — Comparator Class / Object
-
-Define a class implementing the language's "Comparator" or "Compare" interface. Reusable; can hold state.
-
-**Use when:** the comparator needs internal state (e.g., a frequency map, a pivot value) or is reused across many sort calls.
-
-```python run viz=array viz-root=freq
-from functools import cmp_to_key
-
-class FrequencyComparator:
-    def __init__(self, freq_map):
-        self.freq = freq_map
-    def __call__(self, a, b):
-        if self.freq[a] != self.freq[b]:
-            return self.freq[b] - self.freq[a]   # higher frequency first
-        return a - b                              # tiebreak by value
-
-freq = {1: 3, 2: 1, 3: 2}
-arr = [1, 2, 3, 1, 1, 3]
-arr.sort(key=cmp_to_key(FrequencyComparator(freq)))
-```
-
----
-
-## When to Use Each
-
-| Need | Style |
-|---|---|
-| The type has *one* obvious ordering | Style 1 (overloading) |
-| You need different orders in different places | Style 2 (lambda) |
-| The comparator captures runtime state (freq map, pivot) | Style 3 (comparator object) |
-
-In practice, lambdas are by far the most common in modern code. They're concise, readable, and don't pollute the type system. Operator overloading is reserved for types where the order is *the* natural ordering. Comparator classes are for stateful comparisons.
-
----
-
-## Key Takeaway
-
-Three styles, one underlying idea: provide a function that orders pairs. Pick the style that matches your context. Now we'll learn how to spot custom-compare problems.
-
-# Identifying Custom-Compare Problems
-
-Two diagnostic questions decide whether the custom-compare pattern fits.
-
-| # | Question | If "yes," custom compare fits because... |
-|---|---|---|
-| **Q1** | Does the desired order require a *transformation* of the elements (not their raw values)? | The transformation produces a sort key. |
-| **Q2** | Can the transformation be expressed as a function of the element alone (or with bounded extra state)? | A comparator can call the transformation deterministically. |
-
----
-
-## A Useful Mental Model — Transform Then Compare
-
-Most custom-compare problems boil down to:
-1. Define a transformation function `t(elem) → key`.
-2. Sort by `key` using the natural ordering on `key`.
-
-Examples:
-- "Sort by frequency" → `t(c) = (-frequency[c], c)` (negative because we want descending frequency, then character for tiebreaks).
-- "Sort by digit count" → `t(n) = (number of digits in n, n)`.
-- "Sort by distance to point P" → `t(point) = distance(point, P)`.
-
-The transform-then-compare pattern collapses every custom-compare problem into "what's the right `t`?" Once you have `t`, the comparator is `cmp(a, b) = (t(a) < t(b))`.
-
----
-
-## Common Phrasings
-
-Custom compare is usually signalled by:
-- "Sort by [some derived property]."
-- "Sort by [primary], breaking ties by [secondary]."
-- "Sort the array such that ..."
-- "Find the largest / smallest ... where the ordering is ..."
-
-If the problem describes an ordering that isn't the values' natural order, custom compare applies.
-
----
-
-## Key Takeaway
-
-Two checks — a transformation is needed, and the transformation is a function of each element — gate every custom-compare problem. Pass them both and the recipe is "transform, then sort by the natural order on the transform." Now four worked problems.
-
-# Final Takeaway
-
-Custom compare is the universal interface between sort algorithms and ordering rules. Three styles: operator overloading, lambda, comparator class. Two questions to ask: *what's the transformation?* and *is it a function of the element alone?*
-
-Once you internalise this, every "sort by X" problem reduces to "find the right `t(elem) → key`," and the algorithm is whatever your standard library provides.
-
-This closes the sorting section. You came in with bubble sort. You're leaving with:
-- 10 different sorting algorithms across the comparison and counting families.
-- Three classification systems: stability, in-place, adaptiveness.
-- Two divide-and-conquer paradigms: pivot-based (quicksort) and split-based (merge sort).
-- One linear-time sort (counting) and a near-linear three-way partition (Dutch flag).
-- Quickselect for `O(n)` k-th element queries.
-- The custom-compare pattern that makes any sort universal.
-
-The next major topic in the algorithms section is **searching** — binary search and its many variants. Many of those variants assume the input is sorted, which is exactly what you've spent the last 12 lessons learning to do efficiently.
-
-**Transfer challenge — close out the sorting section:** Write a custom comparator that sorts strings *case-insensitively* but breaks ties by the original case (uppercase before lowercase). For example, `["banana", "Apple", "apple", "Banana"]` should sort to `["Apple", "apple", "Banana", "banana"]`.
-
-<details>
-<summary><strong>Answer — open after you've thought about it</strong></summary>
-
-```python run viz=array viz-root=arr
-class Solution:
-    def case_insensitive_sort(self, arr):
-        # Sort by (lowercase, original) — lowercase comparison first, original is the tiebreaker.
-        # Original case ordering: uppercase letters have lower ASCII values, so they come first.
-        arr.sort(key=lambda s: (s.lower(), s))
-
-
-arr = ["banana", "Apple", "apple", "Banana"]
-Solution().case_insensitive_sort(arr)
-print(arr)   # ['Apple', 'apple', 'Banana', 'banana']
-```
-
-The transformation `(s.lower(), s)` produces a tuple sort-key. Tuples compare lexicographically: first compare the lowercase strings, then break ties on the original (which puts uppercase before lowercase due to ASCII order).
-
-This pattern — *case-insensitive primary, case-sensitive tiebreaker* — appears in file managers, text editors, and any system that displays user-facing sorted lists. **You just generalised every "sort by X with Y as tiebreaker" problem you'll ever see.**
-
-</details>
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Understanding the Pattern — missing, needs to be written -->
-<!--       Guidance: umbrella H2 with the subsections below -->
-
-<!-- TODO: Why Naive Isn't Enough — missing, needs to be written -->
-<!--       Guidance: motivation for why the obvious approach fails -->
-
-<!-- TODO: The Core Idea — missing, needs to be written -->
-<!--       Guidance: one paragraph: the central trick -->
-
-<!-- TODO: How the Pointers/Window Move — missing, needs to be written -->
-<!--       Guidance: mechanics of the moving parts -->
-
-<!-- TODO: The Generic Algorithm — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
-
-<!-- TODO: Generic Implementation — missing, needs to be written -->
-<!--       Guidance: Python block + Java block of the skeleton -->
-
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table -->
-
-<!-- TODO: Variants / Taxonomy — missing, needs to be written -->
-<!--       Guidance: enumerate sub-shapes of this pattern -->
-
-<!-- TODO: Recognition Checklist — missing, needs to be written -->
-<!--       Guidance: 4-question diagnostic — the source of the Problem-section Diagnostic Questions -->
-
-<!-- TODO: Canonical Example — missing, needs to be written -->
-<!--       Guidance: fully worked example: brute force → optimised → template fit -->
-
-<!-- TODO: Problems in This Category — missing, needs to be written -->
-<!--       Guidance: table with links to the 02-problems/ files -->
+| Key function | element → sort value; tuple key = multi-level order |
+| Comparator | `cmp(a,b)` → `−/0/+`; for pairwise rules (largest-number) |
+| Validity | must be transitive & consistent — else garbage / Java throws |
+| Cost | `O(n log n)` comparisons × comparator cost |
+| Travels | same idea orders heaps / priority queues |
+
+- **Q:** Key function vs comparator — when each? **A:** Key when each element has a self-contained sort value (simpler, evaluated once); comparator when the order is a pairwise relationship with no per-element key.
+- **Q:** Why does descending-by-value fail for the largest-number problem? **A:** The goal is largest *concatenation*, a pairwise property (`a+b` vs `b+a`), not a per-element value — value order can't express it.
+- **Q:** What must a comparator satisfy, and what happens otherwise? **A:** A consistent, transitive total order; otherwise the sort is nondeterministic and Java throws "comparison contract violated."
+- **Q:** How do you sort by primary key with a tiebreak? **A:** Use a tuple key, e.g. `(-height, name)` — sorts by the first field, ties broken by the second.
+
+## Sources & Verify
+
+- **CLRS**, *Introduction to Algorithms*, 4th ed., §2 — sorting with arbitrary comparison; total-order requirements.
+- **Sedgewick & Wayne**, *Algorithms*, 4th ed., §2.5 — comparators, the `Comparable`/`Comparator` interfaces, and ordering contracts.
+- The comparator/key technique and the largest-number total-order argument are standard; both runnable blocks are verified by running (`[3,30,34,5,9] ⇒ 9534330`, `[10,2] ⇒ 210`; multi-key people sort).

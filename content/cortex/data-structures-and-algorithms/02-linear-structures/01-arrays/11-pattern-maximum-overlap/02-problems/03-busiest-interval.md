@@ -69,7 +69,6 @@ Pairwise intersection — "find the time range common to all overlapping meeting
 
 Not a single *instant* — a continuous **time range** during which concurrency stays at its peak. Between events, concurrency is constant (nothing changes until the next start or end). So the busiest interval is always bounded by **two consecutive event coordinates**: it begins at the moment concurrency hits its peak and ends at the next event that changes the count.
 
-> 🖼 Diagram — Count stays constant between consecutive events. The busiest interval spans the first event that pushes the counter to its peak and the very next event.
 ```d2
 direction: right
 
@@ -177,7 +176,6 @@ events -> busiest
 
 The sweep needs two pieces of state beyond the usual counter: **`intervalStart`** (set when a `'s'` event pushes count above the running max) and **`intervalEnd`** (set on an `'e'` event when count momentarily equals the running max *and* end is still flagged as open with `−1`). Once `intervalEnd` is set, it stays set — that's how "first window wins" is enforced.
 
-> 🖼 Diagram — Standard sweep plus two pieces of state: intervalStart set on a peak-breaking 's', intervalEnd set on the first 'e' that fires while the count is still at peak.
 ```mermaid
 ---
 config:
@@ -323,7 +321,7 @@ print(Solution().busiest_interval([[1, 2], [3, 4]]))                    # (-1, -
 print(Solution().busiest_interval([[1, 5], [2, 4], [3, 4]]))           # (3, 4)   — three overlapping
 ```
 
-```java run
+```java run viz=array viz-root=meetings
 import java.util.*;
 
 public class Main {

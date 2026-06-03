@@ -1,32 +1,49 @@
 ---
 title: "Pattern: Bitmasking"
-summary: "Represent a set as a bitmask — toggle pairs of bits, enumerate all 2^n subsets by counting from 0 to 2^n−1."
+summary: "Encode a subset of n items as an n-bit integer (bit j set ⇒ item j in), so counting 0..2^n−1 enumerates the entire power set and set operations become O(1) bitwise ops. Also: constant masks (0x55…/0xAA…) operate on bit-groups in parallel."
 prereqs:
   - 08-bit-tricks/01-pattern-kth-bit/01-pattern
 ---
 
-# What "Bitmasking" Means
+# Pattern: Bitmasking
 
-Bitmasking has two distinct meanings, both common:
+## Why It Exists
 
-**Meaning A — A constant pattern that selects bits.** A "mask" is a number whose set bits select a region of interest. The kth-bit operations from lesson 1 are the simplest examples; this lesson generalises to multi-bit masks like `0x55555555` (every other bit, starting from bit 1) and `0xAAAAAAAA` (the complement). These masks let you operate on whole groups of bits in parallel — swap odd-positioned bits with even-positioned bits, count bits in groups, etc.
+"Bitmasking" carries two related meanings, both worth knowing. The first is a **constant mask** that selects a region of bits — the kth-bit operations were the one-bit case; multi-bit masks like `0x55555555` (every odd bit) and `0xAAAAAAAA` (every even bit) let you act on whole groups of bits at once.
 
-**Meaning B — A subset encoded as bits.** With `n` items, an `n`-bit integer can represent any subset: bit i set ⇒ element i is in. Subsets of `{a, b, c}` map to 8 integers `0..7`:
+The second, and the star of this lesson, is **a subset encoded as bits**. With `n` items, an `n`-bit integer represents *any* subset: bit `j` set means item `j` is in. That's powerful because the `2^n` integers `0..2^n − 1` then enumerate **every subset** (the power set), and set operations — membership, add, remove — become `O(1)` bitwise ops. An inherently exponential "try every subset" becomes a single counting loop, which is the entire foundation of bitmask dynamic programming.
 
+## See It Work
+
+Enumerate every subset of `['a', 'b', 'c']` by counting masks `0..7` and decoding each. Run it.
+
+```python run
+def all_subsets(items):
+    n = len(items)
+    result = []
+    for mask in range(1 << n):                          # 0 .. 2^n - 1 — one per subset
+        subset = [items[j] for j in range(n) if mask & (1 << j)]   # bit j set ⇒ item j in
+        result.append(subset)
+    return result
+
+out = all_subsets(['a', 'b', 'c'])
+print(len(out))   # 8
+print(out)        # [[], ['a'], ['b'], ['a','b'], ['c'], ['a','c'], ['b','c'], ['a','b','c']]
 ```
-0b000 = 0  →  {}
-0b001 = 1  →  {a}
-0b010 = 2  →  {b}
-0b011 = 3  →  {a, b}
-0b100 = 4  →  {c}
-0b101 = 5  →  {a, c}
-0b110 = 6  →  {b, c}
-0b111 = 7  →  {a, b, c}
-```
 
-Looping over `mask = 0` through `2^n - 1` enumerates every subset. Inside the loop, `mask & (1 << j)` checks "is element j in?", `mask | (1 << j)` adds, `mask & ~(1 << j)` removes. Set operations become bitwise ops with O(1) cost.
+## How It Works
 
-> 🖼 Diagram — Both flavours appear in this lesson. Pairwise bits swap uses the constant-mask flavour; unique subsets uses the subset-encoding flavour.
+Map each item to a bit position, then a subset is just an integer:
+
+| mask | bits | subset |
+|---|---|---|
+| `0` | `000` | `{}` |
+| `3` | `011` | `{a, b}` |
+| `5` | `101` | `{a, c}` |
+| `7` | `111` | `{a, b, c}` |
+
+Loop `mask` from `0` to `2^n − 1` and you visit every subset exactly once. Inside, the kth-bit operations *are* the set operations: `mask & (1 << j)` tests membership, `mask | (1 << j)` adds item `j`, `mask & ~(1 << j)` removes it — each `O(1)`.
+
 ```d2
 direction: right
 both: "Two flavors of bitmasking" {
@@ -48,77 +65,102 @@ both: "Two flavors of bitmasking" {
 }
 ```
 
-<p align="center"><strong>Both flavours appear in this lesson. Pairwise bits swap uses the constant-mask flavour; unique subsets uses the subset-encoding flavour.</strong></p>
+<p align="center"><strong>bitmasking has two flavours: constant masks select bit-groups for parallel ops; subset-encoding makes an integer a set so a counting loop enumerates the power set.</strong></p>
 
-> *Predict before reading on — for an array of <code>n = 4</code> elements, how many distinct subsets exist?*
+Enumerating all subsets is **`O(2^n × n)`** (decoding each mask is `O(n)`), so it's practical only for **small `n`** (roughly `n ≤ 20`–`30`). That exponential ceiling is the whole point: bitmasking makes combinatorial search *feasible* for small `n`, not cheap for large `n`.
 
-`2^4 = 16`, including the empty subset and the full set. The set of *all* subsets is called the **power set**, and its size is always `2^n`.
+### Key Takeaway
 
----
+Encode a subset as an integer (bit `j` ⇒ item `j`); counting `0..2^n−1` enumerates the power set, and membership/add/remove are `O(1)` kth-bit ops. Feasible for small `n` (`≤ ~20`–`30`) — the basis of bitmask DP. Constant masks are the parallel-bit-group cousin.
 
-## Key Takeaway
+## Trace It
 
-Bitmasking gives you two parallel powers: constant masks for parallel bit-group operations, and subset-encoded masks for combinatorial enumeration in linear-loop time.
+Masks `0..7` for items `[a, b, c]`:
 
-# Final Takeaway
+| mask | binary | subset |
+|---|---|---|
+| 0 | `000` | `{}` |
+| 1 | `001` | `{a}` |
+| 2 | `010` | `{b}` |
+| 3 | `011` | `{a, b}` |
+| 4 | `100` | `{c}` |
+| … | … | … |
+| 7 | `111` | `{a, b, c}` |
 
-Bitmasking turns "iterate every subset" — exponential by nature — into a one-line for-loop. And constant masks like `0x55555555` and `0xAAAAAAAA` turn "swap groups of bits" into branchless O(1) code:
+Before you read on: this enumerates `2^n` subsets. For `n = 4` that's `16`; for `n = 60` it's about `10^18`. Why does that make bitmasking a *small-n* technique, and what's the practical ceiling?
 
-| Idiom | Use case |
+Because `2^n` grows explosively: at `n = 30` you're already near a billion masks, and `n = 60` is astronomically infeasible. So bitmasking subset-enumeration (and bitmask DP) is the right tool only when `n` is small — typically `n ≤ 20` for a plain `O(2^n · n)` scan, up to `~30` with care, and never for large collections. The win isn't beating polynomial algorithms; it's making an *exponential* problem (try every subset, every assignment) tractable *at all* when `n` is bounded — and packing the subset into a single machine word so the bookkeeping is `O(1)`. Recognizing the small-`n` constraint is how you know bitmasking applies.
+
+## Your Turn
+
+The reusable power-set enumerator:
+
+```python run
+def all_subsets(items):
+    n = len(items)
+    result = []
+    for mask in range(1 << n):
+        subset = [items[j] for j in range(n) if mask & (1 << j)]
+        result.append(subset)
+    return result
+
+print(all_subsets([1, 2]))   # [[], [1], [2], [1, 2]]
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+  static List<List<Integer>> allSubsets(int[] items) {
+    int n = items.length;
+    List<List<Integer>> result = new ArrayList<>();
+    for (int mask = 0; mask < (1 << n); mask++) {
+      List<Integer> subset = new ArrayList<>();
+      for (int j = 0; j < n; j++)
+        if ((mask & (1 << j)) != 0) subset.add(items[j]);   // bit j set ⇒ item j in
+      result.add(subset);
+    }
+    return result;
+  }
+
+  public static void main(String[] args) {
+    System.out.println(allSubsets(new int[]{1, 2}));   // [[], [1], [2], [1, 2]]
+  }
+}
+```
+
+Drill the family in **Practice** — [Pairwise Bits Swap](/cortex/data-structures-and-algorithms/bit-tricks-pattern-bitmasking-problems-pairwise-bits-swap) and [Unique Subsets](/cortex/data-structures-and-algorithms/bit-tricks-pattern-bitmasking-problems-unique-subsets).
+
+## Reflect & Connect
+
+Bitmasking is where bit tricks meet combinatorics:
+
+- **The family** — enumerate the power set, **bitmask DP** (traveling salesman, assignment, "visited set" as an integer), packed boolean state/flags, and parallel bit-group ops with constant masks (`(num & 0x55555555) << 1` to slide odd-positioned bits, etc.).
+- **Set operations are kth-bit operations** — membership `&`, add `|`, remove `& ~` — so this pattern is the kth-bit toolkit applied to a set-as-integer. Iterating *submasks* of a mask (`sub = (sub - 1) & mask`) is the next level, used in subset-sum DP.
+- **The `2^n` ceiling is the design signal** — bitmasking makes exponential search *feasible for small n*, not fast for large `n`. Seeing `n ≤ ~20` in the constraints is the hint to reach for it.
+
+**Prerequisites:** [Kth-Bit Operations](/cortex/data-structures-and-algorithms/bit-tricks-pattern-kth-bit-pattern).
+**What's next:** classic bit-trick applications — parity, power-of-two, fast exponentiation — in [Bit-Manipulation Applications](/cortex/data-structures-and-algorithms/bit-tricks-pattern-applications-pattern).
+
+## Recall
+
+> **Mnemonic:** *Subset = integer (bit j ⇒ item j). Loop `mask = 0..2^n−1` enumerates the power set. Membership/add/remove = `&` / `\|` / `& ~`. Small n only.*
+
+| | |
 |---|---|
-| `for mask in 0..2^n` | Enumerate every subset of `n` items |
-| `mask & (1 << j)` | Test if element `j` is in subset `mask` |
-| `mask \| (1 << j)` | Add element `j` to subset |
-| `mask & ~(1 << j)` | Remove element `j` |
-| `(num & 0x55555555) << 1` | Shift odd-positioned bits to even positions |
+| Encode | bit `j` set ⇒ item `j` in the subset |
+| Enumerate | `for mask in 0..2^n − 1` |
+| Test / add / remove | `mask & (1<<j)` / `mask \| (1<<j)` / `mask & ~(1<<j)` |
+| Cost | `O(2^n · n)` — feasible only for small `n` (`≤ ~20`–`30`) |
+| Other flavour | constant masks (`0x55…`, `0xAA…`) for parallel bit-group ops |
 
-**You didn't just learn to enumerate subsets. You learned that any combinatorial problem on `n ≤ 30` items can be solved in `O(2^n × poly(n))` by iterating bit-mask subsets — the foundation of bitmask DP, traveling-salesman-style problems, and packed-state algorithms. Constant masks turn bit-group manipulations into branchless one-liners that compilers love.**
+- **Q:** How does an integer represent a subset? **A:** Bit `j` set means item `j` is in; the `n`-bit integer is the subset's membership vector.
+- **Q:** How do you enumerate every subset? **A:** Loop `mask` from `0` to `2^n − 1`; each value is a distinct subset (the power set).
+- **Q:** What are the set operations in this encoding? **A:** Membership `mask & (1<<j)`, add `mask | (1<<j)`, remove `mask & ~(1<<j)` — the kth-bit ops.
+- **Q:** Why is bitmasking a small-`n` technique? **A:** There are `2^n` subsets, which is infeasible beyond `n ≈ 20`–`30`; it makes exponential search *tractable for small n*, not fast for large `n`.
 
-> *Transfer challenge for the next lesson:* You want to compute `num^n` (`num` to the power of `n`) using only multiplication — but `n` could be up to a billion. A naive loop is too slow. Predict how the bits of `n` give you a logarithmic algorithm.
+## Sources & Verify
 
-<details>
-<summary><strong>Answer</strong></summary>
-
-Write `n` in binary. For each bit set in `n`, multiply the result by `num²ⁱ` (where `i` is the bit's position). The trick: maintain `num` as you iterate, repeatedly squaring it — by the time you reach bit `i`, `num` already equals `original_num^(2^i)`. Total multiplications = number of set bits + bit-width = `O(log n)`. The next lesson formalises this as **fast exponentiation** alongside parity checking and power-of-2 testing — three classic bit-trick applications.
-
-</details>
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Understanding the Pattern — missing, needs to be written -->
-<!--       Guidance: umbrella H2 with the subsections below -->
-
-<!-- TODO: Why Naive Isn't Enough — missing, needs to be written -->
-<!--       Guidance: motivation for why the obvious approach fails -->
-
-<!-- TODO: The Core Idea — missing, needs to be written -->
-<!--       Guidance: one paragraph: the central trick -->
-
-<!-- TODO: How the Pointers/Window Move — missing, needs to be written -->
-<!--       Guidance: mechanics of the moving parts -->
-
-<!-- TODO: The Generic Algorithm — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
-
-<!-- TODO: Generic Implementation — missing, needs to be written -->
-<!--       Guidance: Python block + Java block of the skeleton -->
-
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table -->
-
-<!-- TODO: Variants / Taxonomy — missing, needs to be written -->
-<!--       Guidance: enumerate sub-shapes of this pattern -->
-
-<!-- TODO: Identifying — missing, needs to be written -->
-<!--       Guidance: per-variant: recognition checklist + canonical example -->
-
-<!-- TODO: Recognition Checklist — missing, needs to be written -->
-<!--       Guidance: 4-question diagnostic — the source of the Problem-section Diagnostic Questions -->
-
-<!-- TODO: Canonical Example — missing, needs to be written -->
-<!--       Guidance: fully worked example: brute force → optimised → template fit -->
-
-<!-- TODO: Problems in This Category — missing, needs to be written -->
-<!--       Guidance: table with links to the 02-problems/ files -->
+- **Warren**, *Hacker's Delight*, 2nd ed. — constant masks and parallel bit-group operations.
+- **CLRS / competitive-programming canon** — bitmask DP (subset enumeration, the `O(2^n · n)` and held-Karp `O(2^n · n^2)` bounds).
+- Subset enumeration via counting masks is standard; both runnable blocks are verified by running (`['a','b','c'] ⇒ 8 subsets`, `[1,2] ⇒ [[],[1],[2],[1,2]]`).

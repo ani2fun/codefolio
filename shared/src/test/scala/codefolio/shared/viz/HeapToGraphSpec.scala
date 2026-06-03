@@ -38,7 +38,7 @@ object HeapToGraphSpec extends ZIOSpecDefault:
       locals: List[(String, HeapValue)],
       heap: (String, HeapObject)*
   ): HeapStep =
-    HeapStep(line, "line", "fn", locals, heap.toMap)
+    HeapStep(line, "line", List(HeapFrame("fn", locals)), heap.toMap)
 
   /** A step with a pre-built heap Map — for the multi-case fixtures that share one heap across steps. */
   private def mstep(
@@ -46,7 +46,7 @@ object HeapToGraphSpec extends ZIOSpecDefault:
       locals: List[(String, HeapValue)],
       heap: Map[String, HeapObject]
   ): HeapStep =
-    HeapStep(line, "line", "fn", locals, heap)
+    HeapStep(line, "line", List(HeapFrame("fn", locals)), heap)
 
   /** adapt for the single-case fixtures — returns the one case, so the assertions read against a VizGraph. */
   private def adaptSingle(
@@ -101,9 +101,9 @@ object HeapToGraphSpec extends ZIOSpecDefault:
         result.exists(_.steps.last.edges.contains(VizEdge("A", "B", "left"))),
         result.exists(_.steps.last.cursor.size == 2),
         result.exists(_.steps.last.cursor.exists(c => c.name == "node" && c.target == "B")),
-        result.exists(_.steps.last.cursor.exists(c => c.name == "node" && c.color == "#10b981")),
-        result.exists(_.steps.last.cursor.exists(c => c.name == "tree" && c.color == "#3b82f6")),
-        result.exists(_.steps.last.annotation == "inserted 9 as 2.right"),
+        result.exists(_.steps.last.cursor.exists(c => c.name == "node" && c.color == "#c8693e")),
+        result.exists(_.steps.last.cursor.exists(c => c.name == "tree" && c.color == "#3a5a8c")),
+        result.exists(_.steps.last.annotation.title == "inserted 9 as 2.right"),
         result.exists(_.layoutHint == "binary-tree")
       )
     },
@@ -162,10 +162,15 @@ object HeapToGraphSpec extends ZIOSpecDefault:
       )
       val result =
         adaptSingle(HeapTrace(List(avl), truncated = false), src, "binary-tree", Some("tree"), "t")
+      // Multi-scalar instances now surface the value field's name alongside the
+      // others — readers can map the unlabeled "10" inside the circle to its
+      // attribute name (`key=10`) instead of guessing.
       assertTrue(
         result.isRight,
         result.exists(_.steps.head.nodes.head.label == "10"),
-        result.exists(_.steps.head.nodes.head.meta == List(VizField("height", "2")))
+        result.exists(
+          _.steps.head.nodes.head.meta == List(VizField("key", "10"), VizField("height", "2"))
+        )
       )
     },
     test("carries the structure forward through a step whose frame doesn't reach the root") {
@@ -188,7 +193,7 @@ object HeapToGraphSpec extends ZIOSpecDefault:
         result.exists(_.steps.forall(_.nodes.nonEmpty)),
         result.exists(_.steps(1).nodes.size == 4),
         result.exists(_.steps(1).cursor.isEmpty),
-        result.exists(_.steps(1).annotation == "line one"),
+        result.exists(_.steps(1).annotation.title == "line one"),
         result.exists(_.steps.last.nodes.size == 5),
         result.exists(_.steps.last.highlight == List("E"))
       )
@@ -205,7 +210,7 @@ object HeapToGraphSpec extends ZIOSpecDefault:
         result.exists(_.steps.last.changed == List("A")),
         result.exists(_.steps.last.removed.isEmpty),
         result.exists(_.steps.last.nodes.head.label == "7"),
-        result.exists(_.steps.last.annotation == "5 → 7")
+        result.exists(_.steps.last.annotation.title == "5 changed to 7")
       )
     },
     test("re-emits a removed node once, carrying its last-known label") {
@@ -226,7 +231,7 @@ object HeapToGraphSpec extends ZIOSpecDefault:
         result.exists(_.steps.last.removed == List("B")),
         result.exists(_.steps.last.nodes.size == 2),
         result.exists(_.steps.last.nodes.exists(n => n.id == "B" && n.label == "2")),
-        result.exists(_.steps.last.annotation == "removed 2")
+        result.exists(_.steps.last.annotation.title == "removed 2")
       )
     },
     test("drops builder and constructor frames before adapting") {
@@ -235,9 +240,17 @@ object HeapToGraphSpec extends ZIOSpecDefault:
         "B" -> treeNode(2, nul, nul),
         "C" -> treeNode(3, nul, nul)
       )
-      val builder = HeapStep(1, "line", "from_level_order", List("tree" -> ref("A")), tree3)
-      val ctor    = HeapStep(1, "line", "__init__", List("self" -> ref("B")), tree3)
-      val solve   = HeapStep(2, "line", "solve", List("tree" -> ref("A"), "node" -> ref("B")), tree3)
+      val builder =
+        HeapStep(1, "line", List(HeapFrame("from_level_order", List("tree" -> ref("A")))), tree3)
+      val ctor =
+        HeapStep(1, "line", List(HeapFrame("__init__", List("self" -> ref("B")))), tree3)
+      val solve =
+        HeapStep(
+          2,
+          "line",
+          List(HeapFrame("solve", List("tree" -> ref("A"), "node" -> ref("B")))),
+          tree3
+        )
       val result = adaptSingle(
         HeapTrace(List(builder, ctor, solve), truncated = false),
         src,
@@ -274,7 +287,7 @@ object HeapToGraphSpec extends ZIOSpecDefault:
         result.isRight,
         result.exists(_.steps.size == 2),
         result.exists(_.steps.last.highlight == List("L#2")),
-        result.exists(_.steps.last.annotation == "added 30")
+        result.exists(_.steps.last.annotation.title == "added 30")
       )
     },
     test("flags a list cell whose value changed since the previous step") {
@@ -286,7 +299,7 @@ object HeapToGraphSpec extends ZIOSpecDefault:
         result.isRight,
         result.exists(_.steps.last.changed == List("L#1")),
         result.exists(_.steps.last.nodes.find(_.id == "L#1").exists(_.label == "9")),
-        result.exists(_.steps.last.annotation == "2 → 9")
+        result.exists(_.steps.last.annotation.title == "2 changed to 9")
       )
     },
     test("re-emits a popped list cell once, carrying its last-known value") {
@@ -298,7 +311,7 @@ object HeapToGraphSpec extends ZIOSpecDefault:
         result.isRight,
         result.exists(_.steps.last.removed == List("L#2")),
         result.exists(_.steps.last.nodes.exists(n => n.id == "L#2" && n.label == "3")),
-        result.exists(_.steps.last.annotation == "removed 3")
+        result.exists(_.steps.last.annotation.title == "removed 3")
       )
     },
     test("renders a Python dict as one entry node per key") {
@@ -324,7 +337,7 @@ object HeapToGraphSpec extends ZIOSpecDefault:
       assertTrue(
         result.isRight,
         result.exists(_.steps.last.highlight == List("D#b")),
-        result.exists(_.steps.last.annotation == "b → 2")
+        result.exists(_.steps.last.annotation.title == "b = 2")
       )
     },
     test("narrates a dict value update with its key") {
@@ -335,7 +348,7 @@ object HeapToGraphSpec extends ZIOSpecDefault:
       assertTrue(
         result.isRight,
         result.exists(_.steps.last.changed == List("D#a")),
-        result.exists(_.steps.last.annotation == "a: 1 → 5")
+        result.exists(_.steps.last.annotation.title == "a changed from 1 to 5")
       )
     },
     test("draws a list of references as cells linked to their targets") {
@@ -426,7 +439,7 @@ object HeapToGraphSpec extends ZIOSpecDefault:
       assertTrue(
         result.isRight,
         result.exists(_.steps.head.cursor.exists(c => c.name == "i" && c.target == "L#1")),
-        result.exists(_.steps.head.cursor.exists(c => c.name == "i" && c.color == "#3b82f6"))
+        result.exists(_.steps.head.cursor.exists(c => c.name == "i" && c.color == "#3a5a8c"))
       )
     },
     test("does not draw an integer index local that has run out of range") {
@@ -467,9 +480,9 @@ object HeapToGraphSpec extends ZIOSpecDefault:
       val cur = result.toOption.toList.flatMap(_.steps.head.cursor)
       assertTrue(
         result.isRight,
-        cur.exists(c => c.name == "lo" && c.target == "L#0" && c.color == "#3b82f6"),
-        cur.exists(c => c.name == "hi" && c.target == "L#4" && c.color == "#ef4444"),
-        cur.exists(c => c.name == "mid" && c.target == "L#2" && c.color == "#10b981")
+        cur.exists(c => c.name == "lo" && c.target == "L#0" && c.color == "#3a5a8c"),
+        cur.exists(c => c.name == "hi" && c.target == "L#4" && c.color == "#a13e3e"),
+        cur.exists(c => c.name == "mid" && c.target == "L#2" && c.color == "#c8693e")
       )
     },
     test("draws no integer index cursors when the root is not an array") {
@@ -563,6 +576,84 @@ object HeapToGraphSpec extends ZIOSpecDefault:
       val result = HeapToGraph.adapt(trace, src, "binary-tree", None, None, "t")
       assertTrue(result.isRight, result.exists(_.cases.size == 1))
     },
+    // ── Slice 2: StackFramesPanel ────────────────────────────────────────────────
+    test("frames panel — two HeapFrames produce two VizFrames, innermost is active") {
+      val multiFrame = HeapStep(
+        line = 1,
+        event = "line",
+        frames = List(
+          HeapFrame("solve", List("node" -> ref("A"), "depth" -> int(2))),
+          HeapFrame("main", List("tree" -> ref("A")))
+        ),
+        heap = Map("A" -> treeNode(5, nul, nul))
+      )
+      val result = adaptSingle(
+        HeapTrace(List(multiFrame), truncated = false),
+        src,
+        "binary-tree",
+        Some("node"),
+        "t"
+      )
+      assertTrue(
+        result.isRight,
+        result.exists(_.steps.head.frames.size == 2),
+        // innermost frame
+        result.exists(_.steps.head.frames.head.fn == "solve"),
+        result.exists(_.steps.head.frames.head.isActive),
+        result.exists(_.steps.head.frames.head.locals.exists(l =>
+          l.name == "depth" && l.typeName == "int" && l.value == "2"
+        )),
+        result.exists(_.steps.head.frames.head.locals.exists(l =>
+          l.name == "node" && l.typeName == "TreeNode"
+        )),
+        // caller frame
+        result.exists(_.steps.head.frames.last.fn == "main"),
+        result.exists(!_.steps.head.frames.last.isActive)
+      )
+    },
+    test("frames panel — helper caller frames are excluded from the VizFrame list") {
+      // Active frame is "insert" (kept), caller is "__init__" (helper — filtered out).
+      val helperCaller = HeapStep(
+        line = 1,
+        event = "line",
+        frames = List(
+          HeapFrame("insert", List("root" -> ref("A"), "val" -> int(9))),
+          HeapFrame("__init__", List("self" -> ref("A")))
+        ),
+        heap = Map("A" -> treeNode(5, nul, nul))
+      )
+      val result = adaptSingle(
+        HeapTrace(List(helperCaller), truncated = false),
+        src,
+        "binary-tree",
+        Some("root"),
+        "t"
+      )
+      assertTrue(
+        result.isRight,
+        result.exists(_.steps.head.frames.size == 1),
+        result.exists(_.steps.head.frames.head.fn == "insert"),
+        result.exists(_.steps.head.frames.head.isActive)
+      )
+    },
+    test("frames panel — changed flag set on a local whose value differs from the previous step") {
+      val s1 = step(1, List("depth" -> int(0)), "A" -> treeNode(5, nul, nul))
+      val s2 = step(2, List("depth" -> int(1)), "A" -> treeNode(5, nul, nul))
+      val result = adaptSingle(
+        HeapTrace(List(s1, s2), truncated = false),
+        src,
+        "binary-tree",
+        None,
+        "t"
+      )
+      assertTrue(
+        result.isRight,
+        // step 0: no previous — changed must be false for all locals
+        result.exists(_.steps.head.frames.flatMap(_.locals).forall(!_.changed)),
+        // step 1: depth went 0 → 1, changed must be true
+        result.exists(_.steps.last.frames.flatMap(_.locals).exists(l => l.name == "depth" && l.changed))
+      )
+    },
     test("segments a multi-case array trace") {
       val a1 = Map("L1" -> lst(int(1), int(2)))
       val a2 = Map("L2" -> lst(int(9), int(8), int(7)))
@@ -581,6 +672,219 @@ object HeapToGraphSpec extends ZIOSpecDefault:
         result.exists(_.cases.size == 2),
         result.exists(_.cases.head.steps.head.nodes.size == 2),
         result.exists(_.cases(1).steps.head.nodes.map(_.label) == List("9", "8", "7"))
+      )
+    },
+    // ─── Slice 3 — auto-dispatch (layoutKind + cardId) ──────────────────────────
+    test("auto-dispatch — empty layoutHint infers array-1d from a 1D list") {
+      val s      = step(1, List("xs" -> ref("L")), "L" -> lst(int(1), int(2), int(3)))
+      val result = adaptSingle(HeapTrace(List(s), truncated = false), src, "", Some("xs"), "t")
+      assertTrue(
+        result.isRight,
+        result.exists(_.steps.head.nodes.nonEmpty),
+        result.exists(_.steps.head.nodes.forall(_.layoutKind == "array-1d")),
+        result.exists(_.steps.head.nodes.forall(_.cardId == "L"))
+      )
+    },
+    test("auto-dispatch — nested lists infer array-2d") {
+      val heap = Map(
+        "M"  -> lst(ref("R1"), ref("R2")),
+        "R1" -> lst(int(1), int(2)),
+        "R2" -> lst(int(3), int(4))
+      )
+      val result =
+        adaptSingle(
+          HeapTrace(List(mstep(1, List("m" -> ref("M")), heap)), truncated = false),
+          src,
+          "",
+          Some("m"),
+          "t"
+        )
+      assertTrue(
+        result.isRight,
+        result.exists(_.steps.head.nodes.exists(n => n.cardId == "M" && n.layoutKind == "array-2d"))
+      )
+    },
+    test("auto-dispatch — Instance with left+right infers tree-binary; connected nodes share one cardId") {
+      val heap = Map(
+        "A" -> treeNode(1, ref("B"), ref("C")),
+        "B" -> treeNode(2, nul, nul),
+        "C" -> treeNode(3, nul, nul)
+      )
+      val result =
+        adaptSingle(
+          HeapTrace(List(mstep(1, List("t" -> ref("A")), heap)), truncated = false),
+          src,
+          "",
+          Some("t"),
+          "t"
+        )
+      assertTrue(
+        result.isRight,
+        result.exists(_.steps.head.nodes.forall(_.layoutKind == "tree-binary")),
+        // Union-find merges all three tree nodes into one card (representative = lex-smallest = "A").
+        result.exists(_.steps.head.nodes.forall(_.cardId == "A"))
+      )
+    },
+    test("auto-dispatch — Instance with `next` only infers list-single") {
+      val heap = Map(
+        "N1" -> instance("ListNode", "val" -> int(1), "next" -> ref("N2")),
+        "N2" -> instance("ListNode", "val" -> int(2), "next" -> nul)
+      )
+      val result = adaptSingle(
+        HeapTrace(List(mstep(1, List("head" -> ref("N1")), heap)), truncated = false),
+        src,
+        "",
+        Some("head"),
+        "t"
+      )
+      assertTrue(
+        result.isRight,
+        result.exists(_.steps.head.nodes.forall(_.layoutKind == "list-single"))
+      )
+    },
+    test("auto-dispatch — Instance with `next`+`prev` infers list-double") {
+      val heap = Map(
+        "N1" -> instance("DNode", "val" -> int(1), "next" -> ref("N2"), "prev" -> nul),
+        "N2" -> instance("DNode", "val" -> int(2), "next" -> nul, "prev" -> ref("N1"))
+      )
+      val result = adaptSingle(
+        HeapTrace(List(mstep(1, List("head" -> ref("N1")), heap)), truncated = false),
+        src,
+        "",
+        Some("head"),
+        "t"
+      )
+      assertTrue(
+        result.isRight,
+        result.exists(_.steps.head.nodes.forall(_.layoutKind == "list-double"))
+      )
+    },
+    test("auto-dispatch — Dict infers hashmap") {
+      val heap = Map("D" -> dict(str("a") -> int(1), str("b") -> int(2)))
+      val result = adaptSingle(
+        HeapTrace(List(mstep(1, List("d" -> ref("D")), heap)), truncated = false),
+        src,
+        "",
+        Some("d"),
+        "t"
+      )
+      assertTrue(
+        result.isRight,
+        result.exists(_.steps.head.nodes.forall(_.layoutKind == "hashmap")),
+        result.exists(_.steps.head.nodes.forall(_.cardId == "D"))
+      )
+    },
+    test("auto-dispatch — Instance without recognized field shape falls back to graph-generic") {
+      val heap = Map("X" -> instance("Foo", "name" -> str("hi"), "weight" -> int(5)))
+      val result = adaptSingle(
+        HeapTrace(List(mstep(1, List("x" -> ref("X")), heap)), truncated = false),
+        src,
+        "",
+        Some("x"),
+        "t"
+      )
+      assertTrue(
+        result.isRight,
+        result.exists(_.steps.head.nodes.forall(_.layoutKind == "graph-generic"))
+      )
+    },
+    test("auto-dispatch — known layoutHint forces every card to that kind (override)") {
+      // Heap shape would infer tree-binary, but the override forces "graph-generic".
+      val heap = Map(
+        "A" -> treeNode(1, ref("B"), ref("C")),
+        "B" -> treeNode(2, nul, nul),
+        "C" -> treeNode(3, nul, nul)
+      )
+      val result = adaptSingle(
+        HeapTrace(List(mstep(1, List("t" -> ref("A")), heap)), truncated = false),
+        src,
+        "graph-generic",
+        Some("t"),
+        "t"
+      )
+      assertTrue(
+        result.isRight,
+        result.exists(_.steps.head.nodes.forall(_.layoutKind == "graph-generic"))
+      )
+    },
+    // ─── Slice 6: unchanged flag ─────────────────────────────────────────────────
+    test("unchanged — step 0 is always false regardless of content") {
+      val result =
+        adaptSingle(HeapTrace(List(before), truncated = false), src, "binary-tree", Some("tree"), "t")
+      assertTrue(result.isRight, result.exists(_.steps.head.unchanged == false))
+    },
+    test("unchanged — true when only the source line advances (identical heap + locals)") {
+      // same tree and same locals as `before` but on line 3 instead of line 2
+      val sameAtLine3 = step(
+        3,
+        List("tree" -> ref("A")),
+        "A" -> treeNode(1, ref("B"), ref("C")),
+        "B" -> treeNode(2, ref("D"), nul),
+        "C" -> treeNode(3, nul, nul),
+        "D" -> treeNode(4, nul, nul)
+      )
+      val result = adaptSingle(
+        HeapTrace(List(before, sameAtLine3), truncated = false),
+        src,
+        "binary-tree",
+        Some("tree"),
+        "t"
+      )
+      assertTrue(
+        result.isRight,
+        result.exists(_.steps.size == 2),
+        result.exists(_.steps.last.unchanged == true)
+      )
+    },
+    test("unchanged — false when a new node is added (highlight non-empty)") {
+      val result =
+        adaptSingle(HeapTrace(List(before, after), truncated = false), src, "binary-tree", Some("tree"), "t")
+      assertTrue(result.isRight, result.exists(_.steps.last.unchanged == false))
+    },
+    test("unchanged — false when cursor moves with otherwise identical heap") {
+      val s1 = step(
+        1,
+        List("tree" -> ref("A")),
+        "A" -> treeNode(1, ref("B"), nul),
+        "B" -> treeNode(2, nul, nul)
+      )
+      val s2 = step(
+        2,
+        List("tree" -> ref("A"), "node" -> ref("B")),
+        "A" -> treeNode(1, ref("B"), nul),
+        "B" -> treeNode(2, nul, nul)
+      )
+      val result =
+        adaptSingle(HeapTrace(List(s1, s2), truncated = false), src, "binary-tree", Some("tree"), "t")
+      assertTrue(result.isRight, result.exists(_.steps.last.unchanged == false))
+    },
+    test("unchanged — false when an active-frame local changes its value") {
+      val s1     = step(1, List("tree" -> ref("A"), "depth" -> int(0)), "A" -> treeNode(1, nul, nul))
+      val s2     = step(2, List("tree" -> ref("A"), "depth" -> int(1)), "A" -> treeNode(1, nul, nul))
+      val result = adaptSingle(HeapTrace(List(s1, s2), truncated = false), src, "binary-tree", None, "t")
+      assertTrue(result.isRight, result.exists(_.steps.last.unchanged == false))
+    },
+    test("auto-dispatch — mixed heap (tree + independent dict) emits two distinct cards") {
+      val heap = Map(
+        "A" -> instance("Root", "val" -> int(1), "left" -> ref("B"), "right" -> nul, "memo" -> ref("D")),
+        "B" -> treeNode(2, nul, nul),
+        "D" -> dict(str("a") -> int(1))
+      )
+      val result = adaptSingle(
+        HeapTrace(List(mstep(1, List("root" -> ref("A")), heap)), truncated = false),
+        src,
+        "",
+        Some("root"),
+        "t"
+      )
+      // The Root + leaf B are merged via `left`; D is a Dict reached via the `memo` field
+      // but isn't merged (Instance→Dict refs don't join). Expect a tree-binary card "A"
+      // and a hashmap card "D", with cells/entries inheriting the owner's card.
+      assertTrue(
+        result.isRight,
+        result.exists(_.steps.head.nodes.exists(n => n.cardId == "A" && n.layoutKind == "tree-binary")),
+        result.exists(_.steps.head.nodes.exists(n => n.cardId == "D" && n.layoutKind == "hashmap")),
+        result.exists(_.steps.head.nodes.map(_.cardId).distinct.size == 2)
       )
     }
   )

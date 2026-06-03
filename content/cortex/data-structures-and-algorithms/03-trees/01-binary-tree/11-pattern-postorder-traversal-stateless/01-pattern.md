@@ -1,137 +1,163 @@
 ---
 title: "Pattern: Postorder Traversal (Stateless)"
-summary: "Bottom-up postorder: each node returns a value synthesised from its children — height, leaf sum, and structural checks."
+summary: "Bottom-up recursion: solve both children first, then synthesize the node's answer from their returned values. The mirror of preorder — height, subtree sum, balanced/full checks, diameter. Return a tuple when a node needs more than one fact from each child."
 prereqs:
   - 03-trees/01-binary-tree/04-recursive-traversals-in-binary-trees
 ---
 
-# The stateless postorder pattern
+# Pattern: Postorder Traversal (Stateless)
 
-```text
-postorder(node):
-  if node is null: return baseCase                  # e.g. 0, -1, true, infinity
-  leftAnswer  = postorder(node.left)
-  rightAnswer = postorder(node.right)
-  return combine(leftAnswer, rightAnswer, node.val) # the recurrence
+## Why It Exists
+
+[Preorder](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-pattern) pushed context *down* — for problems where a node depends on its **ancestors**. The mirror question is just as common: a node's answer depends on its **children**. A node's height is `1 + max(child heights)`; its subtree sum is `node + left sum + right sum`; "is my subtree balanced/full/perfect?" depends entirely on what the subtrees report.
+
+**Postorder** (left, right, *then* node) is the shape: solve both children *first*, then synthesize the node's answer from their returned values. Each call **returns a value up** the tree — bottom-up, with no shared accumulator (so it's "stateless": a node's result is a pure function of its children's results). It's the workhorse for any aggregate or structural property of a subtree.
+
+## See It Work
+
+Compute a tree's **height** bottom-up: a leaf is height 1, and every node is `1 + max(child heights)`. Run it.
+
+```python run viz=binary-tree viz-root=root
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+def height(node):
+    if node is None:
+        return 0                                   # empty subtree contributes height 0
+    left = height(node.left)                        # solve children FIRST
+    right = height(node.right)
+    return 1 + max(left, right)                     # then synthesize this node's answer
+
+root = TreeNode(1, TreeNode(2, TreeNode(4), TreeNode(5)), TreeNode(3, None, TreeNode(6)))
+print(height(root))     # 3
 ```
 
-The shape is identical for every postorder-stateless problem; only the `baseCase` and the `combine` change. Pick those two correctly and the entire algorithm writes itself.
+## How It Works
 
-> 🖼 Diagram — Postorder data flow for max root-to-leaf path sum — leaves return their own value; each internal node returns val + max(L, R); the root ends up with the answer. The arrows that go down are recursive calls; the values that come up are the returns. (Note: in the example, leaf 7 returns its own value 7, not 11; the node's own value adds at the parent.)
+Three steps, children before parent:
+
+1. **Base case** — an empty subtree returns the identity for the aggregate (height `0`, sum `0`, count `0`).
+2. **Recurse both children** — get their returned results *first*.
+3. **Combine** into this node's result and **return it up** (`1 + max(l, r)` for height; `node.val + l + r` for sum; a boolean-and for structural checks).
+
 ```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
 flowchart TB
-    R(("(1)<br/>combine(L=4, R=11, val=1) = 11"))
-    A(("(2)<br/>combine(L=4, R=0, val=2) = 4"))
-    B(("(3)<br/>combine(L=0, R=11, val=3) = 11"))
-    C(("(4)<br/>leaf → 4"))
-    D(("(7)<br/>leaf → 11... wait"))
-    R --> A
-    R --> B
-    A --> C
-    B --> D
-    style R fill:#fef9c3,stroke:#f59e0b
+  L1["leaf → 1"] --> P1["parent: 1 + max(children)"]
+  L2["leaf → 1"] --> P1
+  P1 --> R["root: 1 + max(subtrees)"]
+  P2["subtree return"] --> R
 ```
 
-<p align="center"><strong>Postorder data flow for max root-to-leaf path sum — leaves return their own value; each internal node returns <code>val + max(L, R)</code>; the root ends up with the answer. The arrows that <em>go down</em> are recursive calls; the values that <em>come up</em> are the returns. (Note: in the example, leaf 7 returns its own value 7, not 11; the node's own value adds at the parent.)</strong></p>
+<p align="center"><strong>results bubble up: leaves return first, each parent synthesizes from its children's returns, the root's return is the answer.</strong></p>
 
-> **Why "stateless"?** No mutable state escapes a stack frame. Each call computes its return value purely from its children's return values and the local node — like a functional fold over the tree. Two calls on the same subtree would return the same thing; there's no global accumulator that could give different answers depending on visit order.
+The defining property: information flows **only upward**, via the return value — the opposite of preorder's downward argument. There's no shared state, so each subtree's computation is independent and the node just folds its children's answers. When a node needs **more than one fact** from each child, **return a tuple**: e.g. `is_balanced` returns the height *and* whether the subtree is balanced (often encoded as "height, or `-1` if unbalanced") so the parent can check `|left − right| ≤ 1` and propagate. Cost is `O(n)` (each node folded once), `O(h)` stack.
 
-## Generic pattern
+### Key Takeaway
 
-Below is a "sum of all node values" template — illustrative; substitute the right base case and combine for your problem.
+Postorder-stateless solves children first, then returns a value synthesized from them — bottom-up, no shared state. It's the template for subtree aggregates (height, sum, count) and structural checks (balanced/full/perfect); return a *tuple* when the parent needs several facts from each child.
 
+## Trace It
+
+`height(root)` folds from the leaves up:
+
+| node | left height | right height | returns |
+|---|---|---|---|
+| `4`, `5`, `6` (leaves) | 0 | 0 | `1` |
+| `2` | `1` | `1` | `2` |
+| `3` | `0` (no left) | `1` | `2` |
+| `1` (root) | `2` | `2` | `3` |
+
+Before you read on: checking if a tree is **balanced** (every node's subtree heights differ by ≤ 1) can be written two ways. The naive way calls `height()` *inside* a separate `is_balanced()` check at every node. The good way has *one* postorder pass return "the height, or `−1` if already unbalanced." Why is the naive version `O(n²)` while the single-tuple postorder is `O(n)`?
+
+Because the naive version **recomputes heights redundantly**. `is_balanced(node)` calls `height(node.left)` and `height(node.right)` — each an `O(n)` walk of that subtree — and then recurses `is_balanced` into those same subtrees, which call `height` again on *their* children, and so on. The top node's subtrees get their heights computed once for the top check, then again (in pieces) for every descendant's check — the classic "compute-an-aggregate-inside-a-recursion" trap that sums to `O(n²)` (it's the same recurrence as a naive tree-height-per-node). The single-pass version returns *both* facts at once — "here is my height, and `−1` signals I'm already unbalanced" — so each node is visited exactly once and its height is computed exactly once, folding up in `O(n)`. The lesson: **when a node needs multiple things from each child, compute them in one bottom-up pass and return a tuple**, rather than calling a helper that re-walks the subtree. Spotting the redundant re-traversal is what turns the obvious `O(n²)` into `O(n)` — and it's why postorder + a tuple return is the idiomatic shape for balanced/diameter/longest-path problems.
+
+## Your Turn
+
+Height plus the single-pass balanced check (tuple/sentinel return):
 
 ```python run
-from typing import Optional
-
 class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
-        self.val, self.left, self.right = val, left, right
+    def __init__(self, val, left=None, right=None):
+        self.val = val; self.left = left; self.right = right
 
-def stateless_postorder(node: Optional[TreeNode]) -> int:
-    if node is None: return 0                      # base case
-    left  = stateless_postorder(node.left)
-    right = stateless_postorder(node.right)
-    return left + right + node.val                 # combine
+def height(node):
+    if node is None: return 0
+    return 1 + max(height(node.left), height(node.right))
+
+def is_balanced(root):
+    def h(n):                              # returns height, or -1 if any subtree unbalanced
+        if n is None: return 0
+        lh = h(n.left)
+        if lh == -1: return -1
+        rh = h(n.right)
+        if rh == -1 or abs(lh - rh) > 1: return -1
+        return 1 + max(lh, rh)
+    return h(root) != -1
+
+root = TreeNode(1, TreeNode(2, TreeNode(4), TreeNode(5)), TreeNode(3, None, TreeNode(6)))
+skew = TreeNode(1, TreeNode(2, TreeNode(3)))
+print(height(root), is_balanced(root), is_balanced(skew))   # 3 True False
 ```
 
 ```java run
-static int statelessPostorder(TreeNode node) {
-    if (node == null) return 0;
-    int left  = statelessPostorder(node.left);
-    int right = statelessPostorder(node.right);
-    return left + right + node.val;
+public class Main {
+  static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } TreeNode(int v, TreeNode l, TreeNode r){ val=v; left=l; right=r; } }
+
+  static int height(TreeNode n) {
+    if (n == null) return 0;
+    return 1 + Math.max(height(n.left), height(n.right));
+  }
+  static int balancedHeight(TreeNode n) {       // height, or -1 if unbalanced
+    if (n == null) return 0;
+    int lh = balancedHeight(n.left);
+    if (lh == -1) return -1;
+    int rh = balancedHeight(n.right);
+    if (rh == -1 || Math.abs(lh - rh) > 1) return -1;
+    return 1 + Math.max(lh, rh);
+  }
+  public static void main(String[] args) {
+    TreeNode root = new TreeNode(1, new TreeNode(2, new TreeNode(4), new TreeNode(5)),
+                                    new TreeNode(3, null, new TreeNode(6)));
+    System.out.println(height(root) + " " + (balancedHeight(root) != -1));   // 3 true
+  }
 }
 ```
 
+Drill the family in **Practice** — [Sum of Leaves](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-problems-sum-of-leaves), [Height of a Binary Tree](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-problems-height-of-a-binary-tree), [Maximum Root-to-Leaf Path Sum](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-problems-maximum-root-to-leaf-path-sum), and [Is It a Full Binary Tree](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-problems-is-it-a-full-binary-tree).
 
-## Complexity
+## Reflect & Connect
 
-> **Time:** O(N) — each node visited once. **Space:** O(h) for the recursion stack.
+Postorder-stateless is the "my answer depends on my children" template:
 
-# How to recognise it
+- **The family** — height, subtree sum, node count, is-balanced, is-full/perfect, and **diameter** (return height, track the best left-height + right-height seen). Each folds children's returns into the node's.
+- **Return a tuple for multi-fact** — when a node needs several things from each child (balanced needs height *and* a balance flag; diameter needs height *and* the running best), return them together in one pass instead of re-walking subtrees — the `O(n)` vs `O(n²)` difference.
+- **It's the mirror of [preorder](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-pattern)** — preorder pushes context *down* (ancestors → node), postorder folds results *up* (children → node). Many problems combine both: pass context down *and* aggregate up — the general recursive-tree DP. When a node needs child results, reach for postorder.
 
-The pattern fits when:
+**Prerequisites:** [Recursive Traversals in Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-recursive-traversals-in-binary-trees).
+**What's next:** bottom-up with a shared accumulator that survives across subtrees — [Postorder Traversal (Stateful)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateful-pattern).
 
-- The answer for any subtree can be **computed solely from the answers of its two subtrees** (and the current node's own value).
-- The whole-tree answer is the answer at the root.
+## Recall
 
-Concrete cues:
+> **Mnemonic:** *Children first, then the node. Each call returns a value folded from its children (`1 + max` for height, `l + r + val` for sum). Bottom-up, no shared state. Multi-fact → return a tuple (one pass, not O(n²)).*
 
-- *"Find the height / depth / size of the tree"* — recurrence on subtree heights/sizes.
-- *"Sum / max / min over all nodes / leaves / paths"* — fold over the tree.
-- *"Is the tree balanced / full / perfect / a BST?"* — structural validation, both subtrees must satisfy a property *and* the current node fits.
-- *"Compute X for every subtree"* — same shape, just record the answer at every node.
+| | |
+|---|---|
+| Shape | postorder (left, right, then node); return a value up |
+| Flow | child → parent only (bottom-up) |
+| Combine | `result = fold(left_result, right_result, node)` |
+| Multi-fact | return a tuple/sentinel (e.g. height-or-`-1` for balanced) — one pass |
+| Family | height, sum, count, balanced, full/perfect, diameter |
 
-Anti-pattern: if the answer depends on the *path from the root* to a node (info from above), use a preorder pattern instead. If sibling subtrees need to report multiple values back (e.g., "the longest path through this node, plus the longest path entirely within this subtree"), you want the *stateful* postorder pattern (next lesson).
+- **Q:** When do you use bottom-up postorder? **A:** When a node's answer depends on its children's results (height, subtree sum, balanced/full checks, diameter).
+- **Q:** How does information flow, versus preorder? **A:** Upward via the return value (children → node), the opposite of preorder's downward argument.
+- **Q:** Why return a tuple? **A:** When a node needs several facts from each child, computing them in one pass and returning them together avoids re-walking subtrees (`O(n)` vs `O(n²)`).
+- **Q:** Why is the naive `is_balanced` `O(n²)`? **A:** It calls `height()` (an `O(n)` walk) at every node; the single-pass version returns height-and-balance together, visiting each node once.
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+## Sources & Verify
 
-<!-- TODO: Understanding the Pattern — missing, needs to be written -->
-<!--       Guidance: umbrella H2 with the subsections below -->
-
-<!-- TODO: Why Naive Isn't Enough — missing, needs to be written -->
-<!--       Guidance: motivation for why the obvious approach fails -->
-
-<!-- TODO: The Core Idea — missing, needs to be written -->
-<!--       Guidance: one paragraph: the central trick -->
-
-<!-- TODO: How the Pointers/Window Move — missing, needs to be written -->
-<!--       Guidance: mechanics of the moving parts -->
-
-<!-- TODO: The Generic Algorithm — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
-
-<!-- TODO: Generic Implementation — missing, needs to be written -->
-<!--       Guidance: Python block + Java block of the skeleton -->
-
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table -->
-
-<!-- TODO: Variants / Taxonomy — missing, needs to be written -->
-<!--       Guidance: enumerate sub-shapes of this pattern -->
-
-<!-- TODO: Identifying — missing, needs to be written -->
-<!--       Guidance: per-variant: recognition checklist + canonical example -->
-
-<!-- TODO: Recognition Checklist — missing, needs to be written -->
-<!--       Guidance: 4-question diagnostic — the source of the Problem-section Diagnostic Questions -->
-
-<!-- TODO: Canonical Example — missing, needs to be written -->
-<!--       Guidance: fully worked example: brute force → optimised → template fit -->
-
-<!-- TODO: Problems in This Category — missing, needs to be written -->
-<!--       Guidance: table with links to the 02-problems/ files -->
+- **CLRS**, *Introduction to Algorithms*, 4th ed., §10.4 — postorder traversal; recursive subtree computations.
+- **Sedgewick & Wayne**, *Algorithms*, 4th ed., §3.2 — recursive tree aggregates (size, height).
+- Bottom-up height/balance (and the single-pass tuple-return optimization) is the standard postorder template; both runnable blocks are verified by running (`height ⇒ 3`, `is_balanced ⇒ True`, skewed `⇒ False`).

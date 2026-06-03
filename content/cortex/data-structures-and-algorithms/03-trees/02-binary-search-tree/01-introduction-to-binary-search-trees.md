@@ -1,470 +1,192 @@
 ---
-title: "Introduction To Binary Search Trees"
-summary: "<!-- TODO: summary -->"
+title: "Introduction to Binary Search Trees"
+summary: "A binary tree with an ordering invariant — everything in the left subtree is smaller, everything right is larger. That single rule makes search, insert, and delete all follow one root-to-leaf path (O(h)), and an in-order walk emit the values already sorted."
+prereqs:
+  - 03-trees/01-binary-tree/01-introduction-to-binary-trees
 ---
 
-# 1. Introduction to Binary Search Trees
+# Introduction to Binary Search Trees
 
-## The Hook
+## Why It Exists
 
-A plain binary tree gives you **shape** — parent, child, left, right — but it tells you *nothing* about where any specific value lives. Looking for the number `42` in a tree of a million nodes? You have to walk every branch. The structure is hierarchical, but the data inside it is still chaos.
+Each structure so far trades something away. A sorted **array** searches in `O(log n)` but inserts in `O(n)` (shifting). A **linked list** inserts in `O(1)` but searches in `O(n)`. A **hash table** does both in `O(1)` average — but loses all ordering, so "next-largest", "everything in range `[a, b]`", and "in sorted order" are gone.
 
-Now imagine a tiny extra rule: at every node, **smaller values must live to the left, larger values must live to the right**. That single constraint turns the tree into a *map*. Looking for `42` is no longer a search — it's a *descent*. At each step, one comparison eliminates an entire subtree. A million-node search collapses into roughly twenty hops.
+The **binary search tree** recovers ordered, *dynamic* operations. It's a binary tree with one invariant: for every node, **all values in its left subtree are smaller, and all values in its right subtree are larger**. That ordering means a search never explores both children — at each node one comparison sends it left or right, tracing a single root-to-leaf path. Search, insert, and delete all cost `O(h)`, the tree's height — `O(log n)` when the tree is balanced. And because left < node < right everywhere, an **in-order traversal visits the values in sorted order for free**.
 
-That rule is the **binary search property**, and the tree that obeys it is the **binary search tree (BST)** — the data structure that powers `std::map`, `TreeMap`, the indexes in your filesystem, and the ordered-set primitives your favourite database queries against. This first lesson is about the rule itself: what it says, why it's so powerful, what shapes count as a BST, and what an in-order walk through one looks like.
+## See It Work
 
----
+Insert `[5, 3, 8, 1, 4, 7, 9]` into a BST, then read it back in order. Run it, then **Visualise** the shape — note the in-order walk comes out sorted.
 
-## Table of contents
+> ▶ Run it, then click **Visualise** — each value drops left or right by comparison until it finds an empty spot; the in-order traversal emerges sorted.
 
-1. [Understanding a binary search tree](#understanding-a-binary-search-tree)
-2. [Structure of a binary search tree](#structure-of-a-binary-search-tree)
-3. [Characteristics of a binary search tree](#characteristics-of-a-binary-search-tree)
-4. [Implementation of binary search trees](#implementation-of-binary-search-trees)
+```python run viz=binary-tree viz-root=root
+class TreeNode:
+    def __init__(self, val):
+        self.val = val
+        self.left = None
+        self.right = None
 
-***
+def insert(root, val):
+    if root is None:
+        return TreeNode(val)             # found the empty spot — attach here
+    if val < root.val:
+        root.left = insert(root.left, val)    # smaller → go left
+    elif val > root.val:
+        root.right = insert(root.right, val)  # larger → go right
+    return root
 
-# Understanding a binary search tree
+def inorder(node):
+    return inorder(node.left) + [node.val] + inorder(node.right) if node else []
 
-A **binary search tree** is a binary tree with a *single extra rule* baked into every node: anything smaller must live in the left subtree, anything larger must live in the right subtree. The shape is identical to an ordinary binary tree — same nodes, same left/right children, same edges — but the *positions* of the values are now meaningful.
-
-That meaning is what makes the structure pay off. In an ordinary binary tree you cannot *predict* where a value lives, so you must look everywhere. In a BST, every node is a signpost: comparing your target to the value at the node tells you which half of the remaining tree to throw away. Each step halves the work.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    R((50))
-    A((30))
-    B((70))
-    C((20))
-    D((40))
-    E((60))
-    F((80))
-    G((10))
-    H((25))
-    I((35))
-    J((45))
-    R --> A
-    R --> B
-    A --> C
-    A --> D
-    B --> E
-    B --> F
-    C --> G
-    C --> H
-    D --> I
-    D --> J
-    style R fill:#fef9c3,stroke:#f59e0b
+root = None
+for v in [5, 3, 8, 1, 4, 7, 9]:
+    root = insert(root, v)
+print(inorder(root))                     # [1, 3, 4, 5, 7, 8, 9] — sorted!
 ```
 
-<p align="center"><strong>A binary search tree rooted at <code>50</code>. Every value to the left of <code>50</code> is smaller; every value to the right is larger. The same rule holds at <em>every</em> node — including <code>30</code>, <code>70</code>, and the rest.</strong></p>
+## How It Works
 
-The pay-off is enormous. Insertions, deletions, and lookups in a balanced BST take **O(log n)** time, not O(n). Every operation we'll meet in this chapter — search, insert, delete, range queries, lowest common ancestor, ordered iteration — is just a *different way of walking the tree while obeying the BST rule*. Learn the rule once and the whole chapter falls into place.
+The invariant — **left subtree < node < right subtree**, recursively — drives every operation:
 
-***
-
-# Structure of a binary search tree
-
-What turns a binary tree into a binary *search* tree is one constraint, applied at *every* node — not just the root.
-
-> For every node **N** in the binary search tree:
->
-> - All the values stored in the **left subtree** of `N` are **less than** the value stored in **N**.
-> - All the values stored in the **right subtree** of **N** are **greater than** the value stored in **N**.
-
-That phrase "for every node" matters. It's not enough that the root's left child is smaller — *every descendant* of the left child must also be smaller. The property is **recursive**: every subtree of a BST is itself a BST.
+- **Search** — compare the target to the node: equal → found; smaller → recurse left; larger → recurse right. One comparison eliminates an entire subtree, so the work is the path length, `O(h)`.
+- **Insert** — search for the value; the first empty child slot you reach is where it belongs (always inserted as a new leaf). Also `O(h)`.
+- **In-order traversal** (left, node, right) — visits the smaller subtree, then the node, then the larger, so the values come out **ascending**.
 
 ```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
 flowchart TB
-    N(("N<br/>(value v)"))
-    L["Left subtree<br/>all values &lt; v"]
-    R["Right subtree<br/>all values &gt; v"]
-    N --> L
-    N --> R
-    style N fill:#fef9c3,stroke:#f59e0b
-    style L fill:#ede9fe,stroke:#7c3aed
-    style R fill:#dbeafe,stroke:#3b82f6
+  R["5"] --> A["3 (&lt; 5)"]
+  R --> B["8 (&gt; 5)"]
+  A --> C["1"]
+  A --> D["4"]
+  B --> E["7"]
+  B --> F["9"]
 ```
 
-<p align="center"><strong>The binary search property at a single node. The same picture must hold at every node in the tree.</strong></p>
+<p align="center"><strong>the BST invariant: every node's left subtree holds only smaller keys, its right subtree only larger; search follows one comparison-guided path down.</strong></p>
 
-Almost every BST operation we'll meet in this chapter exploits this property to deliver **blazingly fast** runtimes. Search uses it to discard half the tree at each step. Insert uses it to find the unique correct slot. Even the in-order traversal — which we'll see in a moment — uses it to produce a sorted list as a *side-effect* of the structure.
+The cost of every operation is the **height `h`**. A *balanced* tree has `h = O(log n)`, giving `O(log n)` search/insert/delete — the BST's promise. But the height depends on *insertion order*: insert already-sorted data and every node becomes a right child, producing a degenerate "linked list" of height `n` and `O(n)` operations. That failure mode is exactly what self-balancing trees (AVL, red-black) exist to prevent — a later lesson.
 
-## All BSTs are binary trees, but not the other way around
+### Key Takeaway
 
-Every BST is a binary tree (it has the right shape: at most two children per node). But not every binary tree is a BST — most aren't, because most arrangements of numbers violate the rule somewhere.
+A BST is a binary tree with the invariant left < node < right everywhere, so search/insert/delete each follow one root-to-leaf path (`O(h)`) and in-order traversal yields sorted output. `h` is `O(log n)` when balanced but `O(n)` if it degenerates — which motivates self-balancing trees.
 
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    subgraph G1["Binary tree (NOT a BST)"]
-        direction TB
-        A1((10))
-        A2((30))
-        A3((20))
-        A4((5))
-        A5((40))
-        A1 --> A2
-        A1 --> A3
-        A2 --> A4
-        A2 --> A5
-    end
-    subgraph G2["Binary search tree"]
-        direction TB
-        B1((20))
-        B2((10))
-        B3((30))
-        B4((5))
-        B5((15))
-        B1 --> B2
-        B1 --> B3
-        B2 --> B4
-        B2 --> B5
-    end
-    style A1 fill:#fecaca,stroke:#ef4444
-    style A2 fill:#fecaca,stroke:#ef4444
-    style B1 fill:#bbf7d0,stroke:#16a34a
+## Trace It
+
+Searching for `4` in the tree built above (`5` at the root):
+
+| at node | compare `4` | go |
+|---|---|---|
+| `5` | `4 < 5` | left |
+| `3` | `4 > 3` | right |
+| `4` | `4 == 4` | **found** |
+
+Three comparisons, one path.
+
+Before you read on: this tree has height ~2 and search took 3 steps. But suppose you'd inserted the *same* values in **sorted order** `[1, 3, 4, 5, 7, 8, 9]` instead. What shape would the BST take, and what would that do to search?
+
+It would become a completely **right-leaning chain** — `1 → 3 → 4 → 5 → 7 → 8 → 9`, each value larger than the last so each becomes the right child of the previous. Height `n − 1`, not `log n`. Searching then degrades to walking the whole chain — `O(n)`, no better than a linked list, and you've paid tree overhead for nothing. The BST's `O(log n)` is a *best/average* case that holds only while the tree stays bushy; adversarial or sorted input collapses it. This is the single most important caveat about plain BSTs, and the entire reason **self-balancing** trees (AVL, red-black) were invented — they perform rotations on insert/delete to *guarantee* `h = O(log n)` regardless of input order.
+
+## Your Turn
+
+The reusable BST — insert, search, in-order:
+
+```python run
+class TreeNode:
+    def __init__(self, val):
+        self.val = val
+        self.left = None
+        self.right = None
+
+def insert(root, val):
+    if root is None:
+        return TreeNode(val)
+    if val < root.val:
+        root.left = insert(root.left, val)
+    elif val > root.val:
+        root.right = insert(root.right, val)
+    return root
+
+def search(root, val):
+    while root:
+        if val == root.val:
+            return True
+        root = root.left if val < root.val else root.right
+    return False
+
+def inorder(node):
+    return inorder(node.left) + [node.val] + inorder(node.right) if node else []
+
+root = None
+for v in [5, 3, 8, 1, 4, 7, 9]:
+    root = insert(root, v)
+print(inorder(root))                 # [1, 3, 4, 5, 7, 8, 9]
+print(search(root, 7), search(root, 6))   # True False
 ```
 
-<p align="center"><strong>Left: a perfectly valid binary tree, but <code>30</code> sits to the left of <code>10</code> — the BST rule is violated. Right: a binary tree that <em>does</em> satisfy the rule at every node, so it qualifies as a BST.</strong></p>
+```java run
+public class Main {
+  static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } }
 
-The lesson is that "binary search tree" is a *strictly stronger* category than "binary tree". The shape is the same; the discipline on the values is what's new.
-
-## Example
-
-Let's pin down what a valid BST looks like with one concrete tree we can verify by inspection.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    R((50))
-    A((30))
-    B((70))
-    C((20))
-    D((40))
-    E((60))
-    F((80))
-    R --> A
-    R --> B
-    A --> C
-    A --> D
-    B --> E
-    B --> F
-    style R fill:#fef9c3,stroke:#f59e0b
+  static TreeNode insert(TreeNode root, int val) {
+    if (root == null) return new TreeNode(val);
+    if (val < root.val) root.left = insert(root.left, val);
+    else if (val > root.val) root.right = insert(root.right, val);
+    return root;
+  }
+  static boolean search(TreeNode root, int val) {
+    while (root != null) {
+      if (val == root.val) return true;
+      root = val < root.val ? root.left : root.right;
+    }
+    return false;
+  }
+  static void inorder(TreeNode n, java.util.List<Integer> out) {
+    if (n == null) return;
+    inorder(n.left, out); out.add(n.val); inorder(n.right, out);
+  }
+  public static void main(String[] args) {
+    TreeNode root = null;
+    for (int v : new int[]{5, 3, 8, 1, 4, 7, 9}) root = insert(root, v);
+    java.util.List<Integer> out = new java.util.ArrayList<>();
+    inorder(root, out);
+    System.out.println(out + " " + search(root, 7) + " " + search(root, 6));
+    // [1, 3, 4, 5, 7, 8, 9] true false
+  }
+}
 ```
 
-<p align="center"><strong>An example BST. Verify: at every node, the left subtree only holds smaller values and the right subtree only holds larger ones.</strong></p>
+This is a structural lesson — the BST subsection's search, insert, delete, and pattern lessons build on this invariant.
 
-Walk the tree node by node and check the rule:
+## Reflect & Connect
 
-- At `50`: left subtree is `{30, 20, 40}` (all `< 50`), right subtree is `{70, 60, 80}` (all `> 50`). ✓
-- At `30`: left is `{20}` (`< 30`), right is `{40}` (`> 30`). ✓
-- At `70`: left is `{60}` (`< 70`), right is `{80}` (`> 70`). ✓
-- Leaves (`20`, `40`, `60`, `80`) have no children, so the rule is vacuously satisfied.
+The BST is the canonical *ordered, dynamic* container:
 
-Every node passes, so the entire tree is a BST.
+- **Where it fits among containers** — sorted array (fast search, slow insert), hash table (`O(1)` but unordered), BST (`O(log n)` search *and* insert/delete *and* ordered operations: min/max, successor/predecessor, range queries, sorted iteration). When you need ordering *and* mutability, the BST is the answer.
+- **Everything costs `O(h)`** — so the whole game is keeping `h` near `log n`. Plain BSTs don't; [self-balancing trees](/cortex/data-structures-and-algorithms/trees-self-balancing-bst-overview-self-balancing-bst-overview) ([AVL](/cortex/data-structures-and-algorithms/trees-avl-tree-introduction-to-avl-trees), [red-black](/cortex/data-structures-and-algorithms/trees-red-black-tree-introduction-to-red-black-trees)) do, via rotations.
+- **In-order = sorted is the signature property** — it's why BSTs back ordered maps/sets (`std::map`, Java `TreeMap`), range queries, and "k-th smallest" — none of which a hash table can do. The upcoming pattern lessons (sorted/reverse traversal, range, two-pointer-on-BST) all exploit this.
 
-***
+**Prerequisites:** [Introduction to Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-introduction-to-binary-trees).
+**What's next:** why height is everything, and what "balanced" means — [Height and Balance in BSTs](/cortex/data-structures-and-algorithms/trees-binary-search-tree-height-and-balance-in-binary-search-trees).
 
-# Characteristics of a binary search tree
+## Recall
 
-The BST rule has consequences. Three of them — minimum, maximum, and the in-order walk — fall out for free, without writing a single line of search code. Recognising them now will make every algorithm in the chapter feel obvious.
+> **Mnemonic:** *Left < node < right, everywhere. Search/insert/delete follow one path = O(h). In-order = sorted. Balanced ⇒ O(log n); sorted input ⇒ O(n) degenerate chain.*
 
-## Minimum
+| | |
+|---|---|
+| Invariant | left subtree < node < right subtree (recursive) |
+| Search/insert/delete | one root-to-leaf path → `O(h)` |
+| In-order traversal | yields values in sorted order |
+| Height | `O(log n)` balanced; `O(n)` degenerate (e.g. sorted insertion) |
+| Use when | you need ordered *and* dynamic: range, min/max, successor, sorted iteration |
 
-The rule says: *smaller values live to the left*. So if you keep walking left, you keep moving toward smaller values. When you can't walk left any more — when a node's left child is missing — you've reached the smallest value in the tree.
+- **Q:** What invariant defines a BST? **A:** For every node, all left-subtree values are smaller and all right-subtree values are larger.
+- **Q:** Why are search/insert/delete `O(h)`? **A:** Each comparison eliminates one subtree, so an operation follows a single root-to-leaf path of length `h`.
+- **Q:** What does an in-order traversal of a BST produce, and why? **A:** The values in sorted order — it visits left (smaller), then node, then right (larger).
+- **Q:** When does a BST degrade to `O(n)`, and what fixes it? **A:** When it becomes an unbalanced chain (e.g. sorted insertion); self-balancing trees use rotations to keep `h = O(log n)`.
 
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    R((50))
-    A((30))
-    B((70))
-    C((20))
-    D((40))
-    E((60))
-    F((80))
-    G((10))
-    R --> A
-    R --> B
-    A --> C
-    A --> D
-    B --> E
-    B --> F
-    C --> G
-    style R fill:#fef9c3,stroke:#f59e0b
-    style A fill:#fef9c3,stroke:#f59e0b
-    style C fill:#fef9c3,stroke:#f59e0b
-    style G fill:#bbf7d0,stroke:#16a34a
-    linkStyle 0 stroke:#f59e0b,stroke-width:3px
-    linkStyle 2 stroke:#f59e0b,stroke-width:3px
-    linkStyle 6 stroke:#f59e0b,stroke-width:3px
-```
+## Sources & Verify
 
-<p align="center"><strong>Walking left from the root: <code>50 → 30 → 20 → 10</code>. <code>10</code> has no left child, so it's the minimum.</strong></p>
-
-Equivalently, the minimum is the **first value emitted by an in-order traversal** — the leftmost node in the tree. We'll lean on this later when we build BST iterators and ordered range queries.
-
-## Maximum
-
-The mirror image: *larger values live to the right*. Keep walking right, you keep moving toward larger values. The last node you reach — the one whose right child is missing — is the maximum.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    R((50))
-    A((30))
-    B((70))
-    C((20))
-    D((40))
-    E((60))
-    F((80))
-    H((90))
-    R --> A
-    R --> B
-    A --> C
-    A --> D
-    B --> E
-    B --> F
-    F --> H
-    style R fill:#fef9c3,stroke:#f59e0b
-    style B fill:#fef9c3,stroke:#f59e0b
-    style F fill:#fef9c3,stroke:#f59e0b
-    style H fill:#bbf7d0,stroke:#16a34a
-    linkStyle 1 stroke:#f59e0b,stroke-width:3px
-    linkStyle 5 stroke:#f59e0b,stroke-width:3px
-    linkStyle 6 stroke:#f59e0b,stroke-width:3px
-```
-
-<p align="center"><strong>Walking right from the root: <code>50 → 70 → 80 → 90</code>. <code>90</code> has no right child, so it's the maximum.</strong></p>
-
-Equivalently, the maximum is the **first value emitted by a reverse in-order traversal** — the rightmost node in the tree.
-
-## Inorder traversal
-
-Recall the in-order traversal of a binary tree: visit the *left* subtree, then the *node itself*, then the *right* subtree. In a BST this rule has a magical consequence: the values come out **sorted in ascending order**. Always. For free.
-
-Why? Look at the rule one more time. Everything in the left subtree is smaller than the node, and everything in the right subtree is bigger. So `(everything left) < node < (everything right)`. If we recursively process the left subtree first, then emit the node, then process the right subtree, we are guaranteed a sorted output at every level.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    R((50))
-    A((30))
-    B((70))
-    C((20))
-    D((40))
-    E((60))
-    F((80))
-    R --> A
-    R --> B
-    A --> C
-    A --> D
-    B --> E
-    B --> F
-    OUT["In-order output: 20 → 30 → 40 → 50 → 60 → 70 → 80"]
-    style OUT fill:#bbf7d0,stroke:#16a34a
-```
-
-<p align="center"><strong>Visiting left, then node, then right at every step yields a fully sorted list. The BST <em>is</em> a sorted sequence — just stored as a tree.</strong></p>
-
-This single fact powers half of the patterns we'll meet later: ordered iteration, the k-th smallest element, two-pointer techniques on a BST, range sums, validation, and more. Whenever you need values in sorted order, an in-order walk over a BST gives them to you in O(n).
-
-## Reverse inorder traversal
-
-Mirror the in-order rule and you get the reverse: visit *right*, then *node*, then *left*. The values now come out in **descending order**.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    R((50))
-    A((30))
-    B((70))
-    C((20))
-    D((40))
-    E((60))
-    F((80))
-    R --> A
-    R --> B
-    A --> C
-    A --> D
-    B --> E
-    B --> F
-    OUT["Reverse in-order output: 80 → 70 → 60 → 50 → 40 → 30 → 20"]
-    style OUT fill:#fde68a,stroke:#d97706
-```
-
-<p align="center"><strong>Visiting right, then node, then left at every step yields a list in descending order — useful whenever you need the k-th largest, or want to walk a sorted set backwards.</strong></p>
-
-***
-
-# Implementation of binary search trees
-
-A BST is just a binary tree with a discipline on its values, so its *physical* representation is exactly what you'd use for any binary tree: a **linked structure** of nodes, each holding a value and pointers to its left and right children.
-
-In principle you *could* store a BST in an array (the way heaps do, with index `2i+1` for the left child and `2i+2` for the right). In practice, almost no real BST does. Here's why.
-
-**Why are binary search trees stored as linked structures?**
-
-- BST operations rarely need to move *upwards* — most of them descend from the root. A linked structure with only `left`/`right` pointers is enough; we don't need a parent pointer or random access.
-- BSTs grow and shrink at unpredictable positions. Inserting `15` into the tree above might make `15` the *left child of 20*, deep inside the tree. Doing that in an array would require shifting nodes around to keep the index formula valid. With a linked structure you just allocate a new node and wire one pointer.
-- A linked structure is naturally sparse. A BST does not have to be complete or balanced — it can be tall and skinny on one side. An array representation wastes huge amounts of space on missing slots in such trees.
-
-So every node in a BST holds three things: a **value**, a pointer to its **left** child, and a pointer to its **right** child. Linking these together gives you the full tree.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    subgraph N50["Node (50)"]
-        V50["value = 50"]
-        L50["left ●"]
-        R50["right ●"]
-    end
-    subgraph N30["Node (30)"]
-        V30["value = 30"]
-        L30["left = NULL"]
-        R30["right = NULL"]
-    end
-    subgraph N70["Node (70)"]
-        V70["value = 70"]
-        L70["left = NULL"]
-        R70["right = NULL"]
-    end
-    L50 --> N30
-    R50 --> N70
-    style N50 fill:#fef9c3,stroke:#f59e0b
-```
-
-<p align="center"><strong>The physical layout of a BST: identical to a generic binary tree's linked representation. The BST property lives in <em>where</em> values are placed, not in how nodes are wired.</strong></p>
-
-Throughout this chapter, when we write `node.left` or `node.right`, this is the picture in your head — a small struct with a value and two child pointers. That's the entire physical machinery. Everything else — search, insert, delete, balance — is just smart traversal over this skeleton.
-
-The next lesson sharpens an idea you've already met informally: a BST can be tall and skinny, or short and bushy, and that *shape* is what decides whether your operations run in O(log n) or in catastrophic O(n). We'll formalise it as **height** and **balance** — the two numbers that quietly govern every BST's performance.
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
-
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
-
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
-
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
-
-<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
-<!--       Guidance: bulleted list of gotchas -->
-
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
-
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
-
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
-
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
-
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
-
-<!-- TODO: Final Takeaway — missing, needs to be written -->
-<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->
+- **CLRS**, *Introduction to Algorithms*, 4th ed., §12 — binary search trees, the BST property, and `O(h)` operations.
+- **Sedgewick & Wayne**, *Algorithms*, 4th ed., §3.2 — BSTs, in-order traversal, and the balance problem.
+- The BST invariant, `O(h)` operations, and in-order-sorted property are standard; both runnable blocks are verified by running (in-order `⇒ [1,3,4,5,7,8,9]`, search `7 ⇒ True, 6 ⇒ False`).

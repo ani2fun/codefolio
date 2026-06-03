@@ -1,149 +1,182 @@
 ---
 title: "Pattern: Simultaneous Traversal"
-summary: "Recurse through two trees in lockstep — identical-tree, mirror, subtree, and merge queries in a single pass."
+summary: "Recurse on PAIRS of nodes (a, b) instead of one — walk two trees in lockstep. Handle the None combinations as base cases, then recurse on paired children: same-side pairing tests equality/merge, cross-side pairing tests mirror symmetry."
 prereqs:
   - 03-trees/01-binary-tree/04-recursive-traversals-in-binary-trees
 ---
 
-# The simultaneous traversal pattern
+# Pattern: Simultaneous Traversal
 
-```text
-walk(a, b):
-  if a is null and b is null:    return baseCase
-  if a is null or  b is null:    return mismatch
-  process(a, b)                                     # the per-node check
-  walk(a.left,  b.left)                             # recurse on corresponding pairs
-  walk(a.right, b.right)
-  return combine(...)
+## Why It Exists
+
+Every tree pattern so far walked **one** tree. But a whole family of questions compares or combines **two**: "are these trees identical?", "is this tree a mirror of itself?", "is `s` a subtree of `t`?", "merge two trees by summing overlapping nodes." You *could* serialize both and compare strings, but that's two passes and `O(n)` extra space — and it can't merge.
+
+The cleaner idea: recurse on **pairs**. Instead of `f(node)`, write `f(a, b)` and step through both trees **in lockstep** — visit `a` and `b` together, then recurse on their *paired* children. The structure falls out of the base cases (what to do when one or both of `a, b` is `None`) plus how you **pair** the children. And that pairing is the whole story: pair **same sides** (`a.left↔b.left`, `a.right↔b.right`) to test equality or merge; pair **cross sides** (`a.left↔b.right`, `a.right↔b.left`) to test mirror symmetry. `O(n)` time over the smaller tree, `O(h)` stack.
+
+## See It Work
+
+Are two trees **identical** — same shape, same values? Step through both at once; mismatch in structure or value fails fast. Run it.
+
+```python run viz=binary-tree viz-root=a
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+def is_same(a, b):
+    if a is None and b is None:    # both empty here → match
+        return True
+    if a is None or b is None:     # exactly one empty → shapes differ
+        return False
+    if a.val != b.val:             # values differ → not identical
+        return False
+    return is_same(a.left, b.left) and is_same(a.right, b.right)   # pair SAME sides
+
+a = TreeNode(1, TreeNode(2), TreeNode(3))
+b = TreeNode(1, TreeNode(2), TreeNode(3))
+print(is_same(a, b))     # True
+print(is_same(a, TreeNode(1, TreeNode(2), TreeNode(4))))   # False
 ```
 
-The recursion descends *both* trees at the same time. Every step you visit one node in each tree and decide what to do based on the *pair*. There's no need for two separate traversals — the lockstep walk does it in one pass.
+## How It Works
 
-> 🖼 Diagram — Lockstep traversal — at every step the recursion holds both current nodes; recursion fans out to the corresponding pairs of children. The two trees are walked in perfect synchronisation.
+A recursion whose argument is a **pair** `(a, b)`:
+
+1. **Both `None`** → the trees agree on emptiness here → `True` (or, for merge, `None`).
+2. **Exactly one `None`** → shapes diverge → `False` (or, for merge, return the non-`None` side).
+3. **Both present** → compare/combine `a.val` and `b.val`, then **recurse on paired children**.
+4. **The pairing decides the query**: same-side (`left↔left`, `right↔right`) for *equality* and *merge*; cross-side (`left↔right`, `right↔left`) for *mirror*.
+
 ```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
 flowchart TB
-    subgraph A["tree A"]
-        A1((1))
-        A2((2))
-        A3((3))
-        A1 --> A2
-        A1 --> A3
-    end
-    subgraph B["tree B"]
-        B1((1))
-        B2((2))
-        B3((3))
-        B1 --> B2
-        B1 --> B3
-    end
-    PAIR["walk((1A,1B)) → walk((2A,2B)), walk((3A,3B))"]
-    A ~~~ B
-    A ---> PAIR
-    B ---> PAIR
+  P["visit pair (a, b)"] --> Q{"None cases?"}
+  Q -->|both None| T["match / None"]
+  Q -->|one None| F["mismatch / other"]
+  Q -->|both| V["compare a.val, b.val"]
+  V --> S["recurse paired children:\nsame-side = equal · cross-side = mirror"]
 ```
 
-<p align="center"><strong>Lockstep traversal — at every step the recursion holds <em>both</em> current nodes; recursion fans out to the corresponding pairs of children. The two trees are walked in perfect synchronisation.</strong></p>
+<p align="center"><strong>one recursion advances through both trees together; how you pair the children (straight vs crossed) selects equality versus mirror.</strong></p>
 
-> *Predict before reading on — what's the difference between simultaneous traversal and "traverse tree A, then traverse tree B"?*
->
-> The simultaneous version sees the *pair* at every step. That lets it short-circuit the moment a difference shows up — no need to traverse the rest of either tree. Two-pass approaches must materialise both traversals fully before comparing — that's also O(N) but uses O(N) extra memory and can't bail out early.
+Lockstep recursion keeps both cursors in sync, so a structural difference shows up as a `None`-vs-non-`None` base case the instant it appears — no serialization, no second pass. Equality, merge, and subtree-check all pair **same-side**; only **symmetry** crosses the pairing. The same skeleton extends to *n* trees (recurse on a tuple) and to "is `s` a subtree of `t`" (run `is_same(s, node)` at every node of `t`).
 
-## Generic pattern
+### Key Takeaway
 
-The "are these two trees identical?" template — the simplest member of the family.
+To compare or combine two trees, recurse on **pairs** `(a, b)`: resolve the `None`/`None`, `None`/node, node/node base cases, then recurse on **paired** children. Pair *same sides* for equality / merge / subtree; pair *cross sides* for mirror symmetry. `O(n)` / `O(h)`, one lockstep pass.
 
+## Trace It
+
+`is_same(a, b)` on identical `1(2, 3)` trees:
+
+| pair `(a, b)` | both `None`? | one `None`? | `val` match? | recurse |
+|---|---|---|---|---|
+| `(1, 1)` | no | no | `1 == 1` ✓ | `(2,2)` and `(3,3)` |
+| `(2, 2)` | no | no | `2 == 2` ✓ | `(None,None)`×2 → `True` |
+| `(3, 3)` | no | no | `3 == 3` ✓ | `(None,None)`×2 → `True` |
+
+All branches `True` → `True`.
+
+Before you read on: it's tempting to check whether a tree is **symmetric** by asking `is_same(root.left, root.right)` — "are the two halves the same?" Run that on the symmetric tree `1( 2(3,4), 2(4,3) )` and it returns **`False`**, even though the tree clearly *is* a mirror image of itself. Why does the equality check reject a genuinely symmetric tree, and what is the single change that fixes it?
+
+Because **symmetry is a *mirror*, not a *copy*.** `is_same` pairs same-side children — it asks "does the left subtree's *left* child equal the right subtree's *left* child?" But a mirror flips left and right: in `1(2(3,4), 2(4,3))`, the left subtree reads `3,4` and the right reads `4,3` — *reversed*. `is_same` compares `3` against `4` (both the "left child of a 2") and fails. The tree isn't left-right *identical*; it's left-right *reflected*. The fix is to **cross the pairing**: compare `a`'s left against `b`'s **right**, and `a`'s right against `b`'s **left** — `mirror(a.left, b.right) and mirror(a.right, b.left)`. Now `3` (left subtree's left) is matched against `3` (right subtree's right), `4` against `4`, and it correctly returns `True`. That one swap — straight pairing → crossed pairing — is the *entire* difference between "are these two trees equal" and "is this tree a mirror." Same base cases, same `val` check, same lockstep walk; only the recursive pairing flips. It's the cleanest illustration that in two-tree recursion, **the pairing is the algorithm.**
+
+## Your Turn
+
+Mirror **symmetry** (cross-pairing) plus **merge two trees** (same-pairing, summing overlaps — LeetCode 617):
 
 ```python run
-from typing import Optional
+from collections import deque
 
 class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
-        self.val, self.left, self.right = val, left, right
+    def __init__(self, val, left=None, right=None):
+        self.val = val; self.left = left; self.right = right
 
-def identical(a: Optional[TreeNode], b: Optional[TreeNode]) -> bool:
-    if a is None and b is None: return True
-    if a is None or  b is None: return False
-    if a.val != b.val:          return False
-    return identical(a.left, b.left) and identical(a.right, b.right)
+def is_symmetric(root):
+    def mirror(a, b):
+        if a is None and b is None: return True
+        if a is None or b is None:  return False
+        if a.val != b.val:          return False
+        return mirror(a.left, b.right) and mirror(a.right, b.left)   # CROSS pairing
+    return root is None or mirror(root.left, root.right)
+
+def merge(a, b):
+    if a is None: return b                  # one missing → keep the other whole
+    if b is None: return a
+    return TreeNode(a.val + b.val, merge(a.left, b.left), merge(a.right, b.right))
+
+def to_list(node):                          # level-order, trailing Nones trimmed
+    if node is None: return []
+    out, q = [], deque([node])
+    while q:
+        n = q.popleft()
+        if n is None: out.append(None); continue
+        out.append(n.val); q.append(n.left); q.append(n.right)
+    while out and out[-1] is None: out.pop()
+    return out
+
+sym = TreeNode(1, TreeNode(2, TreeNode(3), TreeNode(4)),
+                  TreeNode(2, TreeNode(4), TreeNode(3)))
+print(is_symmetric(sym))    # True
+
+a = TreeNode(1, TreeNode(3, TreeNode(5)), TreeNode(2))
+b = TreeNode(2, TreeNode(1, None, TreeNode(4)), TreeNode(3, None, TreeNode(7)))
+print(to_list(merge(a, b)))   # [3, 4, 5, 5, 4, None, 7]
 ```
 
 ```java run
-public static boolean identical(TreeNode a, TreeNode b) {
+public class Main {
+  static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } TreeNode(int v, TreeNode l, TreeNode r){ val=v; left=l; right=r; } }
+
+  static boolean mirror(TreeNode a, TreeNode b) {
     if (a == null && b == null) return true;
     if (a == null || b == null) return false;
-    if (a.val != b.val)         return false;
-    return identical(a.left, b.left) && identical(a.right, b.right);
+    if (a.val != b.val) return false;
+    return mirror(a.left, b.right) && mirror(a.right, b.left);   // cross pairing
+  }
+  static boolean isSymmetric(TreeNode root) {
+    return root == null || mirror(root.left, root.right);
+  }
+  public static void main(String[] args) {
+    TreeNode sym = new TreeNode(1, new TreeNode(2, new TreeNode(3), new TreeNode(4)),
+                                   new TreeNode(2, new TreeNode(4), new TreeNode(3)));
+    System.out.println(isSymmetric(sym));   // true
+  }
 }
 ```
 
+Drill the family in **Practice** — [Identical Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-simultaneous-traversal-problems-identical-trees), [Symmetry Detection](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-simultaneous-traversal-problems-symmetry-detection), [Subtree Detection](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-simultaneous-traversal-problems-subtree-detection), and [Merge Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-simultaneous-traversal-problems-merge-trees).
 
-## Complexity
+## Reflect & Connect
 
-> **Time:** O(min(|A|, |B|)) — the recursion stops at the first difference, so it traverses no more than the smaller tree. **Space:** O(min(h_A, h_B)) for recursion.
+Simultaneous traversal is single-tree recursion lifted to operate on a *pair*:
 
-# How to recognise it
+- **The family** — identical-tree, mirror symmetry, subtree-of (`is_same` at every node), merge-by-sum, and *n*-tree comparison (recurse on a tuple). All recurse on paired nodes with `None`-aware base cases; only the per-pair action and the *pairing* differ.
+- **The pairing is the algorithm** — same-side pairing = equality / merge / subtree; cross-side pairing = mirror. The base cases and `val` step are shared boilerplate; the recursive pairing is where the meaning lives.
+- **It's a product traversal** — you're walking the two trees' structures together, the same way [merging two sorted lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-merge-pattern) advances two cursors in lockstep. Whenever a problem hands you *two* recursive structures to relate, reach for one recursion over the pair, not two separate walks.
 
-The pattern fits when:
+**Prerequisites:** [Recursive Traversals](/cortex/data-structures-and-algorithms/trees-binary-tree-recursive-traversals-in-binary-trees).
+**What's next:** you've finished the binary-tree pattern catalog — move to a structure built for prefix queries over strings, the [Trie](/cortex/data-structures-and-algorithms/trees-trie-introduction-to-tries).
 
-- The question takes **two trees** and asks about a per-node relationship, OR
-- The question takes **one tree** but asks something that compares parts of it against itself (symmetry, mirror, etc.), where the obvious framing is "two trees".
+## Recall
 
-Concrete cues:
+> **Mnemonic:** *Recurse on the PAIR (a, b). Resolve None/None, None/node, node/node — then recurse on paired children. Same-side = equal/merge; cross-side = mirror. The pairing is the algorithm.*
 
-- *"Are these two trees …?"* — directly two trees.
-- *"Is X a subtree of Y?"* — one tree, plus a recursive search using the two-tree comparison as a primitive.
-- *"Is this tree symmetric / mirror image of itself?"* — one tree, treated as two (its left and right children).
-- *"Merge / combine / overlap two trees"* — produces a new tree from a paired walk.
+| | |
+|---|---|
+| Argument | a *pair* `(a, b)`, not one node |
+| Base cases | both `None` → match/`None`; one `None` → mismatch/other; else compare vals |
+| Equality / merge / subtree | pair same sides (`l↔l`, `r↔r`) |
+| Mirror symmetry | pair cross sides (`l↔r`, `r↔l`) |
+| Cost | `O(n)` over the smaller tree, `O(h)` stack |
 
-Anti-pattern: if the question is about a single tree's intrinsic property (height, sum, balance), depth-first single-tree patterns are simpler.
+- **Q:** What's the core move of simultaneous traversal? **A:** Recurse on a *pair* of nodes `(a, b)`, advancing through both trees in lockstep, with base cases for the `None` combinations.
+- **Q:** How do you turn an equality check into a symmetry check? **A:** Cross the recursive pairing — compare `a.left` with `b.right` and `a.right` with `b.left` instead of same-side.
+- **Q:** Why is lockstep better than serialize-and-compare? **A:** One pass, `O(h)` space, fails fast at the first structural divergence, and it can *merge* (build a new tree), which string comparison can't.
+- **Q:** How does subtree-of reuse this? **A:** Run `is_same(s, node)` at every node of `t` — the lockstep equality check applied across all anchor points.
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+## Sources & Verify
 
-<!-- TODO: Understanding the Pattern — missing, needs to be written -->
-<!--       Guidance: umbrella H2 with the subsections below -->
-
-<!-- TODO: Why Naive Isn't Enough — missing, needs to be written -->
-<!--       Guidance: motivation for why the obvious approach fails -->
-
-<!-- TODO: The Core Idea — missing, needs to be written -->
-<!--       Guidance: one paragraph: the central trick -->
-
-<!-- TODO: How the Pointers/Window Move — missing, needs to be written -->
-<!--       Guidance: mechanics of the moving parts -->
-
-<!-- TODO: The Generic Algorithm — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
-
-<!-- TODO: Generic Implementation — missing, needs to be written -->
-<!--       Guidance: Python block + Java block of the skeleton -->
-
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table -->
-
-<!-- TODO: Variants / Taxonomy — missing, needs to be written -->
-<!--       Guidance: enumerate sub-shapes of this pattern -->
-
-<!-- TODO: Identifying — missing, needs to be written -->
-<!--       Guidance: per-variant: recognition checklist + canonical example -->
-
-<!-- TODO: Recognition Checklist — missing, needs to be written -->
-<!--       Guidance: 4-question diagnostic — the source of the Problem-section Diagnostic Questions -->
-
-<!-- TODO: Canonical Example — missing, needs to be written -->
-<!--       Guidance: fully worked example: brute force → optimised → template fit -->
-
-<!-- TODO: Problems in This Category — missing, needs to be written -->
-<!--       Guidance: table with links to the 02-problems/ files -->
+- **CLRS**, *Introduction to Algorithms*, 4th ed., §10.4 — recursive tree procedures.
+- **Sedgewick & Wayne**, *Algorithms*, 4th ed., §3.2 — structural recursion over trees.
+- Same Tree, Symmetric Tree, and Merge Two Binary Trees (LeetCode 100, 101, 617) are the standard statements; all runnable blocks are verified by running (`is_same ⇒ True`/`False`; `is_symmetric ⇒ True`; `merge ⇒ [3,4,5,5,4,None,7]`, the canonical LC-617 answer).

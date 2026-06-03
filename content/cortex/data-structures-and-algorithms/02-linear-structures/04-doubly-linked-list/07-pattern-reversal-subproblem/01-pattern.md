@@ -1,484 +1,218 @@
 ---
-title: "Pattern: Reversal (Subproblem)"
-summary: "Reversal as a building block for pairwise swap, K-chunk reversal, and alternating-segment reorder on doubly-linked lists."
+title: "Pattern: Reversal as a Subproblem"
+summary: "Reverse a doubly list in bounded chunks — pairwise swap, groups of k, alternating runs. Each chunk is the per-node prev/next swap; the new work is re-stitching both seams, and a doubly seam has twice the links — four boundary pointers per chunk."
 prereqs:
   - 02-linear-structures/04-doubly-linked-list/06-pattern-reversal/01-pattern
 ---
 
-# Identifying reversal subproblem
+# Pattern: Reversal as a Subproblem
 
-In the previous lesson, the entire problem **was** the reversal. Here, the reversal is the **engine**, but it's not the whole car. These are the medium-and-hard problems where the question seems to be about *grouping*, *swapping*, or *alternating* — but underneath, every step is just "pick a window, reverse it, move on." The hard part is no longer the reversal; it's **deciding the windows** and stitching them back together without breaking the doubly-linked invariants.
+## Why It Exists
 
-These problems share a dangerous trait: they're **implementation-heavy**. The reversal helper alone is twenty lines. Add a head-tracker, a length scan, and a window walker and you're at fifty. One missed `prev` mirror and the backward chain silently dies while the forward chain looks pristine. The good news: every problem in this family answers two diagnostic questions the same way — and once you wire the answer to a template, the implementation writes itself.
+You can reverse a whole doubly list with one swap per node. But the useful problems want it reversed **in pieces**: swap every adjacent pair, reverse every group of `k`, flip alternating runs. The chunk reversal itself is the same swap-`prev`/`next`-per-node move you already know.
 
-## The Two Diagnostic Questions
+What's genuinely new is the **stitching**. When you reverse a chunk in the middle of the list, its first node becomes its last, so you must reconnect it to its neighbours — and in a doubly list *every seam carries two links*. The node before the chunk needs its `next` updated and the chunk's new head needs its `prev` updated; likewise on the far side. That's **four boundary pointers per chunk**, versus two in the singly case. Miss one and the list reads correctly forward but is broken backward (or vice versa).
 
-> **Q1.** Can the problem or solution be broken down into smaller subproblems?
->
-> **Q2.** Can any of those subproblems be solved by reversing a part of the linked list?
+## See It Work
 
-If the answer to both is **yes**, you're in this pattern. The proof is constructive: the moment you can describe the answer as "a sequence of segment reversals on the original list", you've already found the algorithm — you just have to write the loop that picks each segment.
+Reverse `1 ⇄ 2 ⇄ 3 ⇄ 4 ⇄ 5` in groups of `k = 2` (a pairwise swap) → `2 ⇄ 1 ⇄ 4 ⇄ 3 ⇄ 5`. Run it, then **Visualise** each pair flip and re-stitch.
 
-## Worked example — Reverse in groups of K
+> ▶ Run it, then click **Visualise** — each full group's nodes swap their two pointers, then the four seam links reconnect; the short tail is left alone.
 
-Let's apply the diagnostic to a concrete problem before we dive into the catalogue.
-
-> **Problem statement:** Given a doubly linked list, reverse the list in groups of `K` in place. If the last group has fewer than `K` nodes, leave it alone.
-
-Take `k = 3` and a list of size 7. The output is the first three nodes reversed, the next three nodes reversed, and the trailing one node untouched.
-
-> 🖼 Diagram — Reverse the given linked list in groups of k. The trailing fragment shorter than k stays put.
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    subgraph BEFORE["Before — k = 3"]
-        direction LR
-        B1["1"] <--> B2["2"] <--> B3["3"] <--> B4["4"] <--> B5["5"] <--> B6["6"] <--> B7["7"]
-    end
-    subgraph AFTER["After — three reversed, three reversed, one left alone"]
-        direction LR
-        A1["3"] <--> A2["2"] <--> A3["1"] <--> A4["6"] <--> A5["5"] <--> A6["4"] <--> A7["7"]
-    end
-    BEFORE -->|"reverse [1..3], reverse [4..6], skip [7]"| AFTER
-    style A1 fill:#dcfce7,stroke:#16a34a
-    style A2 fill:#dcfce7,stroke:#16a34a
-    style A3 fill:#dcfce7,stroke:#16a34a
-    style A4 fill:#dcfce7,stroke:#16a34a
-    style A5 fill:#dcfce7,stroke:#16a34a
-    style A6 fill:#dcfce7,stroke:#16a34a
-```
-
-<p align="center"><strong>Reverse the given linked list in groups of <code>k</code>. The trailing fragment shorter than <code>k</code> stays put.</strong></p>
-
-### Q1 — Yes, it splits cleanly
-
-The whole job factors into two pieces: a one-time **length scan** to compute `groups = length / k` (integer division — fractional tail is ignored on purpose), then `groups` independent **segment reversals**. That's it. No backtracking, no recomputation, no auxiliary data structure.
-
-> 🖼 Diagram — Calculate the length and the number of groups to reverse. The fractional tail is dropped on purpose so short trailing segments stay un-reversed.
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    L["length = 7"] --> D["7 / 3 = 2 groups<br/>(integer division —<br/>1 trailing node ignored)"] --> P["plan: reverse 2 segments"]
-    style D fill:#fef9c3,stroke:#ca8a04
-```
-
-<p align="center"><strong>Calculate the length and the number of groups to reverse. The fractional tail is dropped on purpose so short trailing segments stay un-reversed.</strong></p>
-
-### Q2 — Yes, every subproblem is "reverse between start and end"
-
-Reversing a group of size `k` is exactly the lesson-5 generic reversal: pick a `start` node and a `end` node `k-1` hops later, hand them to `reverse(start, end)`, done. No new algorithm needed.
-
-> 🖼 Diagram — Reverse the first group between start and end using the reversal algorithm from lesson 5. After the call, end sits where the head of this group lives.
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    subgraph S1["Step A — find end by walking k-1 hops from start"]
-        direction LR
-        ST1(["start"]) --> N1["1"] <--> N2["2"] <--> N3["3"] <--> N4["4"] <--> N5["…"]
-        EN1(["end"]) -.-> N3
-    end
-    subgraph S2["Step B — call reverse(start, end)"]
-        direction LR
-        ST2(["start (now at 1, but it's the new tail)"]) -.-> M3["1"]
-        M1["3"] <--> M2["2"] <--> M3 <--> M4["4"] <--> M5["…"]
-        EN2(["end (now at 3, the new head of segment)"]) -.-> M1
-    end
-    S1 --> S2
-    style M1 fill:#dcfce7,stroke:#16a34a
-    style M2 fill:#dcfce7,stroke:#16a34a
-    style M3 fill:#dcfce7,stroke:#16a34a
-```
-
-<p align="center"><strong>Reverse the first group between <code>start</code> and <code>end</code> using the reversal algorithm from lesson 5. After the call, <code>end</code> sits where the head of this group lives.</strong></p>
-
-### Tracking the new head
-
-The first reversal is special: it changes the head of the **entire** list. After `reverse(start, end)` runs on the first group, the original `start` is now the segment's tail and `end` is the segment's new head. We detect this by checking `end.prev == null` — the only segment whose new head has no predecessor is the first one.
-
-> 🖼 Diagram — The reversed head of the first group becomes the new head of the linked list. Detect by end.prev == null.
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    H(["head"]) --> N["3<br/>(was end,<br/>now new head)"] <--> A["2"] <--> B["1"] <--> C["4"] <--> D["5"] <--> E["6"] <--> F["7"]
-    style N fill:#dcfce7,stroke:#16a34a
-```
-
-<p align="center"><strong>The reversed head of the first group becomes the new head of the linked list. Detect by <code>end.prev == null</code>.</strong></p>
-
-### Advancing to the next group
-
-After the reversal, `start` (the original first node of the segment) is now the segment's tail. The very next node — `start.next` — is the head of the next group. Move `start` there and loop.
-
-> 🖼 Diagram — The node after the current start is the start of the next group. Reassign start = start.next.
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    H(["head"]) --> A["3"] <--> B["2"] <--> C["1<br/>(start, now segment tail)"] <--> D["4<br/>(start.next —<br/>next group's head)"] <--> E["5"] <--> F["6"] <--> G["7"]
-    style C fill:#fef9c3,stroke:#ca8a04
-    style D fill:#dcfce7,stroke:#16a34a
-```
-
-<p align="center"><strong>The node after the current <code>start</code> is the start of the next group. Reassign <code>start = start.next</code>.</strong></p>
-
-> *Friction prompt — before reading on:* what would happen if the loop counter `groups` were computed **inside** the loop instead of once before it? Predict the failure mode.
->
-> Answer: each iteration would call `findLength` again (O(N) every time → O(N²) total), and worse, after the first reversal the list's structure has shifted — re-measuring would still give the same total length, but you'd be paying O(N²) for nothing. Compute it once.
-
-### Putting it together — the full execution
-
-> 🖼 Diagram — Reverse the doubly linked list in groups of K — full trace for k = 3 on a 7-node list.
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    S0["Initial: 1 ↔ 2 ↔ 3 ↔ 4 ↔ 5 ↔ 6 ↔ 7"]
-    S1["After reverse(1, 3): 3 ↔ 2 ↔ 1 ↔ 4 ↔ 5 ↔ 6 ↔ 7<br/>head ← 3 (because end.prev == null)"]
-    S2["start = 1.next = 4. After reverse(4, 6): 3 ↔ 2 ↔ 1 ↔ 6 ↔ 5 ↔ 4 ↔ 7"]
-    S3["start = 4.next = 7. groups exhausted — 7 stays put."]
-    SF["Final: 3 ↔ 2 ↔ 1 ↔ 6 ↔ 5 ↔ 4 ↔ 7 ✓"]
-    S0 --> S1 --> S2 --> S3 --> SF
-    style SF fill:#dcfce7,stroke:#16a34a
-```
-
-<p align="center"><strong>Reverse the doubly linked list in groups of K — full trace for <code>k = 3</code> on a 7-node list.</strong></p>
-
-### The implementation
-
-The structure is dead simple: a `findLength` helper, a `getNodeAtPosition` helper, the lesson-5 `reverse(start, end)` helper, and a thin driver that picks segments and tracks the new head.
-
-
-```python run
-"""
-Definition for doubly-linked list.
-class ListNode:
+```python run viz=linked-list viz-root=head viz-kind=list-double
+class Node:
     def __init__(self, val):
         self.val = val
         self.prev = None
         self.next = None
-"""
 
-from typing import Optional
+def reverse_k_group(head, k):
+    n, node = 0, head
+    while node:                                       # count nodes → only full groups
+        n += 1; node = node.next
+    dummy = Node(0); dummy.next = head; head.prev = dummy
+    before = dummy
+    while n >= k:
+        first = before.next                           # group's first node → becomes its tail
+        cur, last = first, None
+        for _ in range(k):
+            cur.prev, cur.next = cur.next, cur.prev    # swap one node (doubly reversal)
+            last = cur
+            cur = cur.prev                             # advance via old next (now in prev)
+        after, new_head = cur, last
+        before.next = new_head; new_head.prev = before     # seam 1 — both links
+        first.next = after
+        if after is not None:
+            after.prev = first                              # seam 2 — both links
+        before = first
+        n -= k
+    head = dummy.next; head.prev = None                # detach the dummy
+    return head
 
-class Solution:
-    def find_length(self, head: Optional[ListNode]) -> int:
-        length = 0
-        while head is not None:
-            length += 1
-            head = head.next
-        return length
+nodes = [Node(v) for v in (1, 2, 3, 4, 5)]
+for i in range(4):
+    nodes[i].next = nodes[i + 1]; nodes[i + 1].prev = nodes[i]
+head = reverse_k_group(nodes[0], 2)
 
-    def get_node_at_position(
-        self, head: Optional[ListNode], position: int
-    ) -> Optional[ListNode]:
-        current = head
-        for _ in range(1, position):
-            if current is None:
-                break
-            current = current.next
-        return current
+vals = []
+node = head
+while node:
+    vals.append(node.val)
+    node = node.next
+print(vals)                                           # [2, 1, 4, 3, 5]
+```
 
-    def reverse(
-        self, start: Optional[ListNode], end: Optional[ListNode]
-    ) -> None:
-        if start is None or start == end:
-            return
+## How It Works
 
-        left_bound = start.prev
-        right_bound = end.next if end else None
-        current = start
-        previous = left_bound
+A dummy node in front gives every group a uniform predecessor (no head special case). Then, per group:
 
-        while current != right_bound:
-            next_node = current.next
-            current.prev, current.next = current.next, current.prev
-            previous = current
-            current = next_node
+1. **Swap within the chunk.** Run the doubly per-node swap `k` times: each node trades `prev` and `next`, and you advance via the old `next` (now sitting in `prev`). After `k` swaps, the chunk's order is reversed internally.
+2. **Re-stitch both seams.** `before` is the node before the chunk; `after` is the node after it. Reconnect all four pointers: `before.next = new_head`, `new_head.prev = before`, `first.next = after`, `after.prev = first` (where `first` is the old first node, now the chunk's tail).
+3. **Advance** `before` to `first` (the chunk's new tail) and repeat while a full `k` remain.
 
-        if start:
-            start.next = right_bound
-        if right_bound:
-            right_bound.prev = start
+```mermaid
+flowchart TB
+  C["count n; dummy → head; before = dummy"] --> Q{"n ≥ k?"}
+  Q -->|"no — short tail"| D(["detach dummy; return head"])
+  Q -->|"yes"| R["swap prev/next on k nodes"]
+  R --> S["re-stitch 4 seam pointers:<br/>before↔new_head, old_first↔after"]
+  S --> A["before = old_first; n −= k"]
+  A --> Q
+```
 
-        if end:
-            end.prev = left_bound
-        if left_bound:
-            left_bound.next = end
+<p align="center"><strong>per full group: swap each node's two pointers, then reconnect the four seam links (before↔new-head and old-first↔after). The short remainder is untouched.</strong></p>
 
-    def reverse_k_segments(
-        self, head: Optional[ListNode], k: int
-    ) -> Optional[ListNode]:
+Each node is touched a constant number of times, so it's **`O(n)` time, `O(1)` space**. The recurring doubly hazard: it's easy to fix the `next` chain and forget the matching `prev`, leaving a list that walks fine forward but corrupt backward — always reconnect *both* directions at every seam.
 
-        # If the list is empty, has only one node, or k is 1, no need to
-        # reverse segments
-        if head is None or head.next is None or k == 1:
-            return head
+### Key Takeaway
 
-        # Start of the current segment to be reversed
-        start = head
+Reverse a doubly list in chunks by swapping each node's `prev`/`next` within the chunk, then re-stitching **four** seam pointers (both links on each side). A dummy removes the head special case; counting first leaves a short tail untouched — `O(n)` time, `O(1)` space.
 
-        # Find the total number of segments in the linked list
-        total_segments = self.find_length(head) // k
+## Trace It
 
-        # Loop through the list to reverse every k-length segment
-        for _ in range(total_segments):
+`k = 2` over `1⇄2⇄3⇄4⇄5` (`n = 5`):
 
-            # Get the end node of the current segment
-            end = self.get_node_at_position(start, k)
+| `n` | group | after swap (internal) | four seams stitched | list so far |
+|---|---|---|---|---|
+| 5 | `1,2` | `2⇄1` | dummy↔2, 1↔3 | `2⇄1⇄3⇄4⇄5` |
+| 3 | `3,4` | `4⇄3` | 1↔4, 3↔5 | `2⇄1⇄4⇄3⇄5` |
+| 1 | — (`1<k`) | — | — | `2⇄1⇄4⇄3⇄5` |
 
-            # Reverse the segment
-            self.reverse(start, end)
+Before you read on: the singly version re-stitched **two** pointers per chunk; here it's **four**. Which two are the extra ones, and what breaks if you skip them?
 
-            # Check if the existing head needs to be updated.
-            if end and end.prev is None:
+The extra two are the **backward** links: `new_head.prev = before` and `after.prev = first`. The singly list has no `prev`, so it never needed them. If you stitch only the `next` links (as you would in the singly case) and forget the `prev` links, a forward walk prints the right answer — `2⇄1⇄4⇄3⇄5` reads correctly via `next` — but walking backward from the tail follows stale `prev` pointers into the wrong nodes. The bug hides until something traverses the list in reverse. In a doubly list, *every* seam fix is two assignments.
 
-                # If previous pointer of the end node (which becomes start
-                # after the swap) is null, it means we're at the first
-                # segment. So, we need to update the head to the new head
-                # node
-                head = end
+## Your Turn
 
-            # Move start to the next segment
-            start = start.next
+The reusable doubly reverse-in-groups-of-`k` (`k = 2` is a pairwise swap):
 
-        # Return the head of the modified list
-        return head
+```python run
+class Node:
+    def __init__(self, val):
+        self.val = val
+        self.prev = None
+        self.next = None
+
+def reverse_k_group(head, k):
+    n, node = 0, head
+    while node:
+        n += 1; node = node.next
+    dummy = Node(0); dummy.next = head; head.prev = dummy
+    before = dummy
+    while n >= k:
+        first = before.next
+        cur, last = first, None
+        for _ in range(k):
+            cur.prev, cur.next = cur.next, cur.prev    # swap
+            last = cur
+            cur = cur.prev
+        after, new_head = cur, last
+        before.next = new_head; new_head.prev = before # seam 1
+        first.next = after
+        if after is not None:
+            after.prev = first                         # seam 2
+        before = first
+        n -= k
+    head = dummy.next; head.prev = None
+    return head
+
+nodes = [Node(v) for v in (1, 2, 3, 4, 5)]
+for i in range(4):
+    nodes[i].next = nodes[i + 1]; nodes[i + 1].prev = nodes[i]
+out, node = [], reverse_k_group(nodes[0], 3)
+while node:
+    out.append(node.val); node = node.next
+print(out)                                             # [3, 2, 1, 4, 5]
 ```
 
 ```java run
-/**
- * Definition for doubly-linked list.
- * class ListNode {
- *     int val;
- *     ListNode prev;
- *     ListNode next;
- *     ListNode() {}
- *     ListNode(int val) { this.val = val; }
- * };
- */
+public class Main {
+  static class Node { int val; Node prev, next; Node(int v){ val = v; } }
 
-class Solution {
-    public int findLength(ListNode head) {
-        int length = 0;
-        while (head != null) {
-            length++;
-            head = head.next;
-        }
-        return length;
+  static Node reverseKGroup(Node head, int k) {
+    int n = 0;
+    for (Node x = head; x != null; x = x.next) n++;
+    Node dummy = new Node(0); dummy.next = head; head.prev = dummy;
+    Node before = dummy;
+    while (n >= k) {
+      Node first = before.next, cur = first, last = null;
+      for (int i = 0; i < k; i++) {
+        Node t = cur.next; cur.next = cur.prev; cur.prev = t;   // swap
+        last = cur; cur = cur.prev;
+      }
+      Node after = cur, newHead = last;
+      before.next = newHead; newHead.prev = before;             // seam 1
+      first.next = after;
+      if (after != null) after.prev = first;                    // seam 2
+      before = first; n -= k;
     }
+    head = dummy.next; head.prev = null;
+    return head;
+  }
 
-    public ListNode getNodeAtPosition(ListNode head, int position) {
-        ListNode current = head;
-        for (int i = 1; i < position; i++) {
-            current = current.next;
-        }
-        return current;
-    }
-
-    public void reverse(ListNode start, ListNode end) {
-        if (start == null || start == end) {
-            return;
-        }
-
-        ListNode leftBound = start.prev;
-        ListNode rightBound = end.next;
-        ListNode current = start;
-        ListNode previous = leftBound;
-
-        while (current != rightBound) {
-            ListNode next = current.next;
-
-            ListNode temp = current.prev;
-            current.prev = current.next;
-            current.next = temp;
-
-            previous = current;
-            current = next;
-        }
-
-        start.next = rightBound;
-        if (rightBound != null) {
-            rightBound.prev = start;
-        }
-
-        end.prev = leftBound;
-        if (leftBound != null) {
-            leftBound.next = end;
-        }
-    }
-
-    public ListNode reverseKSegments(ListNode head, int k) {
-
-        // If the list is empty, has only one node, or k is 1, no need to
-        // reverse segments
-        if (head == null || head.next == null || k == 1) {
-            return head;
-        }
-
-        // Start of the current segment to be reversed
-        ListNode start = head;
-
-        // Find the total number of segments in the linked list
-        int totalSegments = findLength(head) / k;
-
-        // Loop through the list to reverse every k-length segment
-        for (int i = 0; i < totalSegments; i++) {
-
-            // Get the end node of the current segment
-            ListNode end = getNodeAtPosition(start, k);
-
-            // Reverse the segment
-            reverse(start, end);
-
-            // Check if the existing head needs to be updated.
-            if (end.prev == null) {
-
-                // If previous pointer of the end node (which becomes
-                // start after the swap) is null, it means we're at the
-                // first segment. So, we need to update the head to the
-                // new head node
-                head = end;
-            }
-
-            // Move start to the next segment
-            start = start.next;
-        }
-
-        // Return the head of the modified list
-        return head;
-    }
+  public static void main(String[] args) {
+    Node[] nd = new Node[5];
+    for (int i = 0; i < 5; i++) nd[i] = new Node(i + 1);
+    for (int i = 0; i < 4; i++) { nd[i].next = nd[i + 1]; nd[i + 1].prev = nd[i]; }
+    StringBuilder sb = new StringBuilder("[");
+    for (Node c = reverseKGroup(nd[0], 3); c != null; c = c.next) sb.append(c.val).append(c.next != null ? ", " : "");
+    System.out.println(sb.append("]"));   // [3, 2, 1, 4, 5]
+  }
 }
 ```
 
+Drill the family in **Practice** — [Pairwise Swap](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-reversal-subproblem-problems-pairwise-swap), [Reverse K Segments](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-reversal-subproblem-problems-reverse-k-segments), [Reverse Increasing Groups](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-reversal-subproblem-problems-reverse-increasing-groups), and [Reverse Alternate Segments](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-reversal-subproblem-problems-reverse-alternate-segments).
 
-<details>
-<summary><strong>Trace — head = [1, 2, 3, 4, 5, 6, 7], k = 3</strong></summary>
+## Reflect & Connect
 
-```
-length = 7,  totalSegments = 7 / 3 = 2  (the trailing 1 node is ignored)
+The chunk-reversal skeleton is the same across structures; the doubly twist is the doubled bookkeeping:
 
-Step 1 │ start = node(1)            │ end = node(3)            │ reverse(1, 3)
-        │ list: 3 ↔ 2 ↔ 1 ↔ 4 ↔ 5 ↔ 6 ↔ 7
-        │ end.prev == null → head = node(3)
-        │ start ← start.next = node(4)
+- **The family** — pairwise swap (`k = 2`), reverse-`k`-group (fixed `k`), increasing groups (`1, 2, 3, …`), alternate segments (reverse one run, skip the next). Only the group-size rule changes.
+- **Four pointers, not two** — the transferable doubly lesson: every seam is two assignments. The cheapest reliable check is to walk the result *backward* from the tail and confirm it mirrors the forward walk — exactly the kind of bug a forward-only test misses.
+- **The trade-off, again** — the second pointer made whole-list reversal simpler but makes chunk *stitching* heavier. That's the recurring doubly bargain: more links to maintain, more capability per node.
 
-Step 2 │ start = node(4)            │ end = node(6)            │ reverse(4, 6)
-        │ list: 3 ↔ 2 ↔ 1 ↔ 6 ↔ 5 ↔ 4 ↔ 7
-        │ end.prev != null (it's node(1)) → head unchanged
-        │ start ← start.next = node(7)
+**Prerequisites:** [Reversal](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-reversal-pattern).
+**What's next:** use the two outward pointers to converge from both ends — [Two Pointers](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-two-pointers-pattern).
 
-Done   │ 2 segments processed; node(7) left untouched (the fractional tail)
-Result: [3, 2, 1, 6, 5, 4, 7] ✓
-```
+## Recall
 
-This trace shows the two key tricks: head promotion fires only on segment 1, and the trailing node is silently skipped because `totalSegments` is an integer division.
+> **Mnemonic:** *Dummy in front; per group swap `prev`/`next` on `k` nodes, then stitch FOUR seams (both links each side). Count first; short tail untouched.*
 
-</details>
+| | |
+|---|---|
+| Chunk reversal | swap `prev`/`next` per node, advance via old `next` (in `prev`) |
+| Seams | four pointers: `before↔new_head`, `old_first↔after` |
+| Dummy | uniform predecessor → no head special case (detach at the end) |
+| Doubly hazard | fixing only `next` leaves `prev` stale → broken backward walk |
+| Cost | `O(n)` time, `O(1)` space |
 
-The walkthrough above is the entire pattern. Every problem in this lesson is a remix of: **scan the length, pick a window, call reverse, advance, repeat.** The differences come from how the window is chosen — fixed `k = 2`, fixed `k`, growing `k`, or alternating `k` — and one bookkeeping flag for "skip this segment".
+- **Q:** How does doubly chunk-reversal differ from the singly version? **A:** Each seam needs both a `next` and a `prev` reconnected — four boundary pointers per chunk instead of two.
+- **Q:** What's the classic bug, and how do you catch it? **A:** Fixing `next` but not `prev`; catch it by walking backward from the tail and checking it mirrors the forward walk.
+- **Q:** Why a dummy node? **A:** It gives the first group a real predecessor, so reversing the head is not a special case.
+- **Q:** Why count `n` and gate on `n ≥ k`? **A:** So only full groups reverse and a short remainder is left untouched.
 
-## Example problems
+## Sources & Verify
 
-Most problems in this category are **medium** or **hard** — not because the reversal itself is hard, but because the windowing and the head-tracking each have their own off-by-one traps. Here's the catalogue we'll work through:
-
-> -   **[Pairwise swap](https://www.codeintuition.io/courses/doubly-linked-list/LloccimoAdOaA5jCVh3LA)**
-> -   **[Reverse K-segments](https://www.codeintuition.io/courses/doubly-linked-list/MqIdyjaACWE6lCWQPkbor)**
-> -   **[Reverse increasing groups](https://www.codeintuition.io/courses/doubly-linked-list/Bxh830bVxO2vpqteZxgi0)**
-> -   **[Reverse alternate segments](https://www.codeintuition.io/courses/doubly-linked-list/6SUHrVVt18Q5cc7NOuJPp)**
-
-Each one bolts onto the template above. Let's see them in order.
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Understanding the Pattern — missing, needs to be written -->
-<!--       Guidance: umbrella H2 with the subsections below -->
-
-<!-- TODO: Why Naive Isn't Enough — missing, needs to be written -->
-<!--       Guidance: motivation for why the obvious approach fails -->
-
-<!-- TODO: The Core Idea — missing, needs to be written -->
-<!--       Guidance: one paragraph: the central trick -->
-
-<!-- TODO: How the Pointers/Window Move — missing, needs to be written -->
-<!--       Guidance: mechanics of the moving parts -->
-
-<!-- TODO: The Generic Algorithm — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
-
-<!-- TODO: Generic Implementation — missing, needs to be written -->
-<!--       Guidance: Python block + Java block of the skeleton -->
-
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table -->
-
-<!-- TODO: Variants / Taxonomy — missing, needs to be written -->
-<!--       Guidance: enumerate sub-shapes of this pattern -->
-
-<!-- TODO: Recognition Checklist — missing, needs to be written -->
-<!--       Guidance: 4-question diagnostic — the source of the Problem-section Diagnostic Questions -->
-
-<!-- TODO: Canonical Example — missing, needs to be written -->
-<!--       Guidance: fully worked example: brute force → optimised → template fit -->
-
-<!-- TODO: Problems in This Category — missing, needs to be written -->
-<!--       Guidance: table with links to the 02-problems/ files -->
+- **CLRS**, *Introduction to Algorithms*, 4th ed., §10.2 — doubly linked lists; sentinel nodes and pointer manipulation.
+- **Sedgewick & Wayne**, *Algorithms*, 4th ed., §1.3 — linked structures and in-place restructuring.
+- Reverse-in-`k`-groups on a doubly list is a standard exercise; both runnable blocks are verified by running (`k=2 ⇒ [2,1,4,3,5]`, `k=3 ⇒ [3,2,1,4,5]`), with backward `prev` links checked consistent.

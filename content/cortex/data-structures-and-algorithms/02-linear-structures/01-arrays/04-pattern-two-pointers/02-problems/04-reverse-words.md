@@ -65,49 +65,375 @@ The algorithm splits cleanly in two. An outer linear scan walks the array left t
 
 A single global two-pointer pass breaks here. Whole-array `left/right` pointers can't tell where one word ends and the next begins; they'd swap characters across word boundaries and destroy word identity. Storing word slices into a list and reversing each in a second pass works but costs `O(n)` extra space for the slice copies. The outer-scan-plus-inner-reversal structure does the same work in place: `O(n)` time, with extra space only for the mutable character array the language forces (immutable strings in Python or Java).
 
-> ▶ Interactive Diagram — Reverse Words on "the sky" — the outer scan finds each word's boundaries (highlighted band); two pointers then reverse the characters inside that range.
-```d3 widget=array-traversal
+```d3 widget=array-1d
 {
-  "items": ["t", "h", "e", " ", "s", "k", "y"],
-  "title": "Reverse each word in \"the sky\"",
   "steps": [
     {
-      "items":   ["t", "h", "e", " ", "s", "k", "y"],
-      "markers": [
-        { "name": "left",  "index": 0, "color": "#3b82f6" },
-        { "name": "right", "index": 2, "color": "#f59e0b" }
+      "nodes": [
+        {
+          "id": "0",
+          "label": "t",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "h",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "e",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": " ",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "s",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "k",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "y",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "range":   { "lo": 0, "hi": 2 },
-      "msg": "Scan finds the first word at indices [0..2]. Reverse it: swap arr[0]='t' with arr[2]='e'."
+      "edges": [],
+      "cursor": [
+        {
+          "name": "left",
+          "target": "0",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "right",
+          "target": "2",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "0",
+        "1",
+        "2"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "Scan finds the first word at indices [0..2]. Reverse it: swap arr[0]='t' with arr[2]='e'.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "items":   ["e", "h", "t", " ", "s", "k", "y"],
-      "markers": [
-        { "name": "left",  "index": 1, "color": "#3b82f6" },
-        { "name": "right", "index": 1, "color": "#f59e0b" }
+      "nodes": [
+        {
+          "id": "0",
+          "label": "e",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "h",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "t",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": " ",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "s",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "k",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "y",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "range":   { "lo": 0, "hi": 2 },
-      "msg": "Inside word 1, the pointers meet at index 1; the middle 'h' is its own mirror."
+      "edges": [],
+      "cursor": [
+        {
+          "name": "left",
+          "target": "1",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "right",
+          "target": "1",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "0",
+        "1",
+        "2"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "Inside word 1, the pointers meet at index 1; the middle 'h' is its own mirror.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "items":   ["e", "h", "t", " ", "s", "k", "y"],
-      "markers": [
-        { "name": "left",  "index": 4, "color": "#3b82f6" },
-        { "name": "right", "index": 6, "color": "#f59e0b" }
+      "nodes": [
+        {
+          "id": "0",
+          "label": "e",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "h",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "t",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": " ",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "s",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "k",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "y",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "range":   { "lo": 4, "hi": 6 },
-      "msg": "Scan skips the space at index 3, then finds the second word at indices [4..6]. Reverse it: swap arr[4]='s' with arr[6]='y'."
+      "edges": [],
+      "cursor": [
+        {
+          "name": "left",
+          "target": "4",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "right",
+          "target": "6",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "4",
+        "5",
+        "6"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "Scan skips the space at index 3, then finds the second word at indices [4..6]. Reverse it: swap arr[4]='s' with arr[6]='y'.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "items":   ["e", "h", "t", " ", "y", "k", "s"],
-      "markers": [
-        { "name": "left",  "index": 5, "color": "#3b82f6" },
-        { "name": "right", "index": 5, "color": "#f59e0b" }
+      "nodes": [
+        {
+          "id": "0",
+          "label": "e",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "h",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "t",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": " ",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "y",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "k",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "s",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "range":   { "lo": 4, "hi": 6 },
-      "msg": "Inside word 2, the pointers meet at index 5. Result: \"eht yks\"."
+      "edges": [],
+      "cursor": [
+        {
+          "name": "left",
+          "target": "5",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "right",
+          "target": "5",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "4",
+        "5",
+        "6"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "Inside word 2, the pointers meet at index 5. Result: \"eht yks\".",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Reverse each word in \"the sky\""
 }
 ```
 
@@ -214,7 +540,7 @@ print(Solution().reverse_words("  hello  world  ")) # "  olleh  dlrow  " — spa
 print(Solution().reverse_words("aa bb cc"))          # aa bb cc — palindrome words unchanged
 ```
 
-```java run
+```java run viz=array viz-root=arr
 public class Main {
     static class Solution {
         private int findWordEnd(char[] arr, int start) {

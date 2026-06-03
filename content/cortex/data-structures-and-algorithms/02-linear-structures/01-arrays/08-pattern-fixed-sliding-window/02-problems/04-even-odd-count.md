@@ -70,7 +70,6 @@ The two pointers are `start` and `end`, with the aggregate split across two inte
 
 What breaks if you use the naive nested-loop approach is the familiar O(N × k) cost: every window re-classifies all `k` elements, even though `k − 1` of them are shared with the previous window. The sliding window keeps the running pair of counters and updates them in O(1) per step, giving an O(N) sweep with O(N − k + 1) result space.
 
-> 🖼 Diagram — Even Odd Count — two counters slide together; the full-size window appends [evenCount, oddCount] to the result.
 ```mermaid
 ---
 config:
@@ -125,7 +124,7 @@ flowchart TB
 
 ### Solution
 
-```python run
+```python run viz=array viz-root=result
 from typing import List, Tuple
 
 class Solution:
@@ -194,7 +193,7 @@ print(Solution().even_odd_count([1, 3, 5], 2))            # [(0, 2), (0, 2)]  �
 print(Solution().even_odd_count([2, 2, 2, 2], 3))         # [(3, 0), (3, 0)]  — all same even
 ```
 
-```java run
+```java run viz=array viz-root=result
 import java.util.*;
 
 public class Main {

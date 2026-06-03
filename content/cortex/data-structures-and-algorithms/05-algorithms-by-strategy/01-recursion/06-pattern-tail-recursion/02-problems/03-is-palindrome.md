@@ -35,7 +35,6 @@ Output: true   (an empty array is trivially a palindrome)
 
 Two pointers — `start` and `end` — converge from the array's edges toward the middle. Each call compares `arr[start]` and `arr[end]`. If they differ, return `false`. If they match, recurse with `start + 1` and `end - 1`. When `start >= end`, every pair has been checked.
 
-> 🖼 Diagram — Two pointers march toward each other; mismatch is an early-return false; meeting-or-crossing is a true return.
 ```mermaid
 ---
 config:
@@ -84,21 +83,18 @@ Three branches: `return true` (done), `return false` (mismatch), `return helper(
 
 <div class="d2-slides" data-caption="Each call compares one pair and either returns false or recurses with both pointers moved inward.">
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "arr = [1, 2, 2, 1]   start=0, end=3" {
   pair: "arr[0]=1 vs arr[3]=1 → match" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
 }
 ```
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "arr = [1, 2, 2, 1]   start=1, end=2" {
   pair: "arr[1]=2 vs arr[2]=2 → match" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
 }
 ```
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "start=2, end=1   start ≥ end" {
   result: "All pairs matched → return true" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
@@ -221,33 +217,9 @@ The early-return on mismatch is the algorithm's strength: we stop the moment we 
 
 </details>
 <details>
-<summary><h2>Final Takeaway</h2></summary>
+<summary><h2>Key Takeaway</h2></summary>
 
 
 Is-Palindrome is tail recursion with two converging pointers. The accumulator is positional state, not value-building. Once you see this two-pointer convergence pattern, you'll see it again in "find pair summing to target," in "trim a list from both sides," in any problem where the operation is symmetric across the middle. The next problem combines tail-recursion's downward work with a *destructive* operation: rewriting linked-list pointers.
 
 </details>
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
-
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
-
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
-
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
-
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
-
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->

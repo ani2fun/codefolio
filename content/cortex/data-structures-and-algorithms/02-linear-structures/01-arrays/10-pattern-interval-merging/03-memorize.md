@@ -2,7 +2,7 @@
 title: "Memorize: Interval Merging"
 summary: "Pattern recognition triggers, template code, common mistakes, and quick recall."
 prereqs:
-  - 10-pattern-interval-merging/02-problems
+  - 10-pattern-interval-merging/01-pattern
 ---
 
 # Memorize: Interval Merging
@@ -30,8 +30,6 @@ Imagine running a yellow highlighter along a paper strip of events drawn left to
 ---
 
 ## Visual Summary
-
-> 🖼 Diagram — TODO: 3 frames — raw unsorted intervals on a number line / sorted intervals with the sweep cursor / merged stripes with one new stripe per "lift the pen" event.
 
 ---
 

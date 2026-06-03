@@ -1,369 +1,208 @@
 ---
-title: "Optimal Stratergy"
-summary: "<!-- TODO: summary -->"
+title: "Optimal Game Strategy"
+summary: "Two players take coins from either end of a row, both optimal — how much can the first player GUARANTEE? An adversarial interval DP: dp[i][j] = max over your two moves, but the opponent then leaves you the WORSE remainder (a min). The min IS the adversary; replace it with max and you've assumed a cooperative opponent."
+prereqs:
+  - 05-algorithms-by-strategy/05-dynamic-programming/06-longest-palindromic-subsequence
 ---
 
-# 12. Optimal Game Strategy
-
-A row of coins sits between you and an opponent. Each turn, the player to move picks a coin — but only from either *end* of the row. Whoever ends up with the higher total wins. Both of you play optimally — every move you make assumes the opponent will respond with their best counter. The question isn't "what's the maximum you could get if the opponent plays badly?" — it's "what's the maximum you can *guarantee*, no matter how cleverly the opponent plays?"
-
-By the end of this lesson you'll know the **adversarial DP** template — `dp[i][j]` = the value the player-to-move can guarantee on slice `[i..j]`, using either a **min-of-opponent's-choices** formulation or a **subtractive** formulation. You'll see why this shape of recurrence — alternating max and min, or max with sign-flip — is the foundation of game-tree search, minimax algorithms, and turn-based strategy AI.
-
-## Table of contents
-
-1. [The Game and the Adversarial Twist](#the-game-and-the-adversarial-twist)
-2. [Two Equivalent Recurrences](#two-equivalent-recurrences)
-3. [Optimal Game Strategy — The Algorithm](#optimal-game-strategy--the-algorithm)
-4. [Final Takeaway](#final-takeaway)
-
-***
-
-# The Game and the Adversarial Twist
-
-You have an array `coins` of `n` (always even, in the canonical version) integers. Players alternate turns; on each turn the active player picks the leftmost or rightmost coin, removes it, and pockets its value. You move first, and both players play optimally.
-
-```d2
-direction: right
-ex: "Example: coins = [10, 17, 5, 9]" {
-  grid-rows: 1
-  grid-columns: 4
-  grid-gap: 0
-  c0: "10" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  c1: "17"
-  c2: "5"
-  c3: "9" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-}
-```
-
-<p align="center"><strong>Two endpoints in play. The current player picks one; the opponent then faces a row one shorter, with the opposite end now exposed. Optimal play means every move budgets for the opponent's best response.</strong></p>
-
-> *Predict before reading on — for `coins = [10, 17, 5, 9]`, what's the answer?*
-
-`26`. We pick 9 (right). Opponent's turn on `[10, 17, 5]` — they pick 10 (left, the larger end). We pick 17 (left of `[17, 5]`). Opponent picks 5. We total 9 + 17 = 26; opponent totals 10 + 5 = 15. Picking 10 first looks tempting (it's the bigger of the two starting ends), but it would expose the opponent to 17 — they'd grab it and we'd be stuck with the leftovers.
-
-## Where this shows up
-
-Two-player zero-sum game theory; minimax in chess/go engines (heavily pruned, but the DP shape is identical at each subgame); auction strategy; combinatorial-game theory (Nim-like impartial games); turn-based scheduling problems where each side makes adversarial moves on a shared resource.
-
-## The Crucial Observation
-
-The opponent isn't an obstacle to optimise over; they're *another optimiser*. Whatever move maximises *your* total in some metric, the opponent's response is the move that maximises *their* total — which, on a fixed-sum game like this, is the move that *minimises* your total. So the recurrence has to alternate sides at every level.
-
----
-
-## Key Takeaway
-
-Game DP is value-DP plus an adversary. Recurrences alternate max (your move) with the opponent's best counter (their max = your min).
-
-***
-
-# Two Equivalent Recurrences
-
-Let `dp[i][j]` = the maximum value the player to move can guarantee on the subarray `coins[i..j]`. There are two clean ways to write the recurrence; both compute the same value.
-
-## Formulation A — Min Over Opponent's Two Responses
-
-You pick from end `i` or end `j`. After you pick:
-- If you took `coins[i]`, the opponent faces `coins[i+1..j]`. They'll pick optimally — leaving you with `[i+2..j]` (if they took left) or `[i+1..j-1]` (if they took right). The opponent picks whichever is *worse* for you, so your future is `min(dp[i+2][j], dp[i+1][j-1])`.
-- If you took `coins[j]`, by symmetry your future is `min(dp[i+1][j-1], dp[i][j-2])`.
-
-Take the better of the two opening picks:
-```
-dp[i][j] = max(
-    coins[i] + min(dp[i+2][j],   dp[i+1][j-1]),    — pick left, opponent picks adversarially
-    coins[j] + min(dp[i+1][j-1], dp[i][j-2])       — pick right, opponent picks adversarially
-)
-```
-
-## Formulation B — Subtract the Opponent's Take
-
-A slicker form: define `dp[i][j]` = your *net* advantage on `[i..j]` (your total minus opponent's). Whatever you pick, the opponent's optimum on what's left is `dp[next subrange]` — but that value is *their* advantage, not yours. So you subtract:
-```
-dp[i][j] = max(
-    coins[i] - dp[i+1][j],
-    coins[j] - dp[i][j-1]
-)
-```
-
-Recover your absolute total: `(sum(coins) + dp[0][n-1]) / 2`.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#777777"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-  A["Formulation A:<br/>dp[i][j] = max(<br/>  coins[i] + min(dp[i+2][j], dp[i+1][j-1]),<br/>  coins[j] + min(dp[i+1][j-1], dp[i][j-2])<br/>)"]
-  B["Formulation B:<br/>dp[i][j] = max(<br/>  coins[i] - dp[i+1][j],<br/>  coins[j] - dp[i][j-1]<br/>)"]
-```
-
-<p align="center"><strong>Two recurrences, same answer. A models the opponent's pick explicitly (one level of look-ahead). B encodes "your total − opponent's total" so the same DP applies recursively without the explicit min.</strong></p>
-
-> *Pause. Why is the subtraction in Formulation B correct? Predict before reading on.*
-
-Because `dp[next range]` represents the *opponent's* best advantage on what's left after your pick — and that's how much they'll out-pick you by. Your net advantage on the original range = (what you picked now) − (their net advantage on what's left). Subtraction encodes "future opponent's best is lost ground for you."
-
-We'll implement Formulation A (the original CodeIntuition formulation) in the canonical solution because it directly returns your total in coins; B is mathematically slicker but needs a final post-process to recover the absolute total.
-
-## Filling Order — Interval DP by Length
-
-Both formulations read smaller intervals: `dp[i+2][j]`, `dp[i+1][j-1]`, `dp[i][j-2]` (Formulation A), or `dp[i+1][j]`, `dp[i][j-1]` (Formulation B). Same trick as LPS / palindrome-substring: fill by interval length, smallest first.
-
-- Length 1: `dp[i][i] = coins[i]` — only one coin, you take it.
-- Length 2: `dp[i][i+1] = max(coins[i], coins[i+1])` — you take the bigger end.
-- Length 3+: use the recurrence.
-
----
-
-## Key Takeaway
-
-Adversarial DP needs to model the opponent's best response. Either explicit min over their choices, or sign-flipped recursion on net advantage — pick whichever you find clearer.
-
-***
-
-# Optimal Game Strategy — The Algorithm
-
-## The Problem
-
-Given an array `coins` (length `n`), return the maximum total you (the first player) can guarantee.
-
-```
-Input:  coins = [10, 17, 5, 9]
-Output: 26                   You get 9 + 17 = 26; opponent gets 10 + 5 = 15
-
-Input:  coins = [7, 5, 9, 12]
-Output: 19                   You get 12 + 7 = 19; opponent gets 9 + 5 = 14
-
-Input:  coins = [8, 5]
-Output: 8                    You take the larger end
-```
-
----
-
-<details>
-<summary><h2>Applying the Diagnostic Questions</h2></summary>
-
-
-| # | Question | Answer |
-|---|---|---|
-| **Q1** | Optimal substructure? | **Yes** — your guarantee on `[i..j]` decomposes into a pick + your guarantee on a strict sub-interval. |
-| **Q2** | Overlapping subproblems? | **Yes** — `dp[i+1][j-1]` is reached from both endpoints of `[i..j]`. |
-| **Q3** | 2D state, length-first fill? | **Yes** — interval DP. |
-| **Q4** | Why min in the recurrence? | **Opponent's adversarial response.** Among their two choices, they pick whichever is worse for you. |
-
-### Q1 — Why "Yes"?
-
-**Mental model.** After your move, the game continues on a strictly smaller subarray. Whatever guarantee you had in mind requires that sub-game to be played optimally too. So your guarantee on `[i..j]` = (coin you took) + (your guarantee on what's left after the opponent's optimal reply).
-
-**Concrete numbers.** For `[10, 17, 5, 9]`: pick 9. Opponent on `[10, 17, 5]` will pick 10 (the bigger end), leaving `[17, 5]` for us. Our guarantee on `[17, 5]` is `max(17, 5) = 17`. So picking 9 gives us 9 + 17 = 26.
-
-**What breaks otherwise.** If we assumed the opponent plays *suboptimally* (e.g. always picks left), we'd overestimate our guarantee — the algorithm would return wrong answers when the opponent is actually clever.
-
-### Q2 — Why "Yes"?
-
-**Mental model.** The middle interval `[i+1..j-1]` is reached from `[i..j]` whether you start by picking left then opponent picks right, or you pick right then opponent picks left. Two paths converge on the same subinterval.
-
-**Concrete numbers.** From `[10, 17, 5, 9]`: pick left (10), opponent picks right (9) → `[17, 5]`. Pick right (9), opponent picks left (10) → `[17, 5]`. Same subgame, two routes.
-
-**What breaks otherwise.** Without memoization, every overlap recomputes from scratch — exponential.
-
-### Q3 — Why length-first?
-
-**Mental model.** `dp[i][j]` reads strictly smaller intervals. Filling by ascending length guarantees every dependency is already computed.
-
-**Concrete numbers.** For `n = 4`: lengths 1, 2, 3, 4 get computed in that order — 4 + 3 + 2 + 1 = 10 cells, each O(1).
-
-**What breaks otherwise.** Row-by-row would compute `dp[0][3]` before `dp[1][2]`, but the recurrence reads `dp[1][2]`. Dependency violation.
-
-### Q4 — Why min?
-
-**Mental model.** When the opponent picks, they pick the option that's *best for them*. On a zero-sum game, "best for them" = "worst for you". So among their choices, you take the worse value.
-
-**Concrete numbers.** After you pick `coins[0] = 10` from `[10, 17, 5, 9]`, opponent faces `[17, 5, 9]`. They could leave you with `[5, 9]` (take 17) or `[17, 5]` (take 9). They'll take 17, leaving you `[5, 9]` — the *worse* of the two for you. `min(dp[2][3], dp[1][2]) = min(9, 17) = 9`. So picking 10 gives you 10 + 9 = 19.
-
-**What breaks otherwise.** Using max here would simulate a *cooperative* opponent — they'd leave you the better option. Wrong model; wrong answer.
-
-</details>
-<details>
-<summary><h2>The Solution</h2></summary>
-
-
-Bottom-up tabulation, length-first. We use Formulation A (explicit opponent min).
-
-
-```python run viz=grid viz-root=dp
-from typing import List
-
-class Solution:
-    def optimal_game_strategy(self, coins: List[int]) -> int:
-        n = len(coins)
-        # dp[i][j] = max coins the to-move player can guarantee on coins[i..j].
-        dp: List[List[int]] = [[0] * n for _ in range(n)]
-        # Length 1: pick the only coin.
-        for i in range(n):
-            dp[i][i] = coins[i]
-        # Lengths 2..n: build up from smaller intervals.
-        for length in range(2, n + 1):
-            for i in range(n - length + 1):
-                j = i + length - 1
-                # Pick left: opponent will leave us with the worse of dp[i+2][j] / dp[i+1][j-1].
-                left_inner  = dp[i + 2][j] if i + 2 <= j else 0
-                right_inner = dp[i + 1][j - 1] if i + 1 <= j - 1 else 0
-                pick_left = coins[i] + min(left_inner, right_inner)
-                # Pick right: opponent will leave us with the worse of dp[i+1][j-1] / dp[i][j-2].
-                left_inner2  = dp[i + 1][j - 1] if i + 1 <= j - 1 else 0
-                right_inner2 = dp[i][j - 2] if i <= j - 2 else 0
-                pick_right = coins[j] + min(left_inner2, right_inner2)
-                dp[i][j] = max(pick_left, pick_right)
-        return dp[0][n - 1]
-
-
-if __name__ == "__main__":
-    sol = Solution()
-    print(sol.optimal_game_strategy([10, 17, 5, 9]))    # 26
-    print(sol.optimal_game_strategy([7, 5, 9, 12]))     # 19
-    print(sol.optimal_game_strategy([8, 5]))            # 8
+## Why It Exists
+
+A row of coins sits between you and an opponent. Each turn, the player to move takes a coin — but only from *either end* of the row. Both of you play optimally. The question isn't "what's the most I could grab if my opponent blunders?" — it's "what can I **guarantee**, no matter how cleverly they play?"
+
+That word *guarantee* is what makes this a new kind of DP. Every problem so far optimised against a fixed input; here the "input" fights back. The recurrence has to bake in a worst-case assumption about the opponent's reply — a **min** nested inside your **max**. That alternating max/min is the seed of minimax, game-tree search, and every turn-based strategy AI. And because the subproblem is a contiguous slice `[i..j]`, it's an [interval DP](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-longest-palindromic-subsequence) — filled by length, just like LPS.
+
+## See It Work
+
+`dp[i][j]` = the most the player-to-move can guarantee from the slice `coins[i..j]`. Take the left coin or the right coin; whichever you take, the opponent then plays optimally on the rest and **leaves you the worse of the two remainders** — that's the `min`.
+
+```python run
+def optimal_strategy(coins):
+    n = len(coins)
+    dp = [[0] * n for _ in range(n)]
+    for i in range(n):
+        dp[i][i] = coins[i]                                   # one coin left: take it
+    for length in range(2, n + 1):                            # interval DP: grow by length
+        for i in range(n - length + 1):
+            j = i + length - 1
+            inner = dp[i + 1][j - 1] if i + 1 <= j - 1 else 0
+            take_left  = coins[i] + min(dp[i + 2][j] if i + 2 <= j else 0, inner)  # opp leaves the worse
+            take_right = coins[j] + min(inner, dp[i][j - 2] if i <= j - 2 else 0)
+            dp[i][j] = max(take_left, take_right)             # you pick your better option
+    return dp[0][n - 1]
+
+print(optimal_strategy([8, 15, 3, 7]))   # 22
+print(optimal_strategy([2, 2, 2, 2]))    # 4
 ```
 
 ```java run
 public class Main {
-    static class Solution {
-        public int optimalGameStrategy(int[] coins) {
-            int n = coins.length;
-            int[][] dp = new int[n][n];
-            for (int i = 0; i < n; i++) dp[i][i] = coins[i];
-            for (int len = 2; len <= n; len++) {
-                for (int i = 0; i <= n - len; i++) {
-                    int j = i + len - 1;
-                    int li1 = (i + 2 <= j)     ? dp[i + 2][j]     : 0;
-                    int ri1 = (i + 1 <= j - 1) ? dp[i + 1][j - 1] : 0;
-                    int li2 = (i + 1 <= j - 1) ? dp[i + 1][j - 1] : 0;
-                    int ri2 = (i <= j - 2)     ? dp[i][j - 2]     : 0;
-                    int pickLeft  = coins[i] + Math.min(li1, ri1);
-                    int pickRight = coins[j] + Math.min(li2, ri2);
-                    dp[i][j] = Math.max(pickLeft, pickRight);
-                }
+    static int optimalStrategy(int[] coins) {
+        int n = coins.length;
+        int[][] dp = new int[n][n];
+        for (int i = 0; i < n; i++) dp[i][i] = coins[i];
+        for (int len = 2; len <= n; len++)
+            for (int i = 0; i + len - 1 < n; i++) {
+                int j = i + len - 1;
+                int inner = (i + 1 <= j - 1) ? dp[i + 1][j - 1] : 0;
+                int takeLeft  = coins[i] + Math.min(i + 2 <= j ? dp[i + 2][j] : 0, inner);
+                int takeRight = coins[j] + Math.min(inner, i <= j - 2 ? dp[i][j - 2] : 0);
+                dp[i][j] = Math.max(takeLeft, takeRight);
             }
-            return dp[0][n - 1];
-        }
+        return dp[0][n - 1];
     }
-
     public static void main(String[] args) {
-        System.out.println(new Solution().optimalGameStrategy(new int[]{10, 17, 5, 9}));   // 26
-        System.out.println(new Solution().optimalGameStrategy(new int[]{7, 5, 9, 12}));    // 19
+        System.out.println(optimalStrategy(new int[]{8, 15, 3, 7}));   // 22
+        System.out.println(optimalStrategy(new int[]{2, 2, 2, 2}));    // 4
     }
 }
 ```
 
-</details>
-<details>
-<summary><strong>Trace — coins = [10, 17, 5, 9]</strong></summary>
+Both print `22` then `4`. From `[8,15,3,7]` the first player guarantees 22 by taking the `7` first (which denies the opponent any good reply that reaches the `15`); `[2,2,2,2]` splits evenly, 4 each. Cost `O(n²)` time and space.
 
-```
-Length 1:
-  dp[0][0] = 10, dp[1][1] = 17, dp[2][2] = 5, dp[3][3] = 9
+## How It Works
 
-Length 2:
-  dp[0][1] = max(coins[0] + 0, coins[1] + 0) = max(10, 17) = 17
-  dp[1][2] = max(17 + 0, 5 + 0)               = 17
-  dp[2][3] = max(5 + 0, 9 + 0)                = 9
+Your turn is a `max` (pick your better move); the opponent's turn is a `min` *from your point of view* (they take whatever leaves you worst):
 
-Length 3:
-  dp[0][2]: i=0, j=2.  Pick 10 → opponent on [17,5] picks 17, leaving us [5] → 10 + 5 = 15.
-                       Pick 5  → opponent on [10,17] picks 17, leaving us [10] → 5 + 10 = 15.
-            dp[0][2] = 15.
-  dp[1][3]: i=1, j=3.  Pick 17 → opponent on [5,9] picks 9, leaving us [5] → 17 + 5 = 22.
-                       Pick 9  → opponent on [17,5] picks 17, leaving us [5] → 9 + 5 = 14.
-            dp[1][3] = 22.
-
-Length 4:
-  dp[0][3]: i=0, j=3.
-    Pick 10 → opponent on [17,5,9].  After our pick, opponent will see dp[2][3]=9 (pick left)
-              vs dp[1][2]=17 (pick right).  Opponent maximises → leaves us with min(9, 17) = 9.
-              Total = 10 + 9 = 19.
-    Pick 9  → opponent on [10,17,5].  After our pick, dp[1][2]=17 vs dp[0][1]=17.
-              min = 17.  Total = 9 + 17 = 26. ✓
-    dp[0][3] = max(19, 26) = 26.
+```d2
+direction: right
+cell: "dp[i][j]\n(most the mover guarantees on coins[i..j])" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
+left: "TAKE LEFT coins[i]\nopponent then plays [i+1..j]\n-> you get min(dp[i+2][j], dp[i+1][j-1])" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
+right: "TAKE RIGHT coins[j]\nopponent then plays [i..j-1]\n-> you get min(dp[i+1][j-1], dp[i][j-2])" {style.fill: "#fde68a"; style.stroke: "#d97706"}
+pick: "dp[i][j] = max(left, right)\n(your max OVER the opponent's min)" {style.fill: "#f3e8ff"; style.stroke: "#9333ea"}
+cell -> left
+cell -> right
+left -> pick
+right -> pick
 ```
 
+<p align="center"><strong>Adversarial DP = your <code>max</code> wrapped around the opponent's <code>min</code>. After you take an end, the opponent plays optimally and hands you back the <em>worse</em> of the two slices they could leave — so you plan against their best, not their kindest.</strong></p>
+
+Two things to keep:
+
+- **The `min` is the entire adversarial idea.** It encodes "the opponent will leave me whichever remainder is worse for me." Drop it — assume the opponent leaves you the *better* slice — and you're no longer solving a game; you're daydreaming ([Trace It](#trace-it) makes this vivid).
+- **There's a slicker one-line formulation: track the *margin*.** Let `dp[i][j]` = the best achievable *(my score − opponent's score)* on `coins[i..j]`. Then `dp[i][j] = max(coins[i] − dp[i+1][j], coins[j] − dp[i][j-1])`: whatever margin the *opponent* can build on the leftover is *subtracted* from yours, because their gain is your loss. The first player wins (or ties) exactly when `dp[0][n-1] ≥ 0`. Same `O(n²)` interval DP, no awkward `i+2`/`j-2` indices — you'll use it in [Your Turn](#your-turn).
+
+> **Key takeaway.** Optimal game strategy is an **adversarial interval DP**: your `max` over the opponent's `min`. `dp[i][j]` = guaranteed value on slice `[i..j]`, base `dp[i][i] = coins[i]`, filled by length. The subtractive *margin* form `dp[i][j] = max(coins[i] − dp[i+1][j], coins[j] − dp[i][j-1])` is the elegant equivalent — first player wins iff `dp[0][n-1] ≥ 0`.
+
+## Trace It
+
+The `min` is doing all the work, and it's easy to write the wrong aggregator there. If you assume the opponent will hand you the *better* leftover — a `max` instead of `min` — the recurrence still type-checks and runs. It just answers a different, fantasy question.
+
+**Predict before you run:** for coins `[1, 100, 1]`, the first player can only *guarantee* a small amount (the opponent will grab the 100). But what does the buggy `max` version — "opponent always leaves me the better slice" — claim the first player gets?
+
+```python run
+def guaranteed(coins, adversarial):
+    n = len(coins)
+    dp = [[0] * n for _ in range(n)]
+    for i in range(n):
+        dp[i][i] = coins[i]
+    combine = min if adversarial else max                     # min = real opponent; max = "cooperative"
+    for length in range(2, n + 1):
+        for i in range(n - length + 1):
+            j = i + length - 1
+            inner = dp[i + 1][j - 1] if i + 1 <= j - 1 else 0
+            take_left  = coins[i] + combine(dp[i + 2][j] if i + 2 <= j else 0, inner)
+            take_right = coins[j] + combine(inner, dp[i][j - 2] if i <= j - 2 else 0)
+            dp[i][j] = max(take_left, take_right)
+    return dp[0][n - 1]
+
+print("adversarial (min):", guaranteed([1, 100, 1], adversarial=True))
+print("buggy (max):      ", guaranteed([1, 100, 1], adversarial=False))
+```
+
+<details>
+<summary><strong>Reveal</strong></summary>
+
+Adversarial gives `2`; the buggy `max` claims `101`. With `[1,100,1]`, whatever end you take first (a `1`), the rest is `[100, 1]` (or `[1, 100]`) and it's the *opponent's* turn — a real opponent grabs the `100`, leaving you the last `1`, so you guarantee just `1 + 1 = 2`. The buggy version assumes the opponent politely takes a `1` and *hands you* the `100`, inflating your "guarantee" to `101`. That `min`→`max` swap silently replaces your adversary with a collaborator: it's the difference between "what can I force?" and "what could I get if my opponent threw the game?" In adversarial DP the opponent's turn is *always* a worst-case-for-you aggregation — the `min` (or, in the margin form, the *minus*) is the only thing that makes the answer a real guarantee. Lose it and you compute an upper bound no rational opponent would ever let you reach.
+
+</details>
+
+## Your Turn
+
+**Predict the Winner** ([LeetCode 486](https://leetcode.com/problems/predict-the-winner/)) — does the first player win (or tie)? This is the *margin* formulation from above: `dp[i][j] = max(nums[i] − dp[i+1][j], nums[j] − dp[i][j-1])`, and the answer is `dp[0][n-1] ≥ 0`. No `min` in sight — the subtraction *is* the adversary.
+
+```python run
+def predict_winner(nums):
+    n = len(nums)
+    dp = [[0] * n for _ in range(n)]                          # dp[i][j] = best (mine - opponent's) on [i..j]
+    for i in range(n):
+        dp[i][i] = nums[i]
+    for length in range(2, n + 1):
+        for i in range(n - length + 1):
+            j = i + length - 1
+            dp[i][j] = max(nums[i] - dp[i + 1][j],            # opponent's margin on the rest is MY loss
+                           nums[j] - dp[i][j - 1])
+    return dp[0][n - 1] >= 0                                  # first player at least ties
+
+print(predict_winner([1, 5, 2]))       # False
+print(predict_winner([1, 5, 233, 7]))  # True
+```
+
+```java run
+public class Main {
+    static boolean predictWinner(int[] nums) {
+        int n = nums.length;
+        int[][] dp = new int[n][n];
+        for (int i = 0; i < n; i++) dp[i][i] = nums[i];
+        for (int len = 2; len <= n; len++)
+            for (int i = 0; i + len - 1 < n; i++) {
+                int j = i + len - 1;
+                dp[i][j] = Math.max(nums[i] - dp[i + 1][j], nums[j] - dp[i][j - 1]);
+            }
+        return dp[0][n - 1] >= 0;
+    }
+    public static void main(String[] args) {
+        System.out.println(predictWinner(new int[]{1, 5, 2}));       // false
+        System.out.println(predictWinner(new int[]{1, 5, 233, 7}));  // true
+    }
+}
+```
+
+Both print `false` then `true`. In `[1,5,2]` the second player can always answer to come out ahead (margin −2 for player 1); in `[1,5,233,7]` the first player grabs the `7` to expose and then claim the `233`, winning easily. The subtractive form collapses the whole max-min dance into one signed recurrence — the cleanest expression of "their optimal play counts against me."
+
+## Reflect & Connect
+
+- **Adversarial DP = max over min.** Your move maximises; the opponent's move minimises *your* outcome. That alternation is minimax — the backbone of game-tree search and (with pruning) alpha-beta. Most two-player perfect-information games are this shape.
+- **The margin trick erases the min.** Tracking *(my score − opponent's)* turns max-min into a single `max(a[i] − dp[…], a[j] − dp[…])`. Subtraction encodes the adversary because the opponent's gain is definitionally your loss. Win iff the margin is `≥ 0`.
+- **It's interval DP.** State is a slice `[i..j]`, filled by increasing length — same engine as [LPS](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-longest-palindromic-subsequence) and [matrix-chain multiplication](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-matrix-chain-multiplication). The adversarial twist is *what* you aggregate, not *how* you fill.
+- **Greedy fails here too — and worse.** Grabbing the larger end can *expose* an even larger coin to the opponent (take `8` from `[8,15,3,7]` and they pounce on the `15`). In adversarial settings a locally greedy move doesn't just cost you value, it actively *arms* your opponent.
+- **The `min`/minus is non-negotiable.** Replace it with `max`/plus and you've modelled a cooperative opponent — an upper bound no real adversary permits. The single most common bug in game DP is forgetting whose turn minimises.
+
+## Recall
+
+<details>
+<summary><strong>Q:</strong> What is the adversarial (total) recurrence for optimal game strategy?</summary>
+
+**A:** `dp[i][j] = max(coins[i] + min(dp[i+2][j], dp[i+1][j-1]), coins[j] + min(dp[i+1][j-1], dp[i][j-2]))`. You `max` over taking either end; the inner `min` is the opponent leaving you the worse remainder. Base `dp[i][i] = coins[i]`, filled by length.
+
 </details>
 <details>
-<summary><h2>Solution &amp; Analysis</h2></summary>
+<summary><strong>Q:</strong> Why is there a <code>min</code> inside the <code>max</code>?</summary>
 
-### Complexity Analysis
-
-| Aspect | Cost | Why |
-|---|---|---|
-| Time | `O(n²)` | One cell per `(i, j)` with `i ≤ j`; constant work each. |
-| Space | `O(n²)` | DP table. Reducible by space-optimisation of interval DP — possible but messy. |
-
-### Edge Cases
-
-| Case | Example | Expected | Reasoning |
-|---|---|---|---|
-| Single coin | `[7]` | `7` | Length-1 base case. |
-| Two coins | `[8, 5]` | `8` | Pick the larger. |
-| All equal | `[3, 3, 3, 3]` | `6` | Each player gets 2 coins. |
-| Sorted ascending | `[1, 2, 3, 4]` | `6` | First player gets 4 + 2 = 6, second gets 3 + 1. |
-| Sorted descending | `[4, 3, 2, 1]` | `6` | Symmetric to above. |
-| Adversarial pattern | `[10, 17, 5, 9]` | `26` | The 17 is "shielded" — neither end can grab it directly first. |
+**A:** After you take an end, it's the opponent's turn; they play optimally for themselves, which means leaving you the *worse* of the two possible remainders. The `min` encodes worst-case-for-you — the definition of "guarantee."
 
 </details>
-
-***
-
-# Final Takeaway
-
-Adversarial DP differs from value DP in one critical way: the recurrence alternates max with min (or, equivalently, max with sign-flipped recursion on net advantage). Every move you consider must include the *opponent's* best counter-move — that's what min captures.
-
-Optimal strategy is interval DP at heart — fill the `(i, j)` table by length, smallest first. The recurrence has four candidate sub-states per cell because you and the opponent each have two end-choices. Same shape recurs in board-game minimax, two-player Nim variants, and any sequential-decision problem with adversarial structure. **You didn't just solve a coin game. You learned that turn-based optimisation with an opponent is a *sign-flip* away from regular optimisation — write the recurrence as if the opponent's optimum subtracts from yours, and the rest is mechanical.**
-
-> *Transfer challenge for the next lesson:* Drop the adversary. Now the question is *purely combinatorial*: given a boolean expression like `T and F or T xor F`, count the number of ways to parenthesise it so the result is `True`. The state will still be 2D `(i, j)` over operand ranges. Predict what's *new* in this recurrence compared to optimal strategy.
-
 <details>
-<summary><strong>Answer</strong></summary>
+<summary><strong>Q:</strong> What is the subtractive (margin) formulation, and when does the first player win?</summary>
 
-The decision dimension shifts from "left vs right end" to "split point inside the range" — for each operator position `k`, recurse on `[i..k-1]` and `[k+1..j]`. The aggregator is *sum* (count combinations across all split points) instead of max, and you carry both `T[i][j]` and `F[i][j]` because combining sub-results depends on whether each side is true or false. The next lesson formalises this as **Boolean Parenthesisation**.
+**A:** `dp[i][j] = max(coins[i] − dp[i+1][j], coins[j] − dp[i][j-1])`, where `dp` is *(mover's score − opponent's score)*. The opponent's best margin on the leftover is subtracted (their gain is your loss). The first player wins or ties iff `dp[0][n-1] ≥ 0`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What happens if you replace the <code>min</code> with <code>max</code>?</summary>
+
+**A:** You model a *cooperative* opponent who hands you the better remainder — an unachievable upper bound (e.g. `[1,100,1]` jumps from a guaranteed `2` to a fantasy `101`). The result is no longer a guarantee.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why does this fill by length, and what family does it belong to?</summary>
+
+**A:** `dp[i][j]` depends on shorter inner slices (`dp[i+1][j-1]`, `dp[i+2][j]`, `dp[i][j-2]`), so they must be computed first — increasing-length order. It's interval DP, the same family as longest palindromic subsequence and matrix-chain multiplication.
 
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+## Sources & Verify
 
-<!-- TODO: The Hook — missing, needs to be written -->
-<!--       Guidance: real-world story opening before any definition -->
-
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
-
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
-
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
-
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
-
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
-
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
-
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
-
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
-
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
+- **CLRS** (Cormen, Leiserson, Rivest, Stein), *Introduction to Algorithms*, 3rd ed., §15 — interval DP and optimal substructure; minimax appears in the game-tree literature built on the same max-min alternation.
+- **GeeksforGeeks**, "Optimal Strategy for a Game" — the canonical coin-row formulation with both the min-of-opponent and subtractive recurrences.
+- **LeetCode** 486 (Predict the Winner) and 877 (Stone Game) are the canonical drills; the `22`/`4`, the adversarial-vs-cooperative `2`/`101` on `[1,100,1]`, and the `false`/`true` winner calls above all come from the runnable blocks — re-run to verify.

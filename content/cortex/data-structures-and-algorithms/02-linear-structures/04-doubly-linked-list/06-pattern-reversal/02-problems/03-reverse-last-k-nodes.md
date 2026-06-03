@@ -1,6 +1,6 @@
 ---
 title: "Reverse Last K Nodes"
-summary: "Given the head of a doubly linked list and a non-negative integer k, write a function to reverse the last K nodes of the list and return the head. Reverse in place."
+summary: "Measure the list, walk to the splice point, detach the suffix, run the whole-list reversal helper on it, and re-stitch the cut in both directions."
 prereqs:
   - 06-pattern-reversal/01-pattern
 difficulty: medium
@@ -8,26 +8,84 @@ difficulty: medium
 
 # Reverse last K nodes
 
-## The Problem
+## Problem Statement
 
-> Given the **head** of a doubly linked list and a non-negative integer **k**, write a function to reverse the **last K** nodes of the list and return the head. Reverse in place.
+Given the **head** of a doubly linked list and a non-negative integer **k**, write a function to reverse the last `k` nodes of the list and return the head.
 
+You need to reverse the suffix in place.
+
+<details>
+<summary><strong>Examples</strong></summary>
+
+**Example 1:**
 ```
 Input:  head = [5, 7, 3, 10, 3], k = 2
 Output: [5, 7, 3, 3, 10]
 ```
 
-The last K nodes form a suffix segment. We don't know where the suffix starts without knowing the list length, so the algorithm has three pieces:
+**Example 2:**
+```
+Input:  head = [1, 2, 3, 4, 5], k = 3
+Output: [1, 2, 5, 4, 3]
+```
 
-1. Compute the length `N` of the list.
-2. If `K >= N`, the suffix is the entire list — just call the whole-list reversal.
-3. Otherwise, walk to the `(N − K)`-th node, snip the suffix off, reverse it as a standalone list, and re-stitch.
+**Example 3:**
+```
+Input:  head = [1, 2, 3, 4, 5], k = 5
+Output: [5, 4, 3, 2, 1]
+```
 
-The "snip and reverse" trick is the cleanest way to reuse the whole-list reversal we already have. We disconnect the suffix by setting the `(N − K)`-th node's `next` to `null` and the suffix's first `prev` to `null`, run `reverseAList` on the suffix in isolation, then reattach.
+</details>
+
+---
+
+## Intuition
+
+The **structural property** is that the last `k` nodes form a contiguous suffix segment. The prefix (the first `n − k` nodes) stays in place, and the suffix needs both pointer fields swapped on every node. The reversed suffix's new head is the original tail; its new tail is the original `(n − k + 1)`-th node. The stitch is between the prefix and the reversed suffix: the prefix's last node (the `(n − k)`-th node) must point forward to the reversed suffix's new head, and the new head must point back at the prefix's last node.
+
+The **pointer placement** requires one piece of bookkeeping that the prefix variant did not: we do not know where the suffix begins without first measuring the list. A two-pass walk does the work. The first pass counts the length. The second pass advances `current` to position `n − k` (1-indexed), which is the prefix's last node and the splice point. From there, the algorithm detaches the suffix by clearing `current.next.prev` to `null`, hands the standalone suffix to the full-list reversal helper, and finally re-stitches with `current.next = newHead` and `newHead.prev = current`. Detaching first lets the helper run as a clean whole-list reversal without dealing with the prefix it would otherwise drag behind.
+
+What **breaks if you reach for a one-pass approach without measuring length**? You can't tell which suffix is "the last `k`" without knowing the total length. The fast-and-slow-pointers pattern (used elsewhere) can do this in one pass with two pointers spaced `k` apart, but it solves a different shape of problem; for this section's reversal pattern, the two-pass measure-then-reverse approach is the cleanest fit and stays at `O(n)` time / `O(1)` space. Skipping the suffix detach is the other temptation; if `current.next.prev` is not cleared before the helper runs, the helper's `previous` capture confuses the prefix's last node for an internal segment node and the result corrupts.
+
+---
+
+## Applying the Diagnostic Questions
+
+| Check | Answer for Reverse Last K Nodes |
+|---|---|
+| **Q1.** Does the problem ask for reversed order across a contiguous segment? | **Yes** — the last `k` nodes (positions `n − k + 1` through `n`) form the segment. |
+| **Q2.** Are the segment endpoints identifiable? | **Yes** — after measuring the length, the suffix starts at the `(n − k + 1)`-th node and ends at the tail. The splice point is the `(n − k)`-th node, found by a counted walk. |
+| **Q3.** Is the work strictly structural (only `prev`/`next` pointers change)? | **Yes** — the length scan reads no values; the reversal helper only swaps pointer fields; the cut and re-stitch are four assignments. |
+| **Q4.** Is `O(1)` extra space required? | **Yes** — the length is an integer, the reversal helper uses three references, and the splice point is one more reference. |
+
+---
+
+## Brute Force: Collect into an Array
+
+Walk the list collecting all values into an array. Reverse the last `k` values of the array. Walk the list a second time writing values back into nodes. This is `O(n)` time but `O(n)` extra space, and again confuses value movement with pointer rewiring — the lesson the pattern exists to teach is precisely the opposite.
+
+## Key Insight: Measure, Walk, Detach, Reverse, Stitch
+
+The pattern reuses the full-list reversal helper, applied to the suffix only. Because the helper expects a clean standalone list, the algorithm walks to position `n − k` (the splice point) and detaches the suffix in two steps: clear the prefix's last node's `next` is left intact for the moment, but `current.next.prev` is cleared to `null` so the suffix's first node looks like a head. The helper then runs end-to-end on the suffix, returns the reversed new head, and the re-stitch writes `current.next = newHead` (forward) and `newHead.prev = current` (backward). The prefix is never re-touched, and the new tail of the reversed suffix (which used to be the suffix's original head) already points to `null` from inside the helper.
+
+---
+
+## Approach
+
+Measure the length, walk to the splice point, detach, reverse the suffix, stitch.
+
+1. **Handle the no-op guard.** If `k <= 0`, return `head` unchanged.
+2. **Measure the list's length.** Walk from `head` once, counting nodes, to compute `length`. This costs `O(n)` time and is the only auxiliary work.
+3. **Handle the full-list shortcut.** If `k >= length`, the suffix is the entire list. Delegate to the full-list reversal helper and return its result.
+4. **Walk to the splice point.** Set `current = head` and advance `length − k − 1` times (a `for _ in range(1, length - k)` loop), ending with `current` at the `(length − k)`-th node — the prefix's last node.
+5. **Detach the suffix.** If `current.next` is not `null`, set `current.next.prev = null`. The suffix's first node now looks like the head of a standalone list — the helper can run on it without entangling the prefix.
+6. **Reverse the suffix.** Pass `current.next` (the suffix's original head) to the full-list reversal helper. The helper returns the reversed suffix's new head — the original tail.
+7. **Stitch the cut in both directions.** Assign `current.next = newHead`. If `newHead` is not `null`, mirror with `newHead.prev = current`. The prefix is intact; the suffix is reversed; the splice connects them both ways. Return the original `head`.
 
 <details>
-<summary><h2>The Solution</h2></summary>
+<summary><strong>Solution &amp; Analysis</strong></summary>
 
+### Solution
 
 
 ```python run viz=linked-list viz-root=head
@@ -175,7 +233,7 @@ head = from_list([3, 9])
 print(to_list(Solution().reverse_last_k_nodes(head, 2)))  # [9, 3]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -318,8 +376,7 @@ public class Main {
 ```
 
 
-<details>
-<summary><strong>Trace — head = [5, 7, 3, 10, 3], k = 2</strong></summary>
+### Dry Run
 
 ```
 length = 5,  k = 2,  k < length  → suffix is positions 4..5 = [10, 3]
@@ -346,39 +403,27 @@ Result: 5 ⇄ 7 ⇄ 3 ⇄ 3 ⇄ 10  ✓
 
 The find-reverse-stitch pattern reuses the whole-list `reverse_a_list` helper verbatim — no edge-case branching for "where exactly does the segment start". Because the suffix is detached as its own list, the helper does the prev/next swaps internally; the re-stitch then restores both directions across the cut (`current.next` forward and `last_k_reverse_head.prev` backward). The price is two extra walks (one to count length, one to find the cut).
 
-</details>
+### Complexity Analysis
+
+| | Complexity | Reason |
+|---|---|---|
+| **Time** | `O(n)` | One pass to measure length, one partial walk of `n − k` steps to the splice point, one full reversal of the `k`-node suffix. Sum: `O(n + (n − k) + k) = O(n)`. |
+| **Space** | `O(1)` | An integer for length, three references for the reversal helper, one for the splice point — independent of `n` and `k`. |
+
+### Edge Cases
+
+| Case | What happens |
+|---|---|
+| `k <= 0` | Early return; original `head` returned unchanged. |
+| `head is null` | `length_of_list` returns `0`; the `k >= length` branch fires; the helper handles `null` by returning `null`. |
+| `k == length` | Full-reversal shortcut fires; entire list is reversed. |
+| `k > length` | Same as `k == length` — the helper reverses the whole list; the suffix bound is effectively clamped to the full list. |
+| `k == 1` | The splice point is at position `n − 1`; the suffix is a one-node list; the helper's single-node guard returns it unchanged; the stitch reassigns the same `next`/`prev`. List unchanged. |
+| Two nodes, `k = 1` | `length = 2`, splice point at position `1` (the head), suffix is the second node alone — helper is a no-op, list unchanged. |
+| Two nodes, `k = 2` | `k == length`; full-list reversal via the shortcut. |
 
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+## Key Takeaway
 
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
-
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
-
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
-
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
-
-<!-- TODO: Solution — missing, needs to be written -->
-<!--       Guidance: Python block then Java block -->
-
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
-
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table: time / space / why -->
-
-<!-- TODO: Edge Cases — missing, needs to be written -->
-<!--       Guidance: table, min 5 rows -->
-
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->
+Suffix reversal is full-list reversal applied to a detached sublist — measure the length, walk to the splice point, clear the suffix's `prev` boundary, hand the standalone suffix to the reversal helper, then stitch both directions across the cut. The splice point reference is the only piece of state that survives both the walk and the reversal call.

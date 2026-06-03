@@ -6,41 +6,124 @@ prereqs:
   - graphs-strongly-connected-components
 ---
 
-# 19. Bridges and Articulation Points
+# Bridges and Articulation Points
 
-## The Hook
+## Why It Exists
 
-You're managing a power grid. Every connection between cities is a transmission line; remove a line, and either (a) the grid stays connected, or (b) some city loses power. The lines whose removal *would* disconnect part of the grid are **bridges** — single points of failure that need extra monitoring, redundancy, or hardening. The cities that play the same single-point-of-failure role for the grid are **articulation points** (or "cut vertices"): if that city's substation goes down, parts of the grid go dark.
+You manage a power grid. Each transmission line connects two cities; pull one out and either the grid stays whole, or some city goes dark. A line whose removal *would* disconnect part of the grid is a **bridge** — a single point of failure that needs redundancy or hardening. A city that plays the same role is an **articulation point** (or *cut vertex*): lose that substation and the network splits.
 
-The same problem shape shows up in: network reliability ("which links are critical?"), social network analysis ("who is the bridge between two communities?"), molecular biology ("which atom-bond removals would break the molecule?"), and software architecture ("which modules are critical that, if they go down, break the rest?").
+The shape recurs everywhere a "what breaks if we lose X?" question does: network reliability (which links are critical?), social networks (who bridges two communities — Granovetter's "strength of weak ties"), molecular biology (which bond, if broken, splits the molecule?), software architecture (which module is load-bearing?).
 
-Both problems — finding all bridges, finding all articulation points — are solved in `O(V + E)` using the same **lowlink trick** Tarjan invented for SCCs. This chapter covers both. They're often taught together because the algorithms differ by only a few lines.
+Both problems — find all bridges, find all articulation points — are solved in a single `O(V + E)` DFS using the **same `low`/`disc` lowlink trick** you met in Tarjan's SCC algorithm. The two criteria differ by a single character.
 
----
+## See It Work
 
-## Table of contents
+One DFS computes both. The graph: a chain `A–B–C` and `B–D`, plus a triangle `D–E–F`.
 
-1. [Definitions](#definitions)
-2. [The lowlink criterion](#the-lowlink-criterion)
-3. [Bridge-finding algorithm](#bridge-finding-algorithm)
-4. [Articulation-point algorithm](#articulation-point-algorithm)
-5. [Implementation](#implementation)
-6. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
-7. [Production reality](#production-reality)
-8. [Practice ladder](#practice-ladder)
-9. [Cross-links](#cross-links)
-10. [Final takeaway](#final-takeaway)
+```python run
+import sys
+sys.setrecursionlimit(10**6)
 
-***
+def bridges_and_articulations(n, adj):
+    disc = [-1] * n; low = [-1] * n
+    is_art = [False] * n
+    bridges, timer = [], [0]
 
-# Definitions
+    def dfs(u, parent):
+        disc[u] = low[u] = timer[0]; timer[0] += 1
+        children = 0
+        for v in adj[u]:
+            if v == parent:                             # don't walk back up the tree edge
+                continue
+            if disc[v] == -1:                           # tree edge
+                children += 1
+                dfs(v, u)
+                low[u] = min(low[u], low[v])
+                if low[v] > disc[u]:                    # bridge: STRICT — subtree can't reach u or above
+                    bridges.append((u, v))
+                if parent != -1 and low[v] >= disc[u]:  # articulation: NON-STRICT — subtree can't bypass u
+                    is_art[u] = True
+            else:                                       # back edge
+                low[u] = min(low[u], disc[v])
+        if parent == -1 and children >= 2:              # root special case
+            is_art[u] = True
 
-In an undirected graph `G`:
+    for v in range(n):
+        if disc[v] == -1: dfs(v, -1)
+    return sorted(sorted(b) for b in bridges), [v for v in range(n) if is_art[v]]
 
-- An **edge** `(u, v)` is a **bridge** iff removing it increases the number of connected components.
-- A **vertex** `v` is an **articulation point** (or *cut vertex*) iff removing `v` (and its incident edges) increases the number of connected components.
+n = 6                                                   # A=0 B=1 C=2 D=3 E=4 F=5
+edges = [(0,1), (1,2), (1,3), (3,4), (4,5), (5,3)]
+adj = [[] for _ in range(n)]
+for u, v in edges: adj[u].append(v); adj[v].append(u)
 
-In tree terms (every undirected graph DFS produces a tree + back-edges): a tree edge is a bridge iff there's no back-edge from the lower subtree to anywhere at or above the upper endpoint. A vertex is an articulation point iff some child subtree has no back-edge bypassing it.
+bridges, arts = bridges_and_articulations(n, adj)
+print("Bridges:       ", bridges)
+print("Articulations: ", arts)
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+    static int[] disc, low; static boolean[] isArt;
+    static int timer = 0; static List<int[]> bridges = new ArrayList<>();
+
+    static void dfs(int u, int parent, List<List<Integer>> adj) {
+        disc[u] = low[u] = timer++;
+        int children = 0;
+        for (int v : adj.get(u)) {
+            if (v == parent) continue;                  // don't walk back up the tree edge
+            if (disc[v] == -1) {                        // tree edge
+                children++;
+                dfs(v, u, adj);
+                low[u] = Math.min(low[u], low[v]);
+                if (low[v] > disc[u]) bridges.add(new int[]{Math.min(u, v), Math.max(u, v)});
+                if (parent != -1 && low[v] >= disc[u]) isArt[u] = true;
+            } else {                                    // back edge
+                low[u] = Math.min(low[u], disc[v]);
+            }
+        }
+        if (parent == -1 && children >= 2) isArt[u] = true;   // root special case
+    }
+
+    public static void main(String[] args) {
+        int n = 6;
+        int[][] edges = {{0,1}, {1,2}, {1,3}, {3,4}, {4,5}, {5,3}};
+        List<List<Integer>> adj = new ArrayList<>();
+        for (int i = 0; i < n; i++) adj.add(new ArrayList<>());
+        for (int[] e : edges) { adj.get(e[0]).add(e[1]); adj.get(e[1]).add(e[0]); }
+
+        disc = new int[n]; low = new int[n]; isArt = new boolean[n]; Arrays.fill(disc, -1);
+        for (int i = 0; i < n; i++) if (disc[i] == -1) dfs(i, -1, adj);
+
+        bridges.sort(Comparator.<int[]>comparingInt(b -> b[0]).thenComparingInt(b -> b[1]));
+        List<String> bs = new ArrayList<>();
+        for (int[] b : bridges) bs.add("(" + b[0] + ", " + b[1] + ")");
+        System.out.println("Bridges:        [" + String.join(", ", bs) + "]");
+        List<Integer> arts = new ArrayList<>();
+        for (int i = 0; i < n; i++) if (isArt[i]) arts.add(i);
+        System.out.println("Articulations:  " + arts);
+    }
+}
+```
+
+Both report bridges `(0,1)`, `(1,2)`, `(1,3)` — that's A–B, B–C, B–D — and articulation points `[1, 3]` — that's B and D. The triangle edges D–E, E–F, F–D are *not* bridges: each sits on a cycle, so removing one leaves the other two as a detour.
+
+## How It Works
+
+A DFS on an undirected graph produces a tree of **tree edges** plus **back edges** (to an ancestor). For each vertex track:
+
+- `disc[v]` — when DFS first reached `v` (never changes).
+- `low[v]` — the smallest `disc` reachable from `v` via tree edges plus *at most one* back edge. It answers: "how far back up the tree can `v`'s subtree climb?"
+
+Two criteria read off the same `low` array:
+
+> **Bridge.** A tree edge `(u, v)` (v discovered from u) is a bridge iff `low[v] > disc[u]` — `v`'s subtree has *no* back edge to `u` or above, so the only way in or out is through that edge.
+>
+> **Articulation point.** A non-root `u` is a cut vertex iff some child `v` has `low[v] >= disc[u]` — `v`'s subtree can't bypass `u`. The DFS **root** is special: it's a cut vertex iff it has **≥ 2 tree children**.
+
+The whole algorithmic difference between the two is `>` versus `>=`. A subtree that can climb back exactly to `u`'s level (`low[v] == disc[u]`) still can't survive losing the *vertex* `u`, but it *can* survive losing the single *edge* — it has another route through `u`.
 
 ```mermaid
 ---
@@ -62,318 +145,177 @@ flowchart LR
   E --- F((F))
   F --- D
   style A fill:#fecaca,stroke:#ef4444
-  style B fill:#fecaca,stroke:#ef4444
+  style B fill:#fef9c3,stroke:#f59e0b
+  style C fill:#fecaca,stroke:#ef4444
   style D fill:#fef9c3,stroke:#f59e0b
 ```
 
-<p align="center"><strong>Articulation points (yellow): <strong>B</strong> (removing B disconnects A from C-D-E-F) and <strong>D</strong> (removing D disconnects E-F from B-C). Bridges (red edges <strong>A-B</strong> and <strong>B-C</strong>): removing either disconnects a single vertex. Edge B-D is also a bridge. The cycle D-E-F means none of those edges is a bridge — they're all on a cycle.</strong></p>
+<p align="center"><strong>Articulation points (yellow): B and D. The edges A–B, B–C, and B–D are bridges. The triangle D–E–F is a cycle, so none of its edges is a bridge.</strong></p>
 
-***
+> **Key takeaway.** One DFS, two arrays (`disc`, `low`), `O(V + E)`. Bridge = `low[v] > disc[u]` (strict); articulation = `low[v] >= disc[u]` (non-strict) with the root needing ≥ 2 children. It's the same lowlink machinery as Tarjan's SCC, just on an undirected graph.
 
-# The lowlink criterion
+## Trace It
 
-Run a DFS. For each vertex `v`, compute:
+That `if v == parent: continue` line looks like a trivial guard, but it is load-bearing. Without it, when DFS scans `u`'s neighbours it sees the parent — already discovered — and treats the tree edge `(u, parent)` as if it were a *back edge*, pulling `low[u]` down to `disc[parent]`.
 
-- `disc[v]` — discovery time.
-- `low[v]` — the smallest `disc` value reachable from `v` via tree edges followed by *at most one* back-edge.
+**Predict before you run:** delete that guard and re-run on the same graph. How many bridges does it report (true answer: 3)?
 
-> **Bridge criterion.** A tree edge `(u, v)` (with `v` discovered from `u`) is a bridge iff `low[v] > disc[u]`. (The subtree under `v` has no back-edge to `u` or earlier; cutting `(u, v)` disconnects `v`'s subtree.)
->
-> **Articulation criterion.** A non-root vertex `u` is an articulation point iff some tree-child `v` of `u` has `low[v] ≥ disc[u]`. (`v`'s subtree can't bypass `u`.) The DFS root is an articulation point iff it has *two or more tree-children* (otherwise removing it doesn't disconnect anything).
-
-The same `low[]` array, two different criteria. One DFS computes both at once.
-
-***
-
-# Bridge-finding algorithm
-
-`O(V + E)`. The single tweak from SCC's algorithm: we ignore the parent edge when scanning neighbours (otherwise we'd "find a back-edge" along the tree edge itself, breaking the criterion).
-
-**Multi-edge gotcha.** If two distinct edges go between the same pair of vertices, neither is a bridge (one is a backup for the other). Track edges by ID, not by endpoint pairs, when this matters.
-
-***
-
-# Articulation-point algorithm
-
-The root special case: a DFS root is an articulation point iff it has ≥ 2 tree children, because removing it disconnects those children's subtrees.
-
-***
-
-# Implementation
-
-```python run viz=graph viz-root=adj
+```python run
 import sys
 sys.setrecursionlimit(10**6)
 
-def find_bridges_and_articulations(n, adj):
-    disc = [-1] * n
-    low = [-1] * n
-    is_art = [False] * n
-    bridges = []
-    timer = [0]
-
+def bridges_no_parent_skip(n, adj):
+    disc = [-1] * n; low = [-1] * n; bridges, timer = [], [0]
     def dfs(u, parent):
         disc[u] = low[u] = timer[0]; timer[0] += 1
-        children = 0
         for v in adj[u]:
-            if v == parent:
-                continue
+            # BUG: the `if v == parent: continue` guard is gone
             if disc[v] == -1:
-                children += 1
                 dfs(v, u)
                 low[u] = min(low[u], low[v])
-                if low[v] > disc[u]:
-                    bridges.append((u, v))
-                if parent != -1 and low[v] >= disc[u]:
-                    is_art[u] = True
+                if low[v] > disc[u]: bridges.append((u, v))
             else:
                 low[u] = min(low[u], disc[v])
-        if parent == -1 and children >= 2:
-            is_art[u] = True
-
     for v in range(n):
-        if disc[v] == -1:
-            dfs(v, -1)
+        if disc[v] == -1: dfs(v, -1)
+    return bridges
 
-    return bridges, [v for v in range(n) if is_art[v]]
+n = 6
+edges = [(0,1), (1,2), (1,3), (3,4), (4,5), (5,3)]
+adj = [[] for _ in range(n)]
+for u, v in edges: adj[u].append(v); adj[v].append(u)
+print("bridges found:", bridges_no_parent_skip(n, adj))
+```
 
+<details>
+<summary><strong>Reveal</strong></summary>
 
-if __name__ == "__main__":
-    # Graph from the diagram: A=0, B=1, C=2, D=3, E=4, F=5
-    n = 6
-    edges = [(0,1), (1,2), (1,3), (3,4), (4,5), (5,3)]
+It prints `bridges found: []` — **zero bridges**, even though three exist. Every tree edge `(u, v)` now has the parent edge counted as a back edge, so `low[v]` gets dragged down to `disc[u]` (or lower). The strict test `low[v] > disc[u]` then fails for *every* edge. A one-line omission silently turns the algorithm into one that never finds a bridge. (The proper multi-edge fix tracks the parent *edge ID* rather than the parent *vertex*, so genuine parallel edges aren't skipped — but skipping the parent vertex is enough for simple graphs.)
+
+</details>
+
+## Your Turn
+
+The canonical bridge problem: **Critical Connections in a Network** ([LeetCode 1192](https://leetcode.com/problems/critical-connections-in-a-network/)) — return every connection (edge) whose removal disconnects the network. That's exactly "find all bridges."
+
+```python run
+import sys
+sys.setrecursionlimit(10**6)
+
+def critical_connections(n, connections):
     adj = [[] for _ in range(n)]
-    for u, v in edges:
-        adj[u].append(v); adj[v].append(u)
+    for a, b in connections: adj[a].append(b); adj[b].append(a)
+    disc = [-1] * n; low = [-1] * n; bridges, timer = [], [0]
+    def dfs(u, parent):
+        disc[u] = low[u] = timer[0]; timer[0] += 1
+        for v in adj[u]:
+            if v == parent: continue
+            if disc[v] == -1:
+                dfs(v, u)
+                low[u] = min(low[u], low[v])
+                if low[v] > disc[u]: bridges.append([min(u, v), max(u, v)])
+            else:
+                low[u] = min(low[u], disc[v])
+    for v in range(n):
+        if disc[v] == -1: dfs(v, -1)
+    return sorted(bridges)
 
-    bridges, articulations = find_bridges_and_articulations(n, adj)
-    print(f"Bridges:        {bridges}")
-    print(f"Articulations:  {articulations}     (expected [1, 3])")
+print(critical_connections(4, [[0,1],[1,2],[2,0],[1,3]]))   # [[1, 3]]
+print(critical_connections(3, [[0,1],[1,2]]))               # [[0, 1], [1, 2]]
 ```
 
 ```java run
 import java.util.*;
 
 public class Main {
-    static class Solution {
-        static int[] disc, low;
-        static boolean[] isArt;
-        static int timer = 0;
-        static List<int[]> bridges = new ArrayList<>();
-
-        static void dfs(int u, int parent, List<List<Integer>> adj) {
-            disc[u] = low[u] = timer++;
-            int children = 0;
-            for (int v : adj.get(u)) {
-                if (v == parent) continue;
-                if (disc[v] == -1) {
-                    children++;
-                    dfs(v, u, adj);
-                    low[u] = Math.min(low[u], low[v]);
-                    if (low[v] > disc[u]) bridges.add(new int[]{u, v});
-                    if (parent != -1 && low[v] >= disc[u]) isArt[u] = true;
-                } else {
-                    low[u] = Math.min(low[u], disc[v]);
-                }
+    static int[] disc, low; static int timer = 0; static List<int[]> bridges = new ArrayList<>();
+    static void dfs(int u, int parent, List<List<Integer>> adj) {
+        disc[u] = low[u] = timer++;
+        for (int v : adj.get(u)) {
+            if (v == parent) continue;
+            if (disc[v] == -1) {
+                dfs(v, u, adj);
+                low[u] = Math.min(low[u], low[v]);
+                if (low[v] > disc[u]) bridges.add(new int[]{Math.min(u, v), Math.max(u, v)});
+            } else {
+                low[u] = Math.min(low[u], disc[v]);
             }
-            if (parent == -1 && children >= 2) isArt[u] = true;
         }
     }
-
-    public static void main(String[] args) {
-        int n = 6;
-        int[][] edges = {{0,1}, {1,2}, {1,3}, {3,4}, {4,5}, {5,3}};
+    static List<int[]> criticalConnections(int n, int[][] connections) {
         List<List<Integer>> adj = new ArrayList<>();
         for (int i = 0; i < n; i++) adj.add(new ArrayList<>());
-        for (int[] e : edges) { adj.get(e[0]).add(e[1]); adj.get(e[1]).add(e[0]); }
-
-        Solution.disc = new int[n]; Solution.low = new int[n]; Solution.isArt = new boolean[n];
-        Arrays.fill(Solution.disc, -1);
-        for (int i = 0; i < n; i++) if (Solution.disc[i] == -1) Solution.dfs(i, -1, adj);
-        for (int[] b : Solution.bridges) System.out.println("bridge: " + b[0] + "-" + b[1]);
-        for (int i = 0; i < n; i++) if (Solution.isArt[i]) System.out.println("articulation: " + i);
+        for (int[] c : connections) { adj.get(c[0]).add(c[1]); adj.get(c[1]).add(c[0]); }
+        disc = new int[n]; low = new int[n]; bridges = new ArrayList<>(); timer = 0; Arrays.fill(disc, -1);
+        for (int i = 0; i < n; i++) if (disc[i] == -1) dfs(i, -1, adj);
+        bridges.sort(Comparator.<int[]>comparingInt(b -> b[0]).thenComparingInt(b -> b[1]));
+        return bridges;
+    }
+    static String fmt(List<int[]> bs) {
+        List<String> s = new ArrayList<>();
+        for (int[] b : bs) s.add("[" + b[0] + ", " + b[1] + "]");
+        return "[" + String.join(", ", s) + "]";
+    }
+    public static void main(String[] args) {
+        System.out.println(fmt(criticalConnections(4, new int[][]{{0,1},{1,2},{2,0},{1,3}})));   // [[1, 3]]
+        System.out.println(fmt(criticalConnections(3, new int[][]{{0,1},{1,2}})));               // [[0, 1], [1, 2]]
     }
 }
 ```
 
-***
+Both print `[[1, 3]]` then `[[0, 1], [1, 2]]`: in the first graph only the spur to vertex 3 is critical (the triangle 0–1–2 is resilient); in the second, a plain path, every edge is a bridge.
 
-# Edge cases and pitfalls
+## Reflect & Connect
 
-- **Multi-edges (parallel edges).** Two distinct edges between the same vertex pair: neither is a bridge. The naive `if v == parent` check fails because both edges look like the parent edge. Fix: track *edge IDs*, not vertex pairs. Skip the specific parent *edge*, not all parent-vertex traversals.
-- **Self-loops.** Self-loops don't affect connectivity. Filter them or check `if u == v`.
-- **DFS root special case.** Root is an articulation point iff it has ≥ 2 tree children. Don't apply the `low[v] ≥ disc[u]` rule to the root — it would always count.
-- **Disconnected graphs.** Both algorithms handle disconnection by iterating across all vertices and starting a new DFS for each unvisited one.
-- **`>` vs `≥` in the criteria.** Bridge: `low[v] > disc[u]` (strict). Articulation: `low[v] ≥ disc[u]` (non-strict). The difference is "could v's subtree reach u's *level*" — if it can, removing the edge `(u,v)` is still safe (the subtree has another route through u), but removing the *vertex* u still disconnects.
-- **Recursion depth.** Same caution as Tarjan's SCC: for paths of `10⁶` vertices, the stack overflows. Iterative DFS using an explicit stack is the production fix.
+- **It's the SCC lowlink trick again.** `disc`/`low` came from Tarjan's directed-graph SCC algorithm; here the *same* arrays solve two undirected-connectivity questions. Learn `low[v]` = "earliest reachable discovery time" once and bridges, articulation points, and SCCs all fall out.
+- **`>` vs `>=` is the whole story.** Strict for edges, non-strict for vertices, plus the root's ≥ 2-children rule. If you remember one thing, remember why: a subtree reaching back to `u`'s exact level survives losing the *edge* but not the *vertex*.
+- **Components built on top:** remove all bridges and the leftover pieces are the **2-edge-connected components**; partition at articulation points and you get **biconnected components**. The **block-cut tree** compresses each biconnected block to a node with articulation points as connectors — the scaffolding for harder graph problems.
+- **The multi-edge gotcha.** Two parallel edges between the same pair are each other's backup, so neither is a bridge. The simple `v == parent` skip mishandles this; production code skips the parent *edge ID*.
+- **Where it ships:** NetworkX's `nx.bridges` / `nx.articulation_points`, Boost's `biconnected_components`, and network-reliability tooling that flags single points of failure for redundancy planning.
 
-***
-
-# Production reality
-
-- **Network engineering.** Cisco, Juniper, and other network vendors run articulation-point analysis to identify "single points of failure" in their backbone topologies — to recommend redundancy upgrades.
-- **The Linux kernel's network stack** uses related "biconnected component" analysis on the spanning-tree topology of bridged Ethernet networks (IEEE 802.1D STP).
-- **Compilation and dependency analysis.** A "bridge module" in a software dependency graph is one whose removal disconnects portions of the system — a critical refactoring target.
-- **Social-network analysis.** Bridges in friendship networks identify "weak ties" connecting otherwise separate communities — a well-known sociological concept (Granovetter's "Strength of Weak Ties").
-- **Phylogenetic biology.** Identifying critical organisms or reactions in metabolic networks via articulation analysis.
-- **Boost Graph Library** has both `boost::biconnected_components` (which gives articulations as a side effect) and a separate bridge-finder.
-- **NetworkX** (`nx.bridges`, `nx.articulation_points`).
-
-***
-
-# Practice ladder
-
-1. **Critical Connections in a Network** ([LeetCode 1192](https://leetcode.com/problems/critical-connections-in-a-network/)) — return all bridges.
-   > *Hint:* the chapter's bridge algorithm. The LeetCode time limit is tight; iterative DFS may be required for the largest test cases.
-
-2. **Find Articulation Points.** Given an undirected graph, return all articulation points.
-   > *Hint:* same as above; use the articulation criterion.
-
-3. **Min-Bridge-Spanning Layout.** Given a graph, find the minimum number of edges to add so that there are zero bridges (i.e., the graph becomes 2-edge-connected).
-   > *Hint:* run bridge-finder; the answer is `⌈leaves of the bridge-tree / 2⌉`. The "bridge-tree" is the condensation of the graph by 2-edge-connected components.
-
-4. **Identify all 2-edge-connected components.** Run bridge-finding; remove bridges; the connected components of the residual graph are the 2-edge-connected components.
-   > *Hint:* trivial after running the bridge algorithm. Useful for follow-up problems.
-
-5. **Largest 2-vertex-connected component.** Run articulation-point detection; partition the graph by removing articulation points; pick the biggest piece.
-   > *Hint:* "biconnected components" is the technical name. Each component shares at most one articulation point with another.
-
-***
-
-# Memorize
-
-The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Bridges and articulation points share Tarjan's lowlink machinery; they differ by *one character* in the criterion.
-
-## Quick recall
-
-Click any question to reveal the answer.
+## Recall
 
 <details>
-<summary><strong>Q:</strong> Define a bridge.</summary>
+<summary><strong>Q:</strong> Define a bridge and an articulation point.</summary>
 
-**A:** An edge whose removal disconnects the graph (increases the number of connected components).
-
-</details>
-<details>
-<summary><strong>Q:</strong> Define an articulation point.</summary>
-
-**A:** A vertex whose removal (with all its incident edges) disconnects the graph.
+**A:** A bridge is an edge whose removal increases the number of connected components; an articulation point (cut vertex) is a vertex whose removal (with its incident edges) does the same.
 
 </details>
 <details>
 <summary><strong>Q:</strong> Bridge criterion?</summary>
 
-**A:** A tree edge `(u, v)` (with `v` discovered from `u`) is a bridge iff `low[v] > disc[u]`. The subtree under `v` has no back-edge to `u` or above.
+**A:** A tree edge `(u, v)` (v discovered from u) is a bridge iff `low[v] > disc[u]` — the subtree under `v` has no back edge to `u` or above.
 
 </details>
 <details>
-<summary><strong>Q:</strong> Articulation criterion (non-root vertex)?</summary>
+<summary><strong>Q:</strong> Articulation criterion, including the root?</summary>
 
-**A:** A non-root `u` is an articulation point iff some tree-child `v` has `low[v] ≥ disc[u]`. The subtree under `v` can't bypass `u`.
-
-</details>
-<details>
-<summary><strong>Q:</strong> When is the DFS root an articulation point?</summary>
-
-**A:** Iff it has ≥ 2 tree children. Removing it disconnects those children's subtrees.
+**A:** A non-root `u` is a cut vertex iff some child `v` has `low[v] >= disc[u]`. The DFS root is a cut vertex iff it has ≥ 2 tree children.
 
 </details>
 <details>
-<summary><strong>Q:</strong> Bridge vs articulation criterion — what's the one-character difference?</summary>
+<summary><strong>Q:</strong> The one-character difference between the two criteria?</summary>
 
-**A:** Bridge: `low[v] > disc[u]` (strict). Articulation: `low[v] ≥ disc[u]` (non-strict). That's the entire algorithmic difference.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Time complexity?</summary>
-
-**A:** `O(V + E)`. Single DFS pass with `disc` and `low` arrays.
+**A:** Bridge uses strict `>`; articulation uses non-strict `>=`. A subtree reaching back to `u`'s exact level survives losing the edge but not the vertex.
 
 </details>
 <details>
-<summary><strong>Q:</strong> Multi-edge gotcha?</summary>
+<summary><strong>Q:</strong> Why skip the parent edge in the DFS?</summary>
 
-**A:** Two distinct edges between the same pair of vertices: neither is a bridge (one is a backup for the other). Track parent *edge* (by ID), not parent *vertex*, when traversing.
+**A:** Otherwise the tree edge back to the parent is mistaken for a back edge, pulling `low[u]` down to `disc[parent]` and making every bridge test fail — you'd find zero bridges.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Time complexity, and what reuses this machinery?</summary>
+
+**A:** `O(V + E)`, a single DFS. The same `disc`/`low` lowlink trick powers Tarjan's SCC algorithm, 2-edge-connected and biconnected components, and the block-cut tree.
 
 </details>
 
-## Code template
+## Sources & Verify
 
-```python
-def find_bridges_and_articulations(n, adj):
-    disc = [-1] * n
-    low = [-1] * n
-    is_art = [False] * n
-    bridges = []
-    timer = [0]
-
-    def dfs(u, parent):
-        disc[u] = low[u] = timer[0]; timer[0] += 1
-        children = 0
-        for v in adj[u]:
-            if v == parent: continue
-            if disc[v] == -1:
-                children += 1
-                dfs(v, u)
-                low[u] = min(low[u], low[v])
-                if low[v] > disc[u]:           bridges.append((u, v))
-                if parent != -1 and low[v] >= disc[u]: is_art[u] = True
-            else:
-                low[u] = min(low[u], disc[v])
-        if parent == -1 and children >= 2:
-            is_art[u] = True
-
-    for v in range(n):
-        if disc[v] == -1: dfs(v, -1)
-    return bridges, [v for v in range(n) if is_art[v]]
-```
-
-## Pattern triggers
-
-- **"Single point of failure in a network"** → bridge or articulation point
-- **"Critical infrastructure edges/nodes"** → same
-- **"Strength of weak ties" (sociology)** → bridges in the friendship graph
-- **"Modules whose removal breaks the system"** → articulation points in the dependency graph
-- **"2-edge-connected components"** → run bridge-finding, remove bridges; residual components are 2-edge-connected
-- **"Biconnected components"** → run articulation-point finding; pieces are biconnected components
-- **"Network reliability after one failure"** → enumerate bridges; system is robust if there are none
-
-***
-
-# Cross-links
-
-- **Prerequisites:** [Graph Traversal](/cortex/data-structures-and-algorithms/graphs-traversing-a-graph), [SCC](/cortex/data-structures-and-algorithms/graphs-strongly-connected-components) (the lowlink trick).
-- **Sibling structure:** **Block-cut tree** — an auxiliary structure that compresses each biconnected component to a single node, with articulation points as the connectors. Used in advanced graph problems.
-- **Production deep-dive:** [Network Data Plane](/cortex/data-structures-and-algorithms/dsa-in-real-systems-network-data-plane) — *stub* — articulation analysis on routing topology.
-
-***
-
-# Final Takeaway
-
-Bridges and articulation points identify single points of failure. Three patterns to internalise:
-
-1. **The lowlink trick is the same as Tarjan's SCC.** One DFS, two arrays (`disc` and `low`), `O(V + E)` total. Once you understand `low[v]` = "smallest reachable discovery time", every cut-vertex / cut-edge problem in undirected graphs reduces to comparing it against `disc[u]`.
-2. **Bridge vs articulation: a single character of difference in the criterion.** `low[v] > disc[u]` for bridges; `low[v] ≥ disc[u]` for articulations. That's the entire algorithmic difference.
-3. **Real-world reliability problems live here.** Whenever someone asks "what would break if we lost X?" — bridge or articulation analysis is the answer. Network engineering, software architecture, biology, sociology — same algorithm, different domain.
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
-
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
-
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
-
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
-
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
-
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+- **Hopcroft, J. & Tarjan, R.** (1973), "Algorithm 447: Efficient algorithms for graph manipulation", *CACM* 16(6) — the original linear-time biconnected-components / articulation-point algorithm.
+- **Sedgewick & Wayne**, *Algorithms*, 4th ed., §4.1 — undirected graphs, connectivity, and biconnectivity built on DFS `disc`/`low`.
+- **Skiena**, *The Algorithm Design Manual*, 3rd ed., §5.9 — articulation vertices, bridges, and the connectivity hierarchy (2-edge- vs 2-vertex-connected).
+- **CP-Algorithms** — [Finding bridges](https://cp-algorithms.com/graph/bridge-searching.html) and [Finding articulation points](https://cp-algorithms.com/graph/cutpoints.html): the exact `low[v] > disc[u]` / `>= disc[u]` criteria and the multi-edge caveat.
+- **NetworkX** `bridges` / `articulation_points` and **Boost** `biconnected_components` are the reference implementations. The `(0,1)/(1,2)/(1,3)` bridges, `[1,3]` articulations, zero-bridge bug, and `[[1,3]]` LeetCode answer above all come from the runnable blocks — re-run to verify.

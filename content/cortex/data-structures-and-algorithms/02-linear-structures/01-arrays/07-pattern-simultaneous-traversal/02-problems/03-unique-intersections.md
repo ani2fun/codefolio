@@ -58,7 +58,6 @@ The structural property is *set intersection* — the answer is the set of value
 
 The naive approach is a nested loop with a `seen` set — for every element of `arr1`, scan `arr2` looking for a match, and consult the set to suppress duplicates. The brute force costs `O(N × M)` time and `O(k)` space for the set. The simultaneous walk replaces the nested scan with two pointers that each make at most one pass over their array — collapsing `O(N × M)` to `O(N + M)` for the walk itself (sorting still dominates at `O(N log N + M log M)`).
 
-> 🖼 Diagram — Unique Intersections — sort both, then walk with two pointers. On a match, record only if the value is new. On a mismatch, advance the smaller pointer.
 ```mermaid
 ---
 config:
@@ -93,7 +92,7 @@ flowchart TB
 
 ### Brute Force: Nested Loops, O(N × M)
 
-```python run
+```python run viz=array viz-root=result
 from typing import List
 
 def unique_intersections_brute(arr1: List[int], arr2: List[int]) -> List[int]:
@@ -110,7 +109,7 @@ def unique_intersections_brute(arr1: List[int], arr2: List[int]) -> List[int]:
 print(unique_intersections_brute([1, 2, 2, 3, 4], [2, 2, 3, 5]))  # [2, 3]
 ```
 
-```java run
+```java run viz=array viz-root=result
 import java.util.*;
 
 public class Main {
@@ -162,7 +161,7 @@ The brute force rescans `arr2` for every element of `arr1` — `O(N × M)` time,
 
 ### The Solution
 
-```python run
+```python run viz=array viz-root=result
 from typing import List
 
 class Solution:
@@ -214,7 +213,7 @@ print(Solution().unique_intersections([1, 1, 1], [1, 1, 1]))              # [1] 
 print(Solution().unique_intersections([1, 2, 3], [3, 4, 5]))              # [3] — one common element
 ```
 
-```java run
+```java run viz=array viz-root=result
 import java.util.*;
 
 public class Main {

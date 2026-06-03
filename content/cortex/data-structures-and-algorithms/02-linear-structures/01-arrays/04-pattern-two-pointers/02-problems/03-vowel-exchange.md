@@ -66,53 +66,536 @@ Place `left` at index `0` and `right` at index `n − 1`. At each iteration the 
 
 A single-pointer approach would scan once to collect every vowel's index, then walk a second pass to swap mirrored vowels using that list. That costs `O(n)` time but also `O(v)` extra space for the index list (where `v` is the vowel count). The two-pointer version drops the auxiliary list entirely — `left` and `right` implicitly track "the leftmost unswapped vowel" and "the rightmost unswapped vowel," so the pairing happens in place.
 
-> ▶ Interactive Diagram — Vowel exchange on "afegijoku" — each pointer scans past consonants until it finds a vowel; matched vowel pairs swap; pointers meet at the middle 'i'.
-```d3 widget=array-traversal
+```d3 widget=array-1d
 {
-  "items": ["a", "f", "e", "g", "i", "j", "o", "k", "u"],
-  "title": "Vowel exchange on \"afegijoku\"",
   "steps": [
     {
-      "items":   ["a", "f", "e", "g", "i", "j", "o", "k", "u"],
-      "markers": [
-        { "name": "left",  "index": 0, "color": "#3b82f6" },
-        { "name": "right", "index": 8, "color": "#f59e0b" }
+      "nodes": [
+        {
+          "id": "0",
+          "label": "a",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "f",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "e",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "g",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "i",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "j",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "o",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "7",
+          "label": "k",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "8",
+          "label": "u",
+          "kind": "cell",
+          "meta": [],
+          "slot": 8,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "msg": "Both pointers are on vowels — swap arr[left]='a' with arr[right]='u'."
+      "edges": [],
+      "cursor": [
+        {
+          "name": "left",
+          "target": "0",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "right",
+          "target": "8",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Both pointers are on vowels — swap arr[left]='a' with arr[right]='u'.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "items":   ["u", "f", "e", "g", "i", "j", "o", "k", "a"],
-      "markers": [
-        { "name": "left",  "index": 1, "color": "#3b82f6" },
-        { "name": "right", "index": 7, "color": "#f59e0b" }
+      "nodes": [
+        {
+          "id": "0",
+          "label": "u",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "f",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "e",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "g",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "i",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "j",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "o",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "7",
+          "label": "k",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "8",
+          "label": "a",
+          "kind": "cell",
+          "meta": [],
+          "slot": 8,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "msg": "Move inward — arr[left]='f' is a consonant (skip), arr[right]='k' is a consonant (skip)."
+      "edges": [],
+      "cursor": [
+        {
+          "name": "left",
+          "target": "1",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "right",
+          "target": "7",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Move inward — arr[left]='f' is a consonant (skip), arr[right]='k' is a consonant (skip).",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "items":   ["u", "f", "e", "g", "i", "j", "o", "k", "a"],
-      "markers": [
-        { "name": "left",  "index": 2, "color": "#3b82f6" },
-        { "name": "right", "index": 6, "color": "#f59e0b" }
+      "nodes": [
+        {
+          "id": "0",
+          "label": "u",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "f",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "e",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "g",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "i",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "j",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "o",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "7",
+          "label": "k",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "8",
+          "label": "a",
+          "kind": "cell",
+          "meta": [],
+          "slot": 8,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "msg": "Both pointers are on vowels — swap arr[left]='e' with arr[right]='o'."
+      "edges": [],
+      "cursor": [
+        {
+          "name": "left",
+          "target": "2",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "right",
+          "target": "6",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Both pointers are on vowels — swap arr[left]='e' with arr[right]='o'.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "items":   ["u", "f", "o", "g", "i", "j", "e", "k", "a"],
-      "markers": [
-        { "name": "left",  "index": 3, "color": "#3b82f6" },
-        { "name": "right", "index": 5, "color": "#f59e0b" }
+      "nodes": [
+        {
+          "id": "0",
+          "label": "u",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "f",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "o",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "g",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "i",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "j",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "e",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "7",
+          "label": "k",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "8",
+          "label": "a",
+          "kind": "cell",
+          "meta": [],
+          "slot": 8,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "msg": "arr[left]='g' is a consonant (skip), arr[right]='j' is a consonant (skip)."
+      "edges": [],
+      "cursor": [
+        {
+          "name": "left",
+          "target": "3",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "right",
+          "target": "5",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "arr[left]='g' is a consonant (skip), arr[right]='j' is a consonant (skip).",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "items":   ["u", "f", "o", "g", "i", "j", "e", "k", "a"],
-      "markers": [
-        { "name": "left",  "index": 4, "color": "#3b82f6" },
-        { "name": "right", "index": 4, "color": "#f59e0b" }
+      "nodes": [
+        {
+          "id": "0",
+          "label": "u",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "f",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "o",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "g",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "i",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "j",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "e",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "7",
+          "label": "k",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "8",
+          "label": "a",
+          "kind": "cell",
+          "meta": [],
+          "slot": 8,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "msg": "Pointers meet at index 4 — the middle 'i' is its own mirror; nothing to swap. Result: \"ufogijeka\"."
+      "edges": [],
+      "cursor": [
+        {
+          "name": "left",
+          "target": "4",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "right",
+          "target": "4",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Pointers meet at index 4 — the middle 'i' is its own mirror; nothing to swap. Result: \"ufogijeka\".",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Vowel exchange on \"afegijoku\""
 }
 ```
 
@@ -155,7 +638,7 @@ This is a direct application with one variation: not every iteration produces a 
 
 ### Solution
 
-```python run
+```python run viz=array viz-root=chars
 class Solution:
     def vowel_exchange(self, s: str) -> str:
 
@@ -210,7 +693,7 @@ print(Solution().vowel_exchange("aeiou"))     # uoiea — all vowels reversed
 print(Solution().vowel_exchange("AEIou"))     # uoIEA — mixed case vowels reversed
 ```
 
-```java run
+```java run viz=array viz-root=chars
 import java.util.*;
 
 public class Main {

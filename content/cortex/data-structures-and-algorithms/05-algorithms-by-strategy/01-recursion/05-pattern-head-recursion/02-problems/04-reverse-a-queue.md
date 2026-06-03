@@ -31,7 +31,6 @@ A queue gives you two operations: dequeue from the front, enqueue to the back. T
 
 The recursive trick: **dequeue the front, recurse on the rest, then enqueue the saved front at the back.** The recursion uses the call stack as a temporary stash for every dequeued element, then drains it on the ascent.
 
-> 🖼 Diagram — Recursion tree for reversing a 5-element queue. The descent saves each front in a stack frame's local variable. The ascent re-enqueues them in reverse order.
 ```mermaid
 ---
 config:
@@ -86,7 +85,6 @@ The descent saves each front in a stack-frame local. The ascent drains those loc
 
 <div class="d2-slides" data-caption="Each descending frame saves its front and recurses; each ascending frame enqueues the saved front to the back.">
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "Start" {
   q: "queue: [1, 2, 3, 4, 5]" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
@@ -94,7 +92,6 @@ state: "Start" {
 }
 ```
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "After dequeue 1, recurse" {
   q: "queue: [2, 3, 4, 5]"
@@ -102,7 +99,6 @@ state: "After dequeue 1, recurse" {
 }
 ```
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "After dequeue 2, 3, 4 — recursion at base" {
   q: "queue: [5]" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
@@ -110,7 +106,6 @@ state: "After dequeue 2, 3, 4 — recursion at base" {
 }
 ```
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "Ascent — enqueue 4 from its frame" {
   q: "queue: [5, 4]" {style.fill: "#fde68a"; style.stroke: "#d97706"}
@@ -118,7 +113,6 @@ state: "Ascent — enqueue 4 from its frame" {
 }
 ```
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "Continue ascending — enqueue 3, 2, 1" {
   q: "queue: [5, 4, 3, 2, 1]" {style.fill: "#ede9fe"; style.stroke: "#7c3aed"}
@@ -136,7 +130,7 @@ The "stash" is conceptual — those saved fronts physically live in `frontElemen
 
 ### The Solution
 
-```python run
+```python run viz=array viz-root=q1
 from typing import List
 
 class Solution:
@@ -177,7 +171,7 @@ q6 = [10, 20, 30, 40, 50]
 Solution().reverse_a_queue(q6); print(q6)   # [50, 40, 30, 20, 10]
 ```
 
-```java run
+```java run viz=array viz-root=q1
 import java.util.*;
 
 public class Main {
@@ -278,7 +272,7 @@ Pay attention to the `O(n)` *stack* space — for very large queues this is a re
 
 </details>
 <details>
-<summary><h2>Final Takeaway</h2></summary>
+<summary><h2>Key Takeaway</h2></summary>
 
 
 Reverse-a-Queue is head recursion's hardest standard problem because the combine step (enqueue) and the descent (dequeue) act on the *same* mutable structure. You're not just adding a number to a smaller answer; you're using the call stack itself as a stash and the queue as a workspace. Once you see this trick — *recurse and let the call stack hold the elements for you* — you'll see it again in tree problems, in linked-list reversal, and in dozens of "in-place" interview questions.
@@ -313,27 +307,3 @@ The recursive relation is `length(L) = 1 + length(rest of L)`, base case `length
 </details>
 
 </details>
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
-
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
-
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
-
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
-
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
-
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->

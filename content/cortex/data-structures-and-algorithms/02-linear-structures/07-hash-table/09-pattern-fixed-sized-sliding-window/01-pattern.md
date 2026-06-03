@@ -1,228 +1,179 @@
 ---
-title: "Pattern: Fixed-Sized Sliding Window"
-summary: "Track a fixed-size character or value frequency window; add the incoming element and evict the outgoing one per step."
+title: "Pattern: Fixed-Size Sliding Window"
+summary: "Slide a window of fixed width k while maintaining a frequency map as its state — add the entering element, evict the leaving one, O(1) per step. Combines the array sliding window with hash-map counting to answer per-window questions in O(n)."
 prereqs:
-  - 02-linear-structures/07-hash-table/01-introduction-to-hash-tables
+  - 02-linear-structures/07-hash-table/01-what-is-a-hash-table
 ---
 
-# Understanding the fixed-sized sliding window pattern
+# Pattern: Fixed-Size Sliding Window
 
-Some problems hand you a sequence and ask a question about *every contiguous window of size K*: "How many distinct elements?" "Any duplicates?" "Does this match a fixed pattern?" The brute-force answer is to enumerate every window and recompute the answer from scratch — O(N·K) work because each window scan is O(K) and there are N − K + 1 windows.
+## Why It Exists
 
-The sliding-window technique cuts this to **O(N)** by exploiting a beautiful observation: when the window moves one step right, *almost everything inside it stays the same*. Only **two** elements change: the one being added on the right, and the one falling off on the left. If we keep a running summary of the window in a hash map, we can update it in O(1) per shift instead of recomputing from scratch.
+This is the array [fixed sliding window](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-fixed-sliding-window-pattern) with a richer state. There, the window's value was a single number (a sum) you patched with one add and one subtract. Here the questions are about *composition*: "find every window of length `m` that's an anagram of `p`," "every window of size `k` with all-distinct values," "is there a duplicate within `k` positions?" The window's state is no longer a number — it's a **frequency map**.
 
-> 🖼 Diagram — Sliding by one step — windows 1 and 2 share three elements (b, a, c); only a drops off the left and b arrives on the right. Recomputing from scratch wastes work on the three shared elements; the sliding-window technique avoids it entirely.
-```d2
-direction: right
+Recomputing that map from scratch for each of the ~`n` windows costs `O(n · m)`. But the map is *slidable* just like the sum was: when the window advances one step, exactly one element enters and one leaves. **Increment the entering element's count; decrement the leaving one's.** That's `O(1)` per step, and a query against the map (compare to a target, count distinct keys) answers each window. Same incremental-maintenance trick, with a hash map as the aggregate.
 
-arr: input array {
-  grid-columns: 7
-  grid-gap: 0
-  a0: a {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  a1: b {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  a2: a {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  a3: c {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  a4: b
-  a5: d
-  a6: a
-}
+## See It Work
 
-w1: "window 1: [a, b, a, c]" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-w2: "window 2: [b, a, c, b]" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
-
-arr -> w1: "positions 0..3"
-arr -> w2: "positions 1..4 (slide by 1)"
-```
-
-<p align="center"><strong>Sliding by one step — windows 1 and 2 share three elements (b, a, c); only <code>a</code> drops off the left and <code>b</code> arrives on the right. Recomputing from scratch wastes work on the three shared elements; the sliding-window technique avoids it entirely.</strong></p>
-
-We maintain two pointers, `start` and `end`, that mark the window's boundaries. We hold a hash map summarising the window's contents (typically a frequency map). Each step of the algorithm:
-
-1. **Add** the new right-edge element's contribution to the map (`end` advanced).
-2. If the window has grown past size K, **subtract** the left-edge element's contribution and advance `start`.
-3. When the window is exactly size K, **process** the map to answer the question for this window.
-
-> 🖼 Diagram — The fixed-window loop in one picture — the four-line dance of add new, drop old, process if size matches, advance. The whole structure of every problem in this lesson is a variation on these four steps.
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    EXP["expand:<br/>map[arr[end]] += 1"] --> CHK{"window > k?"}
-    CHK -->|"yes"| CONT["contract:<br/>map[arr[start]] -= 1<br/>start++"]
-    CHK -->|"no"| OK["window OK"]
-    CONT --> OK
-    OK --> WIN{"window == k?"}
-    WIN -->|"yes"| PROC["process map<br/>for this window"]
-    WIN -->|"no"| ADV["end++"]
-    PROC --> ADV
-```
-
-<p align="center"><strong>The fixed-window loop in one picture — the four-line dance of <em>add new, drop old, process if size matches, advance</em>. The whole structure of every problem in this lesson is a variation on these four steps.</strong></p>
-
-## Algorithm
-
-> **Algorithm**
->
-> -   **Step 1:** Initialise `start = 0`, `end = 0`, and an empty `map`.
-> -   **Step 2:** While `end < arr.length`:
->     -   **Step 2.1:** Add the contribution of `arr[end]` to `map`.
->     -   **Step 2.2:** If `end − start + 1 > k`, remove the contribution of `arr[start]` and increment `start`.
->     -   **Step 2.3:** If `end − start + 1 == k`, process `map` to answer the question for this window.
->     -   **Step 2.4:** Increment `end`.
-
-Note the ordering: *add first, then check size, then process*. This guarantees that by the time we reach step 2.3, the window is exactly `k` elements wide and the map reflects them.
-
-> *Predict before reading on — what would happen if we processed the map BEFORE removing the start element when the window grew past k? The map would contain k+1 entries instead of k for one fleeting moment — and any "process" step would observe stale data. The order of operations is part of the algorithm's correctness.*
-
-## Implementation
-
-The generic skeleton — every problem in this lesson is a one-line change to step 2.3 ("process the map").
-
+Find every starting index where `s = "cbaebabacd"` contains an anagram of `p = "abc"`. Maintain the window's letter counts and compare to `p`'s counts. Run it.
 
 ```python run
-def fixed_size_sliding_window(arr: List[str], k: int) -> None:
-    # Initialize start and end to 0
-    start, end = 0, 0
+def find_anagrams(s, p):
+    if len(p) > len(s):
+        return []
 
-    # Initialize frequency dictionary to count character occurrences
-    frequency: dict[str, int] = defaultdict(int)
+    def counts(chars):
+        d = {}
+        for c in chars:
+            d[c] = d.get(c, 0) + 1
+        return d
 
-    # Move the window one step to the right until
-    # it reaches the end of the array
-    while end < len(arr):
-        # Add contribution of arr[end] to the frequency map
-        frequency[arr[end]] = frequency.get(arr[end], 0) + 1
+    need = counts(p)                              # target frequency map
+    window = counts(s[:len(p)])                   # first window's map
+    result = [0] if window == need else []
+    for i in range(len(p), len(s)):
+        window[s[i]] = window.get(s[i], 0) + 1    # element entering on the right
+        out = s[i - len(p)]
+        window[out] -= 1                          # element leaving on the left
+        if window[out] == 0:
+            del window[out]                       # keep the map clean for == to work
+        if window == need:
+            result.append(i - len(p) + 1)
+    return result
 
-        # Check if window size is greater than k
-        if end - start + 1 > k:
-            # Remove contribution of arr[start] from frequency map
-            frequency[arr[start]] -= 1
-            # Remove arr[start] from frequency if its count is 0
-            if frequency[arr[start]] == 0:
-                del frequency[arr[start]]
-            # Increment start to contract the window from start
-            start += 1
+print(find_anagrams("cbaebabacd", "abc"))         # [0, 6]
+```
 
-        # Check if window size equals k
-        if end - start + 1 == k:
-            # Process the values in frequency map
-            # (Additional processing logic would go here)
-            pass
+## How It Works
 
-        # Increment end to expand the window from end
-        end += 1
+The window holds a fixed `m = len(p)` elements; its state is a `char → count` map:
 
-    return
+1. **Seed** the first window's map from `s[0:m]`.
+2. **Slide** one step at a time. The element at `i` enters (increment its count); the element at `i − m` leaves (decrement its count, and **delete the key when it hits 0**).
+3. **Query** after each slide: the window is an anagram of `p` exactly when its map equals `p`'s map.
+
+```mermaid
+flowchart LR
+  S["window map (size m)"] -->|"+ entering char"| M["..."]
+  M -->|"− leaving char (del if 0)"| N["updated map — O(1)"]
+  N -->|"compare to target"| Q["match? record index"]
+```
+
+<p align="center"><strong>slide the fixed window by one: bump the entering element's count, drop the leaving element's, then compare the window map to the target.</strong></p>
+
+Each slide is `O(1)` map work plus an `O(σ)` comparison (`σ` = alphabet size, a constant for fixed alphabets), so the whole scan is **`O(n)` time, `O(σ)` space**. Two details matter: **deleting keys at zero** keeps the dictionary equality check honest (a lingering `x: 0` would make `window == need` falsely fail), and the window width stays fixed — entering and leaving happen in lockstep.
+
+### Key Takeaway
+
+Maintain a frequency map as the fixed window's state: on each slide, increment the entering element and decrement (and delete at zero) the leaving one, then query the map. `O(1)` per step → `O(n)` total — the array sliding window fused with hash-map counting.
+
+## Trace It
+
+`p = "abc"` (`need = {a:1, b:1, c:1}`) sliding over `"cbaebabacd"`:
+
+| window | map | `== need`? |
+|---|---|---|
+| `cba` (i=0..2) | `{c:1, b:1, a:1}` | ✓ → index 0 |
+| `bae` | `{b:1, a:1, e:1}` | ✗ |
+| … | … | … |
+| `bac` (i=6..8) | `{b:1, a:1, c:1}` | ✓ → index 6 |
+
+Before you read on: when the count of the leaving character drops to `0`, the code does `del window[out]` rather than leaving it at `0`. Why is that deletion essential for the `window == need` check, even though `0` "means the same as absent"?
+
+Because dictionary equality is **structural**: `{a:1, b:1, c:0}` is *not* equal to `{a:1, b:1}` in Python (or Java's `Map.equals`). If you left zero-count keys in the map, a window that *is* an anagram would carry stale `x: 0` entries and the equality test would return `False` — a silent bug that only shows on certain inputs. Deleting at zero keeps the map's key set exactly "characters currently in the window," so `==` against `need` is correct. (The alternative is to compare with a tolerance for zeros, but pruning is simpler and keeps the map small.)
+
+## Your Turn
+
+The reusable fixed-window anagram finder:
+
+```python run
+def find_anagrams(s, p):
+    if len(p) > len(s):
+        return []
+    def counts(chars):
+        d = {}
+        for c in chars:
+            d[c] = d.get(c, 0) + 1
+        return d
+    need = counts(p)
+    window = counts(s[:len(p)])
+    result = [0] if window == need else []
+    for i in range(len(p), len(s)):
+        window[s[i]] = window.get(s[i], 0) + 1
+        out = s[i - len(p)]
+        window[out] -= 1
+        if window[out] == 0:
+            del window[out]
+        if window == need:
+            result.append(i - len(p) + 1)
+    return result
+
+print(find_anagrams("abab", "ab"))      # [0, 1, 2]
 ```
 
 ```java run
-public class FixedSizeSlidingWindow {
+import java.util.*;
 
-    public void fixedSizeSlidingWindow(char[] arr, int k) {
-        // Initialize start and end to 0
-        int start = 0, end = 0;
+public class Main {
+  static Map<Character, Integer> counts(String s, int from, int to) {
+    Map<Character, Integer> d = new HashMap<>();
+    for (int i = from; i < to; i++) d.merge(s.charAt(i), 1, Integer::sum);
+    return d;
+  }
 
-        // Initialize hash map to map characters to integer values
-        HashMap<Character, Integer> frequency = new HashMap<>();
-
-        // Move the window one step to the right until
-        // it reaches the end of the array
-        while (end < arr.length) {
-            // Add contribution of arr[end] to the frequency map
-            frequency.put(arr[end], frequency.getOrDefault(arr[end], 0) + 1);
-
-            // Check if window size is greater than k
-            if (end - start + 1 > k) {
-                // Remove contribution of arr[start] from frequency map
-                frequency.put(arr[start], frequency.get(arr[start]) - 1);
-                if (frequency.get(arr[start]) == 0) {
-                    frequency.remove(arr[start]); // Remove key if count is 0
-                }
-                // Increment start to contract the window from start
-                start++;
-            }
-
-            // Check if window size equals k
-            if (end - start + 1 == k) {
-                // Process the values in frequency map
-            }
-
-            // Increment end to expand the window from end
-            end++;
-        }
-
-        return;
+  static List<Integer> findAnagrams(String s, String p) {
+    List<Integer> result = new ArrayList<>();
+    if (p.length() > s.length()) return result;
+    Map<Character, Integer> need = counts(p, 0, p.length());
+    Map<Character, Integer> window = counts(s, 0, p.length());
+    if (window.equals(need)) result.add(0);
+    for (int i = p.length(); i < s.length(); i++) {
+      window.merge(s.charAt(i), 1, Integer::sum);                       // entering
+      char out = s.charAt(i - p.length());
+      if (window.merge(out, -1, Integer::sum) == 0) window.remove(out); // leaving, del at 0
+      if (window.equals(need)) result.add(i - p.length() + 1);
     }
+    return result;
+  }
+
+  public static void main(String[] args) {
+    System.out.println(findAnagrams("abab", "ab"));   // [0, 1, 2]
+  }
 }
 ```
 
+Drill the family in **Practice** — [Duplicate Detection](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-fixed-sized-sliding-window-problems-duplicate-detection), [Subarray Distinctness](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-fixed-sized-sliding-window-problems-subarray-distinctness), [Contains Variation](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-fixed-sized-sliding-window-problems-contains-variation), and [Anagram Finder](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-fixed-sized-sliding-window-problems-anagram-finder).
 
-## Complexity Analysis
+## Reflect & Connect
 
-We touch each array element exactly twice (once as it enters the window, once as it leaves). Each touch is amortised O(1) hash-map work. Total: **O(N)** time.
+This pattern is the meeting point of two earlier ideas:
 
-The hash map holds at most K entries (the elements currently inside the window), so space is **O(K)**.
+- **The family** — anagram finder (window map equals target), "contains duplicate within `k`" (a key reappears in the window), "`k` distinct values in every length-`m` window" (map size). All are a fixed window plus a map query.
+- **It's [fixed sliding window](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-fixed-sliding-window-pattern) + [counting](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting-pattern)** — the array pattern supplies the slide-by-one mechanics; the counting pattern supplies the map as state. The "slidable aggregate" test from the array pattern still applies: incremental add/evict must be `O(1)`, which counts are.
+- **Delete-at-zero is the recurring gotcha** — any time you compare maps for equality, prune zero entries first, or the structural comparison lies.
 
-> **Best/Average/Worst case** — O(N) time, O(K) space. The whole point of the technique is that worst-case time *is* the average case; we don't pay extra for adversarial input.
+**Prerequisites:** [What Is a Hash Table?](/cortex/data-structures-and-algorithms/linear-structures-hash-table-what-is-a-hash-table).
+**What's next:** let the window grow and shrink on a condition, still map-backed — [Variable-Size Sliding Window](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-variable-sized-sliding-window-pattern).
 
-# Identifying the fixed-sized sliding window pattern
+## Recall
 
-This pattern fits problems with a *fixed window length K* (given in the input or derivable from another input string) where the answer for each window depends on a **summarisable** property — frequencies, distinct counts, sums, products, max/min — that can be maintained incrementally.
+> **Mnemonic:** *Fixed window, map as state. Each slide: `+entering`, `−leaving` (del at 0), then query. `O(1)`/step ⇒ `O(n)`. Prune zeros so `==` works.*
 
-**Template:**
-> Given a sequence and a window size K, slide a window of size K from left to right while maintaining a hash-map summary of the window's contents in O(1) per shift. Use the summary to answer the question per window.
+| | |
+|---|---|
+| State | `char → count` map over the current window |
+| Slide | increment entering, decrement leaving, delete key at `0` |
+| Query | compare to target map (anagram), or read map size (distinct count) |
+| Gotcha | delete zero-count keys or dictionary equality silently fails |
+| Cost | `O(n)` time, `O(σ)` space (`σ` = alphabet) |
 
-If the question is *"for each window of size K, …"* and you can answer it from a frequency map, this pattern fits.
+- **Q:** How does this differ from the array fixed sliding window? **A:** The window's state is a frequency map, not a single number, but the slide-by-one add/evict maintenance is the same.
+- **Q:** Why delete a key when its count hits zero? **A:** Structural map equality treats `{x:0}` as different from absent, so a stale zero makes the anagram check silently fail.
+- **Q:** What's the per-step cost and why is it `O(1)`? **A:** One increment and one decrement (plus an `O(σ)` constant-alphabet comparison) — no recompute of the whole window.
+- **Q:** Which two earlier patterns does this combine? **A:** The array fixed sliding window (slide mechanics) and hash-map counting (the map as state).
 
-## Example — anagram finder
+## Sources & Verify
 
-Given a string `s` and a pattern `p`, return all start indices in `s` where a *permutation* of `p` appears. The window size is fixed: `len(p)`. The summary is the frequency map of the current window's characters; an anagram exists iff that map equals the frequency map of `p`.
-
-This is the canonical fixed-window problem — every other problem in this lesson is a simpler shape of it.
-
-## Example problems
-
-> -   Duplicate detection — *is there a duplicate in any window of size k?*
-> -   Subarray distinctness — *how many distinct elements per window?*
-> -   Contains variation — *does any window match a target frequency map?*
-> -   Anagram finder — *which windows are anagrams of a given pattern?*
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Why Naive Isn't Enough — missing, needs to be written -->
-<!--       Guidance: motivation for why the obvious approach fails -->
-
-<!-- TODO: The Core Idea — missing, needs to be written -->
-<!--       Guidance: one paragraph: the central trick -->
-
-<!-- TODO: How the Pointers/Window Move — missing, needs to be written -->
-<!--       Guidance: mechanics of the moving parts -->
-
-<!-- TODO: The Generic Algorithm — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
-
-<!-- TODO: Generic Implementation — missing, needs to be written -->
-<!--       Guidance: Python block + Java block of the skeleton -->
-
-<!-- TODO: Variants / Taxonomy — missing, needs to be written -->
-<!--       Guidance: enumerate sub-shapes of this pattern -->
-
-<!-- TODO: Recognition Checklist — missing, needs to be written -->
-<!--       Guidance: 4-question diagnostic — the source of the Problem-section Diagnostic Questions -->
-
-<!-- TODO: Canonical Example — missing, needs to be written -->
-<!--       Guidance: fully worked example: brute force → optimised → template fit -->
-
-<!-- TODO: Problems in This Category — missing, needs to be written -->
-<!--       Guidance: table with links to the 02-problems/ files -->
+- **CLRS**, *Introduction to Algorithms*, 4th ed., §11 — hash tables and `O(1)`-average operations.
+- **Sedgewick & Wayne**, *Algorithms*, 4th ed., §3.4–3.5 — hash tables and symbol-table applications.
+- The fixed-window-with-frequency-map technique (anagram search, window distinctness) is standard; both runnable blocks are verified by running (`cbaebabacd`/`abc ⇒ [0,6]`, `abab`/`ab ⇒ [0,1,2]`).

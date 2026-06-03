@@ -83,6 +83,36 @@
 
     }
 
+    /* ─── Language tabs (Slice 7 — companion source-only languages) ─ */
+    .traced-code__tabs {
+        @apply flex items-center gap-0.5 flex-wrap;
+    }
+    .traced-code__tab {
+        @apply inline-flex h-7 items-center gap-1 rounded px-2.5 text-xs font-medium
+               text-muted-foreground transition-colors hover:bg-accent hover:text-foreground
+               border border-transparent cursor-pointer;
+    }
+    .traced-code__tab--active {
+        @apply bg-background text-foreground border-border;
+    }
+    .traced-code__brand-icon--scala {
+        @apply h-3 w-3 mr-0.5;
+    }
+    /* Lock banner — shown when a source-only companion tab is active */
+    .traced-code__lock-banner {
+        @apply inline-flex items-center gap-1.5 text-xs text-muted-foreground;
+    }
+    .traced-code__lock-banner-icon {
+        @apply h-3 w-3 shrink-0 opacity-60;
+    }
+    .traced-code__lock-banner-text {
+        @apply opacity-75;
+    }
+    .traced-code__lock-banner-link {
+        @apply text-primary underline underline-offset-2 hover:opacity-80 cursor-pointer
+               bg-transparent border-0 p-0 text-xs font-medium;
+    }
+
     /* ─── Controls ────────────────────────────────────────────────── */
     .traced-code__controls {
         @apply flex flex-wrap items-center gap-2;

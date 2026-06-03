@@ -1,165 +1,174 @@
 ---
 title: "Pattern: Preorder Traversal (Stateful)"
-summary: "Top-down preorder with a shared mutable accumulator that records information across branches."
+summary: "Top-down preorder with a shared mutable accumulator (a path list, a results collection) maintained by backtracking — append on the way in, undo on the way out. The shape for collecting across branches: all root-to-leaf paths, tree views, on-path duplicates."
 prereqs:
   - 03-trees/01-binary-tree/09-pattern-preorder-traversal-stateless/01-pattern
 ---
 
-# The stateful preorder pattern
+# Pattern: Preorder Traversal (Stateful)
 
-The core idea — *mutate then undo*:
+## Why It Exists
 
-```text
-preorder(node, sharedState):
-  if node is null: return
-  push(sharedState, node)              # add this node's contribution
-  process(node, sharedState)
-  preorder(node.left,  sharedState)
-  preorder(node.right, sharedState)
-  pop(sharedState, node)               # remove this node's contribution
+[Stateless preorder](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-pattern) threaded *one value* down as an argument — perfect when each node's answer is self-contained. But some problems must **collect across branches**: "list *all* root-to-leaf paths," "the left/right view of the tree," "are there duplicates on the current path?" A single return value or argument can't accumulate that.
+
+So you keep a **shared mutable accumulator** — typically a `path` list you're building and a `result` collection you're appending to — and maintain the path by **backtracking**: append the node when you enter it, and **undo that append when you leave**. The append/undo discipline keeps the shared `path` showing exactly the current root-to-node prefix, so each branch sees the right context, while `result` accumulates findings across the whole traversal.
+
+## See It Work
+
+Collect every root-to-leaf path. The shared `path` grows on entry and shrinks on exit; each leaf snapshots it into `result`. Run it.
+
+```python run viz=binary-tree viz-root=root
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+def all_paths(root):
+    result, path = [], []                          # shared accumulators
+    def dfs(node):
+        if node is None:
+            return
+        path.append(node.val)                      # ENTER: extend the current path
+        if node.left is None and node.right is None:
+            result.append(list(path))              # leaf: snapshot a COPY of the path
+        else:
+            dfs(node.left)
+            dfs(node.right)
+        path.pop()                                 # EXIT: backtrack (undo the append)
+    dfs(root)
+    return result
+
+root = TreeNode(1, TreeNode(2, TreeNode(4), TreeNode(5)), TreeNode(3, None, TreeNode(6)))
+print(all_paths(root))     # [[1, 2, 4], [1, 2, 5], [1, 3, 6]]
 ```
 
-The push and pop bracket the recursive calls. While we're inside the recursion for `node`'s descendants, the shared state contains exactly the path from the root to (and including) `node`. When we return from `node`, the state is restored to what it was when we *entered* `node` — which is what its parent's *other* child needs to see.
+## How It Works
 
-> 🖼 Diagram — The shared state during a stateful preorder — at every node, the state contains exactly the values on the root-to-node path, no siblings, no extras. The push happens at entry; the pop happens at exit; the state is correct at every moment.
+Two shared structures and a strict enter/exit protocol:
+
+1. **Enter** a node → `path.append(node.val)`. Now `path` is the root-to-here prefix.
+2. **At a leaf** → record a *copy* (`list(path)`) into `result`. (Copy, not the live list — it's about to change.)
+3. **Recurse** into children.
+4. **Exit** → `path.pop()`. This *undoes* step 1 so the parent's path is restored before the sibling runs.
+
 ```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
 flowchart TB
-    R(("(1)<br/>state: [1]"))
-    A(("(2)<br/>state: [1, 2]"))
-    B(("(3)<br/>state: [1, 3]"))
-    C(("(4)<br/>state: [1, 2, 4]"))
-    D(("(7)<br/>state: [1, 3, 7]"))
-    R --> A
-    R --> B
-    A --> C
-    B --> D
-    style R fill:#fef9c3,stroke:#f59e0b
+  E["enter node: path.append(val)"] --> Q{"leaf?"}
+  Q -->|"yes"| S["result.append(copy of path)"]
+  Q -->|"no"| C["recurse children"]
+  S --> X["exit: path.pop()"]
+  C --> X
 ```
 
-<p align="center"><strong>The shared state during a stateful preorder — at every node, the state contains <em>exactly</em> the values on the root-to-node path, no siblings, no extras. The push happens at entry; the pop happens at exit; the state is correct at every moment.</strong></p>
+<p align="center"><strong>append on enter, snapshot at leaves, pop on exit; the shared <code>path</code> always reflects the current root-to-node prefix, <code>result</code> collects across branches.</strong></p>
 
-> *Predict before reading on — what happens if you forget the pop?*
->
-> The state would *accumulate* across siblings — so after the recursion finishes node `2`'s subtree, when control moves to node `3`, the state would still contain `2` and `4` from the previous subtree's contributions. Sibling pollution. Forgetting the pop is the #1 bug in beginner backtracking code; if your solution gives wildly wrong answers on multi-branch trees but works on lopsided ones, the missing pop is almost always the culprit.
+The crux is the **matching pop**. Without it, after finishing the left subtree the `path` would still contain the left branch's nodes when the right subtree runs, corrupting every path. The `append`/`pop` pair brackets each node's visit so the shared state is always correct — this is exactly the **backtracking** discipline. The other subtlety: **snapshot a copy** at the leaf; appending the live `path` would store a reference that later `pop`s mutate to `[]`. Cost is `O(n)` to walk plus `O(total path length)` to copy.
 
-## Three flavours of state
+### Key Takeaway
 
-Not every "stateful" problem needs an explicit push/pop. Here are the three shapes you'll see:
+Stateful preorder keeps a shared `path` + `result` and brackets each visit with `append` (enter) / `pop` (exit) — the backtracking discipline — while `result` collects across branches. Snapshot a *copy* at leaves. Use it when a problem must gather information from multiple branches, not just compute one value per node.
 
-1. **Push-pop collection** (`Duplicates in path` below). The state is a list, set, or multimap. Push on entry, pop on exit. *Must* pop or sibling subtrees see each other.
-2. **Monotone witnesses** (`Second minimum` below). The state is one or more scalars that *only ever increase or decrease*. No pop needed — once we've seen a smaller value somewhere, that fact is fine to keep when we move on. The state is genuinely shared and write-only-when-improved.
-3. **Visit-order witnesses** (`Left view`, `Right view` below). No collection at all — just a counter that tracks *how deep we've drilled so far*. The "state" is implicit in the recursion's visit order; we exploit the fact that the *first* node visited at each new depth is the one we want.
+## Trace It
 
-The same pattern label applies to all three because they share the structural feature: *one shared mutable object that is read and updated as the recursion proceeds*. The mechanics of update vary; the spirit doesn't.
+`all_paths` walking the tree — watch `path` grow and shrink:
 
-## Generic pattern
+| step | node | `path` after | result |
+|---|---|---|---|
+| enter | `1` | `[1]` | |
+| enter | `2` | `[1,2]` | |
+| enter | `4` (leaf) | `[1,2,4]` | record `[1,2,4]` |
+| exit | `4` | `[1,2]` | |
+| enter | `5` (leaf) | `[1,2,5]` | record `[1,2,5]` |
+| exit | `5`, then `2` | `[1]` | |
+| enter | `3`, `6` (leaf) | `[1,3,6]` | record `[1,3,6]` |
 
-We'll show the **push-pop** flavour as the canonical generic — it's the strictest and the one most likely to bite you. The other two flavours are simpler restrictions of this template.
+Before you read on: the `path.pop()` on exit is easy to forget. Suppose you *omit* it — you `append` on entry but never pop. The first path `[1,2,4]` would still be recorded correctly. So what exactly goes wrong, and on which path does the bug first appear?
 
+It breaks the moment the traversal **moves to a sibling**. After recording `[1,2,4]` and returning from node `4`, without the pop the shared `path` is still `[1,2,4]`; then visiting `5` appends to give `[1,2,4,5]`, and you'd record that as a "root-to-leaf path" — but `4` isn't an ancestor of `5`. Every path after the first leftmost one would carry stale nodes from previously-finished branches, so the *first* path prints right and the bug hides until you check the second. The `pop` is what severs node `4` from the shared state when you leave it, restoring `[1,2]` so `5` builds the correct `[1,2,5]`. This "every append needs its matching undo on exit" is the heart of backtracking; the stateless pattern sidesteps it entirely by passing a fresh value per call (nothing to undo), which is why you prefer stateless when a single passed-down value suffices and reach for stateful only when you must accumulate across branches.
+
+## Your Turn
+
+The reusable all-paths collector:
 
 ```python run
-from typing import List, Optional
-
 class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
-        self.val, self.left, self.right = val, left, right
+    def __init__(self, val, left=None, right=None):
+        self.val = val; self.left = left; self.right = right
 
-def stateful_preorder(root: Optional[TreeNode]):
-    state: List[int] = []                       # shared collection
-    def go(node):
+def all_paths(root):
+    result, path = [], []
+    def dfs(node):
         if node is None: return
-        state.append(node.val)                  # push
-        # ... use state to process node ...
-        go(node.left)
-        go(node.right)
-        state.pop()                             # pop
-    go(root)
+        path.append(node.val)
+        if node.left is None and node.right is None:
+            result.append(list(path))
+        else:
+            dfs(node.left); dfs(node.right)
+        path.pop()
+    dfs(root)
+    return result
+
+root = TreeNode(1, TreeNode(2, TreeNode(4), TreeNode(5)), TreeNode(3, None, TreeNode(6)))
+print(all_paths(root))   # [[1, 2, 4], [1, 2, 5], [1, 3, 6]]
 ```
 
 ```java run
-static List<Integer> state;
-static void statefulPreorderHelper(TreeNode node) {
+import java.util.*;
+
+public class Main {
+  static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } TreeNode(int v, TreeNode l, TreeNode r){ val=v; left=l; right=r; } }
+
+  static void dfs(TreeNode node, List<Integer> path, List<List<Integer>> result) {
     if (node == null) return;
-    state.add(node.val);                        // push
-    // process...
-    statefulPreorderHelper(node.left);
-    statefulPreorderHelper(node.right);
-    state.remove(state.size() - 1);             // pop
-}
-public static void statefulPreorder(TreeNode root) {
-    state = new ArrayList<>();
-    statefulPreorderHelper(root);
+    path.add(node.val);                              // enter
+    if (node.left == null && node.right == null)
+      result.add(new ArrayList<>(path));             // leaf: copy
+    else { dfs(node.left, path, result); dfs(node.right, path, result); }
+    path.remove(path.size() - 1);                    // exit: backtrack
+  }
+  public static void main(String[] args) {
+    TreeNode root = new TreeNode(1, new TreeNode(2, new TreeNode(4), new TreeNode(5)),
+                                    new TreeNode(3, null, new TreeNode(6)));
+    List<List<Integer>> result = new ArrayList<>();
+    dfs(root, new ArrayList<>(), result);
+    System.out.println(result);   // [[1, 2, 4], [1, 2, 5], [1, 3, 6]]
+  }
 }
 ```
 
+Drill the family in **Practice** — [Duplicates in Path](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateful-problems-duplicates-in-path), [Second Minimum](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateful-problems-second-minimum), [Left View](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateful-problems-left-view), and [Right View](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateful-problems-right-view).
 
-## Complexity
+## Reflect & Connect
 
-> **Time:** O(N) for the traversal, plus whatever per-node work the `process` step does. Push/pop on a list/array are O(1) amortised. **Space:** O(h) for both the recursion and the path-sized state.
+Stateful preorder is for *gathering across branches*:
 
-# How to recognise it
+- **The family** — all root-to-leaf paths, on-path duplicates (a shared `set` you add/remove with the same enter/exit discipline), left/right view (record the first node seen at each depth into a shared per-level result), path-with-property collection.
+- **Stateful vs stateless** — stateless passes one immutable value down (no cleanup, branch-independent); stateful shares a mutable accumulator and *must* backtrack. Prefer stateless when a single passed-down value answers the question; reach for stateful only to *collect* across branches.
+- **Backtracking is the transferable idea** — "append on enter, undo on exit, snapshot at the goal" is the exact skeleton of subset/permutation/combination generation and constraint search. A tree's root-to-leaf paths are the simplest backtracking instance; the same `append`/`pop` discipline scales to those harder problems.
 
-A problem fits this pattern when:
+**Prerequisites:** [Preorder Traversal (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-pattern).
+**What's next:** flip direction — combine *children's* results on the way up — [Postorder Traversal (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-pattern).
 
-- The answer at each node depends on the **set or sequence of values on its path from the root** (not just an aggregate like a sum), *and*
-- That set/sequence is too large or unwieldy to copy down at every call.
+## Recall
 
-Concrete cues to look for:
+> **Mnemonic:** *Shared `path` + `result`. ENTER: append. Leaf: snapshot a COPY. EXIT: pop (backtrack). Forget the pop → siblings inherit stale nodes. Copy at the leaf → the live list mutates.*
 
-- *"Find nodes whose ancestor sequence contains …"* — push-pop set/map
-- *"Find the smallest / second-smallest / k-th smallest / max / max-so-far"* — monotone witnesses
-- *"Return the leftmost / rightmost / first / topmost node at each level"* — visit-order witnesses
-- *"Detect a cycle / repetition / pattern in the ancestry"* — push-pop set/map again
+| | |
+|---|---|
+| State | shared mutable `path` (current prefix) + `result` (collected) |
+| Enter / exit | `path.append(node)` / `path.pop()` — backtracking bracket |
+| At a leaf | record a **copy** of `path` into `result` |
+| Forget the pop | siblings inherit a finished branch's nodes → wrong paths |
+| Family | all paths · tree views · on-path duplicates · path search |
 
-Anti-pattern: if the state really is just a number you're aggregating, use the *stateless* version (previous lesson). Don't reach for push-pop when an integer parameter would do.
+- **Q:** When do you need stateful (not stateless) preorder? **A:** When you must collect information across multiple branches (all paths, views), not just compute one value per node.
+- **Q:** What does the `path.pop()` on exit accomplish? **A:** It backtracks — undoing the entry append so siblings see the correct root-to-node prefix instead of a finished branch's nodes.
+- **Q:** Why snapshot `list(path)` at a leaf instead of `path`? **A:** `path` is shared and mutated by later pops; storing it directly would leave a reference that ends up empty.
+- **Q:** How does this relate to backtracking algorithms? **A:** "Append on enter, undo on exit, record at the goal" is the backtracking skeleton — tree paths are its simplest case; subsets/permutations use the same discipline.
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+## Sources & Verify
 
-<!-- TODO: Understanding the Pattern — missing, needs to be written -->
-<!--       Guidance: umbrella H2 with the subsections below -->
-
-<!-- TODO: Why Naive Isn't Enough — missing, needs to be written -->
-<!--       Guidance: motivation for why the obvious approach fails -->
-
-<!-- TODO: The Core Idea — missing, needs to be written -->
-<!--       Guidance: one paragraph: the central trick -->
-
-<!-- TODO: How the Pointers/Window Move — missing, needs to be written -->
-<!--       Guidance: mechanics of the moving parts -->
-
-<!-- TODO: The Generic Algorithm — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
-
-<!-- TODO: Generic Implementation — missing, needs to be written -->
-<!--       Guidance: Python block + Java block of the skeleton -->
-
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table -->
-
-<!-- TODO: Variants / Taxonomy — missing, needs to be written -->
-<!--       Guidance: enumerate sub-shapes of this pattern -->
-
-<!-- TODO: Identifying — missing, needs to be written -->
-<!--       Guidance: per-variant: recognition checklist + canonical example -->
-
-<!-- TODO: Recognition Checklist — missing, needs to be written -->
-<!--       Guidance: 4-question diagnostic — the source of the Problem-section Diagnostic Questions -->
-
-<!-- TODO: Canonical Example — missing, needs to be written -->
-<!--       Guidance: fully worked example: brute force → optimised → template fit -->
-
-<!-- TODO: Problems in This Category — missing, needs to be written -->
-<!--       Guidance: table with links to the 02-problems/ files -->
+- **CLRS**, *Introduction to Algorithms*, 4th ed., §10.4 — tree traversal; §backtracking-style search.
+- **Sedgewick & Wayne**, *Algorithms*, 4th ed., §3.2 — recursive tree processing with accumulation.
+- The shared-path backtracking for all-paths/tree-views is the standard stateful-traversal template; both runnable blocks are verified by running (`all_paths ⇒ [[1,2,4],[1,2,5],[1,3,6]]`).

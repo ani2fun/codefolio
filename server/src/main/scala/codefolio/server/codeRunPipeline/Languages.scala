@@ -100,9 +100,27 @@ object Languages:
     Option(alias).map(_.trim.toLowerCase).filter(_.nonEmpty).flatMap(aliasIndex.get)
 
   /**
+   * Sentinel that tracer-wrapped sources carry as their very first line.
+   *
+   * `Languages.effectiveSource` skips [[JavaSourceRewriter.normalizeEntrypoint]] when this sentinel is
+   * present: the harness already emits a valid `public class Main` and re-running normalisation would be a
+   * no-op at best and a destructive word-boundary rename at worst if the user's inner class happens to share
+   * the first top-level name. This mitigates plan risk R3.
+   *
+   * The constant is defined here (rather than in the client) so both the server bypass and the client harness
+   * can share the same literal without duplication.
+   */
+  val TracerSentinel: String = "// __CF_TRACER__"
+
+  /**
    * The source to actually send to a backend: Java gets its entrypoint class renamed to `Main` (see
    * [[JavaSourceRewriter]]); every other language passes through untouched. Both wire adapters call this so
    * neither has to know which language is special.
+   *
+   * Exception: Java sources that begin with [[TracerSentinel]] skip normalisation — the JVM harness already
+   * emits a well-formed `public class Main` wrapper and must not be altered.
    */
   def effectiveSource(lang: Language, source: String): String =
-    if lang.id == JavaId then JavaSourceRewriter.normalizeEntrypoint(source) else source
+    if lang.id == JavaId && !source.trim.startsWith(TracerSentinel) then
+      JavaSourceRewriter.normalizeEntrypoint(source)
+    else source

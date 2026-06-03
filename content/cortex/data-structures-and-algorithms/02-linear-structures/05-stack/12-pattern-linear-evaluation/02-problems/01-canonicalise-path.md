@@ -33,6 +33,71 @@ The output must:
 > -   **Input:** `/a//b/c/../` → **Output:** `/a/b`
 
 <details>
+<summary><strong>Examples</strong></summary>
+
+**Example 1**
+```
+Input:  /a/b/../c
+Output: /a/c
+Explanation: push 'a', push 'b', then '..' pops 'b' (move up), push 'c'.
+The stack holds [a, c], joined as "/a/c".
+```
+
+**Example 2**
+```
+Input:  /a/./../c
+Output: /c
+Explanation: push 'a', skip '.', then '..' pops 'a', push 'c'.
+The stack holds [c], joined as "/c".
+```
+
+**Example 3**
+```
+Input:  /a//b/c/../
+Output: /a/b
+Explanation: the empty segment from '//' is skipped; push a, b, c,
+then the trailing '..' pops 'c'. The stack holds [a, b] → "/a/b".
+```
+
+**Example 4**
+```
+Input:  /..
+Output: /
+Explanation: '..' on an empty stack does nothing — you cannot rise
+above root. The stack stays empty, so the result is "/".
+```
+
+</details>
+
+## Intuition
+
+This is a **linear-evaluation** problem because the path is a single sequence of segments you scan once, and a `..` token folds the work built so far by one level. Split on `/` and each segment is a token whose meaning is local: a name is data, `..` is a trigger, and `.` or an empty segment is noise. The stack lets each `..` undo exactly the most recent directory in `O(1)`.
+
+The stack holds **the directory chain accumulated so far**, with the most recent directory on top. A name is pushed because it deepens the path; `..` pops because it rises one level, and the directory it cancels is always the freshest one on top. Empty segments — produced by leading, trailing, or doubled slashes — and `.` carry no directory, so they are skipped without touching the stack. At end-of-input the stack *is* the canonical directory list, bottom-to-top.
+
+A naive approach rewrites the string in place — find a `/../`, splice it out, rescan — which re-reads resolved segments and costs `O(N²)` time. It also fumbles the corner cases: a `..` at the root must be a no-op, and runs of `//` must collapse. The stack handles both for free: popping an empty stack does nothing, and empty segments never get pushed. One pass replaces the repeated splicing.
+
+## Applying the Diagnostic Questions
+
+| Check | Answer for Canonicalise Path |
+|---|---|
+| **Q1.** Is the input a single linear sequence scanned once? | **Yes** — split on `/` and walk the segments left to right in one pass. |
+| **Q2.** Does some token defer work — open a group awaiting a closer? | **Partly** — there is no nesting, but `..` defers to whatever directory is currently on top, the one-level case of the fold. |
+| **Q3.** Does a trigger fold only the *most recent* pending chunk? | **Yes** — `..` pops exactly the top directory, never one buried deeper. |
+| **Q4.** Is the answer read off the stack at end-of-input? | **Yes** — the surviving directory names, joined with `/`, are the canonical path. |
+
+## Approach in Words
+
+Split on `/`, push names, and let `..` pop the top directory.
+
+1. **Initialise an empty stack** of directory-name strings.
+2. **Split the path on `/`** and scan the segments left to right.
+3. **Skip noise.** An empty segment (from `//`, or a leading/trailing slash) or `.` carries no directory — ignore it.
+4. **Name → push.** Any segment that is not `.` or `..` is a directory name; push it onto the stack.
+5. **`..` → pop if possible.** Rise one level by popping the top directory; if the stack is already empty, do nothing — you cannot go above root.
+6. **After the pass, build the result.** Return `/` if the stack is empty, otherwise `/` followed by the stack joined with `/`.
+
+<details>
 <summary><h2>Approach</h2></summary>
 
 
@@ -44,7 +109,6 @@ Split on `/`. Each non-empty token is one of three things:
 
 Final path = `/` + `'/'.join(stack)` (or just `/` if empty).
 
-> 🖼 Diagram — Canonicalise path — each token decides its action: push, pop, or skip. The final stack is the path's directory list, joined with slashes.
 ```mermaid
 ---
 config:
@@ -76,7 +140,7 @@ flowchart LR
 
 
 
-```python run
+```python run viz=array viz-root=stack viz-kind=stack
 from typing import List
 
 class Solution:
@@ -123,7 +187,7 @@ print(Solution().canonicalise_path("/a/../../b"))   # /b
 print(Solution().canonicalise_path("//home//foo/")) # /home/foo
 ```
 
-```java run
+```java run viz=array viz-root=stack viz-kind=stack
 import java.util.*;
 
 public class Main {
@@ -187,35 +251,53 @@ public class Main {
 
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+## Dry Run
 
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
+Walk Example 1 — `path = "/a/b/../c"`. Split on `/` gives the segments `['', 'a', 'b', '..', 'c']`. The stack holds the directory chain; push names, pop on `..`, skip noise:
 
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
+```
+path = "/a/b/../c"   →  split  →  ['', 'a', 'b', '..', 'c']
 
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
+''   empty   → skip          → stack (bottom→top): (empty)
+'a'  name    → push          → stack: a
+'b'  name    → push          → stack: a b
+'..' trigger → pop 'b'       → stack: a
+'c'  name    → push          → stack: a c
 
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
+end of input → "/" + "/".join([a, c]) → "/a/c" ✓
+```
 
-<!-- TODO: Solution — missing, needs to be written -->
-<!--       Guidance: Python block then Java block -->
+A trace on `path = "/a/../../b"` shows the root guard — a `..` on an empty stack is ignored:
 
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
+```
+'a'  push          → stack: a
+'..' pop 'a'       → stack: (empty)
+'..' stack empty   → no-op  → stack: (empty)
+'b'  push          → stack: b
 
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table: time / space / why -->
+end of input → "/b" ✓
+```
 
-<!-- TODO: Edge Cases — missing, needs to be written -->
-<!--       Guidance: table, min 5 rows -->
+## Complexity Analysis
 
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->
+| Measure | Value | Why |
+|---|---|---|
+| Time  | **O(N)** | One pass over the `N` characters: splitting is `O(N)`, and each segment drives one `O(1)` push or pop. |
+| Space | **O(N)** worst, **O(1)** best | A path of all names (`/a/b/c/...`) pushes every segment; a path that cancels everything (`/a/../b/..`) keeps the stack near empty. |
+
+The time is `O(N)` where `N` is the path length: the split scans the string once, and the segment loop does `O(1)` work per token. The space is `O(N)` in the worst case — a path with no `..`, like `/a/b/c`, pushes every directory and the stack grows with the input. The best case is `O(1)` space when `..` tokens cancel directories as fast as they are pushed, keeping the stack shallow.
+
+## Edge Cases
+
+| Case | Example | Expected | Reasoning |
+|---|---|---|---|
+| Root only | `/` | `/` | Splitting yields only empty segments; the stack stays empty, so the result is `/`. |
+| `..` above root | `/..` | `/` | `..` pops an empty stack as a no-op; you cannot rise above root. |
+| Single `.` | `/.` | `/` | `.` is the current directory — skipped, leaving the stack empty. |
+| No special tokens | `/a/b/c` | `/a/b/c` | Every segment is a name; all three push and none pop. |
+| Multiple `..` past root | `/a/../../b` | `/b` | `a` is popped, the second `..` no-ops on the empty stack, then `b` is pushed. |
+| Doubled and trailing slashes | `//home//foo/` | `/home/foo` | The empty segments from `//` and the trailing `/` are skipped; only `home` and `foo` push. |
+
+## Key Takeaway
+
+Split the path into segments and let a stack of directory names absorb each token — push a name, pop on `..`, skip `.` and empties. The new idea over the generic pattern is the *guarded fold*: popping an empty stack is a deliberate no-op, which is how the root boundary is enforced without a special case.

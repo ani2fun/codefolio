@@ -89,7 +89,7 @@ Run the lockstep walk in two phases — prime to find the `N`-th-from-start, the
 ### Solution
 
 
-```python run
+```python run viz=linked-list viz-root=head
 from typing import Optional
 
 
@@ -210,7 +210,7 @@ print(to_list(Solution().swap_nth_nodes(from_list([1, 2]), 2)))            # [2,
 print(to_list(Solution().swap_nth_nodes(from_list([1, 2, 3, 4, 5]), 1)))  # [5, 2, 3, 4, 1]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {

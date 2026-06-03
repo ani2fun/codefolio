@@ -1,141 +1,160 @@
 ---
 title: "Pattern: Preorder Traversal (Stateless)"
-summary: "Top-down preorder: push computed state from parent to children on the descent — no accumulator beyond the current call argument."
+summary: "Top-down recursion: each node receives the accumulated context (depth, path sum, running max) from its parent as a function argument, uses it, and passes the updated value down. No shared accumulator — every call is self-contained. The shape for any 'what do my ancestors tell me?' problem."
 prereqs:
   - 03-trees/01-binary-tree/04-recursive-traversals-in-binary-trees
 ---
 
-# The stateless preorder pattern
+# Pattern: Preorder Traversal (Stateless)
 
-The pattern in pseudocode:
+## Why It Exists
 
-```text
-preorder(node, accumulator):
-  if node is null: return
-  process(node, accumulator)                           # use the accumulator
-  newAccumulator = update(accumulator, node.val)       # combine with this node
-  preorder(node.left,  newAccumulator)                 # hand to left child
-  preorder(node.right, newAccumulator)                 # hand to right child
+Many tree questions are **top-down**: a node's answer depends on its *ancestors* — its depth, the running sum along the root-to-here path, the max value seen on the way down, the accumulated path string. Preorder (visit the node *before* its children) is the natural shape, because you compute a node's context first, then hand it to the children.
+
+The **stateless** hallmark is *how* that context travels: you pass it **down as a function argument**, not through a shared mutable variable. Each call is self-contained — `f(node, accumulated)` — so there's nothing to reset between branches, no cross-contamination between the left and right subtrees, and the logic reads as "given what my parent told me, what do I tell my children?" That discipline makes top-down tree code simple and bug-resistant.
+
+## See It Work
+
+Does a root-to-leaf path sum to `7`? Carry the **remaining target** down the tree as an argument. Run it.
+
+```python run viz=binary-tree viz-root=root
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+def has_path_sum(node, target):
+    if node is None:
+        return False
+    if node.left is None and node.right is None:   # leaf: does it finish the target?
+        return node.val == target
+    rem = target - node.val                        # push the REMAINING target DOWN
+    return has_path_sum(node.left, rem) or has_path_sum(node.right, rem)
+
+root = TreeNode(1, TreeNode(2, TreeNode(4), TreeNode(5)), TreeNode(3, None, TreeNode(6)))
+print(has_path_sum(root, 7))     # True  (1 → 2 → 4)
+print(has_path_sum(root, 100))   # False
 ```
 
-The accumulator is *passed by value* (or as an immutable reference) down the recursion. Each child receives a *copy* — so changes one subtree makes never affect the other. There's no need for "back out" cleanup because there's nothing to clean up: the parent's value is already saved on its own stack frame, untouched.
+## How It Works
 
-> 🖼 Diagram — Stateless preorder data flow — each node updates the accumulator with its own value before passing it to its children. The arrows on the edges show what each child receives. Notice both children of a node receive the same updated accumulator — the parent's contribution is included exactly once.
+The function signature carries the accumulated context; the recursion threads it down:
+
+1. **Receive** the context from the parent (here, the remaining target; elsewhere depth, path sum, running max).
+2. **Combine** it with the current node (`rem = target - node.val`).
+3. **Pass** the updated context to both children; **base case** (leaf or `None`) decides using it.
+
 ```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
 flowchart TB
-    R(("(1)<br/>acc=0"))
-    A(("(2)<br/>acc=1"))
-    B(("(3)<br/>acc=1"))
-    C(("(4)<br/>acc=3"))
-    D(("(7)<br/>acc=4"))
-    R -->|"pass acc=1"| A
-    R -->|"pass acc=1"| B
-    A -->|"pass acc=3"| C
-    B -->|"pass acc=4"| D
-    style R fill:#fef9c3,stroke:#f59e0b
+  R["root: f(node, acc)"] --> L["left: f(left, acc')"]
+  R --> RT["right: f(right, acc')"]
+  L --> LL["…carries acc'' down…"]
 ```
 
-<p align="center"><strong>Stateless preorder data flow — each node updates the accumulator with its own value <em>before</em> passing it to its children. The arrows on the edges show what each child receives. Notice both children of a node receive the <em>same</em> updated accumulator — the parent's contribution is included exactly once.</strong></p>
+<p align="center"><strong>context flows strictly parent → child as a call argument; each subtree is independent, no shared state.</strong></p>
 
-> **Why "stateless"?** Because the algorithm doesn't carry mutable state across recursive calls. Sibling subtrees see each other's work *not at all* — they each get a fresh copy of the parent's accumulator. Compare this with the *stateful* preorder pattern (next lesson), which uses a single shared mutable accumulator that needs explicit "undo" steps when a sibling subtree is finished.
+The defining property: information flows **only downward**, via the argument. There's no accumulator shared across calls, so the left subtree's traversal can't corrupt the right's — which is why it's "stateless" (each call's behavior is fully determined by its arguments). It also means the same template solves depth (`f(node, depth+1)`), path strings (`f(node, path + str(node.val))`), "good nodes" (`f(node, max(maxSoFar, node.val))`), and more — only the *combine* step changes. Cost is `O(n)` (each node once), `O(h)` stack.
 
-## Generic pattern
+### Key Takeaway
 
+Preorder-stateless threads accumulated context **down** as a function argument: receive from parent, combine with the node, pass to children. No shared accumulator → each subtree is independent. It's the template for any "my answer depends on my ancestors" problem (depth, path sum, running max); only the combine step varies.
+
+## Trace It
+
+`has_path_sum(root, 7)` — the remaining target flows down:
+
+| node | incoming `target` | leaf? | action |
+|---|---|---|---|
+| `1` | `7` | no | `rem = 6`, recurse |
+| `2` | `6` | no | `rem = 4`, recurse |
+| `4` | `4` | yes | `4 == 4` → **True** |
+
+The `or` short-circuits, so once `1 → 2 → 4` succeeds, the rest isn't explored.
+
+Before you read on: this passes the remaining target *down* as an argument. An alternative is to keep one shared `running_sum` variable, add `node.val` on the way in, and *subtract* it on the way out (backtrack). Both compute the same thing — so why does the "pass it down as an argument" (stateless) version avoid an entire class of bugs the shared-variable version is prone to?
+
+Because with a shared mutable accumulator you must **manually undo** your change when you leave a node — `running_sum += node.val` on entry, `running_sum -= node.val` on exit — and forgetting (or misplacing) that subtraction silently leaks one branch's state into its sibling, giving wrong answers that are maddening to debug. The stateless version has *nothing to undo*: each call gets its own `rem` as a parameter, and when the call returns, that value simply goes out of scope — the parent's `target` was never touched. The language's call stack does the "restore on exit" for free. So "push state down as an argument" trades a tiny bit of redundant copying for *immunity to the backtracking-cleanup bug* — every call is a pure function of its arguments. (The shared-variable form is sometimes necessary for efficiency or when you must collect results across branches — that's the *stateful* pattern, next — but when a plain argument suffices, prefer it.)
+
+## Your Turn
+
+The top-down template — path-sum and depth, both threading context down:
 
 ```python run
-from typing import Optional
-
 class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
-        self.val, self.left, self.right = val, left, right
+    def __init__(self, val, left=None, right=None):
+        self.val = val; self.left = left; self.right = right
 
-def f(acc, val):                       # combine the parent's acc with this node's value
-    return acc + val                   # placeholder — replace with real combiner
+def has_path_sum(node, target):
+    if node is None: return False
+    if node.left is None and node.right is None:
+        return node.val == target
+    rem = target - node.val
+    return has_path_sum(node.left, rem) or has_path_sum(node.right, rem)
 
-def stateless_preorder(root: Optional[TreeNode], acc=0):
-    if root is None: return
-    # ... use acc here to process root if needed ...
-    new_acc = f(acc, root.val)
-    stateless_preorder(root.left,  new_acc)
-    stateless_preorder(root.right, new_acc)
+def max_depth(node, depth=0):
+    if node is None: return depth
+    return max(max_depth(node.left, depth + 1), max_depth(node.right, depth + 1))
+
+root = TreeNode(1, TreeNode(2, TreeNode(4), TreeNode(5)), TreeNode(3, None, TreeNode(6)))
+print(has_path_sum(root, 8), has_path_sum(root, 10), has_path_sum(root, 100))   # True True False
+print(max_depth(root))   # 3
 ```
 
 ```java run
-static int f(int acc, int val) { return acc + val; }
-static void statelessPreorder(TreeNode node, int acc) {
-    if (node == null) return;
-    // ... use acc to process node ...
-    int newAcc = f(acc, node.val);
-    statelessPreorder(node.left,  newAcc);
-    statelessPreorder(node.right, newAcc);
+public class Main {
+  static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } TreeNode(int v, TreeNode l, TreeNode r){ val=v; left=l; right=r; } }
+
+  static boolean hasPathSum(TreeNode node, int target) {
+    if (node == null) return false;
+    if (node.left == null && node.right == null) return node.val == target;
+    int rem = target - node.val;                         // push remaining target down
+    return hasPathSum(node.left, rem) || hasPathSum(node.right, rem);
+  }
+  static int maxDepth(TreeNode node, int depth) {
+    if (node == null) return depth;
+    return Math.max(maxDepth(node.left, depth + 1), maxDepth(node.right, depth + 1));
+  }
+  public static void main(String[] args) {
+    TreeNode root = new TreeNode(1, new TreeNode(2, new TreeNode(4), new TreeNode(5)),
+                                    new TreeNode(3, null, new TreeNode(6)));
+    System.out.println(hasPathSum(root, 7) + " " + maxDepth(root, 0));   // true 3
+  }
 }
 ```
 
+Drill the family in **Practice** — [Sum of Path](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-problems-sum-of-path), [Depth Assignment](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-problems-depth-assignment), [Concatenated Path](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-problems-concatenated-path), and [Increasing Path](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-problems-increasing-path).
 
-## Complexity
+## Reflect & Connect
 
-> **Time:** O(N) — every node is visited exactly once. **Space:** O(h) for the recursion stack.
+Preorder-stateless is the "what do my ancestors tell me?" template:
 
-# How to recognise it
+- **The family** — root-to-leaf path sum, depth/level assignment, accumulated path string, running max on the path ("count good nodes ≥ all ancestors"), and "is the root-to-leaf path strictly increasing?" All thread one accumulated value down; only the combine step differs.
+- **Argument-passing = statelessness** — context lives in the call argument, so each call is a pure function of its inputs and the call stack restores the parent's state automatically. No backtracking cleanup, no cross-branch leakage.
+- **It's half of the traversal duo** — preorder pushes context *down* (top-down); [postorder](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-pattern) combines results *up* (bottom-up). When a node needs ancestor info, go preorder; when it needs child results, go postorder. The [stateful preorder](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateful-pattern) variant uses a shared accumulator when you must collect across branches.
 
-A problem fits this pattern if **every node's answer depends only on the path from the root to it** — and that dependency is *summarisable* by a small piece of data (a sum, a max, a depth, a string, a flag) that can be computed *incrementally* as the recursion descends.
+**Prerequisites:** [Recursive Traversals in Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-recursive-traversals-in-binary-trees).
+**What's next:** the same descent, but carrying a *mutable* accumulator across branches — [Preorder Traversal (Stateful)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateful-pattern).
 
-Look for verb phrases like:
+## Recall
 
-- *"For each node, compute … from root to that node"*
-- *"For each node, the value of … on the path above it"*
-- *"Update each node based on its ancestors"*
-- *"Mark every node where … from the root"*
+> **Mnemonic:** *Top-down: `f(node, acc)`. Receive context from parent → combine with node → pass to children. No shared accumulator (argument-passing), so each subtree is independent. `O(n)`/`O(h)`.*
 
-Anti-pattern (does **not** fit): if the answer depends on a node's *descendants* or *both* sides of the tree at once, you want the *postorder* pattern instead. If sibling subtrees need to communicate, you want the *stateful* variant.
+| | |
+|---|---|
+| Shape | preorder (node before children); context as a parameter |
+| Flow | parent → child only (top-down) |
+| Combine | `acc' = combine(acc, node.val)`; pass `acc'` down |
+| Why stateless | context in the argument → call stack restores parent state, no cleanup |
+| Family | path sum, depth, path string, running max ("good nodes") |
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+- **Q:** What does "stateless" mean here, and how is context carried? **A:** No shared mutable accumulator — context flows down as a function argument, so each call is determined by its inputs.
+- **Q:** When do you reach for top-down preorder? **A:** When a node's answer depends on its ancestors (depth, path sum, running max along the path).
+- **Q:** Why does argument-passing avoid the backtracking-cleanup bug? **A:** Each call gets its own copy; on return it goes out of scope automatically — there's no manual "undo on exit" to forget.
+- **Q:** Preorder vs postorder? **A:** Preorder pushes context *down* (ancestor info); postorder combines results *up* (child info).
 
-<!-- TODO: Understanding the Pattern — missing, needs to be written -->
-<!--       Guidance: umbrella H2 with the subsections below -->
+## Sources & Verify
 
-<!-- TODO: Why Naive Isn't Enough — missing, needs to be written -->
-<!--       Guidance: motivation for why the obvious approach fails -->
-
-<!-- TODO: The Core Idea — missing, needs to be written -->
-<!--       Guidance: one paragraph: the central trick -->
-
-<!-- TODO: How the Pointers/Window Move — missing, needs to be written -->
-<!--       Guidance: mechanics of the moving parts -->
-
-<!-- TODO: The Generic Algorithm — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
-
-<!-- TODO: Generic Implementation — missing, needs to be written -->
-<!--       Guidance: Python block + Java block of the skeleton -->
-
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table -->
-
-<!-- TODO: Variants / Taxonomy — missing, needs to be written -->
-<!--       Guidance: enumerate sub-shapes of this pattern -->
-
-<!-- TODO: Identifying — missing, needs to be written -->
-<!--       Guidance: per-variant: recognition checklist + canonical example -->
-
-<!-- TODO: Recognition Checklist — missing, needs to be written -->
-<!--       Guidance: 4-question diagnostic — the source of the Problem-section Diagnostic Questions -->
-
-<!-- TODO: Canonical Example — missing, needs to be written -->
-<!--       Guidance: fully worked example: brute force → optimised → template fit -->
-
-<!-- TODO: Problems in This Category — missing, needs to be written -->
-<!--       Guidance: table with links to the 02-problems/ files -->
+- **CLRS**, *Introduction to Algorithms*, 4th ed., §10.4 / §12.1 — tree traversals; preorder.
+- **Sedgewick & Wayne**, *Algorithms*, 4th ed., §3.2 — recursive tree processing.
+- Top-down argument-threading (path-sum, depth) is the standard preorder template; both runnable blocks are verified by running (`has_path_sum 7 ⇒ True, 100 ⇒ False`; `8/10/100 ⇒ True/True/False`; `max_depth ⇒ 3`).

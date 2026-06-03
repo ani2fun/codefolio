@@ -35,7 +35,6 @@ Three signs:
 2. We need *one* path, not all of them — early termination is a win.
 3. We must mark cells as visited during the descent to avoid cycling, and unmark on backtrack to allow other paths to use them.
 
-> 🖼 Diagram — Search descends through the grid, marking visited cells. On a dead end, the recursion returns false, the cell is unmarked, and the parent tries another direction.
 ```mermaid
 ---
 config:
@@ -88,35 +87,30 @@ If we don't unmark a cell after a failed exploration from it, subsequent sibling
 
 <div class="d2-slides" data-caption="The maze gets mutated as we descend; on failure, mutations are undone before sibling branches run.">
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "Start at (0,0)" {
   grid: "maze\n[0,1,1,1]\n[0,0,1,0]\n[0,0,1,1]\n[1,0,0,0]" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
 }
 ```
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "Marked (0,0) = -1, descending Down to (1,0)" {
   grid: "maze\n[-1,1,1,1]\n[0,0,1,0]\n[0,0,1,1]\n[1,0,0,0]\npath = 'D'" {style.fill: "#fde68a"; style.stroke: "#d97706"}
 }
 ```
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "(1,0) marked, descend to (2,0) = D" {
   grid: "maze\n[-1,1,1,1]\n[-1,0,1,0]\n[0,0,1,1]\n[1,0,0,0]\npath = 'DD'" {style.fill: "#fde68a"; style.stroke: "#d97706"}
 }
 ```
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "(2,0) marked, R to (2,1)" {
   grid: "path = 'DDR'" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
 }
 ```
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "Continue exploring; eventual success → 'DDRDRR'" {
   grid: "path = 'DDRDRR' — goal reached!" {style.fill: "#ede9fe"; style.stroke: "#7c3aed"}
@@ -131,7 +125,7 @@ state: "Continue exploring; eventual success → 'DDRDRR'" {
 
 ### The Solution
 
-```python run
+```python run viz=grid viz-root=maze1
 from typing import List, Tuple
 
 class Solution:
@@ -247,7 +241,7 @@ maze8 = [[0, 0, 1], [1, 0, 1], [1, 0, 0]]
 print(Solution().rat_in_a_maze(maze8))                # RDRDD (or similar valid path)
 ```
 
-```java run
+```java run viz=grid viz-root=maze1
 public class Main {
     static class Solution {
 
@@ -410,33 +404,9 @@ In practice, the visited-mark prevents revisiting cells, so the search is much f
 
 </details>
 <details>
-<summary><h2>Final Takeaway</h2></summary>
+<summary><h2>Key Takeaway</h2></summary>
 
 
 Rat in a Maze is the canonical "find one path" search problem. Mark visited, recurse, propagate true on success, undo on failure. Same recipe applies to flood-fill, island-counting (when finding any cell of an island), and many graph reachability problems. The next problem keeps the 2D-grid setting but flips the goal: instead of reaching a destination, we're matching a sequence of characters.
 
 </details>
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
-
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
-
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
-
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
-
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
-
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->

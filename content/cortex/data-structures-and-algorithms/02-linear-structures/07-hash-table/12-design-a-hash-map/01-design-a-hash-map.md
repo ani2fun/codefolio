@@ -7,29 +7,14 @@ prereqs:
 difficulty: hard
 ---
 
-## The Hook
+Some problems need a hash table to **collaborate** with another structure. The hash map gives `O(1)` lookup by key; pair it with a second structure (a linked list or an array) for `O(1)` on *another* dimension — recency or position — and operations that look impossible become routine. This lesson designs two such structures interviewers love and production systems live by:
 
-Up until now, every problem in this section had a single hash table doing the work. But some problems demand more — they need the hash table to **collaborate** with another data structure, the way a quarterback collaborates with a receiver. Get the pairing right, and operations that look impossible — `O(1)` random retrieval *and* `O(1)` deletion in the same set, `O(1)` get *and* `O(1)` LRU-eviction in the same cache — become routine. Get the pairing wrong, and you trade O(1) for O(N) on every other call.
+- **LRU Cache** — `get` and `put` in O(1) with automatic eviction of the least-recently-used entry. Powers every page cache, browser cache, and CDN. (Hash map + doubly-linked list.)
+- **RandomisedSet** — `insert`, `remove`, *and* `getRandom` in O(1). Powers fair shuffles, A/B bucketers, game-state samplers. (Hash map + dynamic array.)
 
-This lesson is two **boss-fight design problems** that interviewers love and production systems live by:
+## Design an LRU Cache
 
-- **LRU Cache** — `get` and `put` in O(1), with automatic eviction of the least-recently-used entry when capacity is exceeded. Powers every page cache, browser cache, and CDN you've ever used.
-- **RandomisedSet** — `insert`, `remove`, *and* `getRandom` in O(1). Powers fair shuffles, A/B test bucketers, and game-state samplers.
-
-Both problems share the same trick: **a hash map gives you O(1) lookup; a second structure (linked list / array) gives you O(1) ordering or random-access.** Together they give you the impossible.
-
----
-
-## Table of contents
-
-1. [Design an LRU cache](#design-an-lru-cache)
-2. [Design a RandomisedSet](#design-a-randomisedset)
-
-***
-
-# Design an LRU cache
-
-## Problem Statement
+### Problem Statement
 
 Implement an LRU (Least-Recently-Used) cache:
 
@@ -37,7 +22,6 @@ Implement an LRU (Least-Recently-Used) cache:
 > -   **`get(int key)`** — Return the value if the key exists, else `-1`. Accessing a key marks it as the most recently used.
 > -   **`put(int key, int value)`** — Insert or update the mapping. If inserting causes the size to exceed `capacity`, evict the least recently used key.
 
-> 🖼 Diagram — Constraints — both operations have to be amortised O(1). The naïve "scan a list for the LRU element" is O(N) per put and breaks the contract.
 ```d2
 cons: Constraints {
   c1: "No built-in LRU libraries"
@@ -73,7 +57,6 @@ The two requirements pull in opposite directions:
 
 The classic answer: **doubly-linked list + hash map**. The list stores the entries in MRU-to-LRU order: front of list = most recently used, back of list = least recently used. The hash map stores `key → pointer to that key's node`. Both structures hold the *same* nodes (the list owns them; the map references them).
 
-> 🖼 Diagram — The LRU cache as a hash-map-plus-doubly-linked-list — the map gives O(1) lookup of any key's node; the list keeps the recency order with O(1) splice. Both structures point to the same nodes.
 ```d2
 direction: right
 
@@ -234,7 +217,7 @@ c3.put(4, 4)                    # evicts LRU which is key 2
 print(c3.get(2))                # -1 — evicted
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -356,9 +339,9 @@ public class Main {
 
 ***
 
-# Design a RandomisedSet
+## Design a RandomisedSet
 
-## Problem Statement
+### Problem Statement
 
 Implement a set that supports `insert`, `remove`, and `getRandom` — **all in O(1)** amortised.
 
@@ -380,7 +363,7 @@ Implement a set that supports `insert`, `remove`, and `getRandom` — **all in O
 Three operations all in O(1) — easy to do **two of three**, hard to do **three of three**:
 
 - A hash set gives O(1) insert and remove (by value), but `getRandom` is **not** O(1) — there's no direct random index into a hash table.
-- A dynamic array gives O(1) `getRandom` (just `arr[rand() % size]`), and O(1) append, but `remove(val)` is O(N) — we'd have to scan to find the value's index.
+- A dynamic array gives O(1) `getRandom` (`arr[rand() % size]`), and O(1) append, but `remove(val)` is O(N) — we'd have to scan to find the value's index.
 
 The composite trick: **dynamic array + hash map**, where the array stores the values and the map stores `value → index in the array`. Now:
 
@@ -390,7 +373,6 @@ The composite trick: **dynamic array + hash map**, where the array stores the va
 
 That swap-with-last is what avoids the O(N) shift. The only constraint: ordering inside the array doesn't matter — perfect for a *set* (which is order-agnostic by definition).
 
-> 🖼 Diagram — RandomisedSet remove — swap target with tail (O(1)), pop tail (O(1)), update the swapped element's index in the map (O(1)). The set's contents are correct; the order changed, but the set didn't care about order anyway.
 ```d2
 direction: right
 
@@ -501,7 +483,7 @@ print(s3.remove(20))            # True — removes middle element (swap with las
 print(20 not in s3.hash_map)    # True — 20 is gone
 ```
 
-```java run
+```java run viz=graph viz-root=hash_map
 import java.util.*;
 
 public class Main {
@@ -605,35 +587,11 @@ public class Main {
 > If the set were *ordered*, this trick would fail and we'd be back to O(N). The unordered nature of a set is precisely what enables O(1) deletion here.
 
 </details>
-<details>
-<summary><h2>Final Takeaway</h2></summary>
+## Key Takeaway
 
+Two composition patterns that recur in production:
 
-You've now seen the full hash-table toolkit assembled, and the design lesson tied it off with two architectural patterns that recur in production code everywhere:
+1. **Hash map + doubly-linked list** — O(1) lookup *and* an O(1) recency/priority order. Caches, schedulers, deque-with-fast-key-access. The map points to nodes; the list owns them.
+2. **Hash map + dynamic array** — O(1) lookup *and* O(1) random access by position. The array stores values, the map stores indices, and swap-with-last gives O(1) deletion as long as order doesn't matter.
 
-1. **Hash map + doubly-linked list** — for problems that need O(1) lookup *and* an O(1) recency / priority order. Caches, schedulers, deque-with-fast-key-access. The map points to nodes; the list owns them.
-2. **Hash map + dynamic array** — for problems that need O(1) lookup *and* O(1) random access by position. The array stores values; the map stores indices. Swap-with-last gives O(1) deletion as long as order doesn't matter.
-
-The deeper lesson is **composability**. A hash table on its own gives O(1) for *one* dimension of access (by key). To get O(1) on *another* dimension (recency, position, frequency, age), pair it with a structure that's specialised for that dimension and have the two collaborate via shared node references or shared indices.
-
-Once you see this composition pattern, it shows up everywhere: LinkedHashMap, OrderedDict, LFU caches, expiring caches, priority queues with `decrease-key`, indexed priority queues, in-memory write-ahead logs, every implementation of database `INDEX` you'll ever read source for.
-
-> **The complete arc** — eleven lessons, one section, one data structure:
->
-> | Lesson | What you got | Why it mattered |
-> |---|---|---|
-> | 1 — Introduction | Hash function, internal array, collisions | Foundation |
-> | 2 — Separate chaining | One family of collision resolution | Easy + memory-flexible |
-> | 3 — Linear probing | Cache-friendly probing | Cache locality matters |
-> | 4 — Quadratic probing | Cluster-shattering probing | Cures primary clustering |
-> | 5 — Double hashing | Per-key probe rhythm | Cures secondary clustering |
-> | 6 — Counting | Multiset summary in one pass | The starter pattern |
-> | 7 — Key generation | Canonical-form grouping | Equivalence classes for free |
-> | 8 — Fixed sliding window | Moving multiset summary | O(N·K) → O(N) |
-> | 9 — Variable sliding window | Flex-the-window trick | Longest/shortest with property |
-> | 10 — Prefix sum | Subarray-sum-as-difference | Negatives, exact targets |
-> | 11 — Design | Composing hash with list/array | Production data structures |
->
-> You came in knowing a hash map was a `dict`. You leave knowing it's the universal adapter that turns "search again and again" into "calculate where, look once". Carry the toolkit. The interview problems and the systems code will both come for it.
-
-</details>
+The deeper lesson is **composability**: a hash table gives O(1) on *one* dimension (by key); to get O(1) on another (recency, position, frequency), pair it with a structure specialised for that dimension, collaborating via shared node references or indices. This pattern is `LinkedHashMap`, `OrderedDict`, LFU caches, indexed priority queues, and every database `INDEX` implementation.

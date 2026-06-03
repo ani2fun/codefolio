@@ -1,40 +1,16 @@
 ---
 title: "Linear DP"
-summary: "First DP shape — recurrence on a single index. Built directly on top of recursive Fibonacci by memoizing the call tree."
+summary: "The first DP shape — a recurrence on a single index. Cure the exponential recursion of Fibonacci by solving each subproblem once and reusing the answer."
 prereqs:
   - 05-algorithms-by-strategy/01-recursion/07-pattern-multiple-recursion/01-pattern
   - 05-algorithms-by-strategy/01-recursion/07-pattern-multiple-recursion/02-problems/01-fibonacci-number
 ---
 
-# 1. Linear DP
+## Why It Exists
 
-You wrote a recursive Fibonacci function in the recursion chapter. It worked. `fib(10)` returned in microseconds. `fib(30)` paused for a fraction of a second. `fib(40)` took seconds. `fib(50)` would take *minutes* on the same machine that loads a webpage in 100ms. Something is catastrophically wrong with how the machine is spending its time — and the diagnosis is the first lesson of dynamic programming.
+Recursive Fibonacci is three lines, mathematically perfect, and computationally radioactive: `fib(6)` computes `fib(2)` *five* times, `fib(3)` three times, and the work doubles roughly every level — about `2ⁿ/√5` calls, so `fib(50)` makes a *trillion*. You met this disaster as the exponential blow-up in [multiple recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multiple-recursion); **dynamic programming is the cure.**
 
-This lesson opens the dynamic-programming section with the simplest DP shape — **linear DP**. The "linear" refers to the recurrence depending on a single index `i`, with each entry computed from a constant number of previous entries (`dp[i-1]`, `dp[i-2]`, etc.). Once you can write the bottom-up factorial loop and the bottom-up Fibonacci loop, you have the template that every later DP lesson extends. The scaffolding from the Recursion section is still here — just used more carefully.
-
-## Table of contents
-
-1. [The Recursion Disaster That Forces Memoization](#the-recursion-disaster-that-forces-memoization)
-2. [What "Dynamic Programming" Actually Means](#what-dynamic-programming-actually-means)
-3. [Linear DP — The Simplest Shape](#linear-dp--the-simplest-shape)
-4. [Calculate Factorial](#calculate-factorial)
-5. [Nth Fibonacci Number](#nth-fibonacci-number)
-6. [Top-Down vs Bottom-Up — The Two Faces of Every DP Solution](#top-down-vs-bottom-up--the-two-faces-of-every-dp-solution)
-7. [Space Optimisation — Throwing the Table Away](#space-optimisation--throwing-the-table-away)
-
-***
-
-# The Recursion Disaster That Forces Memoization
-
-In the Multiple Recursion lesson you wrote this:
-
-```python
-def fib(n):
-    if n < 2: return n
-    return fib(n - 1) + fib(n - 2)
-```
-
-Three lines. Mathematically perfect. Computationally radioactive. To see why, count how many times `fib(2)` gets computed when you ask for `fib(6)`:
+The fix is one sentence: *solve every subproblem once, store the answer, look it up next time.* That single move collapses the exponential recursion tree into a linear chain. DP applies whenever a problem has **optimal substructure** (its answer is built from answers to smaller versions) and **overlapping subproblems** (those smaller versions repeat). **Linear DP** — this lesson — is the simplest shape: the state is one integer `i`, and `dp[i]` depends on a constant number of earlier entries.
 
 ```mermaid
 ---
@@ -58,804 +34,182 @@ flowchart TB
   F4b --> F3c["fib(3)"]
   F4b --> F2b["fib(2)"]
   F3a --> F2c["fib(2)"]
-  F3a --> F1a["fib(1)"]
   F3b --> F2d["fib(2)"]
-  F3b --> F1b["fib(1)"]
   F3c --> F2e["fib(2)"]
-  F3c --> F1c["fib(1)"]
 ```
 
-<p align="center"><strong>The recursion tree for <code>fib(6)</code>. Every <code>fib(2)</code> node represents the *same computation* — done from scratch. Five copies. <code>fib(3)</code> appears three times. <code>fib(4)</code> twice. The work doubles roughly every level we go up.</strong></p>
+<p align="center"><strong>Five separate <code>fib(2)</code> nodes, three <code>fib(3)</code>, two <code>fib(4)</code> — all duplicate work. DP solves each once.</strong></p>
 
-For `fib(n)`, the call count is roughly `2^n / √5` — exponential. `fib(50)` makes about a *trillion* calls. Each call is a few nanoseconds; a trillion of them is hours.
+## See It Work
 
-The pathology is duplicate work. The same subproblem is solved over and over. **Dynamic programming exists to fix exactly this disease.** The cure is one short sentence: *solve every subproblem once, store the answer, look it up next time*.
+Bottom-up Fibonacci: allocate a table, seed the base cases, fill it left-to-right with the recurrence. Every subproblem computed exactly once.
 
-> *Predict before reading on — what's the smallest change you could make to the recursive `fib` to remove all duplicate work? Don't write it; just describe the idea.*
+```python run
+def fib_tab(n):
+    if n < 2: return n
+    dp = [0] * (n + 1); dp[1] = 1                 # base cases
+    for i in range(2, n + 1):
+        dp[i] = dp[i - 1] + dp[i - 2]             # recurrence, in dependency order
+    return dp[n]
 
-The answer most people land on: a dictionary that maps `n → fib(n)`. Before computing `fib(n)`, check if it's in the dictionary. If yes, return the cached value. If no, compute it, store it, then return. The dictionary collapses the exponential tree into a linear chain — every subproblem solved exactly once.
+print("fib_tab(10):", fib_tab(10))
+```
 
-That dictionary is the entire idea of DP. Everything else in this section is technique for choosing *what* the subproblems are, *how* they relate, and *which order* to compute them in.
+```java run
+public class Main {
+    static long fibTab(int n) {
+        if (n < 2) return n;
+        long[] dp = new long[n + 1]; dp[1] = 1;       // base cases
+        for (int i = 2; i <= n; i++) dp[i] = dp[i - 1] + dp[i - 2];   // recurrence
+        return dp[n];
+    }
+    public static void main(String[] args) {
+        System.out.println("fib_tab(10): " + fibTab(10));
+    }
+}
+```
 
----
+Both print `55`. The table fills `0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55` — linear time, no recomputation.
 
-## Key Takeaway
+## How It Works
 
-The recursive Fibonacci is exponential because identical subproblems get solved repeatedly. DP's core move is to solve each subproblem once and reuse the answer — turning the exponential tree into linear work.
-
-***
-
-# What "Dynamic Programming" Actually Means
-
-The phrase is misleading. Richard Bellman coined it in the 1950s — and admitted later that he chose "dynamic" to sound impressive to a budget-conscious congress, and "programming" because that meant "scheduling" at the time. Neither word means what they sound like. **Dynamic programming has nothing to do with dynamic types or computer programming languages.** It's a problem-solving technique with two requirements:
-
-1. **Optimal substructure** — the problem's answer can be built from answers to smaller versions of itself.
-2. **Overlapping subproblems** — those smaller versions repeat across the recursion tree.
-
-When both hold, you can solve the problem by:
-
-1. Identifying the subproblems (usually indexed by integers).
-2. Writing the **recurrence relation** that ties a subproblem to smaller ones.
-3. Computing every subproblem exactly once and storing the answer.
-4. Reading the final answer out of the table.
-
-That's it. The four pieces are the entire DP recipe.
+DP needs two properties: **optimal substructure** (the answer at `n` composes from answers at smaller sizes — `fib(n) = fib(n-1) + fib(n-2)`) and **overlapping subproblems** (those smaller answers repeat — `fib(2)` five times). When both hold, the recipe is four steps:
 
 ```d2
-recipe: "The DP Recipe" {
+recipe: "The DP recipe" {
   grid-rows: 4
   grid-columns: 1
   grid-gap: 0
-  s1: |md
-    **1. Define the subproblem.** What does dp[i] *mean*? — usually "the answer to a smaller version of the original problem".
-  |
-  s2: |md
-    **2. Write the recurrence.** How does dp[i] depend on dp[i−1], dp[i−2], etc.? — this is the relationship you'd write recursively.
-  |
-  s3: |md
-    **3. Initialise the base cases.** What are dp[0], dp[1]? — the smallest instances whose answers are known directly.
-  |
-  s4: |md
-    **4. Fill the table in dependency order.** From smallest to largest, computing each dp[i] from already-computed predecessors.
-  |
+  s1: "1. Define the subproblem — what does dp[i] MEAN?"
+  s2: "2. Write the recurrence — how does dp[i] depend on dp[i-1], dp[i-2], ...?"
+  s3: "3. Initialise the base cases — dp[0], dp[1], the directly-known answers."
+  s4: "4. Fill in dependency order — smallest to largest, each from computed predecessors."
 }
 ```
 
-<p align="center"><strong>Every DP solution in this section follows the same four steps. The lesson lies in identifying the subproblem and the recurrence — once those are right, the code writes itself.</strong></p>
+<p align="center"><strong>Identify the subproblem and the recurrence, and the code writes itself. <strong>Linear DP</strong> is the shape where the state is a single index and the recurrence looks back a constant number of cells.</strong></p>
 
----
+Every DP has two equivalent implementations:
 
-## Optimal Substructure — A Concrete Check
+- **Top-down (memoisation)** — write the recurrence as a recursive function with a cache; computes only the subproblems actually needed.
+- **Bottom-up (tabulation)** — fill a table iteratively from the base cases up; no recursion, no stack-overflow risk, cache-friendly. (Used above and as the section default.)
 
-A problem has **optimal substructure** if the optimal answer to size `n` can be expressed in terms of optimal answers to smaller sizes.
+And when the recurrence only looks back a fixed `k` cells (Fibonacci: 2), you can throw the table away and keep a **rolling window** of `k` scalars — `O(1)` space instead of `O(n)`.
 
-- Factorial: `fact(n) = n × fact(n-1)`. ✓ Optimal substructure — the answer at `n` is fully determined by the answer at `n-1`.
-- Fibonacci: `fib(n) = fib(n-1) + fib(n-2)`. ✓ Optimal substructure — answer at `n` depends on answers at `n-1` and `n-2`.
-- "Find any path through a graph": ✗ No optimal substructure in general — the optimal sub-path of an optimal path isn't always itself optimal (e.g. longest simple path).
+> **Key takeaway.** DP = optimal substructure + overlapping subproblems → solve each subproblem once and reuse it, collapsing exponential recursion to linear/polynomial work. Four steps: define `dp[i]`, write the recurrence, set base cases, fill in dependency order. Top-down memoises a recursion; bottom-up fills a table; both are equivalent. If the window is bounded, space-optimise to a rolling buffer.
 
-Most counting, optimization, and feasibility problems on sequences and grids have optimal substructure. Spotting it is the first step of every DP solution.
+## Trace It
 
----
+The whole reason DP exists is the cost gap between recomputing and caching. You've seen the naive tree; now measure the cure precisely.
 
-## Overlapping Subproblems — A Concrete Check
-
-A problem has **overlapping subproblems** if the recursive solution would solve the same subproblem multiple times.
-
-- Factorial recursion: `fact(5) → fact(4) → fact(3) → fact(2) → fact(1)`. **No overlap** — each subproblem is hit once. DP is *not necessary* (but it's still convenient and has the same complexity as the recursive version, just with explicit storage).
-- Fibonacci recursion: `fib(6) → fib(5) → … fib(2) called 5 times`. **Heavy overlap.** DP gives massive speedup (`O(2^n)` → `O(n)`).
-
-When subproblems overlap, DP gives an exponential speedup. When they don't, DP is just a clean reformulation of the recursion. **Spotting overlap is what tells you DP will be a win.**
-
-> *Pause. Does longest-common-subsequence have overlapping subproblems? Does the knapsack problem? Don't compute — just predict yes/no for each.*
-
-Both **yes** — you'll see why in the upcoming lessons. Both turn into DP solutions that run in a fraction of the time the brute-force recursion would take.
-
----
-
-## Key Takeaway
-
-DP needs two things: *optimal substructure* (answers compose from smaller answers) and *overlapping subproblems* (smaller answers get reused). When both hold, store-and-reuse turns exponential recursion into linear (or polynomial) iteration.
-
-***
-
-# Linear DP — The Simplest Shape
-
-**Linear DP** is the shape where:
-
-- The state is a single integer `i` (`dp[i]`).
-- The recurrence depends on a constant number of earlier entries (`dp[i-1]`, `dp[i-2]`, etc.).
-- The table is filled left-to-right.
-
-This is the simplest DP shape — and the one we use to introduce the discipline. Factorial and Fibonacci both fit. So do "climbing stairs," "house robber," "minimum cost of climbing," and dozens of similar warm-up problems.
-
-The tabular shape:
-
-```d2
-grid: "Linear DP table" {
-  grid-rows: 2
-  grid-columns: 7
-  grid-gap: 0
-  v0: "dp[0]" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  v1: "dp[1]"
-  v2: "dp[2]"
-  v3: "dp[3]"
-  v4: "dp[4]"
-  v5: "..."
-  v6: "dp[n]"
-  l0: "base"
-  l1: "base"
-  l2: "f(dp[1],dp[0])"
-  l3: "f(dp[2],dp[1])"
-  l4: "f(dp[3],dp[2])"
-  l5: ""
-  l6: "answer"
-}
-```
-
-<p align="center"><strong>One row, n+1 cells, filled left-to-right. Each cell after the base cases depends on a constant number of earlier cells via the recurrence <code>f</code>. The final answer is in <code>dp[n]</code>.</strong></p>
-
-The "linear" refers to the *shape of the dependency*, not the running time (although for our examples both are linear). In later lessons (LCS, edit distance) we'll lift to 2D tables; in still later ones (knapsack, MCM) we'll lift to richer states. But the scaffolding stays the same.
-
----
-
-## Key Takeaway
-
-Linear DP is one row of cells, filled left-to-right. Each cell after the base cases is computed from a constant number of earlier cells. Master this shape and the rest of the section is incremental.
-
-***
-
-# Calculate Factorial
-
-The factorial of a positive integer `n` is `n! = n × (n-1) × (n-2) × … × 1`, with `0! = 1` by convention. It's the classic linear-DP warm-up: there's no overlap, so DP isn't strictly *necessary*, but it lets us walk through the four-step recipe on a problem with no surprises.
-
-## The Problem
-
-Given a non-negative integer `n`, return `n!`. Aim for `O(n)` time.
-
-```
-Input:  n = 7
-Output: 5040
-        Because 7 × 6 × 5 × 4 × 3 × 2 × 1 = 5040.
-
-Input:  n = 5
-Output: 120
-
-Input:  n = 0
-Output: 1   (0! is 1 by convention)
-```
-
----
-
-<details>
-<summary><h2>Step 1 — Define the Subproblem</h2></summary>
-
-
-`dp[i]` = factorial of `i`. That's it. The subproblem at index `i` is "what's `i!`?".
-
-</details>
-<details>
-<summary><h2>Step 2 — Write the Recurrence</h2></summary>
-
-
-`i! = i × (i-1)!` for `i ≥ 1`. In DP terms: `dp[i] = i × dp[i-1]`.
-
-</details>
-<details>
-<summary><h2>Step 3 — Initialise the Base Cases</h2></summary>
-
-
-`0! = 1`, so `dp[0] = 1`. That's the only base case we need; from there every `dp[i]` follows from the recurrence.
-
-</details>
-<details>
-<summary><h2>Step 4 — Fill the Table</h2></summary>
-
-
-```d2
-direction: right
-grid: "Filling dp for n = 5" {
-  grid-rows: 2
-  grid-columns: 6
-  grid-gap: 0
-  v0: "1" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  v1: "1"
-  v2: "2"
-  v3: "6"
-  v4: "24"
-  v5: "120"
-  l0: "dp[0]<br/>(base)"
-  l1: "dp[1]<br/>1×1"
-  l2: "dp[2]<br/>2×1"
-  l3: "dp[3]<br/>3×2"
-  l4: "dp[4]<br/>4×6"
-  l5: "dp[5]<br/>5×24"
-}
-```
-
-<p align="center"><strong>The dp array for <code>n = 5</code>, filled left to right. <code>dp[0]</code> is the base. Each later cell is <code>i × dp[i-1]</code>.</strong></p>
-
-</details>
-<details>
-<summary><h2>Solution &amp; Analysis</h2></summary>
-
-### The Solution
+**Predict before you run:** how many calls does naive `fib(35)` make — thousands? millions? — and how many does the *memoised* version make?
 
 ```python run
-from typing import List
+def count_naive(n):
+    c = [0]
+    def f(n):
+        c[0] += 1
+        if n < 2: return n
+        return f(n - 1) + f(n - 2)
+    f(n); return c[0]
 
-class Solution:
-    def calculate_factorial(self, n: int) -> int:
+def count_memo(n):
+    c = [0]; memo = {}
+    def f(n):
+        c[0] += 1
+        if n < 2: return n
+        if n in memo: return memo[n]            # cache hit — no recompute
+        memo[n] = f(n - 1) + f(n - 2); return memo[n]
+    f(n); return c[0]
 
-        # Create a list to store intermediate results of
-        # calculate_factorial calculation
-        dp: List[int] = [0] * (n + 1)
+print("naive    fib(35) calls:", count_naive(35))
+print("memoised fib(35) calls:", count_memo(35))
+```
 
-        # Initialize the first element of the list as 1, since 0! is 1
-        dp[0] = 1
+<details>
+<summary><strong>Reveal</strong></summary>
 
-        for i in range(1, n + 1):
+Naive `fib(35)` makes **29,860,703** calls; the memoised version makes **69**. Same answer (`9227465`), a ~430,000× difference in work. The naive count is `2·fib(36) − 1` — itself a Fibonacci number, which is why it's exponential. Memoisation stores each of the `n` distinct subproblems the first time and returns the cache on every later request, so the total calls are `2n − 1` (each `fib(k)` computed once, plus one cache-hit return per node). That collapse from `O(2ⁿ)` to `O(n)` is dynamic programming in one experiment — the exact payoff promised back in [multiple recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multiple-recursion). A dictionary keyed on the subproblem is the entire idea; everything else in this part is choosing *what* the subproblems are.
 
-            # Calculate calculate_factorial of i by multiplying i with
-            # calculate_factorial of (i-1)
-            dp[i] = i * dp[i - 1]
+</details>
 
-        # Return the calculate_factorial of n
-        return dp[n]
+## Your Turn
 
+**House Robber** ([LeetCode 198](https://leetcode.com/problems/house-robber/)) — rob a street of houses without hitting two adjacent ones; maximise the loot. Linear DP: at each house, either *skip* it (keep `dp[i-1]`) or *take* it (`dp[i-2] + value`). Recurrence `dp[i] = max(dp[i-1], dp[i-2] + nums[i])`, space-optimised to two scalars.
 
-# Examples from the problem statement
-print(Solution().calculate_factorial(7))   # 5040
-print(Solution().calculate_factorial(5))   # 120
-print(Solution().calculate_factorial(0))   # 1
+```python run
+def rob(nums):
+    prev2, prev1 = 0, 0                          # dp[i-2], dp[i-1]
+    for x in nums:
+        prev2, prev1 = prev1, max(prev1, prev2 + x)   # skip vs take
+    return prev1
 
-# Edge cases
-print(Solution().calculate_factorial(1))   # 1
-print(Solution().calculate_factorial(2))   # 2
-print(Solution().calculate_factorial(3))   # 6
-print(Solution().calculate_factorial(4))   # 24
-print(Solution().calculate_factorial(10))  # 3628800
+print("rob([2,7,9,3,1]):", rob([2, 7, 9, 3, 1]))   # 12  (2 + 9 + 1)
+print("rob([1,2,3,1]):", rob([1, 2, 3, 1]))        # 4   (1 + 3)
 ```
 
 ```java run
 public class Main {
-    static class Solution {
-        public int calculateFactorial(int n) {
-
-            // Create an array to store intermediate results of
-            // calculateFactorial calculation
-            int[] dp = new int[n + 1];
-
-            // Initialize the first element of the array as 1, since 0! is 1
-            dp[0] = 1;
-
-            for (int i = 1; i <= n; i++) {
-
-                // Calculate calculateFactorial of i by multiplying i with
-                // calculateFactorial of (i-1)
-                dp[i] = i * dp[i - 1];
-            }
-
-            // Return the calculateFactorial of n
-            return dp[n];
+    static int rob(int[] nums) {
+        int prev2 = 0, prev1 = 0;                       // dp[i-2], dp[i-1]
+        for (int x : nums) {
+            int take = Math.max(prev1, prev2 + x);      // skip vs take
+            prev2 = prev1; prev1 = take;
         }
+        return prev1;
     }
-
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().calculateFactorial(7));   // 5040
-        System.out.println(new Solution().calculateFactorial(5));   // 120
-        System.out.println(new Solution().calculateFactorial(0));   // 1
-
-        // Edge cases
-        System.out.println(new Solution().calculateFactorial(1));   // 1
-        System.out.println(new Solution().calculateFactorial(2));   // 2
-        System.out.println(new Solution().calculateFactorial(3));   // 6
-        System.out.println(new Solution().calculateFactorial(4));   // 24
-        System.out.println(new Solution().calculateFactorial(10));  // 3628800
+        System.out.println("rob([2,7,9,3,1]): " + rob(new int[]{2,7,9,3,1}));   // 12
+        System.out.println("rob([1,2,3,1]): " + rob(new int[]{1,2,3,1}));       // 4
     }
 }
 ```
 
+Both print `12` then `4`. The recurrence looks back exactly two cells, so the rolling-window space-optimisation applies — `O(1)` space. The 14 lessons in this section climb from here: LIS, LCS, edit distance, knapsack — each a richer subproblem and recurrence on the same scaffold.
+
+## Reflect & Connect
+
+- **DP is recursion + memory.** Top-down is the recursive relation plus a cache (the [multiple-recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multiple-recursion) fib memo *was* DP); bottom-up is the same recurrence filled into a table. The leap from naive recursion is just "store and reuse."
+- **2D DP is next, and it's [multidimensional recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multidimensional-recursion) + a cache.** When the state needs two indices (LCS, edit distance, knapsack, grid paths), the table becomes a grid — exactly the `O(2^{x+y}) → O(x·y)` collapse you predicted there.
+- **Spot overlap to know DP wins.** Optimal substructure alone (factorial: `fact(n)=n·fact(n-1)`) gives no speedup from memoising — no subproblem repeats. Overlap (Fibonacci) is what turns DP from a tidy reformulation into an exponential win.
+- **Top-down vs bottom-up is a readability choice, not a complexity one.** Same Big-O. Bottom-up dodges recursion-depth limits and is the section default; top-down shines when only a sparse fraction of subproblems is needed.
+
+## Recall
 
 <details>
-<summary><strong>Trace — n = 5</strong></summary>
+<summary><strong>Q:</strong> What two properties must a problem have for DP to apply?</summary>
 
-```
-dp[0] = 1                            (base)
-dp[1] = 1 × dp[0] = 1 × 1 = 1
-dp[2] = 2 × dp[1] = 2 × 1 = 2
-dp[3] = 3 × dp[2] = 3 × 2 = 6
-dp[4] = 4 × dp[3] = 4 × 6 = 24
-dp[5] = 5 × dp[4] = 5 × 24 = 120
-Return dp[5] = 120  ✓
-```
-
-Each cell is `i` times the cell immediately before it. The dependency is single-step — every `dp[i]` only needs `dp[i-1]` — which is what makes this the *linear* DP shape.
-
-</details>
-
-### Complexity Analysis
-
-| Aspect | Cost | Why |
-|---|---|---|
-| Time | `O(n)` | One multiplication per cell; `n` iterations of the loop. |
-| Space | `O(n)` | The `dp` array holds `n + 1` cells. (Reducible to `O(1)` since each step only needs the previous answer — see Space Optimisation below.) |
-
-### Edge Cases
-
-| Case | Example | Expected | Reasoning |
-|---|---|---|---|
-| `n = 0` | — | `1` | `0! = 1` by convention. `dp[0]` is initialised to `1`; the loop body never runs and `dp[0]` is returned. |
-| `n = 1` | — | `1` | One loop iteration: `dp[1] = 1 × dp[0] = 1 × 1 = 1`. |
-| Large `n` | `n = 20` | `2_432_902_008_176_640_000` | Exceeds 32-bit signed range; need 64-bit (or BigInt in JS/TS) to avoid overflow. |
-| Very large `n` | `n = 100` | A 158-digit number | Even 64-bit overflows. The Python implementation handles this with arbitrary precision; the Java version overflows and would need `BigInteger`. |
-
-The overflow story is the most interesting edge case. Factorial grows faster than exponential; `21!` already overflows 64-bit signed integers. **Production code that computes factorial usually returns the result modulo a large prime** (often `10^9 + 7`) — exactly the convention the next problem uses.
+**A:** Optimal substructure (the answer composes from answers to smaller subproblems) and overlapping subproblems (those smaller answers recur). Overlap is what makes DP a speedup rather than just a reformulation.
 
 </details>
 <details>
-<summary><h2>Final Takeaway</h2></summary>
+<summary><strong>Q:</strong> The four-step DP recipe?</summary>
 
-
-Factorial is the simplest possible DP: 1D table, each cell from one previous cell, no overlap to even motivate caching — but the *shape* of the solution is the same shape every later DP lesson uses. **You're not learning factorial; you're learning the recipe.**
-
-> *Transfer challenge:* Modify the code to compute the factorial *modulo* `10^9 + 7`. (Hint: change the multiplication to `dp[i] = (i * dp[i-1]) % MOD`.) Why does this matter for the next problem?
-
-<details>
-<summary><strong>Answer</strong></summary>
-
-```python run
-class Solution:
-    def calculate_factorial_mod(self, n: int) -> int:
-        MOD = 1_000_000_007
-        dp = [0] * (n + 1)
-        dp[0] = 1
-        for i in range(1, n + 1):
-            dp[i] = (i * dp[i - 1]) % MOD
-        return dp[n]
-```
-
-The modulo lets us return a meaningful answer even when the true factorial is astronomical. Without it, `n = 100` overflows every fixed-width integer; with it, every `dp[i]` stays in `[0, 10^9 + 6]`. **The Fibonacci problem next uses exactly this convention** — and so does most competitive-programming code.
-
-</details>
-
-</details>
-
-***
-
-# Nth Fibonacci Number
-
-This is the canonical "this is why DP exists" problem. The recursive form is exponential; the DP form is linear. The transformation is a single ten-line loop.
-
-## The Problem
-
-The Fibonacci sequence is defined by `F(0) = 0`, `F(1) = 1`, and `F(n) = F(n-1) + F(n-2)` for `n ≥ 2`. Given `n`, return `F(n) mod (10^9 + 7)` to keep the result inside 32-bit. Aim for `O(n)` time.
-
-```
-Input:  n = 3
-Output: 2     F(3) = F(2) + F(1) = 1 + 1 = 2
-
-Input:  n = 6
-Output: 8     0, 1, 1, 2, 3, 5, 8
-
-Input:  n = 0
-Output: 0
-```
-
----
-
-<details>
-<summary><h2>Step 1 — Define the Subproblem</h2></summary>
-
-
-`dp[i]` = the i-th Fibonacci number, mod `10^9 + 7`.
+**A:** (1) define what `dp[i]` means, (2) write the recurrence relating it to smaller entries, (3) initialise the base cases, (4) fill the table in dependency order. The answer ends up in `dp[n]`.
 
 </details>
 <details>
-<summary><h2>Step 2 — Write the Recurrence</h2></summary>
+<summary><strong>Q:</strong> Top-down vs bottom-up?</summary>
 
-
-`dp[i] = (dp[i-1] + dp[i-2]) mod (10^9 + 7)` for `i ≥ 2`.
-
-</details>
-<details>
-<summary><h2>Step 3 — Initialise the Base Cases</h2></summary>
-
-
-`dp[0] = 0`, `dp[1] = 1`. **Two** base cases this time, because the recurrence reaches back two steps.
+**A:** Top-down memoises a recursive function (computes only needed subproblems); bottom-up fills a table iteratively from the base cases (no recursion, no stack overflow). Same time complexity — a readability choice.
 
 </details>
 <details>
-<summary><h2>Step 4 — Fill the Table</h2></summary>
+<summary><strong>Q:</strong> When can you space-optimise a linear DP?</summary>
 
-
-```d2
-direction: right
-grid: "Filling dp for n = 6" {
-  grid-rows: 2
-  grid-columns: 7
-  grid-gap: 0
-  v0: "0" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  v1: "1" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  v2: "1"
-  v3: "2"
-  v4: "3"
-  v5: "5"
-  v6: "8"
-  l0: "dp[0]<br/>(base)"
-  l1: "dp[1]<br/>(base)"
-  l2: "dp[2]<br/>0+1"
-  l3: "dp[3]<br/>1+1"
-  l4: "dp[4]<br/>2+1"
-  l5: "dp[5]<br/>3+2"
-  l6: "dp[6]<br/>5+3"
-}
-```
-
-<p align="center"><strong>The dp array for <code>n = 6</code>. <code>dp[0]</code> and <code>dp[1]</code> are the bases. Every later cell is the sum of the two previous cells.</strong></p>
+**A:** When the recurrence looks back only a fixed `k` cells (Fibonacci: 2). Keep a rolling window of `k` scalars instead of the full array — `O(1)` space, same time. If it references arbitrarily-old entries, you need the full table.
 
 </details>
 <details>
-<summary><h2>Solution &amp; Analysis</h2></summary>
+<summary><strong>Q:</strong> Why does memoising factorial give no speedup, but memoising Fibonacci gives a huge one?</summary>
 
-### The Solution
-
-```python run
-from typing import List
-
-class Solution:
-    def nth_fibonnaci_number(self, n: int) -> int:
-
-        # Create a list to store Fibonacci numbers
-        dp: List[int] = [0] * (n + 2)
-
-        # Base cases
-        dp[0] = 0
-        dp[1] = 1
-
-        # Fill in the list with Fibonacci numbers
-        for i in range(2, n + 1):
-
-            # Calculate the Fibonacci number using the formula:
-            # F(n) = F(n-1) + F(n-2)
-            # Take modulo 1000000007 to prevent overflow
-            dp[i] = (dp[i - 1] + dp[i - 2]) % 1000000007
-
-        # Return the Fibonacci number at position n
-        return dp[n]
-
-
-# Examples from the problem statement
-print(Solution().nth_fibonnaci_number(3))   # 2
-print(Solution().nth_fibonnaci_number(2))   # 1
-print(Solution().nth_fibonnaci_number(0))   # 0
-
-# Edge cases
-print(Solution().nth_fibonnaci_number(1))   # 1
-print(Solution().nth_fibonnaci_number(4))   # 3
-print(Solution().nth_fibonnaci_number(5))   # 5
-print(Solution().nth_fibonnaci_number(10))  # 55
-print(Solution().nth_fibonnaci_number(20))  # 6765
-```
-
-```java run
-public class Main {
-    static class Solution {
-        public int nthFibonnaciNumber(int n) {
-
-            // Create an array to store Fibonacci numbers
-            int[] dp = new int[n + 2];
-
-            // Base cases
-            dp[0] = 0;
-            dp[1] = 1;
-
-            // Fill in the array with Fibonacci numbers
-            for (int i = 2; i <= n; i++) {
-
-                // Calculate the Fibonacci number using the formula:
-                // F(n) = F(n-1) + F(n-2)
-                // Take modulo 1000000007 to prevent overflow
-                dp[i] = (dp[i - 1] + dp[i - 2]) % 1000000007;
-            }
-
-            // Return the Fibonacci number at position n
-            return dp[n];
-        }
-    }
-
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().nthFibonnaciNumber(3));   // 2
-        System.out.println(new Solution().nthFibonnaciNumber(2));   // 1
-        System.out.println(new Solution().nthFibonnaciNumber(0));   // 0
-
-        // Edge cases
-        System.out.println(new Solution().nthFibonnaciNumber(1));   // 1
-        System.out.println(new Solution().nthFibonnaciNumber(4));   // 3
-        System.out.println(new Solution().nthFibonnaciNumber(5));   // 5
-        System.out.println(new Solution().nthFibonnaciNumber(10));  // 55
-        System.out.println(new Solution().nthFibonnaciNumber(20));  // 6765
-    }
-}
-```
-
-
-<details>
-<summary><strong>Trace — n = 6</strong></summary>
-
-```
-dp[0] = 0                            (base)
-dp[1] = 1                            (base)
-dp[2] = (dp[1] + dp[0]) = 1 + 0 = 1
-dp[3] = (dp[2] + dp[1]) = 1 + 1 = 2
-dp[4] = (dp[3] + dp[2]) = 2 + 1 = 3
-dp[5] = (dp[4] + dp[3]) = 3 + 2 = 5
-dp[6] = (dp[5] + dp[4]) = 5 + 3 = 8
-Return dp[6] = 8  ✓
-```
-
-Each cell is the sum of the two cells immediately before it. The mod doesn't kick in until later (around `n = 80`), but the operation is the same regardless.
+**A:** Factorial has no overlapping subproblems — each `fact(k)` is computed once even naively. Fibonacci recomputes the same `fib(k)` exponentially many times; caching collapses `O(2ⁿ)` to `O(n)`.
 
 </details>
 
-### Complexity Analysis
-
-| Aspect | Cost | Why |
-|---|---|---|
-| Time | `O(n)` | One pass; each cell is one addition + one modulo. |
-| Space | `O(n)` | The `dp` array. Reducible to `O(1)` — see below. |
-
-Compare to the recursive version's `O(2^n)` time. For `n = 50`: recursive ≈ 1.1 trillion calls; DP = 50 iterations. **A 22 billion times speedup, with the same correctness, from one observation: solve each subproblem once.**
-
-### Edge Cases
-
-| Case | Example | Expected | Reasoning |
-|---|---|---|---|
-| `n = 0` | — | `0` | The loop body (`range(2, n + 1)`) never executes; `dp[0]` is still its initial base value `0` and is returned. |
-| `n = 1` | — | `1` | Same as above — the loop doesn't run; `dp[1] = 1` from the base-case assignment is returned. |
-| `n = 2` | — | `1` | Smallest case where the loop executes; `dp[2] = dp[1] + dp[0] = 1`. |
-| Large `n` | `n = 1000000` | Some value mod `10^9+7` | The mod keeps every cell in 32-bit range; the loop runs in milliseconds. |
-| `n < 0` | `n = -1` | Undefined | The problem statement says non-negative; the code would allocate a length-1 array and skip the loop, returning 0 — but a defensive version should `assert n >= 0` or throw. |
-
-</details>
-<details>
-<summary><h2>Final Takeaway</h2></summary>
-
-
-Recursive Fibonacci was exponential because of duplicate subproblems. DP Fibonacci is linear because we solve every subproblem once. The transformation is mechanical — and it's the *same* transformation we'll apply to every problem in this section. **You just learned the technique that powers every later DP lesson.**
-
-> *Transfer challenge:* The Fibonacci recurrence depends on only the *two* most recent entries. Do we actually need to store the entire `dp` array? What's the smallest amount of state we can get away with? Sketch the algorithm before reading on.
-
-</details>
-
-***
-
-# Top-Down vs Bottom-Up — The Two Faces of Every DP Solution
-
-Every DP problem has two equivalent implementations. They produce the same answer, have the same Big-O time, and differ only in *direction* of computation.
-
-**Top-down (memoization)** writes the recurrence as a recursive function and caches results in a dictionary or array. It computes only the subproblems actually needed.
-
-**Bottom-up (tabulation)** allocates a table up front and fills it iteratively from the smallest subproblem to the largest. It computes every cell whether or not it's strictly needed.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#777777"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-  subgraph TOP["Top-down (memoization)"]
-    T1["fib(6)"] --> T2["fib(5)"] --> T3["fib(4)"] --> T4["..."] --> T5["fib(0), fib(1)<br/>base cases hit, return"]
-    T2 -.->|"cached"| T6["...returns up the call stack"]
-  end
-  subgraph BOT["Bottom-up (tabulation)"]
-    B1["dp[0] = 0"] --> B2["dp[1] = 1"] --> B3["dp[2] = 1"] --> B4["dp[3] = 2"] --> B5["..."] --> B6["dp[6] = 8"]
-  end
-```
-
-<p align="center"><strong>Top-down recurses from the answer down to the bases, caching as it returns. Bottom-up builds from the bases up to the answer, no recursion. Same complexity; different control flow.</strong></p>
-
-## Top-Down Fibonacci
-
-
-```python run
-from typing import Dict
-
-class Solution:
-    def fib_top_down(self, n: int) -> int:
-        memo: Dict[int, int] = {}
-        return self._fib(n, memo)
-
-    def _fib(self, n: int, memo: Dict[int, int]) -> int:
-        if n < 2:
-            return n
-        if n in memo:                            # Cache hit — return the answer we already computed
-            return memo[n]
-        memo[n] = (self._fib(n - 1, memo) + self._fib(n - 2, memo)) % 1_000_000_007
-        return memo[n]
-
-
-if __name__ == "__main__":
-    print(Solution().fib_top_down(6))            # 8
-```
-
-```java run
-import java.util.HashMap;
-import java.util.Map;
-
-public class Main {
-    static class Solution {
-        private static final int MOD = 1_000_000_007;
-        private final Map<Integer, Integer> memo = new HashMap<>();
-
-        public int fibTopDown(int n) {
-            if (n < 2) return n;
-            if (memo.containsKey(n)) return memo.get(n);
-            int res = (fibTopDown(n - 1) + fibTopDown(n - 2)) % MOD;
-            memo.put(n, res);
-            return res;
-        }
-    }
-
-    public static void main(String[] args) {
-        System.out.println(new Solution().fibTopDown(6));   // 8
-    }
-}
-```
-
-
-## When to Pick Which
-
-| Choose | When |
-|---|---|
-| **Bottom-up** | Default for clean, simple problems. No recursion overhead, no stack overflow risk, and often the most cache-friendly. |
-| **Top-down** | When the natural way to write the problem is recursive, or when you only need a *small fraction* of subproblems (sparse DP). |
-
-For the rest of this section, every solution is presented bottom-up unless the recurrence makes top-down genuinely cleaner. The conventions are not load-bearing — pick the one you find easier to read.
-
----
-
-## Key Takeaway
-
-Top-down memoizes a recursive function; bottom-up fills a table iteratively. They're mathematically equivalent. Bottom-up is the default in this section because it's simpler, safer (no stack overflow), and matches the table-driven mental model.
-
-***
-
-# Space Optimisation — Throwing the Table Away
-
-The Fibonacci recurrence depends on `dp[i-1]` and `dp[i-2]`. The other `n - 1` cells of the array are never referenced again after they're computed. **We don't need to store them.** Two scalar variables are enough.
-
-```d2
-direction: right
-optim: "Space-optimised Fibonacci" {
-  grid-rows: 2
-  grid-columns: 4
-  grid-gap: 0
-  v0: "prev2 = 0"
-  v1: "prev1 = 1"
-  v2: "curr = prev1 + prev2"
-  v3: "shift: prev2 ← prev1, prev1 ← curr"
-  l0: "i-2 cell"
-  l1: "i-1 cell"
-  l2: "compute new cell"
-  l3: "advance window"
-}
-```
-
-<p align="center"><strong>The two-variable trick. <code>prev1</code> and <code>prev2</code> are a sliding window of size 2 over the dp array. Each iteration computes the next value and advances the window forward.</strong></p>
-
-## The Optimised Solution
-
-
-```python run
-class Solution:
-    def fib_optimised(self, n: int) -> int:
-        if n < 2:
-            return n
-        MOD = 1_000_000_007
-        prev2, prev1 = 0, 1
-        for _ in range(2, n + 1):
-            curr = (prev1 + prev2) % MOD         # Compute the new term
-            prev2, prev1 = prev1, curr           # Slide the window forward by one
-        return prev1
-
-
-if __name__ == "__main__":
-    print(Solution().fib_optimised(6))           # 8
-    print(Solution().fib_optimised(50))          # 12586269025 % MOD
-```
-
-```java run
-public class Main {
-    static class Solution {
-        public int fibOptimised(int n) {
-            if (n < 2) return n;
-            final int MOD = 1_000_000_007;
-            long prev2 = 0, prev1 = 1, curr = 0;
-            for (int i = 2; i <= n; i++) {
-                curr = (prev1 + prev2) % MOD;
-                prev2 = prev1;
-                prev1 = curr;
-            }
-            return (int) prev1;
-        }
-    }
-
-    public static void main(String[] args) {
-        System.out.println(new Solution().fibOptimised(50));   // Some value mod 1e9+7
-    }
-}
-```
-
-
-## When Space Optimisation Applies
-
-Space-optimisation works whenever the recurrence references only the last `k` cells for some constant `k`. The pattern is:
-
-| `dp[i]` depends on... | Storage needed |
-|---|---|
-| `dp[i-1]` only | One scalar |
-| `dp[i-1]` and `dp[i-2]` | Two scalars (the Fibonacci case) |
-| `dp[i-1]` through `dp[i-k]` for fixed `k` | A length-`k` rolling buffer |
-
-When the recurrence references arbitrarily-old entries (e.g. `dp[i] = max(dp[j] + ...) for all j < i`), full storage is required.
-
----
-
-## Key Takeaway
-
-If the recurrence's window is bounded, the DP table can be reduced to a rolling buffer of just the cells the window covers. Same answer, same time complexity, `O(1)` space instead of `O(n)`. We'll use this trick repeatedly through the section.
-
-> *Transfer challenge for the next lesson:* The next problem — Longest Increasing Subsequence — has a recurrence like `dp[i] = 1 + max(dp[j] for j < i if arr[j] < arr[i])`. Can you space-optimise it? Why or why not? Don't solve LIS yet; just predict whether the rolling-buffer trick will work.
-
-<details>
-<summary><strong>Answer</strong></summary>
-
-**No.** The recurrence references *every* earlier entry where `arr[j] < arr[i]`, not just the last few. The window is unbounded — any of `dp[0]`, `dp[1]`, …, `dp[i-1]` could be the one that gives the maximum. Without bounded look-back, you have to keep them all. The next lesson is `O(n)` space at minimum (with the simple solution; there's a clever `O(n log n)` solution too — but it uses a different data structure entirely).
-
-</details>
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: The Hook — missing, needs to be written -->
-<!--       Guidance: real-world story opening before any definition -->
-
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
-
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
-
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
-
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
-
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
-
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
-
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
-
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
-
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
-
-<!-- TODO: Final Takeaway — missing, needs to be written -->
-<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->
+## Sources & Verify
+
+- **CLRS** (Cormen, Leiserson, Rivest, Stein), *Introduction to Algorithms*, 3rd ed., Ch. 15 — dynamic programming, optimal substructure, overlapping subproblems, memoisation vs tabulation.
+- **Bellman, R.** (1957), *Dynamic Programming* — the original; the principle of optimality (optimal substructure) and the (admittedly misleading) name.
+- **Kleinberg & Tardos**, *Algorithm Design*, Ch. 6 — DP from weighted interval scheduling through sequence and knapsack problems, top-down and bottom-up.
+- The `55`, the `29,860,703`-vs-`69` call counts, and the House Robber `12`/`4` above come from the runnable blocks — re-run to verify.

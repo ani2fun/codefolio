@@ -68,7 +68,6 @@ The two pointers are `start` (the left edge of the current window) and `end` (th
 
 What breaks if you use the naive nested-loop approach is the shared work: adjacent windows of size `k` overlap in `k − 1` elements, but the brute force re-adds those shared elements for every window. The cost balloons to O(N × k) — for `n = 10⁶, k = 1000`, that's a billion additions instead of a million.
 
-> 🖼 Diagram — Subarray Size Equals K — expand the window, contract if oversized, then update min_sum whenever the window reaches exactly size k.
 ```mermaid
 ---
 config:
@@ -329,65 +328,435 @@ public class Main {
 
 `arr = [4, 4, 5, 6, 4]`, `k = 3`
 
-> ▶ Interactive Diagram — Fixed sliding window of size `k = 3` on `[4, 4, 5, 6, 4]` — three valid windows produce sums 13, 15, 15; `min_sum = 13` after the first full window.
-```d3 widget=array-traversal
+```d3 widget=array-1d
 {
-  "items": ["4", "4", "5", "6", "4"],
-  "title": "Fixed sliding window k = 3 on [4, 4, 5, 6, 4] — finding min sum",
   "steps": [
     {
-      "keys":    ["a", "b", "c", "d", "e"],
-      "markers": [
-        { "name": "start", "index": 0, "color": "#3b82f6" },
-        { "name": "end",   "index": 0, "color": "#10b981" }
+      "nodes": [
+        {
+          "id": "a",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "d",
+          "label": "6",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "e",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "range":   { "lo": 0, "hi": 0 },
-      "msg": "Expand: window = [0..0], size 1 < k. sum = 4."
+      "edges": [],
+      "cursor": [
+        {
+          "name": "start",
+          "target": "a",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "a",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [
+        "a"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "Expand: window = [0..0], size 1 < k. sum = 4.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "keys":    ["a", "b", "c", "d", "e"],
-      "markers": [
-        { "name": "start", "index": 0, "color": "#3b82f6" },
-        { "name": "end",   "index": 1, "color": "#10b981" }
+      "nodes": [
+        {
+          "id": "a",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "d",
+          "label": "6",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "e",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "range":   { "lo": 0, "hi": 1 },
-      "msg": "Expand: window = [0..1], size 2 < k. sum = 8."
+      "edges": [],
+      "cursor": [
+        {
+          "name": "start",
+          "target": "a",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "b",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [
+        "a",
+        "b"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "Expand: window = [0..1], size 2 < k. sum = 8.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "keys":    ["a", "b", "c", "d", "e"],
-      "markers": [
-        { "name": "start", "index": 0, "color": "#3b82f6" },
-        { "name": "end",   "index": 2, "color": "#10b981" }
+      "nodes": [
+        {
+          "id": "a",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "d",
+          "label": "6",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "e",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "range":   { "lo": 0, "hi": 2 },
-      "msg": "Expand: window = [0..2], size 3 = k. sum = 13 → min_sum = 13."
+      "edges": [],
+      "cursor": [
+        {
+          "name": "start",
+          "target": "a",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "c",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [
+        "a",
+        "b",
+        "c"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "Expand: window = [0..2], size 3 = k. sum = 13 → min_sum = 13.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "keys":    ["a", "b", "c", "d", "e"],
-      "markers": [
-        { "name": "start", "index": 1, "color": "#3b82f6" },
-        { "name": "end",   "index": 3, "color": "#10b981" }
+      "nodes": [
+        {
+          "id": "a",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "d",
+          "label": "6",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "e",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "range":   { "lo": 1, "hi": 3 },
-      "msg": "Slide: drop arr[0]=4, add arr[3]=6. sum = 15. 15 > 13, min_sum stays 13."
+      "edges": [],
+      "cursor": [
+        {
+          "name": "start",
+          "target": "b",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "d",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [
+        "b",
+        "c",
+        "d"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "Slide: drop arr[0]=4, add arr[3]=6. sum = 15. 15 > 13, min_sum stays 13.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "keys":    ["a", "b", "c", "d", "e"],
-      "markers": [
-        { "name": "start", "index": 2, "color": "#3b82f6" },
-        { "name": "end",   "index": 4, "color": "#10b981" }
+      "nodes": [
+        {
+          "id": "a",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "d",
+          "label": "6",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "e",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "range":   { "lo": 2, "hi": 4 },
-      "msg": "Slide: drop arr[1]=4, add arr[4]=4. sum = 15. 15 > 13, min_sum stays 13."
+      "edges": [],
+      "cursor": [
+        {
+          "name": "start",
+          "target": "c",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "e",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [
+        "c",
+        "d",
+        "e"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "Slide: drop arr[1]=4, add arr[4]=4. sum = 15. 15 > 13, min_sum stays 13.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "keys":    ["a", "b", "c", "d", "e"],
-      "markers": [],
-      "msg": "end past array bound — loop ends. Return min_sum = 13."
+      "nodes": [
+        {
+          "id": "a",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "d",
+          "label": "6",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "e",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "end past array bound — loop ends. Return min_sum = 13.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Fixed sliding window k = 3 on [4, 4, 5, 6, 4] — finding min sum"
 }
 ```
+
+<p align="center"><strong>Fixed sliding window of size <code>k = 3</code> on <code>[4, 4, 5, 6, 4]</code> — three valid windows produce sums 13, 15, 15; <code>min_sum = 13</code> after the first full window.</strong></p>
 
 <details>
 <summary><strong>Trace — arr = [4, 4, 5, 6, 4],  k = 3</strong></summary>

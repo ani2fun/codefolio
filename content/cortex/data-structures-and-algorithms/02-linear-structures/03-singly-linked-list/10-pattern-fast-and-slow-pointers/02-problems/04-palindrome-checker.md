@@ -162,7 +162,7 @@ print(Solution().palindrome_checker(from_list([1, 2, 3, 2, 1])))     # True
 print(Solution().palindrome_checker(from_list([1, 2, 3, 4, 5])))     # False
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -306,7 +306,7 @@ Palindrome checking composes three small walks: middle-finding (this pattern), b
 
 </details>
 <details>
-<summary><h2>Final Takeaway</h2></summary>
+<summary><h2>Key Takeaway</h2></summary>
 
 
 Fast-and-slow pointers is a one-line insight: **when two pointers move at different speeds, their relative position encodes a proportion of the list's length**. The pattern resolves to:

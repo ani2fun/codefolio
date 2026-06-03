@@ -93,7 +93,7 @@ Run the lockstep walk with a gap of `k − 1`. Compute the length to normalise `
 ### Solution
 
 
-```python run
+```python run viz=linked-list viz-root=head
 from typing import Optional
 
 
@@ -190,7 +190,7 @@ print(to_list(Solution().k_rotations(from_list([1, 2, 3, 4, 5]), 5)))  # [1, 2, 
 print(to_list(Solution().k_rotations(from_list([1, 2, 3, 4, 5]), 1)))  # [5, 1, 2, 3, 4]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {

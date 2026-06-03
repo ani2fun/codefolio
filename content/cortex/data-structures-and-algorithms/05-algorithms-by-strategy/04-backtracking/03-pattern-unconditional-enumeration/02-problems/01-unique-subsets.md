@@ -35,7 +35,6 @@ Output: [[]]
 
 For each element of `arr`, you have two choices: **include it in the current subset, or exclude it.** Make this decision once per element, and you've fully specified one subset. There are `n` decisions and `2^n` outcomes — the power set.
 
-> 🖼 Diagram — State space tree for subsets of [1, 2, 3]. Depth = 3, leaves = 8 = 2³, every leaf is a valid subset.
 ```mermaid
 ---
 config:
@@ -99,7 +98,6 @@ We process elements left-to-right. At each element, the state space splits into 
 
 <div class="d2-slides" data-caption="Each frame either includes the current element (extend, recurse, then pop to undo) or skips it (just recurse).">
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "Start at index 0, current = []" {
   arr: "arr = [1, 2, 3]"
@@ -107,35 +105,30 @@ state: "Start at index 0, current = []" {
 }
 ```
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "Include 1 — current = [1], recurse on index 1" {
   cur: "current = [1]" {style.fill: "#fde68a"; style.stroke: "#d97706"}
 }
 ```
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "Include 2 — current = [1, 2], recurse on index 2" {
   cur: "current = [1, 2]" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
 }
 ```
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "Include 3 — current = [1, 2, 3] = LEAF, record and return" {
   cur: "current = [1, 2, 3]" {style.fill: "#ede9fe"; style.stroke: "#7c3aed"}
 }
 ```
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "Backtrack: pop 3 → current = [1, 2], skip 3, leaf [1, 2]" {
   cur: "current = [1, 2]" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
 }
 ```
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "...backtrack further, eventually visit all 8 leaves" {
   result: "subsets = [[], [3], [2], [2,3], [1], [1,3], [1,2], [1,2,3]]" {style.fill: "#fde68a"; style.stroke: "#d97706"}
@@ -227,7 +220,7 @@ print(sorted(Solution().unique_subsets([5, 10])))    # [[], [5], [5, 10], [10]]
 print(len(Solution().unique_subsets([1, 2, 3, 4]))) # 16
 ```
 
-```java run
+```java run viz=graph viz-root=arr
 import java.util.*;
 
 public class Main {
@@ -367,33 +360,9 @@ The output dominates; you can never be faster than this.
 
 </details>
 <details>
-<summary><h2>Final Takeaway</h2></summary>
+<summary><h2>Key Takeaway</h2></summary>
 
 
 Unique Subsets is the canonical 2-choice unconditional enumeration: include-or-exclude, depth equals input length, every leaf valid. The next problem applies the same shape but with a *conditional* choice: only some slots have two choices; others are forced.
 
 </details>
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
-
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
-
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
-
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
-
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
-
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->

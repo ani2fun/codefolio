@@ -133,7 +133,7 @@ print(Solution().overlap_reduction([[1, 10], [2, 3], [4, 5]]))          # [[1, 1
 print(Solution().overlap_reduction([[5, 6], [1, 2], [3, 4]]))           # [[1, 2], [3, 4], [5, 6]]  — unsorted input
 ```
 
-```java run
+```java run viz=grid viz-root=intervals
 import java.util.*;
 
 public class Main {

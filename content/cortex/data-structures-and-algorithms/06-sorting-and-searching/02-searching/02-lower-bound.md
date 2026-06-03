@@ -1,392 +1,153 @@
 ---
 title: "Lower Bound"
-summary: "<!-- TODO: summary -->"
+summary: "Binary search reframed to find a boundary, not an exact hit: the first index whose value is ≥ the target (the leftmost insertion point). Handles duplicates, 'smallest element ≥ x' queries, and counting — O(log n) via a half-open range and no equality branch."
+prereqs:
+  - 06-sorting-and-searching/02-searching/01-binary-search
 ---
 
-# 2. Lower Bound
+# Lower Bound
 
-Plain binary search returns *any* index where the target appears. For an array `[1, 2, 2, 2, 3]` with `target = 2`, it might return index 1, 2, or 3 — whichever happens to be where it lands. That's fine if you just want to know *whether* the target exists. But often you want to know **where the target *first* appears** — for inserting a new value while keeping the array sorted, for finding the start of a run of duplicates, for "first record on or after this date" queries.
+## Why It Exists
 
-Worse, what if the target *isn't* in the array? Plain binary search returns `-1` — but you might want **the position where the target *would* go** if inserted. For `[1, 5, 10, 15]` and `target = 7`, plain binary search returns `-1`; lower bound returns `2` (the index where `7` would slot in to keep the array sorted).
+Plain binary search answers "is `x` present, and where?" — but it returns *some* matching index and fails outright on a miss. Often you want a **boundary** instead: the first position where `x` could be inserted to keep the array sorted, i.e. the **first index whose value is `≥ x`**.
 
-This is **lower bound** — the index of the *first element `≥ target`*, or `n` if no such element exists. It's binary search with two surgical changes: a different loop condition and a different "found it" branch. Same `O(log n)` time, same `O(1)` space. By the end of this lesson you'll know the modifications and exactly why they work.
+That single reframing solves a cluster of problems exact-match search can't: the *leftmost* occurrence when there are duplicates, "the smallest element `≥ x`", and counting ("how many elements are `< x`?" — exactly the lower-bound index). Lower bound keeps binary search's `O(log n)` but drops the equality test, converging on a *position* rather than a *value*. It's `bisect_left` in Python and `lower_bound` in C++.
 
-## Table of contents
+## See It Work
 
-1. [Understanding lower bound](#understanding-lower-bound)
-2. [Why the loop bounds change](#why-the-loop-bounds-change)
-3. [Implementation](#implementation)
-4. [Complexity analysis](#complexity-analysis)
-5. [Lower bound problem](#lower-bound-problem)
-
-***
-
-# Understanding Lower Bound
-
-The **lower bound** of a target `t` in a sorted array is the **smallest index `i` such that `arr[i] >= t`**. If no such index exists (i.e., every element is less than `t`), the lower bound is `n` — one past the last index, which is exactly where `t` would be inserted to keep the array sorted.
-
-Three cases:
-
-```
-arr = [1, 5, 10, 15, 20, 25]
-
-target = 10  →  lower_bound = 2  (arr[2] = 10, the first element ≥ 10)
-target = 17  →  lower_bound = 4  (arr[4] = 20, the first element ≥ 17)
-target = 22  →  lower_bound = 5  (arr[5] = 25, the first element ≥ 22)
-target = 30  →  lower_bound = 6  (no element ≥ 30; n = 6 is the insertion point)
-target = 0   →  lower_bound = 0  (arr[0] = 1, the first element ≥ 0)
-```
-
-Two equivalent ways to think about it:
-- **Search-flavour**: "find the first index whose value is ≥ target."
-- **Insertion-flavour**: "find the index where you'd insert target to keep the array sorted, putting target *before* any existing equal values."
-
-Both views agree. We'll use the search-flavour for the algorithm and the insertion-flavour for sanity-checking edge cases.
-
----
-
-## How It Differs from Binary Search
-
-| Feature | Plain binary search | Lower bound |
-|---|---|---|
-| Returns | Any index where `arr[i] == target`, or `-1` | Smallest index where `arr[i] >= target`, or `n` |
-| Equality | "Found it" — return immediately | "Maybe found it" — record and keep searching left |
-| Absent target | `-1` | The insertion position |
-
-The behaviour difference comes from two small changes in the algorithm:
-
-1. **Loop condition**: `low < high` instead of `low <= high`.
-2. **Equality branch**: when `arr[mid] >= target`, set `high = mid` (not `high = mid - 1` and not `return mid`).
-3. **`high` initial value**: `n` instead of `n - 1`.
-
-These three changes work together. Changing only one breaks the algorithm; changing all three gives lower bound. Let's see why.
-
----
-
-## A Walkthrough
-
-`arr = [1, 5, 10, 15, 20, 25]`, `target = 17`.
-
-```
-Initial: low = 0, high = 6     (n = 6, not n - 1)
-Iter 1: mid = 3, arr[3] = 15. 15 < 17? yes → low = mid + 1 = 4
-Iter 2: low = 4, high = 6, mid = 5, arr[5] = 25. 25 < 17? no → high = mid = 5
-Iter 3: low = 4, high = 5, mid = 4, arr[4] = 20. 20 < 17? no → high = mid = 4
-Loop exits: low = 4, high = 4 → low < high false
-
-Return low = 4. arr[4] = 20, the first element ≥ 17. ✓
-```
-
-Three iterations on a 6-element array. The algorithm narrows the range to a single position — the lower bound — and returns it.
-
----
-
-## Strengths and Limitations
-
-| Strength | Detail |
-|---|---|
-| **`O(log n)`** | Same complexity as binary search. |
-| **Always returns** | Never returns `-1`. The result is always a valid insertion index in `[0, n]`. |
-| **Handles duplicates** | Returns the *first* occurrence when duplicates exist. |
-| **Foundation for `bisect`-style libraries** | Python's `bisect.bisect_left`, C++'s `std::lower_bound`, Rust's `partition_point` are all this algorithm. |
-
-| Limitation | Detail |
-|---|---|
-| **Subtle off-by-one** | The three modifications must be consistent; mixing with binary search's conventions produces bugs. |
-| **Returns `n` for "not found"** | Caller must check whether `result == n` or `arr[result] != target` to distinguish "found exactly" from "would be inserted here." |
-
----
-
-## Key Takeaway
-
-Lower bound = "first index where the value is at least target." Three changes from plain binary search: `high = n` initial, `low < high` loop, equality goes to the left half. Now we'll see why each change is necessary.
-
-***
-
-# Why the Loop Bounds Change
-
-The three changes look minor but each is load-bearing. Get any one wrong and the algorithm misbehaves on edge cases.
-
----
-
-## Change 1 — `high = n` (Not `n - 1`)
-
-In binary search, the answer is always an index in `[0, n - 1]`. We never need to consider position `n` — it's outside the array.
-
-In lower bound, the answer might be **`n`** — meaning "all elements are less than target; the insertion point is one past the end." If we initialise `high = n - 1`, we exclude this possibility, and the algorithm returns the wrong answer for `target` larger than every element.
-
-**Fix:** initialise `high = n` (one past the end). The valid answer space is now `[0, n]`.
-
----
-
-## Change 2 — Loop Condition `low < high`
-
-In binary search, we stop when the range is empty (`low > high`). In lower bound, we stop when the range *converges to a single index* — that single index is the answer.
-
-If we used `low <= high`:
-- When `low == high`, we'd run one more iteration. `mid = low`. If `arr[mid] >= target`, we'd set `high = mid = low`. Now `low == high == mid`, condition still true, infinite loop.
-
-**Fix:** stop when `low == high`. Condition: `low < high`.
-
----
-
-## Change 3 — Equality Goes Left
-
-In binary search, `arr[mid] == target` returns `mid`. In lower bound, `arr[mid] == target` doesn't immediately return — there might be an earlier occurrence. We narrow the search to the left half *including `mid`* (since `mid` itself is a valid candidate).
-
-```
-if arr[mid] >= target:
-    high = mid          # mid stays in the search range — could still be the answer
-else:
-    low = mid + 1       # arr[mid] is < target, definitely not the answer
-```
-
-The crucial detail: `high = mid`, not `high = mid - 1`. We want to *keep* `mid` as a candidate. The exclusive upper bound (we never look at index `high` directly) makes this work.
-
----
-
-## Why The Three Changes Are Coupled
-
-Each change relies on the others:
-
-- **`high = n` exclusive bound** allows the answer to be `n`.
-- **`low < high` loop** stops cleanly when range converges (no off-by-one when `high = n`).
-- **`high = mid` in equality branch** narrows by including the current candidate as a possibility.
-
-If you mix this with binary search's conventions (e.g., `high = n - 1` with `high = mid` in the equality branch), the search range becomes `(low, high]` semi-open in a way the loop condition can't handle, and the algorithm either skips the answer or loops infinitely on edge cases.
-
-```d2
-direction: down
-
-bsearch: "Binary search\nlow <= high\nhigh = n - 1\nhigh = mid - 1 on equality" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
-lbound: "Lower bound\nlow < high\nhigh = n\nhigh = mid on >= target" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-```
-
-<p align="center"><strong>Two consistent algorithm conventions. Don't mix them.</strong></p>
-
----
-
-## Key Takeaway
-
-Three changes — `high = n`, `low < high`, `high = mid` on equality — convert binary search into lower bound. They're a package; mix them with binary search's conventions and you get bugs. Now the implementation.
-
-***
-
-# Implementation
-
+In `[1, 3, 3, 5, 7]`, find the first index `≥ 3` (it's `1`, the leftmost `3`) and the first index `≥ 4` (it's `3`, where `5` sits). Run it.
 
 ```python run
-from typing import List
+def lower_bound(arr, target):
+    lo, hi = 0, len(arr)              # half-open range [lo, hi)
+    while lo < hi:
+        mid = lo + (hi - lo) // 2
+        if arr[mid] < target:
+            lo = mid + 1              # mid is too small → answer is strictly right
+        else:
+            hi = mid                  # arr[mid] >= target → mid is a candidate, look left
+    return lo                         # first index with arr[index] >= target
 
-class Solution:
-    def lower_bound(self, arr: List[int], target: int) -> int:
+a = [1, 3, 3, 5, 7]
+print(lower_bound(a, 3))   # 1  (leftmost 3)
+print(lower_bound(a, 4))   # 3  (first value >= 4 is 5)
+print(lower_bound(a, 8))   # 5  (none >= 8 → insertion point at the end)
+```
 
-        # Initialise starting index to 0
-        low: int = 0
+## How It Works
 
-        # Initialise ending index to len(arr) instead of len(arr) - 1
-        # to cover the entire array as if all elements in the array are less
-        # than target, the lower bound index would be equal to len(arr)
-        high: int = len(arr)
+The key change from exact-match binary search is a **half-open range** `[lo, hi)` with `hi = len(arr)` (one past the end, so "not found" returns `len` — the end insertion point). The invariant: every value in `[0, lo)` is `< target`, and every value in `[hi, end)` is `≥ target`; the answer is the boundary, somewhere in `[lo, hi]`.
 
-        # 'high' is exclusive (can be len(arr)), so we use 'low < high' instead
-        # of 'low <= high'. This loop finds the first index where the element is
-        # >= the target without going out of bounds.
-        while low < high:
+Each step:
 
-            # Find the middle index
-            mid: int = low + (high - low) // 2
+- `arr[mid] < target` → `mid` and everything left is too small → `lo = mid + 1`.
+- `arr[mid] ≥ target` → `mid` *might* be the answer (it's `≥`), so keep it → `hi = mid` (**not** `mid − 1`).
 
-            # If arr[mid] is less than target, then find in
-            # right subarray
-            if arr[mid] < target:
-                low = mid + 1
+When `lo == hi`, that's the first index `≥ target`.
 
-            # If arr[mid] is greater than or equal to target, then it may
-            # be the answer. So, instead of high = mid - 1, we do high = mid
-            # to include mid in the next search space
-            else:
-                high = mid
+```mermaid
+flowchart TB
+  M["mid = lo + (hi-lo)/2"] --> Q{"arr[mid] < target?"}
+  Q -->|"yes"| R["lo = mid + 1 (mid too small)"]
+  Q -->|"no (>=)"| L["hi = mid (mid is a candidate)"]
+  R --> Z{"lo < hi?"}
+  L --> Z
+  Z -->|"yes"| M
+  Z -->|"no"| F(["return lo = first index >= target"])
+```
 
-        # Return the lower bound index, it could be equal to len(arr)
-        # if all elements are less than target
-        return low
+<p align="center"><strong>narrow a half-open range: <code>< target</code> discards the left (including mid); <code>≥ target</code> keeps mid as a candidate and looks left. The range collapses to the boundary.</strong></p>
+
+Two things distinguish it from exact-match search: there's **no `== target` early return** (you want the boundary even when the target *is* present, to land on its *leftmost* copy), and the `≥` branch uses **`hi = mid`, not `hi = mid − 1`** (because `mid` itself is a valid candidate). It's `O(log n)` time, `O(1)` space, and returns a value in `[0, len]` — `len` meaning "everything is smaller."
+
+### Key Takeaway
+
+Lower bound is binary search for the *first index `≥ target`*: half-open `[lo, hi)` with `hi = len`, no equality branch, and `hi = mid` (keep the candidate) on the `≥` side. It gives the leftmost occurrence, the insertion point, and (as its index) the count of elements `< target` — all in `O(log n)`.
+
+## Trace It
+
+`lower_bound([1, 3, 3, 5, 7], 3)` — note there are *two* 3s:
+
+| `lo` | `hi` | `mid` | `arr[mid]` | `< 3`? | action |
+|---|---|---|---|---|---|
+| 0 | 5 | 2 | `3` | no | `hi = 2` |
+| 0 | 2 | 1 | `3` | no | `hi = 1` |
+| 0 | 1 | 0 | `1` | yes | `lo = 1` |
+| 1 | 1 | — | — | — | `lo == hi` → return **1** |
+
+Before you read on: at the first step `arr[mid] = 3` *equals* the target, yet the code did `hi = mid` and kept searching left instead of returning. Why does lower bound deliberately *not* stop on an exact match — and how does that give the *leftmost* 3?
+
+Because lower bound wants the *boundary*, not just *a* match. When `arr[mid] == target`, that index is a valid answer (it's `≥ target`), but there might be *more equal elements to its left* — so it can't be sure `mid` is the *first* one. Setting `hi = mid` keeps `mid` in the candidate range while continuing to look left for an even-earlier match; the search only stops when the range collapses, which is exactly the leftmost position. An exact-match search would happily return the *middle* `3` at index 1 or 2 depending on the probes — nondeterministic among duplicates. Lower bound's "never stop early, always shrink toward the left" is what pins it to the first occurrence, and it's why counting (`how many < target` = the returned index) works.
+
+## Your Turn
+
+The reusable lower bound:
+
+```python run
+def lower_bound(arr, target):
+    lo, hi = 0, len(arr)
+    while lo < hi:
+        mid = lo + (hi - lo) // 2
+        if arr[mid] < target:
+            lo = mid + 1
+        else:
+            hi = mid
+    return lo
+
+a = [1, 3, 3, 5, 7]
+print(lower_bound(a, 0), lower_bound(a, 3), lower_bound(a, 6), lower_bound(a, 8))   # 0 1 4 5
 ```
 
 ```java run
-class Solution {
-    public int lowerBound(int[] arr, int target) {
-
-        // Initialise starting index to 0
-        int low = 0;
-
-        // Initialise ending index to arr.length instead of arr.length -
-        // 1 to cover the entire array as if all elements in the array
-        // are less than target, the lower bound index would be equal to
-        // arr.length
-        int high = arr.length;
-
-        // 'high' is exclusive (can be arr.length), so we use 'low <
-        // high' instead of 'low <= high'. This loop finds the first
-        // index where the element is
-        // >= the target without going out of bounds.
-        while (low < high) {
-
-            // Find the middle index
-            int mid = low + (high - low) / 2;
-
-            // If arr[mid] is less than target, then find in
-            // right subarray
-            if (arr[mid] < target) {
-                low = mid + 1;
-            }
-
-            // If arr[mid] is greater than or equal to target, then it
-            // may be the answer. So, instead of high = mid - 1, we do
-            // high = mid to include mid in the next search space
-            else {
-                high = mid;
-            }
-        }
-
-        // Return the lower bound index, it could be equal to arr.length
-        // if all elements are less than target
-        return low;
+public class Main {
+  static int lowerBound(int[] arr, int target) {
+    int lo = 0, hi = arr.length;          // half-open [lo, hi)
+    while (lo < hi) {
+      int mid = lo + (hi - lo) / 2;
+      if (arr[mid] < target) lo = mid + 1;
+      else hi = mid;                      // keep mid as a candidate
     }
+    return lo;
+  }
+  public static void main(String[] args) {
+    int[] a = {1, 3, 3, 5, 7};
+    System.out.println(lowerBound(a, 3) + " " + lowerBound(a, 4) + " " + lowerBound(a, 8));   // 1 3 5
+  }
 }
 ```
 
+This is a structural lesson — drill searching in the pattern sets.
 
-***
+## Reflect & Connect
 
-# Complexity Analysis
+Lower bound is the boundary-finding half of binary search:
 
-| Resource | Cost |
+- **The family** — first index `≥ x` (this lesson), first index `> x` ([upper bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-upper-bound)), the leftmost occurrence of a duplicate, and the insertion point for keeping an array sorted.
+- **Counting falls out for free** — the lower-bound index *is* the number of elements `< target`; `upper_bound − lower_bound` is the count of elements *equal* to the target; lower/upper bounds of `a` and `b` give the count in a range `[a, b)`. One `O(log n)` primitive answers a whole class of range-count queries.
+- **The half-open discipline is the transferable skill** — `[lo, hi)` with `hi = mid` (not `mid−1`) and no early return is a cleaner, less bug-prone binary-search template than the inclusive `[lo, hi]` form, precisely because there's only one boundary to reason about. Many practitioners write *all* their binary searches as lower-bound-style predicate searches — which is exactly what the [predicate-search patterns](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search) generalize.
+
+**Prerequisites:** [Binary Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-binary-search).
+**What's next:** the sibling boundary — first index *strictly greater* than the target — [Upper Bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-upper-bound).
+
+## Recall
+
+> **Mnemonic:** *First index `≥ target`. Half-open `[lo, hi)`, `hi = len`. `arr[mid] < target` → `lo = mid+1`; else `hi = mid` (keep candidate). No `==` branch. Returns `len` if none.*
+
+| | |
 |---|---|
-| **Time** | `O(log n)` |
-| **Space** | `O(1)` |
+| Finds | first index with `arr[index] >= target` |
+| Range | half-open `[lo, hi)`, `hi = len(arr)` |
+| Update | `< target` → `lo = mid+1` · `>=` → `hi = mid` |
+| No early return | keeps shrinking to the *leftmost* match |
+| Uses | leftmost occurrence, insertion point, count of `< target` |
 
-Same as binary search — each iteration halves the range.
+- **Q:** What does lower bound return? **A:** The first index whose value is `≥ target` (or `len` if every element is smaller).
+- **Q:** Why no `== target` early return? **A:** It wants the *leftmost* match; stopping early could land on a middle duplicate, so it keeps shrinking left.
+- **Q:** Why `hi = mid` rather than `hi = mid − 1` on the `≥` branch? **A:** `mid` itself satisfies `≥ target`, so it's a valid candidate and must stay in the range.
+- **Q:** How does lower bound count elements? **A:** Its returned index equals the number of elements `< target`; `upper_bound − lower_bound` gives the count equal to the target.
 
----
+## Sources & Verify
 
-## Key Takeaway
-
-Lower bound is `O(log n)` time, `O(1)` space, and never returns "not found." It returns either a valid match or the insertion position. Now the canonical exercise.
-
-***
-
-# Lower Bound Problem
-
----
-
-## The Problem
-
-Given a sorted array `arr` and `target`, return the index of the first element `>= target`.
-
-```
-Input:  arr = [1, 5, 10, 15, 20, 25], target = 10
-Output: 2
-
-Input:  arr = [1, 5, 10, 15, 20, 25], target = 17
-Output: 4
-
-Input:  arr = [1, 5, 10, 15, 20, 25], target = 22
-Output: 5
-```
-
----
-
-<details>
-<summary><h2>Solution &amp; Analysis</h2></summary>
-
-### The Solution
-
-The implementation matches the version above. See [Implementation](#implementation).
-
-### Edge Cases
-
-| Case | Example | Expected |
-|---|---|---|
-| Empty | `[], target = 5` | `0` |
-| Smaller than all | `[10, 20], target = 5` | `0` |
-| Larger than all | `[10, 20], target = 25` | `2` (= n) |
-| Exact match at start | `[10, 20], target = 10` | `0` |
-| Duplicates | `[1, 2, 2, 2, 3], target = 2` | `1` (first occurrence) |
-
-</details>
-<details>
-<summary><h2>Final Takeaway</h2></summary>
-
-
-Lower bound = first index ≥ target. Three changes from binary search; same `O(log n)` complexity. Foundation of `bisect.bisect_left`, `std::lower_bound`, and the "where would I insert this?" primitive that powers ordered-set implementations.
-
-The next lesson flips the comparison: **upper bound** returns the first index *strictly greater than* target. Same algorithm, one operator changed.
-
-**Transfer challenge — try before the Upper Bound lesson:** Use lower bound to *count* the number of occurrences of a target in a sorted array. Hint: the count is the difference between two well-chosen lower-bound queries.
-
-</details>
-<details>
-<summary><strong>Answer — open after you've thought about it</strong></summary>
-
-```python run viz=array viz-root=arr
-class Solution:
-    def count_occurrences(self, arr, target):
-        first = self.lower_bound(arr, target)
-        last_plus_one = self.lower_bound(arr, target + 1)
-        return last_plus_one - first
-
-    def lower_bound(self, arr, target):
-        low, high = 0, len(arr)
-        while low < high:
-            mid = low + (high - low) // 2
-            if arr[mid] < target: low = mid + 1
-            else: high = mid
-        return low
-
-
-print(Solution().count_occurrences([1, 2, 2, 2, 3, 4], 2))   # 3
-```
-
-`lower_bound(target)` finds the first occurrence; `lower_bound(target + 1)` finds the first position strictly greater than target — equivalently, one past the last occurrence. The difference is the count.
-
-This is the same trick as **upper bound minus lower bound** that we'll formalise in the next lesson. **You just rediscovered range-count via two binary searches.**
-
-</details>
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: The Hook — missing, needs to be written -->
-<!--       Guidance: real-world story opening before any definition -->
-
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
-
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
-
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
-
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
-
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
-
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
-
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
-
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
-
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
-
-<!-- TODO: Final Takeaway — missing, needs to be written -->
-<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->
+- **Sedgewick & Wayne**, *Algorithms*, 4th ed., §3.1 — rank/floor/ceiling queries in ordered symbol tables (lower-bound semantics).
+- **C++ STL / Python `bisect`** — `lower_bound` / `bisect_left` define this exact "first index ≥ target" contract.
+- The half-open lower-bound template and its counting corollary are standard; both runnable blocks are verified by running (`3 ⇒ 1`, `4 ⇒ 3`, `8 ⇒ 5`; `0,3,6,8 ⇒ 0,1,4,5`).

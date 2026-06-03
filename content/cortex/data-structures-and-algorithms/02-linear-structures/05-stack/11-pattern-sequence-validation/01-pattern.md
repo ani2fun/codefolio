@@ -1,95 +1,163 @@
 ---
 title: "Pattern: Sequence Validation"
-summary: "Use a stack as a matching register — push opening brackets, pop on closing, validate balance and redundancy."
+summary: "Push each opening bracket; on a closing bracket, the stack top must be its match. A stack tracks the most-recent unclosed opener — exactly the LIFO nesting brackets require. Valid iff every close matches and the stack ends empty."
 prereqs:
-  - 02-linear-structures/05-stack/01-introduction-to-stacks
+  - 02-linear-structures/05-stack/01-what-is-a-stack
 ---
 
-# Understanding the sequence validation pattern
+# Pattern: Sequence Validation
 
-Two classes of token: **openers** (`(`, `[`, `{`) and **closers** (`)`, `]`, `}`). The rules:
+## Why It Exists
 
-1. **Every closer must match the most recent unmatched opener.**
-2. **At the end, no openers may be left unmatched.**
+Is `"([{}])"` well-formed but `"([)]"` not? Validating nested brackets (or tags, or any open/close structure) has one hard requirement: a closing bracket must match the **most recently opened, still-unclosed** one. In `"([)]"` the `)` tries to close while `[` is still open — the nesting crosses, so it's invalid.
 
-The stack enforces both rules in O(N).
+A single counter handles *one* bracket type ("count up on `(`, down on `)`, never go negative, end at zero"), but it falls apart the moment types mix — a counter can't tell `)` from `]`. What you need is "the most recent unmatched opener," and **last-in, first-out** is exactly that. A stack holds the open brackets; each closing bracket must match the top. The structure is valid only if every close finds its match *and* nothing is left open at the end.
 
-> 🖼 Diagram — Sequence validation — push openers, pop-and-match on closers, demand empty stack at the end. Two failure modes: a closer with no matching opener, or leftover openers at end-of-input.
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    R["read token"] --> Q{"opener or closer?"}
-    Q -->|"opener"| P["push"]
-    Q -->|"closer"| C{"stack empty<br/>or top doesn't match?"}
-    C -->|"yes"| F["return false"]
-    C -->|"no"| POP["pop"]
-    P --> R
-    POP --> R
-    R -->|"end of input"| END{"stack empty?"}
-    END -->|"yes"| T["return true"]
-    END -->|"no"| F2["return false"]
+## See It Work
+
+Validate `"([{}])"` (properly nested) against `"([)]"` (crossed). Run it, then **Visualise** the open-bracket stack rise and fall.
+
+> ▶ Run it, then click **Visualise** — each opener pushes; each closer must match the top and pop it; a clean run ends with an empty stack.
+
+```python run viz=array viz-root=stack viz-kind=stack
+def is_valid(s):
+    pairs = {')': '(', ']': '[', '}': '{'}
+    stack = []
+    for ch in s:
+        if ch in '([{':
+            stack.append(ch)              # opener → remember it
+        elif ch in pairs:
+            if not stack or stack.pop() != pairs[ch]:   # closer must match the top
+                return False
+    return not stack                      # valid iff nothing left open
+
+print(is_valid("([{}])"))                 # True
+print(is_valid("([)]"))                   # False — nesting crosses
 ```
 
-<p align="center"><strong>Sequence validation — push openers, pop-and-match on closers, demand empty stack at the end. Two failure modes: a closer with no matching opener, or leftover openers at end-of-input.</strong></p>
+## How It Works
 
-## Algorithm
+Scan left to right with a stack of unmatched openers:
 
-> -   **Step 1:** Initialise an empty stack.
-> -   **Step 2:** For each character:
->     -   Opener → push.
->     -   Closer → if stack empty or top doesn't match this closer, return `false`. Otherwise pop.
-> -   **Step 3:** Return `stack.empty()`.
+1. **Opener** (`(`, `[`, `{`) → push it.
+2. **Closer** (`)`, `]`, `}`) → it must close the most recent opener, so the top of the stack must be its matching pair. If the stack is empty (nothing to close) or the top is the wrong type, the sequence is **invalid**. Otherwise pop the match.
+3. **End** → the stack must be **empty**; any leftover openers were never closed.
 
-# Identify the sequence validation pattern
+```mermaid
+flowchart TB
+  C["next char"] --> Q{"opener or closer?"}
+  Q -->|"opener"| PU["push it"]
+  Q -->|"closer"| M{"stack top is its match?"}
+  M -->|"yes"| PO["pop"]
+  M -->|"no / empty"| F(["INVALID"])
+  PU --> C
+  PO --> C
+  C -->|"end of input"| E{"stack empty?"}
+  E -->|"yes"| V(["VALID"])
+  E -->|"no"| F
+```
 
-Anywhere the input has *paired delimiters with order constraints*, this pattern fits. Bracket matching is the canonical example, but the same machinery validates HTML/XML tag nesting, balanced binary tree pre-order traversals, valid JSON, and strings of valid push/pop sequences.
+<p align="center"><strong>openers push; a closer checks the top for its match and pops it; an empty stack at the end means every opener was matched.</strong></p>
 
-**Template:**
-> Iterate the input; push openers; on closers, verify the top matches and pop; at end-of-input require an empty stack.
+Each character is handled once with `O(1)` stack work → **`O(n)` time, `O(n)` space** (worst case all openers, like `"((((("`). The stack *is* the validator: it remembers, in the right order, exactly which closer must come next.
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+### Key Takeaway
 
-<!-- TODO: Why Naive Isn't Enough — missing, needs to be written -->
-<!--       Guidance: motivation for why the obvious approach fails -->
+A stack validates nested sequences because closing must match the most-recent open — pure LIFO. Push openers, require each closer to match the top, and demand an empty stack at the end. `O(n)` time and space; a mere counter only works when there's a single bracket type.
 
-<!-- TODO: The Core Idea — missing, needs to be written -->
-<!--       Guidance: one paragraph: the central trick -->
+## Trace It
 
-<!-- TODO: How the Pointers/Window Move — missing, needs to be written -->
-<!--       Guidance: mechanics of the moving parts -->
+Validating `"([{}])"`:
 
-<!-- TODO: The Generic Algorithm — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
+| char | action | stack (bottom → top) |
+|---|---|---|
+| `(` | push | `(` |
+| `[` | push | `( [` |
+| `{` | push | `( [ {` |
+| `}` | top `{` matches → pop | `( [` |
+| `]` | top `[` matches → pop | `(` |
+| `)` | top `(` matches → pop | (empty) |
+| end | stack empty → **VALID** | — |
 
-<!-- TODO: Generic Implementation — missing, needs to be written -->
-<!--       Guidance: Python block + Java block of the skeleton -->
+Before you read on: contrast `"([)]"`. The first two chars push `(` then `[`. The third char is `)`. What does the stack top say, and why does that one check catch the crossed nesting that a counter would miss?
 
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table -->
+After pushing `(` and `[`, the top is `[`. The next char `)` wants to match a `(`, but `top != (` → **invalid**, immediately. A plain counter ("opens minus closes") would see two opens and one close — a perfectly balanced *count* — and wrongly accept it. The stack catches it because it tracks not just *how many* are open but *which one is innermost*: `)` cannot close while `[` is the most recent unclosed opener. That "which, not just how many" is precisely what LIFO buys you, and why nested validation needs a stack rather than a tally.
 
-<!-- TODO: Variants / Taxonomy — missing, needs to be written -->
-<!--       Guidance: enumerate sub-shapes of this pattern -->
+## Your Turn
 
-<!-- TODO: Identifying — missing, needs to be written -->
-<!--       Guidance: per-variant: recognition checklist + canonical example -->
+The reusable bracket validator:
 
-<!-- TODO: Recognition Checklist — missing, needs to be written -->
-<!--       Guidance: 4-question diagnostic — the source of the Problem-section Diagnostic Questions -->
+```python run
+def is_valid(s):
+    pairs = {')': '(', ']': '[', '}': '{'}
+    stack = []
+    for ch in s:
+        if ch in '([{':
+            stack.append(ch)
+        elif ch in pairs:
+            if not stack or stack.pop() != pairs[ch]:
+                return False
+    return not stack
 
-<!-- TODO: Canonical Example — missing, needs to be written -->
-<!--       Guidance: fully worked example: brute force → optimised → template fit -->
+for t in ["([{}])", "()[]{}", "([)]", "(]", "((("]:
+    print(t, "->", is_valid(t))      # True True False False False
+```
 
-<!-- TODO: Problems in This Category — missing, needs to be written -->
-<!--       Guidance: table with links to the 02-problems/ files -->
+```java run
+import java.util.*;
+
+public class Main {
+  static boolean isValid(String s) {
+    Map<Character, Character> pairs = Map.of(')', '(', ']', '[', '}', '{');
+    Deque<Character> stack = new ArrayDeque<>();
+    for (char ch : s.toCharArray()) {
+      if (ch == '(' || ch == '[' || ch == '{') stack.push(ch);
+      else if (pairs.containsKey(ch)) {
+        if (stack.isEmpty() || stack.pop() != pairs.get(ch)) return false;
+      }
+    }
+    return stack.isEmpty();
+  }
+
+  public static void main(String[] args) {
+    for (String t : new String[]{"([{}])", "()[]{}", "([)]", "(]", "((("})
+      System.out.println(t + " -> " + isValid(t));   // true true false false false
+  }
+}
+```
+
+Drill the family in **Practice** — [Parentheses Checker](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-sequence-validation-problems-parentheses-checker), [Minimum Edits](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-sequence-validation-problems-minimum-edits), [Redundant Parentheses](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-sequence-validation-problems-redundant-parentheses), and [Balanced Span](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-sequence-validation-problems-balanced-span).
+
+## Reflect & Connect
+
+The stack-as-matching-register shows up wherever structure must nest correctly:
+
+- **The family** — bracket matching, detecting **redundant** parentheses (`((a))`), **minimum edits** to balance a string, validating XML/HTML tag nesting, and checking expression well-formedness.
+- **Counter vs stack is the lesson** — one bracket type is a counting problem (`O(1)` space); the instant types can mix, you need the stack to know *which* opener is innermost. Recognizing that boundary tells you which tool the problem needs.
+- **It's the front half of parsing** — every recursive-descent parser and expression evaluator leans on this exact "match the most recent open" mechanic. The [next pattern](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-linear-evaluation-pattern) keeps the stack but, instead of just matching, *computes* with what it pops.
+
+**Prerequisites:** [What Is a Stack?](/cortex/data-structures-and-algorithms/linear-structures-stack-what-is-a-stack).
+**What's next:** pop operands and operators to compute a result — [Linear Evaluation](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-linear-evaluation-pattern).
+
+## Recall
+
+> **Mnemonic:** *Push openers; a closer must match the top (else invalid); end with an empty stack. LIFO = innermost-first, which a counter can't track.*
+
+| | |
+|---|---|
+| Opener | push |
+| Closer | top must be its match → pop; else **invalid** |
+| End | stack must be empty (no unclosed openers) |
+| Counter vs stack | counter works for one type; mixed types need the stack |
+| Cost | `O(n)` time, `O(n)` space |
+
+- **Q:** Why does nested validation need a stack instead of a counter? **A:** A counter tracks *how many* are open; nesting needs *which* opener is innermost, and LIFO gives that.
+- **Q:** What two conditions make a sequence valid? **A:** Every closer matches the current top, and the stack is empty at the end.
+- **Q:** Where does `"([)]"` fail? **A:** At `)`, whose top is `[` — wrong match — so it's rejected immediately, though the open/close *count* is balanced.
+- **Q:** When is a counter actually sufficient? **A:** With a single bracket type — count up/down, never negative, end at zero.
+
+## Sources & Verify
+
+- **CLRS**, *Introduction to Algorithms*, 4th ed., §10.1 — stacks and the LIFO discipline.
+- **Sedgewick & Wayne**, *Algorithms*, 4th ed., §1.3 — stacks; balanced-parentheses and expression parsing.
+- "Valid parentheses via a stack" is the canonical example; both runnable blocks are verified by running (`([{}])`, `()[]{}` valid; `([)]`, `(]`, `(((` invalid).

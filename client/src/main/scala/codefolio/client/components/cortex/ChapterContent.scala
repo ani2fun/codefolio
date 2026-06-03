@@ -50,14 +50,18 @@ object ChapterContent:
     ScalaFnComponent
       .withHooks[Props]
       .useRefToVdom[dom.html.Element]
-      // Track the React roots we mount into placeholder divs. Stored in a mutable ref to survive
-      // re-renders without triggering them.
+      // Track the React roots we mount into placeholder divs. Ref so they survive re-renders.
       .useRefBy(_ => js.Array[RootHandle]())
-      // Re-decorate whenever the rendered HTML changes (i.e. new chapter). The article's innerHTML
-      // is set via dangerouslySetInnerHTML; React re-runs that synchronously when `props.result.html`
-      // changes, so by the time this effect fires the DOM is in sync.
+      // Rebuild whenever the rendered HTML changes (a new chapter). We set the article's innerHTML
+      // IMPERATIVELY here, NOT via dangerouslySetInnerHTML — so React never re-applies it on an
+      // UNRELATED re-render. Opening / closing the Visualise modal re-renders an ancestor; a
+      // dangerouslySetInnerHTML reset would wipe the React roots we mount into the placeholders —
+      // blanking the chapter on close AND tearing down the just-opened modal's RunnableCodeBlock on
+      // open (the modal vanishes the instant it appears). With imperative innerHTML the article has
+      // NO React children, so React leaves its contents — and the mounted roots / any open modal —
+      // untouched across re-renders; only an html change re-fires this effect and rebuilds it.
       .useEffectWithDepsBy((props, _, _) => props.result.html) {
-        (_, articleRef, rootsRef) => _ =>
+        (_, articleRef, rootsRef) => html =>
           val tearDown: Callback = Callback {
             val prev = rootsRef.value
             for i <- 0 until prev.length do Try(prev(i).unmount())
@@ -69,6 +73,7 @@ object ChapterContent:
           // (a `-Wvalue-discard` warning at compile time, no mount at runtime — the bug that left
           // mermaid/runnable/d2 placeholders empty).
           val mountAll: Callback = articleRef.foreach { article =>
+            article.innerHTML = html
             article.addEventListener("click", onArticleClick)
 
             val newRoots = js.Array[RootHandle]()
@@ -83,21 +88,17 @@ object ChapterContent:
 
           tearDown >> mountAll
       }
-      // Note: we don't add an unmount-only cleanup hook for the React roots. useEffectWithDepsBy(html)
-      // already tears down the previous roots on every chapter change, which covers the common case.
-      // If the parent unmounts the whole ChapterContent the placeholder DOM nodes go too, and the
-      // orphaned React roots are harmless GC garbage.
+      // No unmount-only cleanup hook: useEffectWithDepsBy(html) tears down the previous roots on each
+      // chapter change; on a full ChapterContent unmount the placeholder DOM goes too, so the orphaned
+      // roots are harmless GC garbage.
       .render { (props, articleRef, _) =>
-        <.article.withRef(articleRef)(
-          ^.className               := "chapter-content",
-          ^.dangerouslySetInnerHtml := props.result.html
-        )
+        <.article.withRef(articleRef)(^.className := "chapter-content")
       }
 
   // Total `Block => VdomElement` dispatch. Adding a new Block variant breaks the match
   // exhaustively at compile time — the missing-case error names exactly what's missing.
   private def render(block: Block): VdomElement = block match
-    case Block.RunnableCode(language, source, languageLabel, viz, vizRoot, vizCase) =>
+    case Block.RunnableCode(language, source, languageLabel, viz, vizRoot, vizCase, vizKind) =>
       RunnableCodeBlock.Component(
         RunnableCodeBlock.Props(
           language,
@@ -105,7 +106,8 @@ object ChapterContent:
           languageLabel,
           viz = viz,
           vizRoot = vizRoot,
-          vizCase = vizCase
+          vizCase = vizCase,
+          vizKind = vizKind
         )
       )
     case Block.RunnableGroup(tabs) =>
@@ -118,8 +120,14 @@ object ChapterContent:
       D2Diagram.Component(D2Diagram.Props(svgHtml))
     case Block.D3Widget(widget, payload) =>
       D3WidgetBlock.Component(D3WidgetBlock.Props(widget, payload))
-    case Block.TracedCode(language, source) =>
-      TracedCodeBlock.Component(TracedCodeBlock.Props(language, source))
+    case Block.TracedCode(language, source, companions) =>
+      TracedCodeBlock.Component(
+        TracedCodeBlock.Props(
+          language,
+          source,
+          companions.map(c => TracedCodeBlock.Companion(c.language, c.source))
+        )
+      )
     case Block.LikeC4(src, height, title) =>
       LikeC4Block.Component(LikeC4Block.Props(src, height, title))
 
@@ -131,7 +139,8 @@ object ChapterContent:
       runnable = t.runnable,
       viz = t.viz,
       vizRoot = t.vizRoot,
-      vizCase = t.vizCase
+      vizCase = t.vizCase,
+      vizKind = t.vizKind
     )
 
   // Delegated click handler for in-article hash links. The rehype-autolink-headings pass adds

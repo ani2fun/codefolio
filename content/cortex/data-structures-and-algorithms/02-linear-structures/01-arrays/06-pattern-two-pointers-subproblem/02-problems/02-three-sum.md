@@ -68,7 +68,6 @@ Three Sum extends Two Sum with one extra element fixed. If we pick one element `
 
 That's exactly Duplicate Aware Two Sum, solvable in `O(n)` with two pointers on a sorted array.
 
-> 🖼 Diagram — Three Sum — outer loop fixes one element; inner two-pointer finds all valid pairs summing to the negative of that element.
 ```mermaid
 ---
 config:
@@ -258,7 +257,7 @@ print(Solution().three_sum([-2, 0, 2]))              # [[-2, 0, 2]]
 print(Solution().three_sum([0, 0, 0, 0]))            # [[0, 0, 0]] — no duplicate triplets
 ```
 
-```java run
+```java run viz=array viz-root=arr
 import java.util.*;
 
 public class Main {
@@ -378,40 +377,254 @@ No triplets for i=0.
 
 **i=1, arr[i]=-1, target=1, left=2, right=5:**
 
-> ▶ Interactive Diagram — Three Sum inner trace for `i = 1` (`arr[i] = -1`, inner target = 1) — converging pointers find both triplets in two stops.
-```d3 widget=array-traversal
+```d3 widget=array-1d
 {
-  "items": ["-4", "-1", "-1", "0", "1", "2"],
-  "title": "Three Sum inner trace — i = 1 (arr[i] = -1), target for inner = 1",
   "steps": [
     {
-      "keys":    ["a", "b", "c", "d", "e", "f"],
-      "markers": [
-        { "name": "i",     "index": 1, "color": "#a855f7" },
-        { "name": "left",  "index": 2, "color": "#3b82f6" },
-        { "name": "right", "index": 5, "color": "#f59e0b" }
+      "nodes": [
+        {
+          "id": "a",
+          "label": "-4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b",
+          "label": "-1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c",
+          "label": "-1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "d",
+          "label": "0",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "e",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "f",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "msg": "arr[left] + arr[right] = -1 + 2 = 1 = target → record triplet [-1, -1, 2]."
+      "edges": [],
+      "cursor": [
+        {
+          "name": "i",
+          "target": "b",
+          "color": "#a855f7"
+        },
+        {
+          "name": "left",
+          "target": "c",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "right",
+          "target": "f",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "arr[left] + arr[right] = -1 + 2 = 1 = target → record triplet [-1, -1, 2].",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "keys":    ["a", "b", "c", "d", "e", "f"],
-      "markers": [
-        { "name": "i",     "index": 1, "color": "#a855f7" },
-        { "name": "left",  "index": 3, "color": "#3b82f6" },
-        { "name": "right", "index": 4, "color": "#f59e0b" }
+      "nodes": [
+        {
+          "id": "a",
+          "label": "-4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b",
+          "label": "-1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c",
+          "label": "-1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "d",
+          "label": "0",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "e",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "f",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "msg": "After advancing past duplicates: arr[left] + arr[right] = 0 + 1 = 1 = target → record triplet [-1, 0, 1]."
+      "edges": [],
+      "cursor": [
+        {
+          "name": "i",
+          "target": "b",
+          "color": "#a855f7"
+        },
+        {
+          "name": "left",
+          "target": "d",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "right",
+          "target": "e",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "After advancing past duplicates: arr[left] + arr[right] = 0 + 1 = 1 = target → record triplet [-1, 0, 1].",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "keys":    ["a", "b", "c", "d", "e", "f"],
-      "markers": [
-        { "name": "i",     "index": 1, "color": "#a855f7" }
+      "nodes": [
+        {
+          "id": "a",
+          "label": "-4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b",
+          "label": "-1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c",
+          "label": "-1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "d",
+          "label": "0",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "e",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "f",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "msg": "left ≥ right → inner pass for i = 1 ends. Two triplets recorded."
+      "edges": [],
+      "cursor": [
+        {
+          "name": "i",
+          "target": "b",
+          "color": "#a855f7"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "left ≥ right → inner pass for i = 1 ends. Two triplets recorded.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Three Sum inner trace — i = 1 (arr[i] = -1), target for inner = 1"
 }
 ```
+
+<p align="center"><strong>Three Sum inner trace for <code>i = 1</code> (<code>arr[i] = -1</code>, inner target = 1) — converging pointers find both triplets in two stops.</strong></p>
 
 | left | right | arr[l]+arr[r] | Action |
 |---|---|---|---|

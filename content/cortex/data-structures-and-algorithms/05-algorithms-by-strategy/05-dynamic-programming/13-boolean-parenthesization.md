@@ -1,428 +1,243 @@
 ---
 title: "Boolean Parenthesization"
-summary: "<!-- TODO: summary -->"
+summary: "Count the parenthesizations of a boolean expression that evaluate True. A split-point interval DP — try every operator as the LAST one applied — that needs TWO tables (True-counts and False-counts), because combining with | and ^ depends on how each side can be False as well as True."
+prereqs:
+  - 05-algorithms-by-strategy/05-dynamic-programming/06-longest-palindromic-subsequence
 ---
 
-# 13. Boolean Parenthesisation
-
-A boolean expression like `T ^ F & T` looks unambiguous until you ask "what's its value?" Without parentheses, the answer depends entirely on which operator binds first — `(T ^ F) & T = T & T = T`, but `T ^ (F & T) = T ^ F = T`. Both ways give `T`, so the count is 2. Switch to `T & F | T` and the parenthesisations diverge: `(T & F) | T = T`, `T & (F | T) = T` — again 2. But for some inputs, the two evaluations *disagree*, and the question becomes: how many parenthesisations make the expression evaluate to `True`? This is the kind of problem compilers and theorem provers stumble across when reasoning about ambiguous grammars or counting satisfying assignments — and it has a clean DP shape that recurs whenever a sequence has *internal* split points instead of just two endpoints.
-
-By the end of this lesson you'll know the **boolean parenthesisation** recurrence — `(i, j)` over operand ranges, split point `k` inside the range, *two* DP tables (one for True-counts, one for False-counts) because combining results depends on what each side evaluates to. You'll also recognise this as a *split-point* interval DP — a structural cousin of matrix-chain multiplication and a common interview shape.
-
-## Table of contents
-
-1. [The Boolean Parenthesisation Problem](#the-boolean-parenthesisation-problem)
-2. [Why Two Tables, T and F](#why-two-tables-t-and-f)
-3. [The Three-Operator Truth Tables](#the-three-operator-truth-tables)
-4. [Boolean Parenthesisation — The Algorithm](#boolean-parenthesisation--the-algorithm)
-5. [Final Takeaway](#final-takeaway)
-
-***
-
-# The Boolean Parenthesisation Problem
-
-You're given a string `s` of alternating *operands* (`T` for True, `F` for False) and *binary operators* (`&` for AND, `|` for OR, `^` for XOR). Find the number of distinct parenthesisations that evaluate the expression to `True`.
-
-```d2
-direction: right
-ex: "Example: s = 'T ^ F & T' (length 5; operands at 0, 2, 4; operators at 1, 3)" {
-  grid-rows: 2
-  grid-columns: 5
-  grid-gap: 0
-  c0: "T" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  c1: "^"
-  c2: "F" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  c3: "&"
-  c4: "T" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  l0: "[0]"
-  l1: "[1]"
-  l2: "[2]"
-  l3: "[3]"
-  l4: "[4]"
-}
-```
-
-<p align="center"><strong>Operands sit at even indices, operators at odd indices. Highlighted cells are operands; gaps are operators. Two valid parenthesisations of <code>T ^ F &amp; T</code> evaluate to <code>True</code>: <code>(T ^ F) &amp; T</code> and <code>T ^ (F &amp; T)</code>.</strong></p>
-
-> *Predict before reading on — for `s = "T | F"`, what's the count?*
-
-`1`. There's only one operator and therefore only one way to parenthesise: `(T | F) = T`. The count of "ways" is the number of distinct binary trees you can build over the operands; for `n` operands, that's the `n - 1`th Catalan number — but only some of those trees evaluate to True.
-
-## Where this shows up
-
-Compiler theory (counting parses of an ambiguous grammar), satisfiability counting (#SAT), expression-evaluation testing (verifying an expression's behaviour under every legal grouping), and any problem where an internal *split* of a sequence into a left side and a right side combines through a binary operator with non-commutative aggregation.
-
-## The Crucial Observation
-
-You can't just track "how many parenthesisations exist" — you need to know how many evaluate True *and* how many evaluate False *for every subrange*, because the operator that combines two subranges cares about both. AND, OR, and XOR each combine sub-results differently. This forces a **two-table DP** — one counting True parenthesisations, one counting False — joined by the operator's truth table.
-
----
-
-## Key Takeaway
-
-Boolean parenthesisation counts True-evaluating parse trees over a string of operands and operators. The state is interval `(i, j)` over operand positions; the choice is a split-point operator `k` *inside* the range.
-
-***
-
-# Why Two Tables, T and F
-
-Define `T[i][j]` = number of ways to parenthesise `s[i..j]` so it evaluates to True. By symmetry, `F[i][j]` = number of ways to evaluate to False. Both are over the same operand range; they sum to the total number of parenthesisations (the Catalan count for that operand-count).
-
-For each operator position `k` strictly between `i` and `j` (i.e. `s[k]` is an operator with operands on both sides), split into:
-- Left side: `s[i..k-1]` (its `T` count and its `F` count both matter).
-- Right side: `s[k+1..j]` (same).
-
-Combine via the operator's truth table:
-
-```
-op = '&':  T += T_L · T_R
-           F += T_L · F_R + F_L · T_R + F_L · F_R
-
-op = '|':  T += T_L · T_R + T_L · F_R + F_L · T_R
-           F += F_L · F_R
-
-op = '^':  T += T_L · F_R + F_L · T_R
-           F += T_L · T_R + F_L · F_R
-```
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#777777"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-  STATE["s[i..j]"]
-  STATE -->|"split at op k"| L["Left s[i..k-1]<br/>T_L, F_L"]
-  STATE -->|"split at op k"| R["Right s[k+1..j]<br/>T_R, F_R"]
-  L --> COMB["Combine via op truth table<br/>→ contributes to T[i][j], F[i][j]"]
-  R --> COMB
-```
-
-<p align="center"><strong>For each operator <code>k</code> inside the range, multiply the True/False counts of the two sides per the operator's truth table. Sum across all <code>k</code>.</strong></p>
-
-> *Pause. Why must we carry both T and F counts? Why isn't a single table enough?*
-
-Imagine we only carried `T[i][j]`. Then to compute `T[i][j]` for `op = '|'`, we'd need to count splits where at least one side is True. But "side is True" is `T_L`; "side is False" is `F_L`. We can't compute "at least one side True" from just `T_L` and `T_R` — the cross-terms `T_L · F_R + F_L · T_R` need `F_L` and `F_R` too. The only way to get them without recomputing is to carry both tables.
-
-> *Pause. Why multiplication, not addition, when combining sides?*
-
-For each parenthesisation of the left side and *each* parenthesisation of the right side, you get one parenthesisation of the whole. The total is the Cartesian product, which counts as a multiplication. Different split points contribute *different* whole-expression trees, so we sum across `k` — addition between `k`'s, multiplication between sides.
-
----
-
-## Key Takeaway
-
-Two tables (`T` and `F`) are mandatory because operator combinations care about both sides' values. Multiplication combines sides; summation combines split points; the operator's truth table picks the cells.
-
-***
-
-# The Three-Operator Truth Tables
-
-Each binary operator's truth table tells us, for each of the four `(L, R)` cases, whether the result is True or False:
-
-| L | R | & | \| | ^ |
-|---|---|---|---|---|
-| T | T | T | T | F |
-| T | F | F | T | T |
-| F | T | F | T | T |
-| F | F | F | F | F |
-
-Each combination gets weighted by `(count of left) × (count of right)`. So:
-
-- **`&` is True** in only one case (T·T) → `T += T_L · T_R`. False in the other three.
-- **`|` is False** in only one case (F·F) → `F += F_L · F_R`. True in the other three.
-- **`^` is True** in two cases (T·F, F·T) → `T += T_L · F_R + F_L · T_R`. False in the other two.
-
-This is the entire arithmetic. Memorise the truth tables, and the recurrence collapses to bookkeeping.
-
-> *Predict before reading on — for `s = "T & T & T"` (all True, all AND), how many parenthesisations evaluate to True?*
-
-`2`. The two parsings are `(T & T) & T` and `T & (T & T)`. Both evaluate to True (AND of all True is True). The count of True-parenthesisations is the same as the count of *all* parenthesisations (the second Catalan number), because every parsing yields True for this input.
-
-## Filling Order
-
-Same as every interval DP: fill by interval *length*, smallest first. The interval is over operand positions only — operators sit at fixed odd indices and aren't separately stored. So:
-- Length 1 (single operand): `T[i][i] = 1` if `s[i] == 'T'`, else `0`. `F[i][i] = 1` if `s[i] == 'F'`, else `0`.
-- Length 3, 5, 7, ... (odd lengths only — must include an even number of operators between operands): use the recurrence with `k` stepping by 2 from `i` to `j - 1`.
-
-(Even lengths are skipped because operands sit at even indices and ranges always start and end on operands.)
-
----
-
-## Key Takeaway
-
-Three operators, three truth tables. The DP just sums products across split points, weighted by the operator's truth table at each split.
-
-***
-
-# Boolean Parenthesisation — The Algorithm
-
-## The Problem
-
-Given a boolean expression string `s` (alternating operands and operators), return the number of parenthesisations that evaluate to True.
-
-```
-Input:  s = "T^F&T"
-Output: 2                    (T ^ F) & T  and  T ^ (F & T)
-
-Input:  s = "T^F|F"
-Output: 2                    (T ^ F) | F  and  T ^ (F | F)
-
-Input:  s = "T|F"
-Output: 1                    Only one parenthesisation; evaluates True
-```
-
----
-
-<details>
-<summary><h2>Applying the Diagnostic Questions</h2></summary>
-
-
-| # | Question | Answer |
-|---|---|---|
-| **Q1** | Optimal substructure? | **Yes** — every parenthesisation has a *root* operator splitting the expression into independent left/right subtrees. |
-| **Q2** | Overlapping subproblems? | **Yes** — the same `(i, k-1)` range appears as the "left side" for many different `j`. |
-| **Q3** | 2D state? | **Yes** — `(i, j)`, with two parallel tables (`T` and `F`). |
-| **Q4** | Aggregator? | **Sum** of products. Different `k`s contribute different trees; sides combine multiplicatively per operator. |
-
-### Q1 — Why "Yes"?
-
-**Mental model.** Every parenthesisation corresponds to a binary parse tree. The tree has a root operator; that operator splits the operands into a left subtree and a right subtree. Each subtree is itself a parenthesisation of its operand range. So the count for `(i, j)` decomposes by the choice of root.
-
-**Concrete numbers.** For `T ^ F & T`: root could be `^` (split as `T | F & T`) or `&` (split as `T ^ F | T`). Two roots → two contributions to the count.
-
-**What breaks otherwise.** If we couldn't decompose by root, we'd be back to enumerating all `n - 1`th Catalan trees explicitly — that's exponential.
-
-### Q2 — Why "Yes"?
-
-**Mental model.** A subrange `(p, q)` appears as the "left side" for every choice of `k > q` and as the "right side" for every choice of `k < p`. For long expressions, each subrange is queried many times.
-
-**Concrete numbers.** For `n = 7` operands, `(0, 1)` (a 2-operand range) is the left side for `k = 3, 5` and stands alone in the recurrence at multiple levels. Without memoization, the recursion is `Catalan(n)`-many tree builds.
-
-**What breaks otherwise.** Without the table, `O(Catalan(n))` is roughly `O(4^n / n^{1.5})` — explosively bad past `n ≈ 20`.
-
-### Q3 — Why two tables?
-
-Already established — the operator's truth table needs both T and F counts on both sides. One table can't recover the other (unless you also store the total Catalan count, which is fragile and adds no expressiveness).
-
-### Q4 — Why sum-of-products?
-
-For each split-point `k`, the number of left-tree × right-tree combinations is `(count of left trees) × (count of right trees)` — multiplication, because every pairing forms one whole tree. Different `k`s yield disjoint sets of whole trees, so we sum across `k`.
-
-</details>
-<details>
-<summary><h2>The Solution</h2></summary>
-
-
-Bottom-up tabulation; two parallel tables. We treat operands as living at even string indices and operators at odd indices; the inner loop steps by 2.
-
-
-```python run viz=grid viz-root=T
-from typing import List
-
-class Solution:
-    def boolean_parenthesisation(self, s: str) -> int:
-        n = len(s)
-        # T[i][j] = ways to parenthesise s[i..j] to evaluate True.
-        # F[i][j] = ways to parenthesise s[i..j] to evaluate False.
-        T: List[List[int]] = [[0] * n for _ in range(n)]
-        F: List[List[int]] = [[0] * n for _ in range(n)]
-        # Base case: single-operand ranges.
-        for i in range(0, n, 2):
-            T[i][i] = 1 if s[i] == 'T' else 0
-            F[i][i] = 1 if s[i] == 'F' else 0
-        # Iterate by interval length over operand positions; only odd lengths matter.
-        for length in range(3, n + 1, 2):
-            for i in range(0, n - length + 1, 2):
-                j = i + length - 1
-                # k steps over operator positions only (every other index).
-                for k in range(i, j, 2):
-                    op = s[k + 1]
-                    tl, fl = T[i][k],     F[i][k]
-                    tr, fr = T[k + 2][j], F[k + 2][j]
-                    if op == '&':
-                        T[i][j] += tl * tr
-                        F[i][j] += tl * fr + fl * tr + fl * fr
-                    elif op == '|':
-                        T[i][j] += tl * tr + tl * fr + fl * tr
-                        F[i][j] += fl * fr
-                    else:  # '^'
-                        T[i][j] += tl * fr + fl * tr
-                        F[i][j] += tl * tr + fl * fr
-        return T[0][n - 1]
-
-
-if __name__ == "__main__":
-    sol = Solution()
-    print(sol.boolean_parenthesisation("T^F&T"))    # 2
-    print(sol.boolean_parenthesisation("T^F|F"))    # 2
-    print(sol.boolean_parenthesisation("T|F"))      # 1
+## Why It Exists
+
+A boolean expression like `T ^ F & T` has no value until you decide which operator binds first: `(T ^ F) & T` versus `T ^ (F & T)`. For some inputs the two groupings *disagree*, so the real question is: **how many parenthesizations make the whole expression evaluate to `True`?** Compilers reasoning about ambiguous grammars and tools counting satisfying assignments hit exactly this.
+
+The shape is new. Every interval DP so far either matched two ends ([palindromes](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-longest-palindromic-subsequence)) or took an end ([game strategy](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-optimal-stratergy)). Here the choice is *which operator is applied last* — an internal **split point** `k` inside the range, the same structure as matrix-chain multiplication. And it needs **two** tables, not one: to know how many ways `left | right` is `True`, you need to know how many ways each side is `False`, not just `True`.
+
+## See It Work
+
+Operands (`T`/`F`) sit at even positions, operators (`&`, `|`, `^`) at odd. `T[i][j]` / `F[i][j]` count the parenthesizations of operands `i..j` that evaluate True / False. For each operator `k` as the *last* one applied, combine the two sides with that operator's truth table — a sum of products over how each side lands.
+
+```python run
+def count_true(expr):
+    symbols, ops = expr[::2], expr[1::2]             # operands at even idx, operators at odd
+    n = len(symbols)
+    T = [[0] * n for _ in range(n)]
+    F = [[0] * n for _ in range(n)]
+    for i in range(n):
+        T[i][i] = 1 if symbols[i] == 'T' else 0      # base: a single operand
+        F[i][i] = 1 if symbols[i] == 'F' else 0
+    for length in range(2, n + 1):                   # interval DP: grow by length
+        for i in range(n - length + 1):
+            j = i + length - 1
+            for k in range(i, j):                    # ops[k] is the LAST operator: split [i..k] | [k+1..j]
+                lt, lf, rt, rf = T[i][k], F[i][k], T[k + 1][j], F[k + 1][j]
+                total = (lt + lf) * (rt + rf)        # all left x right pairings
+                if ops[k] == '&':
+                    T[i][j] += lt * rt               # AND true iff both true
+                    F[i][j] += total - lt * rt
+                elif ops[k] == '|':
+                    T[i][j] += total - lf * rf       # OR true unless both false
+                    F[i][j] += lf * rf
+                else:                                # '^'
+                    T[i][j] += lt * rf + lf * rt     # XOR true iff sides differ
+                    F[i][j] += lt * rt + lf * rf
+    return T[0][n - 1]
+
+print(count_true("T^F&T"))     # 2
+print(count_true("T|T&F^T"))   # 4
 ```
 
 ```java run
 public class Main {
-    static class Solution {
-        public int booleanParenthesisation(String s) {
-            int n = s.length();
-            int[][] T = new int[n][n];
-            int[][] F = new int[n][n];
-            for (int i = 0; i < n; i += 2) {
-                T[i][i] = (s.charAt(i) == 'T') ? 1 : 0;
-                F[i][i] = (s.charAt(i) == 'F') ? 1 : 0;
-            }
-            for (int len = 3; len <= n; len += 2) {
-                for (int i = 0; i <= n - len; i += 2) {
-                    int j = i + len - 1;
-                    for (int k = i; k < j; k += 2) {
-                        char op = s.charAt(k + 1);
-                        int tl = T[i][k],     fl = F[i][k];
-                        int tr = T[k + 2][j], fr = F[k + 2][j];
-                        if (op == '&') {
-                            T[i][j] += tl * tr;
-                            F[i][j] += tl * fr + fl * tr + fl * fr;
-                        } else if (op == '|') {
-                            T[i][j] += tl * tr + tl * fr + fl * tr;
-                            F[i][j] += fl * fr;
-                        } else {
-                            T[i][j] += tl * fr + fl * tr;
-                            F[i][j] += tl * tr + fl * fr;
-                        }
-                    }
+    static int countTrue(String expr) {
+        StringBuilder sym = new StringBuilder(), ops = new StringBuilder();
+        for (int i = 0; i < expr.length(); i++)
+            if (i % 2 == 0) sym.append(expr.charAt(i)); else ops.append(expr.charAt(i));
+        int n = sym.length();
+        long[][] T = new long[n][n], F = new long[n][n];
+        for (int i = 0; i < n; i++) {
+            T[i][i] = sym.charAt(i) == 'T' ? 1 : 0;
+            F[i][i] = sym.charAt(i) == 'F' ? 1 : 0;
+        }
+        for (int len = 2; len <= n; len++)
+            for (int i = 0; i + len - 1 < n; i++) {
+                int j = i + len - 1;
+                for (int k = i; k < j; k++) {        // last operator splits the range
+                    long lt = T[i][k], lf = F[i][k], rt = T[k + 1][j], rf = F[k + 1][j];
+                    long total = (lt + lf) * (rt + rf);
+                    char op = ops.charAt(k);
+                    if (op == '&')      { T[i][j] += lt * rt;          F[i][j] += total - lt * rt; }
+                    else if (op == '|') { T[i][j] += total - lf * rf;  F[i][j] += lf * rf; }
+                    else                { T[i][j] += lt * rf + lf * rt; F[i][j] += lt * rt + lf * rf; }
                 }
             }
-            return T[0][n - 1];
-        }
+        return (int) T[0][n - 1];
     }
-
     public static void main(String[] args) {
-        Solution sol = new Solution();
-        System.out.println(sol.booleanParenthesisation("T^F&T"));   // 2
-        System.out.println(sol.booleanParenthesisation("T^F|F"));   // 2
-        System.out.println(sol.booleanParenthesisation("T|F"));     // 1
+        System.out.println(countTrue("T^F&T"));     // 2
+        System.out.println(countTrue("T|T&F^T"));   // 4
     }
 }
 ```
 
-</details>
-<details>
-<summary><strong>Trace — s = "T^F&T"</strong></summary>
+Both print `2` then `4`. `T^F&T` has two operand-orderings and both happen to evaluate True; `T|T&F^T` has five parenthesizations, four of which are True. Cost `O(n³)` — `O(n²)` ranges times `O(n)` split points.
 
-```
-n = 5.  Operand positions 0, 2, 4.  Operator positions 1 (^), 3 (&).
+## How It Works
 
-Length 1:
-  T[0][0] = 1, F[0][0] = 0   (s[0]='T')
-  T[2][2] = 0, F[2][2] = 1   (s[2]='F')
-  T[4][4] = 1, F[4][4] = 0   (s[4]='T')
+Pick the operator applied last; everything left of it is one fully-parenthesized sub-expression, everything right is another. Sum over all split points, and for each, combine by the operator's truth table:
 
-Length 3:
-  (i=0, j=2): op = s[1] = '^'
-    tl,fl = 1,0;  tr,fr = 0,1
-    T[0][2] += tl·fr + fl·tr = 1·1 + 0·0 = 1
-    F[0][2] += tl·tr + fl·fr = 1·0 + 0·1 = 0
-
-  (i=2, j=4): op = s[3] = '&'
-    tl,fl = 0,1;  tr,fr = 1,0
-    T[2][4] += tl·tr = 0·1 = 0
-    F[2][4] += tl·fr + fl·tr + fl·fr = 0·0 + 1·1 + 1·0 = 1
-
-Length 5:
-  (i=0, j=4): two split points
-    k=0: op='^', left = (0,0), right = (2,4)
-      tl,fl = 1,0;  tr,fr = 0,1
-      T[0][4] += tl·fr + fl·tr = 1·1 + 0·0 = 1
-      F[0][4] += tl·tr + fl·fr = 1·0 + 0·1 = 0
-
-    k=2: op='&', left = (0,2), right = (4,4)
-      tl,fl = 1,0;  tr,fr = 1,0
-      T[0][4] += tl·tr = 1·1 = 1   → running total T[0][4] = 2
-      F[0][4] += tl·fr + fl·tr + fl·fr = 1·0 + 0·1 + 0·0 = 0
-
-Final: T[0][4] = 2.  ✓
+```d2
+direction: right
+split: "last operator ops[k] splits operands [i..j]\ninto LEFT [i..k]  and  RIGHT [k+1..j]" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
+need: "each side has TWO counts:\nT (#ways true), F (#ways false)" {style.fill: "#f3e8ff"; style.stroke: "#9333ea"}
+andOp: "& : T += Tl*Tr\n      F += total - Tl*Tr" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
+orOp:  "| : T += total - Fl*Fr\n      F += Fl*Fr" {style.fill: "#fde68a"; style.stroke: "#d97706"}
+xorOp: "^ : T += Tl*Fr + Fl*Tr\n      F += Tl*Tr + Fl*Fr" {style.fill: "#fbcfe8"; style.stroke: "#db2777"}
+split -> need
+need -> andOp
+need -> orOp
+need -> xorOp
 ```
 
+<p align="center"><strong>For each split point, the two sides combine by a <em>sum of products</em> over their True/False counts. <code>total = (Tl+Fl)(Tr+Fr)</code> is every pairing; each operator carves out which pairings land True.</strong></p>
+
+Two ideas define this lesson:
+
+- **The split point is an operator, not an end.** Where palindromes peel a character off each end, this picks the *last operator to evaluate* and recurses on the two sub-expressions it separates. That internal `for k` loop is the signature of split-point interval DP — shared with [matrix-chain multiplication](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-matrix-chain-multiplication) — and it's why the cost is `O(n³)`.
+- **You need both T *and* F tables.** This is the crux. `left | right` is True in three of four cases — the only False case is both-False — so counting its True-ways requires `Fl` and `Fr`. `left ^ right` is True exactly when the sides differ, mixing `Tl·Fr` and `Fl·Tr`. You cannot compute the True-counts from True-counts alone; the False-counts are load-bearing. ([Trace It](#trace-it) proves it.)
+
+> **Key takeaway.** Boolean parenthesization is a **split-point interval DP with two tables**: try each operator `k` as the last applied, and combine `T`/`F` counts by a sum of products (`&`: `Tl·Tr`; `|`: `total − Fl·Fr`; `^`: `Tl·Fr + Fl·Tr`). Fill by length; answer `T[0][n-1]`; cost `O(n³)`. The False-table is mandatory because `|` and `^` depend on it.
+
+## Trace It
+
+It's tempting to track only the True-counts — the answer is a True-count, after all — and to reuse AND's clean rule (`Tl·Tr`) for the other operators. That works for AND. It quietly breaks for OR.
+
+**Predict before you run:** with OR's True-count computed as `Tl·Tr` (mirroring AND), how many ways does `"F|T"` evaluate True — the correct `1`, or something else?
+
+```python run
+def count_true(expr, or_bug=False):
+    symbols, ops = expr[::2], expr[1::2]
+    n = len(symbols)
+    T = [[0] * n for _ in range(n)]
+    F = [[0] * n for _ in range(n)]
+    for i in range(n):
+        T[i][i] = 1 if symbols[i] == 'T' else 0
+        F[i][i] = 1 if symbols[i] == 'F' else 0
+    for length in range(2, n + 1):
+        for i in range(n - length + 1):
+            j = i + length - 1
+            for k in range(i, j):
+                lt, lf, rt, rf = T[i][k], F[i][k], T[k + 1][j], F[k + 1][j]
+                total = (lt + lf) * (rt + rf)
+                if ops[k] == '&':
+                    T[i][j] += lt * rt
+                    F[i][j] += total - lt * rt
+                elif ops[k] == '|':
+                    T[i][j] += lt * rt if or_bug else total - lf * rf   # buggy: AND's rule for OR
+                    F[i][j] += lf * rf
+                else:
+                    T[i][j] += lt * rf + lf * rt
+                    F[i][j] += lt * rt + lf * rf
+    return T[0][n - 1]
+
+print("correct F|T:", count_true("F|T"))
+print("buggy   F|T:", count_true("F|T", or_bug=True))
+```
+
+<details>
+<summary><strong>Reveal</strong></summary>
+
+Correct is `1`; the buggy version returns `0`. `F | T` evaluates to `True` — that's one valid (trivially-parenthesized) way — but the buggy rule computes its True-count as `Tl · Tr = (#true ways of F) · (#true ways of T) = 0 · 1 = 0`. The left side `F` has *zero* True-ways, so any rule phrased purely in True-counts multiplies the whole thing to zero, even though `F | True` is plainly true. The correct OR rule is `total − Fl·Fr`: "every pairing except the one where *both* sides are False." That formula reaches for `Fl` and `Fr` — the False-counts — which is exactly why the second table can't be dropped. AND is the special case that lulls you: it really is `Tl·Tr`, so a one-operator test wouldn't expose the bug. OR and XOR need to know how each side can be *False*, and that's the whole reason for two tables.
+
+</details>
+
+## Your Turn
+
+**Different Ways to Add Parentheses** ([LeetCode 241](https://leetcode.com/problems/different-ways-to-add-parentheses/)) — the same split-at-the-operator idea, generalized from booleans to arithmetic: return *every* result obtainable by parenthesizing an expression of numbers and `+ - *`. Split at each operator, combine every left result with every right result.
+
+```python run
+def diff_ways(expr):
+    if expr.isdigit():
+        return [int(expr)]                           # base: a bare number
+    res = []
+    for i, ch in enumerate(expr):
+        if ch in "+-*":                              # treat ch as the last operator applied
+            for l in diff_ways(expr[:i]):
+                for r in diff_ways(expr[i + 1:]):
+                    res.append(l + r if ch == '+' else l - r if ch == '-' else l * r)
+    return res
+
+print(sorted(diff_ways("2-1-1")))      # [0, 2]
+print(sorted(diff_ways("2*3-4*5")))    # [-34, -14, -10, -10, 10]
+```
+
+```java run
+import java.util.*;
+public class Main {
+    static List<Integer> diffWays(String e) {
+        List<Integer> res = new ArrayList<>();
+        if (e.chars().allMatch(Character::isDigit)) { res.add(Integer.parseInt(e)); return res; }
+        for (int i = 0; i < e.length(); i++) {
+            char c = e.charAt(i);
+            if (c == '+' || c == '-' || c == '*')
+                for (int l : diffWays(e.substring(0, i)))
+                    for (int r : diffWays(e.substring(i + 1)))
+                        res.add(c == '+' ? l + r : c == '-' ? l - r : l * r);
+        }
+        return res;
+    }
+    public static void main(String[] args) {
+        List<Integer> w1 = diffWays("2-1-1");   Collections.sort(w1);
+        List<Integer> w2 = diffWays("2*3-4*5"); Collections.sort(w2);
+        System.out.println(w1);   // [0, 2]
+        System.out.println(w2);   // [-34, -14, -10, -10, 10]
+    }
+}
+```
+
+Both print `[0, 2]` then `[-34, -14, -10, -10, 10]`. `2-1-1` parenthesizes as `(2-1)-1 = 0` or `2-(1-1) = 2`; the second expression has five groupings. This is boolean parenthesization's structural twin — split at each operator, combine the sub-results — just collecting *values* instead of *counts*. (It's written here as plain recursion to show the split clearly; memoizing on the substring turns it into the same bottom-up interval DP.)
+
+## Reflect & Connect
+
+- **Split-point interval DP.** The defining move is choosing the *last operator* — an internal split `k`, not an endpoint. That extra `for k` loop costs a factor of `n` (so `O(n³)`), and it's shared with matrix-chain multiplication and "different ways to add parentheses."
+- **Two tables because combining needs both polarities.** `|` is True unless both sides are False; `^` is True when sides differ. Both formulas read the False-counts, so tracking only True-counts is wrong for everything but AND.
+- **Sum of products.** Each operator's rule partitions the `total = (Tl+Fl)(Tr+Fr)` pairings into True and False buckets. Writing the truth table as counts is the mechanical heart of the recurrence.
+- **It's the counting cousin of [optimal game strategy](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-optimal-stratergy).** That lesson aggregated with `max`/`min` over choices; this one aggregates with `+`/`×` over choices. Same interval scaffold, different aggregator — the through-line of the whole DP section.
+- **The number of parenthesizations is Catalan.** An `n`-operand expression has the `(n-1)`-th Catalan number of parenthesizations — exponential — which is why brute-force enumeration is hopeless and the `O(n³)` DP matters.
+
+## Recall
+
+<details>
+<summary><strong>Q:</strong> What does the split point represent here, and why is the cost `O(n³)`?</summary>
+
+**A:** The split point `k` is the *last operator applied*, separating operands `[i..k]` from `[k+1..j]`. There are `O(n²)` ranges and `O(n)` split points each → `O(n³)`. This is split-point interval DP, like matrix-chain.
+
 </details>
 <details>
-<summary><h2>Solution &amp; Analysis</h2></summary>
+<summary><strong>Q:</strong> Why are two tables (T and F) required?</summary>
 
-### Complexity Analysis
-
-| Aspect | Cost | Why |
-|---|---|---|
-| Time | `O(n³)` | Three nested loops: length, start, split point. Each iteration is `O(1)` arithmetic. |
-| Space | `O(n²)` | Two `n × n` tables. |
-
-For very long expressions, modular arithmetic is often required (counts grow as Catalan numbers — exponential). The standard variant on competitive-programming sites returns the answer modulo `1003` or `10^9 + 7`.
-
-### Edge Cases
-
-| Case | Example | Expected | Reasoning |
-|---|---|---|---|
-| Single operand | `"T"` | `1` | Length 1; one trivial parsing, evaluates True. |
-| Single operand False | `"F"` | `0` | Trivial parsing evaluates False; no True parses. |
-| All Trues with AND | `"T&T&T&T"` | `5` | All parsings evaluate True; count = Catalan(3) = 5. |
-| All Falses with OR | `"F\|F\|F\|F"` | `0` | All evaluate False; no True parses. |
-| Mixed XOR | `"T^F^T"` | `0` | Two parsings: `(T^F)^T = T^T = F` and `T^(F^T) = T^T = F`. Both evaluate False, so `T[0][n-1] = 0`. |
+**A:** Combining via `|` and `^` depends on the False-counts: `left | right` is True unless both are False (`total − Fl·Fr`), and `left ^ right` is True when the sides differ (`Tl·Fr + Fl·Tr`). True-counts alone can't express these, so the False-table is mandatory.
 
 </details>
 <details>
-<summary><h2>Final Takeaway</h2></summary>
+<summary><strong>Q:</strong> What are the three operators' True-count rules?</summary>
 
-
-Boolean parenthesisation is the classic **split-point interval DP**. Unlike interval DPs that pick a left or right endpoint (palindrome-substring, optimal strategy), this one picks a *split inside* the range — that's the same shape used by matrix-chain multiplication, optimal BST construction, and any "combine adjacent ranges" problem.
-
-The new structural lesson: when the combination operator's outcome depends on each side's value (T or F), you need parallel tables — one per outcome category. Multiplication combines sides; summation combines splits; the operator's truth table controls which products go into which table. **You didn't just count parenthesisations. You learned the split-point interval template — pick a `k` inside the range, recurse on both halves, combine via problem-specific multiplication. The next 10+ problems you'll encounter in this family are variations on the same shape.**
-
-> *Transfer challenge for the next lesson:* Replace boolean operands and operators with *matrix* operands and matrix multiplication. Now the question is: in what order should you multiply a chain of matrices to minimise the total scalar-multiplication cost? Predict the recurrence shape — note that matrix multiplication is associative but not commutative, and the cost depends on the dimensions of the matrices being combined.
+**A:** `&`: `Tl·Tr`. `|`: `total − Fl·Fr` (all pairings except both-false). `^`: `Tl·Fr + Fl·Tr` (sides differ), where `total = (Tl+Fl)(Tr+Fr)`.
 
 </details>
 <details>
-<summary><strong>Answer</strong></summary>
+<summary><strong>Q:</strong> Why does the AND-style rule <code>Tl·Tr</code> fail for OR on <code>"F|T"</code>?</summary>
 
-`dp[i][j]` = minimum scalar multiplications to compute the matrix product `A_i · A_{i+1} · ... · A_j`. For each split `k`, `dp[i][j] = min(dp[i][k] + dp[k+1][j] + cost(i, k, j))`, where `cost(i, k, j) = dims[i-1] · dims[k] · dims[j]` — the cost of multiplying the two sub-products. Same `(i, j)` interval shape, same split-point structure as boolean parenthesisation, but the aggregator is min instead of sum, and the per-split cost is non-trivial. The next lesson formalises this as **Matrix Chain Multiplication**.
+**A:** `F|T` is True, but `Tl·Tr = 0·1 = 0` because the left side `F` has zero True-ways. OR's truth needs the both-False count: `total − Fl·Fr = 1 − 0 = 1`. AND is the lone operator where `Tl·Tr` is correct.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does this relate to "different ways to add parentheses" (LeetCode 241)?</summary>
+
+**A:** Identical split-at-the-operator structure: pick each operator as last, combine the sub-results. Boolean parenthesization *counts* True-results; LeetCode 241 *collects* all numeric values. Both are split-point interval DPs.
 
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+## Sources & Verify
 
-<!-- TODO: The Hook — missing, needs to be written -->
-<!--       Guidance: real-world story opening before any definition -->
-
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
-
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
-
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
-
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
-
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
-
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
-
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
-
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
-
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
-
-<!-- TODO: Final Takeaway — missing, needs to be written -->
-<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->
+- **GeeksforGeeks**, "Boolean Parenthesization Problem" — the canonical two-table (`T`/`F`) split-point recurrence and the three operator truth tables.
+- **CLRS** (Cormen, Leiserson, Rivest, Stein), *Introduction to Algorithms*, 3rd ed., §15.2 — matrix-chain multiplication, the split-point interval-DP template this shares.
+- **LeetCode** 241 (Different Ways to Add Parentheses) is the canonical drill for the split structure; the `2`/`4` True-counts, the correct-vs-buggy `1`/`0` on `"F|T"`, and the `[0,2]` / `[-34,-14,-10,-10,10]` value sets above all come from the runnable blocks — re-run to verify.

@@ -1,333 +1,237 @@
 ---
 title: Concurrent Hash Map
-summary: Java's ConcurrentHashMap and similar structures: lock-free reads, fine-grained-locked writes, linearizability guarantees. The hash map you actually use in concurrent production code.
+summary: "The hash map you actually use under concurrency. One global lock turns a map into a serial bottleneck; lock striping shards the table into N independently-locked segments for ~N-way write concurrency, reads stay lock-free, and Java 8+ refines this to per-bucket CAS."
 prereqs:
-  - linear-structures-hash-table-introduction-to-hash-tables
+  - linear-structures-hash-table-what-is-a-hash-table
   - concurrency-and-systems-cas-and-atomics
 ---
 
-# 3. Concurrent Hash Map
+## Why It Exists
 
-## The Hook
+Wrap an ordinary [hash map](/cortex/data-structures-and-algorithms/linear-structures-hash-table-what-is-a-hash-table) in a `synchronized` block and it's correct — but it's a *queue with a hash interface*. Every `get` and `put` acquires one global lock, so threads can't touch the map at the same time even when they're working on completely unrelated keys. Under load, that single lock is the bottleneck and your eight cores run like one.
 
-A regular `HashMap` plus a `synchronized` block around every operation works, but serialises all access. Under high concurrency, every read or write blocks until others finish — a hash map this is *not*; this is a queue with a hash interface.
+The fix is to lock *less of the map at once*. **Lock striping** partitions the table into `N` segments (stripes), each with its own lock; a write locks only the stripe its key hashes to, so two threads writing keys in *different* stripes proceed in parallel — up to `N`-way concurrency instead of 1. Reads can skip locking entirely (a bucket-head read is atomic). That's pre-Java-8 `ConcurrentHashMap`. Java 8+ pushes the idea further — no segment objects, just **CAS on each bucket head** with a short lock only when a bucket is contended, plus treeifying long collision chains. The principle is constant: shrink the unit of mutual exclusion from "the whole map" to "one stripe" to "one bucket."
 
-A **concurrent hash map** lets multiple threads read and write *concurrently* with minimal blocking. The strategies vary:
+## See It Work
 
-- **Striping (lock per bucket).** Divide the table into `N` segments; each segment has its own lock. Threads writing to different segments don't block each other. Java's pre-Java 8 `ConcurrentHashMap`.
-- **Lock-free reads, locked writes.** Reads use no lock at all (relying on volatile reads); writes lock only the affected bucket. Java's modern `ConcurrentHashMap`.
-- **CAS-based fully lock-free.** Both reads and writes are lock-free, using CAS on bucket heads. More complex; used in some specialised libraries.
+A striped map routes each key to `stripe = hash(key) % N`; operations on different stripes are independent. (We simulate single-threaded for determinism — a real implementation gives each stripe its own lock and runs them in parallel. Python's built-in `hash` is per-process salted, so we use a fixed polynomial hash.)
 
-The performance and correctness guarantees vary across these designs. This chapter sketches the strategies, focusing on Java's `ConcurrentHashMap` (the most-deployed implementation) and the trade-offs.
+```python run
+def _hash(key):                                        # deterministic polynomial hash
+    h = 0
+    for c in str(key):
+        h = (h * 131 + ord(c)) % (2**31 - 1)
+    return h
 
----
+class StripedHashMap:
+    def __init__(self, n_stripes=4):
+        self.n = n_stripes
+        self.stripes = [dict() for _ in range(n_stripes)]   # each stripe also has its OWN lock in reality
+    def stripe_of(self, key):
+        return _hash(key) % self.n
+    def put(self, key, value):                         # a real put locks ONLY stripes[stripe_of(key)]
+        self.stripes[self.stripe_of(key)][key] = value
+    def get(self, key):                                # reads are lock-free (atomic bucket-head read)
+        return self.stripes[self.stripe_of(key)].get(key)
 
-## Table of contents
-
-1. [The contention problem](#the-contention-problem)
-2. [Striping (segment locks)](#striping-segment-locks)
-3. [Lock-free reads, locked writes](#lock-free-reads-locked-writes)
-4. [Linearizability and weakly consistent iterators](#linearizability-and-weakly-consistent-iterators)
-5. [Implementation](#implementation)
-6. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
-7. [Production reality](#production-reality)
-8. [Cross-links](#cross-links)
-9. [Final takeaway](#final-takeaway)
-
-***
-
-# The contention problem
-
-A `synchronized` HashMap has a single global lock. With four threads doing 1M operations each:
-
-| Implementation | Throughput |
-|---|---|
-| `synchronized HashMap` | 1× (baseline) |
-| Striped (16 segments) | ~10× (proportional to segment count) |
-| Java's `ConcurrentHashMap` | ~30× (lock-free reads + fine-grained writes) |
-| Specialised lock-free | ~50× (no locks at all, but more complex) |
-
-The win comes from *fewer collisions on lock acquisition*. Below contention, all approaches are similar; under contention, the design choices matter dramatically.
-
-***
-
-# Striping (segment locks)
-
-The pre-Java 8 design. The table is partitioned into `N` segments (typically 16). Each segment is itself a small hash map with its own lock. To read/write key `k`:
-
-1. Compute `segment = h(k) mod N`.
-2. Acquire `segment.lock`.
-3. Operate on `segment`.
-4. Release.
-
-`N` simultaneous writers can proceed in parallel as long as their keys hash to different segments.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
----
-flowchart LR
-  K["key"] --> H["hash"] --> S["segment = hash mod N"]
-  S --> L1["seg 0 (lock + bucket array)"]
-  S --> L2["seg 1 (lock + bucket array)"]
-  S --> L3["..."]
-  S --> LN["seg N-1 (lock + bucket array)"]
+m = StripedHashMap(4)
+for k, v in [("apple", 1), ("banana", 2), ("cherry", 3), ("date", 4)]:
+    m.put(k, v)
+print(m.get("apple"), m.get("cherry"))                 # 1 3
+print(m.get("grape"))                                  # None
+print({k: m.stripe_of(k) for k in ["apple", "banana", "cherry", "date"]})   # which stripe each lands in
 ```
 
-<p align="center"><strong>Stripe-locked hash map. Each segment is a mini-hash-map with its own lock. Two threads writing to different segments don't block.</strong></p>
-
-***
-
-# Lock-free reads, locked writes
-
-Java 8 redesigned `ConcurrentHashMap`. New strategy:
-
-- **Reads** require no lock. The buckets are stored in a `volatile` array; reading a bucket head is just a volatile read. Walking the bucket's chain is also lock-free as long as you hold the head reference.
-- **Writes** acquire a lock on the *individual bucket* (not the whole segment). With `n` buckets and few collisions, contention is minimal.
-
-This design relies on:
-- The bucket head pointer is `volatile` → readers see fresh values.
-- The bucket entries are immutable once linked → readers can safely walk the chain even while a writer is updating the bucket.
-- Writers serialise via per-bucket locks.
-
-The result: under realistic workloads, the new `ConcurrentHashMap` is 2-5× faster than the segmented version, with simpler internals.
-
-***
-
-# Linearizability and weakly consistent iterators
-
-Concurrent maps usually guarantee **linearizability** for individual operations — `put`, `get`, `remove` each appear to happen at a single instant.
-
-But *iteration* is harder. Java's `ConcurrentHashMap.iterator()` is **weakly consistent**: it doesn't throw `ConcurrentModificationException` (unlike non-concurrent maps), but it makes no guarantees about whether elements added during iteration are visible. The iterator reflects "some recent state" of the map.
-
-For analytics use cases (count entries periodically), weakly consistent iteration is exactly what you want. For "snapshot iteration" use cases, you need a different structure (immutable map or copy-on-write).
-
-***
-
-# Implementation
-
-A simplified Java-style striped concurrent hash map in pseudocode and Java:
-
 ```java run
-import java.util.concurrent.*;
-import java.util.concurrent.locks.*;
-
+import java.util.*;
 public class Main {
-    // Use Java's built-in ConcurrentHashMap; stripped-down example.
-    static ConcurrentHashMap<String, Integer> map = new ConcurrentHashMap<>();
-
-    public static void main(String[] args) throws Exception {
-        ExecutorService pool = Executors.newFixedThreadPool(4);
-        for (int t = 0; t < 4; t++) {
-            final int tid = t;
-            pool.submit(() -> {
-                for (int i = 0; i < 10000; i++) {
-                    map.merge("key_" + (i % 100), 1, Integer::sum);
-                }
-            });
-        }
-        pool.shutdown();
-        pool.awaitTermination(10, TimeUnit.SECONDS);
-        System.out.println("100 unique keys, total value: " +
-            map.values().stream().mapToInt(Integer::intValue).sum() +
-            " (expected " + 4 * 10000 + ")");
+    static final long MOD = (1L << 31) - 1;
+    static long hash(String key) {                     // same polynomial hash as the Python block
+        long h = 0;
+        for (int i = 0; i < key.length(); i++) h = (h * 131 + key.charAt(i)) % MOD;
+        return h;
+    }
+    static class StripedHashMap {
+        int n; Map<String, Integer>[] stripes;
+        @SuppressWarnings("unchecked")
+        StripedHashMap(int n) { this.n = n; stripes = new HashMap[n]; for (int i = 0; i < n; i++) stripes[i] = new HashMap<>(); }
+        int stripeOf(String k) { return (int) (hash(k) % n); }    // a real put locks ONLY this stripe
+        void put(String k, int v) { stripes[stripeOf(k)].put(k, v); }
+        Integer get(String k) { return stripes[stripeOf(k)].get(k); }   // reads are lock-free
+    }
+    public static void main(String[] args) {
+        StripedHashMap m = new StripedHashMap(4);
+        m.put("apple", 1); m.put("banana", 2); m.put("cherry", 3); m.put("date", 4);
+        System.out.println(m.get("apple") + " " + m.get("cherry"));    // 1 3
+        System.out.println(m.get("grape"));                            // null
+        StringBuilder sb = new StringBuilder();
+        for (String k : new String[]{"apple", "banana", "cherry", "date"}) sb.append(k).append("=").append(m.stripeOf(k)).append(" ");
+        System.out.println(sb.toString().trim());
     }
 }
 ```
 
-```python run viz=graph viz-root=stripes
-import threading
+Both print `1 3`, then `None`/`null`, then the stripe of each key (`apple=3 banana=2 cherry=1 date=2`). Correctness is identical to a plain hash map; the win is that `apple` (stripe 3) and `banana` (stripe 2) live in *separate* stripes, so concurrent writers to them never block each other.
+
+## How It Works
+
+The whole design is about *which* lock — and how little of the map it covers:
+
+```d2
+direction: right
+global: "ONE global lock\n-> all ops serialize (1-way)\nevery thread waits on every other" {style.fill: "#fecaca"; style.stroke: "#dc2626"}
+stripe: "N STRIPE locks (lock striping)\nput locks only stripe = hash(key) % N\n-> different stripes -> CONCURRENT (~N-way)\nsame stripe -> still serialize" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
+reads: "READS lock-free\n(atomic / volatile bucket-head read;\nreaders never block writers or each other)" {style.fill: "#fde68a"; style.stroke: "#d97706"}
+bucket: "Java 8+: per-BUCKET CAS\n(no segment objects; lock only a contended bin;\ntreeify chains > 8)" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
+global -> stripe: "shrink the lock"
+stripe -> reads
+stripe -> bucket: "shrink further"
+```
+
+<p align="center"><strong>Shrink the unit of mutual exclusion: from the whole map (1-way), to one stripe (~N-way), to one bucket (Java 8+). Reads stay lock-free throughout — a bucket-head read is atomic, so readers never block.</strong></p>
+
+Three load-bearing facts:
+
+- **Striping turns 1-way into N-way — bounded by N.** With `N` stripes, writes to different stripes run in parallel, so throughput scales with `N` (the *concurrency level*). But two keys that hash to the *same* stripe still serialize on that stripe's lock — striping reduces contention, it doesn't eliminate it. More stripes → less collision but more memory and weaker per-stripe locality; Java's default concurrency level was 16. Per-bucket CAS (Java 8+) is the limit case: the "stripe" is a single bucket.
+- **Reads are lock-free.** A `get` reads the bucket head atomically (a `volatile` reference in Java) and walks the chain — no lock taken, so readers never block writers or each other. This is the common case (maps are read-heavy), and it's why a concurrent map can hugely outperform a synchronized one even with a single writer.
+- **Linearizable ops, weakly-consistent iterators.** Each `put`/`get`/`remove` appears to happen atomically at some instant (linearizable) — you never see a half-updated entry. But an *iterator* reflects the map at *some* point during its traversal and may or may not see concurrent updates; it's guaranteed never to throw `ConcurrentModificationException` and never to crash, but `size()` is approximate under concurrency. You trade a globally-consistent snapshot for non-blocking iteration.
+
+> **Key takeaway.** A concurrent hash map shrinks the lock. **Lock striping** shards the table into `N` independently-locked segments, giving up to `N`-way write concurrency (keys on different stripes never block; same-stripe keys still serialize). **Reads are lock-free** (atomic bucket-head read). Java 8+ refines striping to **per-bucket CAS** (lock only a contended bin, treeify long chains). Operations are linearizable; iterators are weakly consistent.
+
+## Trace It
+
+The selling point — "writes don't block each other" — has an asterisk, and the asterisk is the stripe assignment.
+
+**Predict before you run:** a synchronized map serialises *all* writes. With `N = 4` stripes, two threads write two different keys. Are they *always* able to proceed concurrently, or does it depend on something?
+
+```python run
 from collections import defaultdict
+def _hash(key):
+    h = 0
+    for c in str(key):
+        h = (h * 131 + ord(c)) % (2**31 - 1)
+    return h
+
+keys = ["apple", "banana", "cherry", "date", "fig", "grape", "kiwi", "lime"]
+N = 4
+stripe = {k: _hash(k) % N for k in keys}
+by_stripe = defaultdict(list)
+for k, s in stripe.items():
+    by_stripe[s].append(k)
+
+print("keys per stripe:", dict(by_stripe))
+diff = next((a, b) for a in keys for b in keys if a < b and stripe[a] != stripe[b])
+same = next(ks for ks in by_stripe.values() if len(ks) >= 2)
+print(f"different stripes -> CONCURRENT: {diff}  (stripes {stripe[diff[0]]}, {stripe[diff[1]]})")
+print(f"same stripe -> SERIALIZE: {same[0]}, {same[1]}  (both stripe {stripe[same[0]]})")
+```
+
+<details>
+<summary><strong>Reveal</strong></summary>
+
+It **depends on whether the two keys hash to the same stripe.** With 4 stripes and 8 keys, the assignment is uneven (`apple→3`, `banana→2`, `cherry→1`, `date→2`, ...): some stripes hold one key, others hold several. `apple` and `banana` land on *different* stripes (3 and 2), so two threads writing them lock *different* locks and proceed **concurrently** — exactly the speedup striping promises. But `banana` and `date` both hash to stripe 2, so two threads writing them contend on the *same* lock and **serialize**, no better than the global-lock case for that pair. That's the fundamental limit of striping: it reduces the *probability* of contention by a factor of `N`, but two keys that collide on a stripe still block each other. With random keys and `N` stripes, you get roughly `N`-way concurrency *on average*, never a guarantee for any specific pair. This is precisely why Java 8 moved to **per-bucket** granularity — the "stripe" shrank to a single bucket, so two writers collide only if their keys land in the *same bucket* (far rarer than the same stripe), and even then it's a short CAS or a brief bin lock rather than a coarse segment lock.
+
+</details>
+
+## Your Turn
+
+**Profile the concurrency** as you add stripes. Spread the same keys over `1`, `4`, and `16` stripes and watch the per-stripe load fall and the achievable parallelism rise.
+
+```python run
+def _hash(key):
+    h = 0
+    for c in str(key):
+        h = (h * 131 + ord(c)) % (2**31 - 1)
+    return h
 
 class StripedHashMap:
-    """Simple striped hash map for educational use."""
-    def __init__(self, num_stripes=16):
-        self.num_stripes = num_stripes
-        self.stripes = [(threading.Lock(), {}) for _ in range(num_stripes)]
-
-    def _stripe(self, key):
-        return self.stripes[hash(key) % self.num_stripes]
-
+    def __init__(self, n_stripes):
+        self.n = n_stripes
+        self.stripes = [dict() for _ in range(n_stripes)]
     def put(self, key, value):
-        lock, table = self._stripe(key)
-        with lock:
-            table[key] = value
+        self.stripes[_hash(key) % self.n][key] = value
 
-    def get(self, key, default=None):
-        lock, table = self._stripe(key)
-        with lock:
-            return table.get(key, default)
+def profile(num_keys, n_stripes):
+    m = StripedHashMap(n_stripes)
+    for i in range(num_keys):
+        m.put(f"key{i}", i)
+    loads = [len(s) for s in m.stripes]
+    distinct = sum(1 for L in loads if L > 0)          # stripes actually used = max parallelism
+    return max(loads), distinct
 
-    def merge(self, key, value, merger):
-        lock, table = self._stripe(key)
-        with lock:
-            table[key] = merger(table.get(key, 0), value)
-
-
-if __name__ == "__main__":
-    m = StripedHashMap(num_stripes=16)
-
-    def worker():
-        for i in range(10000):
-            m.merge(f"key_{i % 100}", 1, lambda a, b: a + b)
-
-    threads = [threading.Thread(target=worker) for _ in range(4)]
-    for t in threads: t.start()
-    for t in threads: t.join()
-
-    total = sum(m.get(f"key_{i}", 0) for i in range(100))
-    print(f"100 keys, total value: {total} (expected {4 * 10000})")
+for n in (1, 4, 16):
+    max_load, distinct = profile(64, n)
+    print(f"{n:>2} stripes: busiest stripe holds {max_load} keys, {distinct} stripes used -> up to {distinct}-way concurrency")
 ```
 
-***
-
-# Edge cases and pitfalls
-
-- **Don't iterate while concurrently modifying** unless your map's iterator is documented as concurrent-safe. Even then, expect "weakly consistent" iteration.
-- **Atomic compound operations.** `if (map.containsKey(k)) map.put(k, v)` is *not* atomic in any concurrent map — another thread could insert/remove between the check and the put. Use `putIfAbsent`, `replace`, or `compute` for atomic compound operations.
-- **`size()` may be approximate.** Some concurrent maps' `size()` is a best-effort estimate (Java's `ConcurrentHashMap.size()` walks all stripes; under heavy concurrency, the result can be slightly stale). For exact counts, you may need additional synchronisation.
-- **Hashing performance matters more.** Concurrent maps amortise the cost across threads; a slow hash function multiplies the contention. Use `String.hashCode()` (good) over custom slow hashes.
-- **HashDoS.** Concurrent maps are vulnerable to the same hash-flood attacks as non-concurrent ones. Java 8's `ConcurrentHashMap` switches buckets to TreeMap once collision chains exceed a threshold — a defensive measure.
-- **Memory overhead.** Striped maps use more memory than non-concurrent (per-segment locks, possibly per-segment internal state). For embedded contexts, this matters.
-
-***
-
-# Production reality
-
-- **Java's `java.util.concurrent.ConcurrentHashMap`** — the de facto standard. Used by every JVM-based service for caching, request routing, session storage. Source is in `src/java.base/share/classes/java/util/concurrent/ConcurrentHashMap.java`.
-- **`.NET`'s `System.Collections.Concurrent.ConcurrentDictionary`** — striped lock-free design.
-- **Go's `sync.Map`** — optimised for read-heavy workloads with infrequent writes. The default Go `map` is *not* concurrent-safe.
-- **C++ has no standard concurrent hash map.** Common third-party choices: Folly's `ConcurrentHashMap`, TBB's `concurrent_hash_map`, junction's lock-free maps.
-- **Caching libraries** (Caffeine, Guava Cache, Memcached's internals) all use concurrent hash maps as primary storage.
-- **Distributed caches** (Redis, Memcached) at scale, internally use lock-free primitives in their event-loop-based servers — different design pattern.
-
-***
-
-# Memorize
-
-The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Concurrent hash maps are the most-used concurrent structure; getting the lock granularity right separates a 30× speedup from a single-thread bottleneck.
-
-## Quick recall
-
-Click any question to reveal the answer.
-
-<details>
-<summary><strong>Q:</strong> Three lock-granularity strategies?</summary>
-
-**A:** **Single global lock** (`synchronized HashMap`), **stripe / segment locks** (pre-Java-8 `ConcurrentHashMap`), **per-bucket locks with lock-free reads** (Java 8+ `ConcurrentHashMap`).
-
-</details>
-<details>
-<summary><strong>Q:</strong> Why is Java 8's <code>ConcurrentHashMap</code> faster than the segmented version?</summary>
-
-**A:** Reads need no lock at all (volatile read of the bucket head). Writes lock only the affected bucket. Finer granularity → less contention.
-
-</details>
-<details>
-<summary><strong>Q:</strong> What's "weakly consistent iteration"?</summary>
-
-**A:** Iteration over a concurrent map reflects "some recent state"; doesn't throw on modification but doesn't guarantee that all-or-none of in-flight changes are visible. Sufficient for analytics; insufficient for snapshot-isolation.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Why is <code>if (map.containsKey(k)) map.put(k, v)</code> wrong under concurrency?</summary>
-
-**A:** Not atomic. Another thread could remove `k` between the check and the put. Use atomic `putIfAbsent`, `replace`, `compute`, or `merge` instead.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Java <code>ConcurrentHashMap</code>'s defence against HashDoS?</summary>
-
-**A:** Once a bucket's collision chain exceeds a threshold (8 entries), it converts to a red-black tree. Keeps lookups `O(log n)` even under attack.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Go's <code>sync.Map</code> — what's it optimised for?</summary>
-
-**A:** Read-heavy workloads with infrequent writes. Stores read-mostly entries in an immutable read-map; writes go to a mutable dirty-map. The default Go `map` is **not** concurrent-safe.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Why is <code>size()</code> sometimes approximate on a concurrent map?</summary>
-
-**A:** Walking all stripes/buckets while concurrent writes happen can yield a stale total. Java's `size()` is documented as a snapshot estimate, not a precise count.
-
-</details>
-
-## Code template
-
-```java
-// Java's ConcurrentHashMap supports atomic compound operations directly.
-ConcurrentHashMap<String, Integer> map = new ConcurrentHashMap<>();
-
-// Atomic increment of a counter:
-map.merge("hits", 1, Integer::sum);
-
-// Atomic put-if-absent:
-map.putIfAbsent(key, value);
-
-// Atomic compute (with current-or-default):
-map.compute(key, (k, v) -> (v == null ? 1 : v + 1));
-
-// NEVER do this:
-//   if (!map.containsKey(k)) map.put(k, v);   // race window between the two calls
+```java run
+import java.util.*;
+public class Main {
+    static final long MOD = (1L << 31) - 1;
+    static long hash(String key) {
+        long h = 0;
+        for (int i = 0; i < key.length(); i++) h = (h * 131 + key.charAt(i)) % MOD;
+        return h;
+    }
+    public static void main(String[] args) {
+        for (int n : new int[]{1, 4, 16}) {
+            @SuppressWarnings("unchecked")
+            Map<String, Integer>[] stripes = new HashMap[n];
+            for (int i = 0; i < n; i++) stripes[i] = new HashMap<>();
+            for (int i = 0; i < 64; i++) stripes[(int) (hash("key" + i) % n)].put("key" + i, i);
+            int max = 0, distinct = 0;
+            for (Map<String, Integer> s : stripes) { max = Math.max(max, s.size()); if (!s.isEmpty()) distinct++; }
+            System.out.println(n + " stripes: busiest " + max + " keys, " + distinct + " used -> up to " + distinct + "-way");
+        }
+    }
+}
 ```
 
-## Pattern triggers
+Both print the same scaling: `1 stripe` → 1-way, busiest holds all `64`; `4 stripes` → 4-way, busiest ~`17`; `16 stripes` → 16-way, busiest ~`5`. More stripes spread the keys, so the busiest lock guards fewer keys and more writers run in parallel — at the cost of `N` lock objects and worse cache locality. That trade (concurrency vs memory/locality) is exactly the `concurrencyLevel` knob older `ConcurrentHashMap` exposed, and why Java 8's per-bucket scheme sidesteps it.
 
-- **"Multi-threaded shared map"** → use `ConcurrentHashMap` / `ConcurrentDictionary` / `sync.Map`
-- **"Atomic counter per key"** → `merge(key, 1, Integer::sum)`
-- **"Check-then-act on a map"** → use `putIfAbsent` / `compute` / `replace`, never two ops
-- **"Read-heavy / write-rare workload in Go"** → `sync.Map`
-- **"Need sorted concurrent map"** → `ConcurrentSkipListMap` (skip list)
-- **"Iterate while concurrent updates"** → fine if "weakly consistent" is OK; otherwise use a snapshot
-- **"Performance scales sub-linearly with cores"** → check lock granularity; segment count too low
-- **"Suspicious deadlock under load"** → check no nested locks via `compute` callbacks
+## Reflect & Connect
 
-***
+- **Shrink the lock.** Global lock (1-way) → stripe locks (`N`-way) → per-bucket CAS (Java 8+). Each step narrows the unit of mutual exclusion so more independent operations run at once.
+- **Striping's limit is collision on a stripe.** Two keys on different stripes are concurrent; two on the same stripe still serialize. You get `~N`-way concurrency *on average*, never a guarantee — which is why finer (per-bucket) granularity wins.
+- **Reads are lock-free.** A bucket-head read is atomic, so the read-heavy common case never blocks. This alone makes a concurrent map far faster than a synchronized one.
+- **Linearizable, weakly-consistent iterators.** Single operations appear atomic; iterators reflect *some* point in time, never crash, and `size()` is approximate under concurrency. You trade a consistent snapshot for non-blocking traversal.
+- **It builds on the rest of Part 10.** Per-bucket updates are [CAS](/cortex/data-structures-and-algorithms/concurrency-and-systems-cas-and-atomics) retry loops (like the [lock-free queue](/cortex/data-structures-and-algorithms/concurrency-and-systems-lock-free-queue)); safe resize and node reclamation lean on [RCU/hazard pointers](/cortex/data-structures-and-algorithms/concurrency-and-systems-rcu-and-hazard-pointers). The concurrent hash map is where all of Part 10's primitives meet in one production structure.
 
-# Cross-links
+## Recall
 
-- **Prerequisites:** [Hash Table](/cortex/data-structures-and-algorithms/linear-structures-hash-table-introduction-to-hash-tables), [CAS and Atomics](/cortex/data-structures-and-algorithms/concurrency-and-systems-cas-and-atomics).
-- **Sibling structures:** [Lock-Free Queue](/cortex/data-structures-and-algorithms/concurrency-and-systems-lock-free-queue), [Skip List](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-skip-list) (for sorted concurrent maps).
+<details>
+<summary><strong>Q:</strong> Why is a <code>synchronized</code> HashMap a bottleneck under concurrency?</summary>
 
-***
+**A:** It has one global lock, so every `get`/`put` serialises — threads can't operate even on unrelated keys at the same time. It behaves like a queue with a hash interface.
 
-# Final takeaway
+</details>
+<details>
+<summary><strong>Q:</strong> What is lock striping, and what concurrency does it give?</summary>
 
-Concurrent hash maps are the workhorse of multi-threaded code. Three patterns to internalise:
+**A:** Partition the table into `N` segments, each with its own lock; a write locks only the stripe `hash(key) % N`. Writes to different stripes proceed in parallel — up to `N`-way concurrency. Two keys on the same stripe still serialize.
 
-1. **Lock granularity is the design knob.** Single global lock < segment locks < per-bucket locks < lock-free. Each step buys throughput at the cost of complexity.
-2. **Use atomic compound operations.** `putIfAbsent`, `compute`, `merge` — never check-then-act manually under concurrency.
-3. **Java's `ConcurrentHashMap` is the gold standard.** When in doubt, use it. Reading its source is a master class in concurrent programming.
+</details>
+<details>
+<summary><strong>Q:</strong> Why can reads be lock-free?</summary>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+**A:** A `get` reads the bucket head atomically (a `volatile` reference) and walks the chain without taking a lock, so readers never block writers or each other. The read-heavy common case scales freely.
 
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
+</details>
+<details>
+<summary><strong>Q:</strong> How does Java 8+ improve on segment striping?</summary>
 
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
+**A:** It drops segment objects and uses **CAS on each bucket head** directly, taking a short lock only on a contended bin, and treeifies collision chains longer than ~8. The lock unit shrinks from a segment to a single bucket, so collisions (and thus serialization) are far rarer.
 
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
+</details>
+<details>
+<summary><strong>Q:</strong> What consistency does a concurrent hash map provide?</summary>
 
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
+**A:** Individual operations are linearizable (each appears atomic at some instant — no half-updated entries). Iterators are weakly consistent: they reflect the map at some point, never throw `ConcurrentModificationException`, and `size()` is approximate under concurrent updates.
 
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+</details>
 
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
+## Sources & Verify
 
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+- **Herlihy & Shavit**, *The Art of Multiprocessor Programming* (2nd ed.) — striped/refinable hash sets, lock-free reads, and linearizability.
+- **Doug Lea**, `java.util.concurrent.ConcurrentHashMap` (and its Java 8 rewrite to per-bin CAS + treeification) — the canonical production concurrent map; **Cliff Click**, "A Lock-Free Wait-Free Hash Table" — a fully lock-free design.
+- The `1 3` / `None` gets, the `apple=3 banana=2 cherry=1 date=2` stripe assignments, the concurrent-vs-serialize pair, and the `1`/`4`/`16`-way profile above come from the runnable blocks — the code *simulates* striping single-threaded (real stripes each carry a lock and run in parallel); Python's built-in `hash` is salted, so a fixed polynomial hash is used. Re-run to verify.

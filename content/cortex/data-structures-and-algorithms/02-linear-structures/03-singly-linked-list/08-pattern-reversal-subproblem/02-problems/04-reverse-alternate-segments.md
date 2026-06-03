@@ -231,7 +231,7 @@ print(to_list(Solution().reverse_alternate_segments(from_list([1, 2, 3, 4, 5, 6]
 print(to_list(Solution().reverse_alternate_segments(from_list([1, 2, 3, 4, 5, 6, 7, 8]), 2)))  # [2, 1, 3, 4, 6, 5, 7, 8]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {

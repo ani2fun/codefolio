@@ -1,376 +1,307 @@
 ---
 title: Treap
-summary: A binary tree that's also a heap. Each node has a key (BST-ordered) and a random priority (heap-ordered). The randomness gives expected O(log n) operations with simpler code than any deterministic balanced BST.
+summary: "A binary tree that is simultaneously a BST (ordered by key) and a heap (ordered by a random priority). The random priorities force the shape of a randomly-built BST, giving expected O(log n) operations with far simpler code than AVL or red-black — no rotation rules, just rotate toward the higher priority."
 prereqs:
   - trees-binary-search-tree-introduction-to-binary-search-trees
-  - trees-heap-introduction-to-heaps
+  - trees-heap-what-is-a-heap
 ---
 
-# 5. Treap
+## Why It Exists
 
-## The Hook
+A [binary search tree](/cortex/data-structures-and-algorithms/trees-binary-search-tree-introduction-to-binary-search-trees) gives `O(log n)` operations *only if it stays balanced*. Feed it keys in sorted order and it degenerates into a height-`n` chain — `O(n)` per operation, the worst case an adversary (or just already-sorted data) hands you for free. Balanced BSTs like AVL and red-black trees prevent this, but at the cost of intricate rotation-and-recoloring rules that are notoriously fiddly to implement correctly.
 
-You want a balanced BST without the choreography of red-black trees or AVL rotations. The **treap** ("tree + heap") gives it to you in ~50 lines: every node carries a key and a randomly-assigned priority. The tree is BST-ordered on keys *and* heap-ordered on priorities. Insertions splay random priorities through the tree; the result is *expected* `O(log n)` height for any input order.
+A **treap** gets the same expected `O(log n)` with almost none of that complexity. The trick is to make every node carry *two* values: its **key** (which obeys the BST ordering, left < node < right) and a **random priority** (which obeys the [heap](/cortex/data-structures-and-algorithms/trees-heap-what-is-a-heap) ordering, parent > children). Here's the magic: for a fixed set of keys and priorities, the tree shape is *uniquely determined* — and it's exactly the BST you'd get by inserting the keys in *decreasing priority order*. Since the priorities are random, that's a *random* insertion order, which is balanced in expectation no matter what order the keys actually arrived in. Randomness replaces the balancing rules, just like in a [skip list](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-skip-list) — a Las Vegas structure (always correct, expected-fast).
 
-The randomness is the trick. A worst-case input to a deterministic BST (sorted insert) is no longer adversarial — the random priorities reshuffle the tree into something balanced, regardless of the order keys arrive.
+## See It Work
 
-Operations are simpler than RB-tree's: `insert` does standard BST insert, then **rotates up** the new node until the heap property is restored. `delete` rotates the target down to a leaf (using priority comparisons to decide direction), then snips it off. No multi-case rebalance choreography.
+Insert keys — even in sorted order — and the treap stays a valid BST that's also balanced. Each insert drops the key in by BST rule, then rotates it up until the heap property on priorities is restored.
 
-This chapter is the algorithm. Treaps don't ship in standard libraries (RB-trees do), but they're a competitive-programming staple and a common alternative when you want a balanced BST you can write yourself.
-
----
-
-## Table of contents
-
-1. [Key + priority](#key-priority)
-2. [Insert: rotate up](#insert-rotate-up)
-3. [Delete: rotate down](#delete-rotate-down)
-4. [Implementation](#implementation)
-5. [Implicit treaps and order statistics](#implicit-treaps-and-order-statistics)
-6. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
-7. [Production reality](#production-reality)
-8. [Cross-links](#cross-links)
-9. [Final takeaway](#final-takeaway)
-
-***
-
-# Key + priority
-
-A treap node stores:
-
-- A `key` (the value being indexed; BST-ordered).
-- A `priority` (a random integer; max-heap-ordered: parent priority ≥ child priority).
-
-The tree must satisfy *both* orderings simultaneously. With keys fixed, the priority assignment determines the tree's *shape*. With random priorities, the expected shape is balanced (this is essentially Cartesian trees + random priorities = treap).
-
-***
-
-# Insert: rotate up
-
-1. Standard BST insert based on the key.
-2. The new node has a fresh random priority. If it's higher than its parent's, rotate it up. Continue rotating up until the heap property is satisfied.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
----
-flowchart LR
-  subgraph BEFORE["After BST insert (heap broken)"]
-    A1((50, p=10))
-    B1((30, p=20))
-    C1((40, p=50))
-    A1 --> B1
-    B1 --> C1
-  end
-  subgraph AFTER["After rotating 40 up"]
-    A2((40, p=50))
-    B2((30, p=20))
-    C2((50, p=10))
-    A2 --> B2
-    A2 --> C2
-  end
-  BEFORE --> AFTER
-  style C1 fill:#fef9c3,stroke:#f59e0b
-  style A2 fill:#bbf7d0,stroke:#16a34a
-```
-
-<p align="center"><strong>After BST insert, the new node 40 has higher priority than its parent 30. Rotate up to restore heap order; the BST property is preserved by the rotation's invariant.</strong></p>
-
-***
-
-# Delete: rotate down
-
-1. Find the node by key (standard BST descent).
-2. Rotate it down: at each step, rotate towards whichever child has the higher priority. This pushes the target node toward a leaf while maintaining the heap property of the rest of the tree.
-3. Once at a leaf, snip.
-
-***
-
-# Implementation
-
-```python run viz=graph viz-root=root
+```python run
 import random
-
-class TreapNode:
-    __slots__ = ("key", "priority", "left", "right")
-    def __init__(self, key):
-        self.key = key
-        self.priority = random.random()
+class Node:
+    def __init__(self, key, pri):
+        self.key, self.pri = key, pri
         self.left = self.right = None
 
-def rotate_right(p):
-    l = p.left
-    p.left = l.right
-    l.right = p
-    return l
+def rot_right(n): l = n.left; n.left = l.right; l.right = n; return l
+def rot_left(n):  r = n.right; n.right = r.left; r.left = n; return r
 
-def rotate_left(p):
-    r = p.right
-    p.right = r.left
-    r.left = p
-    return r
-
-def insert(node, key):
-    if node is None: return TreapNode(key)
-    if key < node.key:
-        node.left = insert(node.left, key)
-        if node.left.priority > node.priority:
-            node = rotate_right(node)
-    elif key > node.key:
-        node.right = insert(node.right, key)
-        if node.right.priority > node.priority:
-            node = rotate_left(node)
-    return node
-
-def delete(node, key):
-    if node is None: return None
-    if key < node.key:
-        node.left = delete(node.left, key); return node
-    if key > node.key:
-        node.right = delete(node.right, key); return node
-    # Found the node; rotate it down
-    if node.left is None: return node.right
-    if node.right is None: return node.left
-    if node.left.priority > node.right.priority:
-        node = rotate_right(node)
-        node.right = delete(node.right, key)
+def insert(n, key, rng):
+    if n is None:
+        return Node(key, rng.random())                 # fresh random priority
+    if key < n.key:
+        n.left = insert(n.left, key, rng)
+        if n.left.pri > n.pri:                          # child outranks parent -> rotate up
+            n = rot_right(n)
     else:
-        node = rotate_left(node)
-        node.left = delete(node.left, key)
-    return node
+        n.right = insert(n.right, key, rng)
+        if n.right.pri > n.pri:
+            n = rot_left(n)
+    return n
 
-def search(node, key):
-    while node:
-        if key == node.key: return True
-        node = node.left if key < node.key else node.right
+def search(n, key):
+    while n:
+        if key == n.key: return True
+        n = n.left if key < n.key else n.right          # pure BST walk on keys
     return False
 
-def inorder(node, out):
-    if node is None: return
-    inorder(node.left, out); out.append(node.key); inorder(node.right, out)
+def inorder(n, out):
+    if n: inorder(n.left, out); out.append(n.key); inorder(n.right, out)
 
+def build(keys, seed):
+    rng = random.Random(seed); root = None
+    for k in keys:
+        root = insert(root, k, rng)
+    return root
 
-if __name__ == "__main__":
-    random.seed(7)
-    root = None
-    for k in [50, 30, 70, 20, 40, 60, 80, 35, 45]:
-        root = insert(root, k)
-
-    out = []; inorder(root, out)
-    print(f"in-order: {out}")
-    print(f"search 40: {search(root, 40)}")
-    print(f"search 99: {search(root, 99)}")
-
-    # Adversarial insert (sorted)
-    root2 = None
-    for k in range(1, 1001):
-        root2 = insert(root2, k)
-    # Compute height
-    def height(n): return 0 if n is None else 1 + max(height(n.left), height(n.right))
-    print(f"\nAfter 1000 sorted inserts, height = {height(root2)}  (log₂ 1000 ≈ 10; treap should be O(log n))")
+t = build(list(range(1, 16)), seed=1)                  # insert 1..15 in SORTED order
+out = []; inorder(t, out)
+print(out == sorted(out))                              # True — always a valid BST
+print(search(t, 7), search(t, 20))                     # True False
 ```
 
 ```java run
 import java.util.*;
-
 public class Main {
-    static Random rng = new Random();
-    static class Node {
-        int key; double pr; Node left, right;
-        Node(int k) { key = k; pr = rng.nextDouble(); }
-    }
-
-    static Node rr(Node p) { Node l = p.left; p.left = l.right; l.right = p; return l; }
-    static Node rl(Node p) { Node r = p.right; p.right = r.left; r.left = p; return r; }
-
-    static Node insert(Node n, int k) {
-        if (n == null) return new Node(k);
-        if (k < n.key) {
-            n.left = insert(n.left, k);
-            if (n.left.pr > n.pr) n = rr(n);
-        } else if (k > n.key) {
-            n.right = insert(n.right, k);
-            if (n.right.pr > n.pr) n = rl(n);
-        }
+    static class Node { int key; double pri; Node left, right; Node(int k, double p) { key = k; pri = p; } }
+    static Node rotR(Node n) { Node l = n.left; n.left = l.right; l.right = n; return l; }
+    static Node rotL(Node n) { Node r = n.right; n.right = r.left; r.left = n; return r; }
+    static Node insert(Node n, int key, Random rng) {
+        if (n == null) return new Node(key, rng.nextDouble());
+        if (key < n.key) { n.left = insert(n.left, key, rng);  if (n.left.pri > n.pri)  n = rotR(n); }
+        else             { n.right = insert(n.right, key, rng); if (n.right.pri > n.pri) n = rotL(n); }
         return n;
     }
-
+    static boolean search(Node n, int key) {
+        while (n != null) { if (key == n.key) return true; n = key < n.key ? n.left : n.right; }
+        return false;
+    }
+    static void inorder(Node n, List<Integer> out) {
+        if (n != null) { inorder(n.left, out); out.add(n.key); inorder(n.right, out); }
+    }
+    static Node build(int[] keys, long seed) {
+        Random rng = new Random(seed); Node root = null;
+        for (int k : keys) root = insert(root, k, rng);
+        return root;
+    }
     public static void main(String[] args) {
-        Node root = null;
-        for (int k : new int[]{50, 30, 70, 20, 40, 60, 80}) root = insert(root, k);
-        System.out.println("done");
+        int[] ks = new int[15]; for (int i = 0; i < 15; i++) ks[i] = i + 1;
+        Node t = build(ks, 1);
+        List<Integer> out = new ArrayList<>(); inorder(t, out);
+        List<Integer> srt = new ArrayList<>(out); Collections.sort(srt);
+        System.out.println(out.equals(srt));            // true
+        System.out.println(search(t, 7) + " " + search(t, 20));   // true false
     }
 }
 ```
 
-***
+Both print `true` (in-order is the sorted keys — a valid BST) then `true false`. The keys went in sorted, which would wreck a plain BST, but the random priorities reshape the tree as it builds. The in-order traversal and search results are *always* correct regardless of the random seed — only the tree's exact shape depends on the coins.
 
-# Implicit treaps and order statistics
+## How It Works
 
-A variant called the **implicit treap** uses positions in the tree (in-order rank) as keys instead of value comparisons. With per-node `size` augmentation, you get:
+A node is `(key, priority)`. The tree is a BST on keys *and* a max-heap on priorities at the same time — and those two constraints together pin down a unique shape:
 
-- `kth(k)` — return the k-th smallest in `O(log n)`.
-- `split(t, k)` — split the tree into the first `k` elements and the rest in `O(log n)`.
-- `merge(a, b)` — merge two trees with all keys in `a` < all keys in `b`, in `O(log n)`.
-
-These primitives let you implement an array-like structure with `O(log n)` insert-anywhere, delete-anywhere, range-update — operations a regular array can't do without `O(n)` shift cost.
-
-***
-
-# Edge cases and pitfalls
-
-- **Random priorities must be unique-enough.** If two nodes get the same priority, the tree shape is ambiguous (and possibly unbalanced). Use enough bits: 64-bit random integers, or floating-point with high entropy.
-- **Pseudo-random sequences in tests.** Seed the RNG explicitly when testing for reproducibility.
-- **Worst-case `O(n)`.** Like all probabilistic structures, treap has a non-zero probability of bad shape. The probability decays exponentially in `n`, so for any `n ≥ ~50` it's effectively zero.
-- **Concurrent modification.** Treaps don't have a natural lock-free implementation. For concurrent contexts, skip lists are usually a better choice.
-- **Persistent treaps.** With path-copying (covered in [Persistent Data Structures](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-persistent-data-structures)), treaps make excellent persistent ordered maps. Used in some functional language standard libraries.
-
-***
-
-# Production reality
-
-- **Competitive programming.** Treaps are the most-used balanced BST in competitive programming because the implementation is short and the implicit-treap split/merge primitives solve many sequence problems trivially.
-- **Some functional language standard libraries** (OCaml's `Map`, certain Scala collections) use balanced trees; some implementations are treaps.
-- **Specialised game / simulation engines** use treaps for "sorted set with random access" use cases where AVL/RB add unwanted complexity.
-- **Niche in production code.** Mainstream libraries default to RB-trees; treaps are rare. The reason isn't asymptotics — they're rare because RB-tree implementations exist and are well-tested.
-
-***
-
-# Memorize
-
-The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Treaps are the "balanced BST you can write yourself" — competitive programmers reach for them because the code is short and the implicit-treap split/merge primitives unlock a class of sequence problems.
-
-## Quick recall
-
-Click any question to reveal the answer.
-
-<details>
-<summary><strong>Q:</strong> Two orderings a treap satisfies?</summary>
-
-**A:** **BST** ordered on keys; **max-heap** ordered on (random) priorities.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Expected complexity of insert/search/delete?</summary>
-
-**A:** All `O(log n)` expected. Worst case `O(n)` but exponentially unlikely.
-
-</details>
-<details>
-<summary><strong>Q:</strong> What gives the expected balance?</summary>
-
-**A:** Random priorities. Each random shape is equivalent to inserting in random order — expected height is `O(log n)`.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Insert procedure?</summary>
-
-**A:** Standard BST insert; assign random priority. Rotate up while the new node's priority exceeds its parent's.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Delete procedure?</summary>
-
-**A:** Find by key. Rotate down toward whichever child has higher priority (push the target node toward a leaf). Snip when leaf-reached.
-
-</details>
-<details>
-<summary><strong>Q:</strong> What's an implicit treap?</summary>
-
-**A:** A treap where the implicit "key" is each node's *in-order rank*, augmented with subtree size. Supports `split(t, k)`, `merge(a, b)`, `kth(k)` in `O(log n)` — array-like operations with logarithmic cost.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Why are treaps rare in production but common in competitive programming?</summary>
-
-**A:** Production has well-tested RB-tree libraries. Competitive needs short code; treap is ~50 lines vs RB-tree's ~150.
-
-</details>
-
-## Code template
-
-```python
-import random
-
-class TreapNode:
-    __slots__ = ("key", "priority", "left", "right")
-    def __init__(self, key):
-        self.key, self.priority = key, random.random()
-        self.left = self.right = None
-
-def rot_right(p):
-    l = p.left; p.left = l.right; l.right = p
-    return l
-
-def rot_left(p):
-    r = p.right; p.right = r.left; r.left = p
-    return r
-
-def insert(node, key):
-    if node is None: return TreapNode(key)
-    if key < node.key:
-        node.left = insert(node.left, key)
-        if node.left.priority > node.priority: node = rot_right(node)
-    elif key > node.key:
-        node.right = insert(node.right, key)
-        if node.right.priority > node.priority: node = rot_left(node)
-    return node
+```d2
+direction: down
+root: "key=4, pri=0.9   (highest priority -> root)" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
+l: "key=2, pri=0.6" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
+r: "key=6, pri=0.5" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
+ll: "key=1, pri=0.3" {style.fill: "#fde68a"; style.stroke: "#d97706"}
+lr: "key=3, pri=0.2" {style.fill: "#fde68a"; style.stroke: "#d97706"}
+rr: "key=7, pri=0.1" {style.fill: "#fde68a"; style.stroke: "#d97706"}
+root -> l
+root -> r
+l -> ll
+l -> lr
+r -> rr
+note: "BST by KEY (left<node<right)  AND  max-heap by PRIORITY (parent>children).\nShape = the BST built by inserting keys in DECREASING priority order.\nRandom priorities => random insertion order => expected O(log n) height." {style.fill: "#f3e8ff"; style.stroke: "#9333ea"}
 ```
 
-## Pattern triggers
+<p align="center"><strong>Every node satisfies both orderings: keys go left-small/right-large (BST), priorities go parent-high/child-low (heap). For given keys and priorities the shape is unique — the tree you'd build by inserting keys highest-priority-first.</strong></p>
 
-- **"Sorted set with split / merge / kth in log time"** → implicit treap
-- **"Want balanced BST with simpler code than RB"** → treap
-- **"Insert anywhere in a virtual array, log time"** → implicit treap with subtree-size augment
-- **"Cartesian tree on an array"** → treap with priorities = array values
-- **"Persistent ordered map"** → persistent treap (path copying)
-- **"Concurrent ordered map"** → not treap (no easy lock-free version) — use skip list
-- **"Production Java/C++ sorted map"** → use `TreeMap`/`std::map` (RB), not treap
+Three load-bearing facts:
 
-***
+- **Two orderings pin one shape.** Among all BSTs on a key set, exactly one also satisfies the heap order on a given set of priorities — the *Cartesian tree*. So the priorities, not the arrival order, decide the structure. The highest-priority key is always the root, recursively.
+- **Random priorities = random insertion order = balanced.** That unique shape is identical to the BST you'd build by inserting keys in *decreasing* priority order. Make the priorities uniformly random and you've simulated a *random* insertion order — whose expected height is `O(log n)` (`≈ 1.39·log₂ n`) — *no matter what order the keys really came in*. Sorted input can't hurt you ([Trace It](#trace-it)).
+- **Insert/delete are just "rotate toward higher priority."** Insert: place the key as a BST leaf, then rotate it *up* while its priority beats its parent's (restoring the heap). Delete: rotate the node *down* toward whichever child has higher priority until it's a leaf, then snip it. No balance factors, no colors, no case analysis — one rule. Treaps also support `O(log n)` **split** (by key, into two treaps) and **merge**, the primitives behind implicit treaps, ropes, and order statistics.
 
-# Cross-links
+> **Key takeaway.** A treap is a BST on keys *and* a heap on **random priorities**. The two orderings fix a unique shape — the Cartesian tree — equal to inserting keys in decreasing-priority (i.e. random) order, so the expected height is `O(log n)` *regardless of the real insertion order*. Operations are "rotate toward the higher priority": far simpler than AVL/red-black, Las Vegas (always correct, expected-fast), with `O(log n)` split/merge as a bonus.
 
-- **Prerequisites:** [BST](/cortex/data-structures-and-algorithms/trees-binary-search-tree-introduction-to-binary-search-trees), [Heap](/cortex/data-structures-and-algorithms/trees-heap-introduction-to-heaps).
-- **Sibling balanced BSTs:** [AVL Tree](/cortex/data-structures-and-algorithms/trees-avl-tree-introduction-to-avl-trees), [Red-Black Tree](/cortex/data-structures-and-algorithms/trees-red-black-tree-introduction-to-red-black-trees), [Skip List](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-skip-list).
+## Trace It
 
-***
+The treap's whole reason for existing is defeating the input order that destroys a plain BST.
 
-# Final takeaway
+**Predict before you run:** you insert the keys `1, 2, 3, …, 31` in *sorted* order. A plain unbalanced BST becomes a height-31 chain — `O(n)`. Insert the same sorted keys into a treap with random priorities. What's its height — also around 31, or close to `log₂ 31 ≈ 5`?
 
-Treaps blend BST and heap into a probabilistically-balanced tree. Three patterns to internalise:
+```python run
+import random
+class Node:
+    def __init__(self, key, pri):
+        self.key, self.pri = key, pri; self.left = self.right = None
+def rot_right(n): l = n.left; n.left = l.right; l.right = n; return l
+def rot_left(n):  r = n.right; n.right = r.left; r.left = n; return r
+def treap_insert(n, key, rng):
+    if n is None: return Node(key, rng.random())
+    if key < n.key:
+        n.left = treap_insert(n.left, key, rng)
+        if n.left.pri > n.pri: n = rot_right(n)
+    else:
+        n.right = treap_insert(n.right, key, rng)
+        if n.right.pri > n.pri: n = rot_left(n)
+    return n
+def height(n): return 0 if n is None else 1 + max(height(n.left), height(n.right))
 
-1. **BST on keys, heap on priorities.** Two orderings simultaneously; rotations preserve both.
-2. **Random priorities = expected balance.** Sorted-insert worst case is gone; the random priorities defuse adversarial input.
-3. **Simpler than RB-tree, slightly more random than skip list.** When you need a balanced BST you can write from scratch in 50 lines, treap is the answer.
+class PlainBST:
+    def __init__(self): self.root = None
+    def insert(self, k):
+        if self.root is None: self.root = Node(k, 0); return
+        n = self.root
+        while True:
+            if k < n.key:
+                if n.left is None: n.left = Node(k, 0); return
+                n = n.left
+            else:
+                if n.right is None: n.right = Node(k, 0); return
+                n = n.right
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+keys = list(range(1, 32))                              # sorted 1..31
+bst = PlainBST()
+for k in keys: bst.insert(k)
+rng = random.Random(7); treap = None
+for k in keys: treap = treap_insert(treap, k, rng)
+print("plain BST height (sorted insert):", height(bst.root))
+print("treap height     (sorted insert):", height(treap))
+```
 
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
+<details>
+<summary><strong>Reveal</strong></summary>
 
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
+The plain BST is height **31** — a pure right-leaning chain, exactly the degenerate `O(n)` case, because each new key is larger than all before it and slots in as the rightmost leaf. The treap is height **10** — roughly `log`-scale and dramatically shorter, even though the keys arrived in the *same* sorted order. The random priorities scrambled the *effective* build order: the highest-priority key (whatever it happened to be) became the root, splitting the rest into balanced-ish halves recursively, so the tree built itself like a *randomly* inserted BST rather than a sorted one. (10 is a bit above the ~7 expectation for 31 keys — a single random sample has variance — but it's a world away from 31, and it stays logarithmic as `n` grows.) This is the same defence randomness provides elsewhere: a [skip list](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-skip-list)'s coin-flip express lanes and [randomized quicksort](/cortex/data-structures-and-algorithms/algorithms-by-strategy-randomized-algorithms-introduction-to-randomized-algorithms)'s random pivot both neutralise adversarial input the same way — by making the *structure* depend on your private coins, not on the data's order.
 
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
+</details>
 
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
+## Your Turn
 
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+**Split** a treap by a key into two valid treaps — every key `≤ k` on the left, every key `> k` on the right. It's the treap's signature primitive (the basis of implicit treaps and ropes), and it's a clean recursion: at each node, decide which side it belongs to and recurse into the boundary child.
 
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
+```python run
+import random
+class Node:
+    def __init__(self, key, pri):
+        self.key, self.pri = key, pri; self.left = self.right = None
+def rot_right(n): l = n.left; n.left = l.right; l.right = n; return l
+def rot_left(n):  r = n.right; n.right = r.left; r.left = n; return r
+def insert(n, key, rng):
+    if n is None: return Node(key, rng.random())
+    if key < n.key:
+        n.left = insert(n.left, key, rng)
+        if n.left.pri > n.pri: n = rot_right(n)
+    else:
+        n.right = insert(n.right, key, rng)
+        if n.right.pri > n.pri: n = rot_left(n)
+    return n
+def inorder(n, out):
+    if n: inorder(n.left, out); out.append(n.key); inorder(n.right, out)
 
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+def split(n, key):                                     # -> (treap with keys <= key, treap with keys > key)
+    if n is None:
+        return (None, None)
+    if n.key <= key:
+        left_sub, right_sub = split(n.right, key)
+        n.right = left_sub                             # keep n and its <=key right-descendants
+        return (n, right_sub)
+    else:
+        left_sub, right_sub = split(n.left, key)
+        n.left = right_sub
+        return (left_sub, n)
+
+rng = random.Random(2); root = None
+for k in range(1, 11):                                 # keys 1..10
+    root = insert(root, k, rng)
+left, right = split(root, 5)
+lo = []; inorder(left, lo)
+ro = []; inorder(right, ro)
+print(lo)     # [1, 2, 3, 4, 5]
+print(ro)     # [6, 7, 8, 9, 10]
+```
+
+```java run
+import java.util.*;
+public class Main {
+    static class Node { int key; double pri; Node left, right; Node(int k, double p) { key = k; pri = p; } }
+    static Node rotR(Node n) { Node l = n.left; n.left = l.right; l.right = n; return l; }
+    static Node rotL(Node n) { Node r = n.right; n.right = r.left; r.left = n; return r; }
+    static Node insert(Node n, int key, Random rng) {
+        if (n == null) return new Node(key, rng.nextDouble());
+        if (key < n.key) { n.left = insert(n.left, key, rng);  if (n.left.pri > n.pri)  n = rotR(n); }
+        else             { n.right = insert(n.right, key, rng); if (n.right.pri > n.pri) n = rotL(n); }
+        return n;
+    }
+    static void inorder(Node n, List<Integer> out) {
+        if (n != null) { inorder(n.left, out); out.add(n.key); inorder(n.right, out); }
+    }
+    static Node[] split(Node n, int key) {              // [<=key, >key]
+        if (n == null) return new Node[]{null, null};
+        if (n.key <= key) { Node[] s = split(n.right, key); n.right = s[0]; return new Node[]{n, s[1]}; }
+        Node[] s = split(n.left, key); n.left = s[1]; return new Node[]{s[0], n};
+    }
+    public static void main(String[] args) {
+        Random rng = new Random(2); Node root = null;
+        for (int k = 1; k <= 10; k++) root = insert(root, k, rng);
+        Node[] lr = split(root, 5);
+        List<Integer> lo = new ArrayList<>(); inorder(lr[0], lo);
+        List<Integer> ro = new ArrayList<>(); inorder(lr[1], ro);
+        System.out.println(lo);   // [1, 2, 3, 4, 5]
+        System.out.println(ro);   // [6, 7, 8, 9, 10]
+    }
+}
+```
+
+Both print `[1, 2, 3, 4, 5]` then `[6, 7, 8, 9, 10]`. The split walked one root-to-leaf path, re-pointing children along the way, so it's `O(height) = O(log n)` expected — and both halves are still valid treaps (priorities untouched, so the heap order survives). `split` plus its inverse `merge` are how treaps implement sequence operations like "cut this range out and paste it elsewhere" in logarithmic time.
+
+## Reflect & Connect
+
+- **BST + heap = balanced by chance.** Keys obey BST order, random priorities obey heap order; together they fix the shape of a randomly-built BST, so height is `O(log n)` in expectation regardless of insertion order.
+- **Randomness replaces rotation rules.** No balance factors or colors — insert rotates *up* toward higher priority, delete rotates *down*. Far simpler to write correctly than AVL or red-black, at the cost of *expected* rather than *guaranteed* `O(log n)`.
+- **Defeats adversarial input.** Sorted keys make a plain BST a chain; the treap's random priorities scramble the effective build order. Same defence as the [skip list](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-skip-list) and [randomized quicksort](/cortex/data-structures-and-algorithms/algorithms-by-strategy-randomized-algorithms-introduction-to-randomized-algorithms) — structure depends on private coins, not data order.
+- **Split/merge are the superpower.** `O(log n)` split-by-key and merge make treaps the go-to for *implicit treaps* (index-keyed sequences with range cut/paste/reverse), ropes, and order statistics — operations a plain balanced BST handles far more awkwardly.
+- **Las Vegas, like its Part-9 siblings.** Always correct, runtime random — versus the Monte Carlo [bloom filter](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-bloom-filter) / [count-min](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-count-min-sketch) / [HyperLogLog](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-hyperloglog), which trade *accuracy* for space. The treap trades *worst-case guarantees* for simplicity.
+
+## Recall
+
+<details>
+<summary><strong>Q:</strong> What two orderings does a treap maintain, and on what?</summary>
+
+**A:** A BST ordering on the **keys** (left < node < right) and a heap ordering on a **random priority** per node (parent's priority > children's). Both hold at every node simultaneously.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why does a treap stay balanced regardless of insertion order?</summary>
+
+**A:** For fixed keys and priorities the shape is unique — the BST built by inserting keys in *decreasing priority* order. Random priorities make that a *random* insertion order, whose expected height is `O(log n)` no matter the actual arrival order.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does insert work, and how is it simpler than AVL/red-black?</summary>
+
+**A:** Insert the key as a normal BST leaf (with a random priority), then rotate it *up* while its priority exceeds its parent's, restoring the heap order. There are no balance factors, colors, or multi-case rebalancing — just one "rotate toward higher priority" rule.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Insert keys `1..n` sorted into a plain BST vs a treap — what heights result?</summary>
+
+**A:** The plain BST becomes a height-`n` chain (`O(n)`); the treap stays `O(log n)` in expectation, because the random priorities reshape it as if the keys had been inserted in random order.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What are split and merge, and why do they matter?</summary>
+
+**A:** `split` cuts a treap by key into two valid treaps (`≤ k` and `> k`) in `O(log n)`; `merge` recombines two treaps whose key ranges don't overlap. They power implicit treaps, ropes, and range operations (cut/paste/reverse a subsequence) that plain balanced BSTs handle awkwardly.
+
+</details>
+
+## Sources & Verify
+
+- **Seidel & Aragon** (1996), "Randomized Search Trees", *Algorithmica* — the treap, the expected-`O(log n)` analysis, and split/merge.
+- **Vuillemin** (1980), "A unifying look at data structures" — Cartesian trees, the deterministic structure a treap randomizes.
+- **CP-Algorithms**, "Treap (Cartesian tree)" — implicit treaps and the split/merge implementations; **LeetCode** balanced-BST problems (e.g. 1206 Design Skiplist as a randomized-structure cousin) are adjacent drills. The `true`/`true false` membership, the `31`-vs-`10` BST/treap heights, and the `[1..5]` / `[6..10]` split above come from the runnable blocks — re-run to verify (seeded for reproducibility; in-order, search, and split results are seed-independent, the height is not).

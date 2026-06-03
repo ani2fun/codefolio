@@ -5,11 +5,12 @@ prereqs:
   - 04-graphs/04-traversing-a-graph
 ---
 
-# The Two-Camps Question
+## Why It Exists
 
-You have a group of people, and a list of **dislike** pairs — pairs that *cannot* sit at the same table. You have only **two** tables. Can you seat everyone such that no two enemies share a table?
+You have a group of people and a list of **dislike** pairs — pairs that can't sit together. You have exactly **two** tables. Can you seat everyone so no two enemies share a table?
 
-> 🖼 Diagram — The 4-cycle on the left can be 2-coloured: {0, 2} red, {1, 3} blue. The 3-cycle on the right cannot — every assignment of colours forces *some* edge to have same-coloured endpoints.
+That question — and a surprising number of others — is *two-colouring*: assign one of two labels to every node so adjacent nodes always differ. It shows up wherever you need to detect **antagonism** or **alternation**: conflict groups, chess-board colouring, splitting jobs across two machines, checking whether a network really decomposes into two factions.
+
 ```mermaid
 ---
 config:
@@ -38,290 +39,215 @@ flowchart LR
     end
 ```
 
-<p align="center"><strong>The 4-cycle on the left can be 2-coloured: {0, 2} red, {1, 3} blue. The 3-cycle on the right cannot — every assignment of colours forces *some* edge to have same-coloured endpoints.</strong></p>
+<p align="center"><strong>The 4-cycle can be 2-coloured ({0,2} red, {1,3} blue). The 3-cycle cannot — start 0 red, 1 blue, 2 must be red, but edge 2–0 is then red–red. Conflict.</strong></p>
 
-The pattern shows up wherever you need to detect **antagonism** or **alternation**:
+## See It Work
 
-- **Conflict groups.** Can these students be assigned to two project teams so no two who dislike each other are paired?
-- **Bipartite verification.** Is this assignment-style problem actually bipartite?
-- **Chess-board colouring.** Can these tiles be painted black/white so no adjacent pair is same-coloured?
-- **Job scheduling.** Can these jobs be split between two machines so no conflicting jobs run on the same one?
-- **Network analysis.** Are these nodes really in two factions, or do internal conflicts make that decomposition impossible?
+Walk the graph (DFS here), painting each node and giving every neighbour the opposite colour. The decisive line is the *check*: when you meet an already-coloured neighbour, it had better be the opposite colour.
 
-> *Before reading on — for the 4-cycle above, walk the colouring by hand: start with 0 = red. What must the other three colours be? Which edge is the "tightest"?*
-
-Starting with 0 = red, then 1 must be blue (edge 0-1). Then 2 must be red (edge 1-2). Then 3 must be blue (edge 2-3). Now the closing edge: 3-0 = blue-red. ✓ All edges have opposite-coloured endpoints. Two-colourable.
-
-For the 3-cycle: 0 = red, 1 = blue, 2 must be red (edge 1-2 forces opposite of blue). But edge 2-0: red-red. ✗ Conflict. Not two-colourable.
-
-# Two-Colourable = Bipartite
-
-A graph is **two-colourable** if and only if it is **bipartite**. The two terms describe the same property from different angles:
-
-- **Two-colourable** is the algorithmic phrasing: "can I assign one of two labels to each node so adjacent labels differ?"
-- **Bipartite** is the structural phrasing: "can the nodes be split into two sets `L` and `R` such that every edge crosses between sets?"
-
-If you can two-colour, just declare "all reds = L, all blues = R" — the colour boundaries become the bipartition. Conversely, if the graph is bipartite, paint `L` red and `R` blue and you have a valid two-colouring.
-
-Both views matter. The two-colour view drives the *algorithm*; the bipartite view drives the *application* (matching, network flow, …).
-
-A famous theorem nails down when two-colouring works:
-
-> **Theorem.** A graph is two-colourable if and only if it has no **odd-length cycle**.
-
-The intuition: walking around an odd cycle, you flip the colour at each step, and after an odd number of flips you arrive back at the start with the *opposite* colour to where you began — a contradiction. Walking an even cycle returns you to the starting colour, no conflict. The 3-cycle above is a tiny version of this argument; any odd cycle, of any length, breaks colouring.
-
-# The Colouring Algorithm
-
-Use any traversal — DFS or BFS — and assign a colour at every step. The first node gets a starting colour; every neighbour gets the opposite colour; their neighbours flip back; and so on, alternating with depth.
-
-The trick is the *check*: when you encounter a *visited* neighbour, verify that its colour is the *opposite* of the current node's. If not, it's a conflict, and the graph isn't two-colourable.
-
-> **`colourGraph(node, graph, colour, colourValue)`**
-> 1. `colour[node] = colourValue`
-> 2. For each `neighbour` in `graph[node]`:
->    - If `neighbour` is uncoloured: recursively call with `1 - colourValue`. If the recursion returns false, return false.
->    - Else if `colour[neighbour] == colourValue` → return false (same-colour conflict).
-> 3. Return true.
->
-> **`isTwoColourable(graph)`**
-> 1. Initialise `colour` map (empty).
-> 2. For each unconnected component (= each uncoloured node): call `colourGraph` starting with colour 1. Return false if any component fails.
-> 3. Return true.
-
-The outer-loop wrapper handles disconnected graphs — a graph can have multiple components, each individually 2-colourable. We need *all* of them to succeed. (The reference implementation seeds each component with colour 1 and flips to 0 on the first hop; the two values are interchangeable — only the *alternation* matters. An empty graph has nothing to colour, and the implementation reports `false` for that degenerate input.)
-
-> *Before reading on — what does the algorithm look like with BFS instead of DFS? Sketch the change in one sentence.*
-
-With BFS: maintain a queue, push the source with colour 0, pop nodes, paint each neighbour the opposite colour and push it. The conflict check is the same. The choice between DFS and BFS doesn't matter for correctness; both walk every component and propagate the colour rule.
-
-# Implementation
-
-We'll use DFS — it's slightly more compact recursively. Colour values are 0 and 1 (or `false`/`true`); flipping is `1 - colour` (or `!colour`).
-
-
-```python run viz=graph viz-root=graph
-from typing import List, Dict
-
-class Solution:
-    def colour_graph(
-        self,
-        graph: List[List[int]],
-        node: int,
-        colour: Dict[int, int],
-        colour_value: int,
-    ) -> bool:
-
-        # Colour the node with colourValue
-        colour[node] = colour_value
-
-        # Traverse all the neighbours of the current node
-        for neighbour in graph[node]:
-
-            # If the neighbour is not coloured, colour it with the
-            # opposite colour and recursively call the function on the
-            # neighbour
-            if neighbour not in colour:
-
-                # If the neighbour is not coloured, colour it with the
-                # opposite colour
-                if not self.colour_graph(
-                    graph, neighbour, colour, 1 - colour_value
-                ):
-
-                    # If the colouring fails, return false
-                    # (i.e., if a neighbour has the same colour)
-                    return False
-
-            # Else if the neighbour is coloured with the same colour
-            # return false
-            elif colour[neighbour] == colour_value:
-                return False
-
-        return True
-
-    def is_two_colourable(self, graph: List[List[int]]) -> bool:
-
-        # Number of nodes in the graph
-        n = len(graph)
-
-        # If the graph is empty, return false
-        if n == 0:
+```python run
+def colour(graph, node, col, value):
+    col[node] = value
+    for nb in graph[node]:
+        if nb not in col:                               # uncoloured → paint it the opposite colour
+            if not colour(graph, nb, col, 1 - value): return False
+        elif col[nb] == value:                          # coloured the SAME → contradiction
             return False
+    return True
 
-        # Create a map to store the colour of each node
-        colour: Dict[int, int] = {}
+def is_two_colourable(graph):
+    if not graph: return False
+    col = {}
+    for node in range(len(graph)):                      # outer loop: cover every component
+        if node not in col and not colour(graph, node, col, 1):
+            return False
+    return True
 
-        # Traverse all nodes in the graph
-        for node in range(len(graph)):
-
-            # If a node is not coloured, start colouring its
-            # connected component recursively starting with colour 1
-            if node not in colour:
-
-                # If the colouring fails, return false
-                # (i.e., if a neighbour has the same colour)
-                if not self.colour_graph(graph, node, colour, 1):
-                    return False
-
-        # If all nodes are coloured successfully, return true
-        return True
-
-
-# Examples from the problem statement
-print(Solution().is_two_colourable([[1,3],[0,2],[1,3],[0,2]]))  # True
-print(Solution().is_two_colourable([[1,2],[0,2],[0,1]]))        # False
-
-# Edge cases
-print(Solution().is_two_colourable([]))                         # False
-print(Solution().is_two_colourable([[1],[0]]))                  # True
-print(Solution().is_two_colourable([[1,2],[0,2],[0,1]]))        # False — odd cycle (triangle)
-print(Solution().is_two_colourable([[],[]]))                    # True — disconnected, no edges
-print(Solution().is_two_colourable([[1],[0],[3],[2]]))          # True — two separate edges
+print(is_two_colourable([[1, 3], [0, 2], [1, 3], [0, 2]]))   # True  — 4-cycle
+print(is_two_colourable([[1, 2], [0, 2], [0, 1]]))           # False — triangle (odd cycle)
 ```
 
 ```java run
 import java.util.*;
 
 public class Main {
-    static class Solution {
-        private boolean colourGraph(
-            List<List<Integer>> graph,
-            int node,
-            Map<Integer, Integer> colour,
-            int colourValue
-        ) {
-
-            // Colour the node with colourValue
-            colour.put(node, colourValue);
-
-            // Traverse all the neighbours of the current node
-            for (int neighbour : graph.get(node)) {
-
-                // If the neighbour is not coloured, colour it with the
-                // opposite colour and recursively call the function on the
-                // neighbour
-                if (!colour.containsKey(neighbour)) {
-
-                    // If the neighbour is not coloured, colour it with the
-                    // opposite colour
-                    if (
-                        !colourGraph(
-                            graph,
-                            neighbour,
-                            colour,
-                            1 - colourValue
-                        )
-                    ) {
-
-                        // If the colouring fails, return false
-                        // (i.e., if a neighbour has the same colour)
-                        return false;
-                    }
-                }
-
-                // Else if the neighbour is coloured with the same colour
-                // return false
-                else if (colour.get(neighbour) == colourValue) {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        public boolean isTwoColourable(List<List<Integer>> graph) {
-
-            // Number of nodes in the graph
-            int N = graph.size();
-
-            // If the graph is empty, return false
-            if (N == 0) {
+    static boolean colour(List<List<Integer>> graph, int node, Map<Integer, Integer> col, int value) {
+        col.put(node, value);
+        for (int nb : graph.get(node)) {
+            if (!col.containsKey(nb)) {                 // uncoloured → opposite colour
+                if (!colour(graph, nb, col, 1 - value)) return false;
+            } else if (col.get(nb) == value) {          // coloured the SAME → contradiction
                 return false;
             }
-
-            // Create a map to store the colour of each node
-            Map<Integer, Integer> colour = new HashMap<>();
-
-            // Traverse all nodes in the graph
-            for (int node = 0; node < graph.size(); node++) {
-
-                // If a node is not coloured, start colouring its
-                // connected component recursively starting with colour 1
-                if (!colour.containsKey(node)) {
-
-                    // If the colouring fails, return false
-                    // (i.e., if a neighbour has the same colour)
-                    if (!colourGraph(graph, node, colour, 1)) {
-                        return false;
-                    }
-                }
-            }
-
-            // If all nodes are coloured successfully, return true
-            return true;
         }
+        return true;
+    }
+
+    static boolean isTwoColourable(List<List<Integer>> graph) {
+        if (graph.isEmpty()) return false;
+        Map<Integer, Integer> col = new HashMap<>();
+        for (int node = 0; node < graph.size(); node++)  // outer loop: cover every component
+            if (!col.containsKey(node) && !colour(graph, node, col, 1)) return false;
+        return true;
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
-
-        // Examples from the problem statement
-        System.out.println(sol.isTwoColourable(List.of(List.of(1,3),List.of(0,2),List.of(1,3),List.of(0,2))));  // true
-        System.out.println(sol.isTwoColourable(List.of(List.of(1,2),List.of(0,2),List.of(0,1))));               // false
-
-        // Edge cases
-        System.out.println(sol.isTwoColourable(new ArrayList<>()));                         // false
-        System.out.println(sol.isTwoColourable(List.of(List.of(1), List.of(0))));           // true
-        System.out.println(sol.isTwoColourable(List.of(new ArrayList<>(), new ArrayList<>())));  // true
-        System.out.println(sol.isTwoColourable(List.of(List.of(1),List.of(0),List.of(3),List.of(2))));  // true
+        System.out.println(isTwoColourable(List.of(List.of(1,3), List.of(0,2), List.of(1,3), List.of(0,2)))); // true
+        System.out.println(isTwoColourable(List.of(List.of(1,2), List.of(0,2), List.of(0,1))));               // false
     }
 }
 ```
 
+Both print `True` then `False`: the 4-cycle alternates cleanly, the triangle hits a same-colour clash.
 
-## Complexity Analysis
+## How It Works
 
-| | Complexity | Reasoning |
-|---|---|---|
-| **Time** | O(N + E) | Each node coloured once; each edge inspected once |
-| **Space** | O(N) | Colour map + recursion stack |
+Three names for one property:
 
-The pattern is as cheap as a plain DFS — adding the colour check costs O(1) per edge.
+> **Two-colourable ⟺ bipartite ⟺ no odd cycle.**
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+- **Two-colourable** is the *algorithmic* view: assign one of two labels so adjacent labels differ.
+- **Bipartite** is the *structural* view: split nodes into `L` and `R` so every edge crosses between them (reds = `L`, blues = `R`).
+- **No odd cycle** is the *characterisation* (König's theorem): walking any cycle flips colour at each step; an odd cycle returns you to the start with the *opposite* colour — an impossible self-contradiction. Even cycles return you to the same colour, no conflict.
 
-<!-- TODO: Understanding the Pattern — missing, needs to be written -->
-<!--       Guidance: umbrella H2 with the subsections below -->
+The algorithm is plain DFS (or BFS) plus a colour rule: paint the start node, give each uncoloured neighbour `1 - value`, and when you meet an already-coloured neighbour, verify it differs. An outer loop reseeds an uncoloured node for each disconnected component — all components must succeed. `O(V + E)`: every node coloured once, every edge checked once. BFS works identically (queue + same check) and avoids deep recursion on huge graphs.
 
-<!-- TODO: Why Naive Isn't Enough — missing, needs to be written -->
-<!--       Guidance: motivation for why the obvious approach fails -->
+> **Key takeaway.** Two-colouring is DFS/BFS with one extra rule — neighbours get the opposite colour, and an already-coloured neighbour must *disagree*. A clash means an odd cycle, which means the graph is not bipartite. The conflict check on visited neighbours is the entire detection mechanism.
 
-<!-- TODO: The Core Idea — missing, needs to be written -->
-<!--       Guidance: one paragraph: the central trick -->
+## Trace It
 
-<!-- TODO: How the Pointers/Window Move — missing, needs to be written -->
-<!--       Guidance: mechanics of the moving parts -->
+The colour-propagation half (paint neighbours `1 - value`) feels like the heart of the algorithm. But propagation alone never *detects* failure — that's the job of the `elif col[nb] == value: return False` check on already-coloured neighbours.
 
-<!-- TODO: The Generic Algorithm — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
+**Predict before you run:** delete that conflict check (keep only the "recurse into uncoloured neighbours" branch) and run it on the triangle. Does it correctly report `False`?
 
-<!-- TODO: Generic Implementation — missing, needs to be written -->
-<!--       Guidance: Python block + Java block of the skeleton -->
+```python run
+def colour_no_check(graph, node, col, value):
+    col[node] = value
+    for nb in graph[node]:
+        if nb not in col:
+            if not colour_no_check(graph, nb, col, 1 - value): return False
+        # BUG: the `elif col[nb] == value: return False` check is gone
+    return True
 
-<!-- TODO: Variants / Taxonomy — missing, needs to be written -->
-<!--       Guidance: enumerate sub-shapes of this pattern -->
+def is_two_colourable_buggy(graph):
+    if not graph: return False
+    col = {}
+    for node in range(len(graph)):
+        if node not in col and not colour_no_check(graph, node, col, 1):
+            return False
+    return True
 
-<!-- TODO: Identifying — missing, needs to be written -->
-<!--       Guidance: per-variant: recognition checklist + canonical example -->
+print(is_two_colourable_buggy([[1, 2], [0, 2], [0, 1]]))   # triangle
+```
 
-<!-- TODO: Recognition Checklist — missing, needs to be written -->
-<!--       Guidance: 4-question diagnostic — the source of the Problem-section Diagnostic Questions -->
+<details>
+<summary><strong>Reveal</strong></summary>
 
-<!-- TODO: Canonical Example — missing, needs to be written -->
-<!--       Guidance: fully worked example: brute force → optimised → template fit -->
+It prints `True` — but the triangle is **not** 2-colourable. Without the check, the DFS happily paints node 0 red, node 1 blue, node 2 red (opposite of blue, via edge 1–2), then returns. The fatal edge 2–0 connects two *already-coloured* nodes (both red), and that is the *only* place the contradiction shows up — propagation never revisits it because both endpoints are already in `col`. Colouring without verifying is just a traversal that happens to write labels. The conflict check on visited neighbours is what turns it into a bipartiteness *test*; it's the line that catches every odd cycle.
 
-<!-- TODO: Problems in This Category — missing, needs to be written -->
-<!--       Guidance: table with links to the 02-problems/ files -->
+</details>
+
+## Your Turn
+
+Back to the opening puzzle: **Possible Bipartition** ([LeetCode 886](https://leetcode.com/problems/possible-bipartition/)). Given `n` people (1-indexed) and a list of dislike pairs, can you split them into two groups with no enemies together? Build the dislike graph and ask: is it 2-colourable?
+
+```python run
+def colour(graph, node, col, value):
+    col[node] = value
+    for nb in graph[node]:
+        if nb not in col:
+            if not colour(graph, nb, col, 1 - value): return False
+        elif col[nb] == value:
+            return False
+    return True
+
+def possible_bipartition(n, dislikes):
+    graph = [[] for _ in range(n)]
+    for a, b in dislikes:                               # 1-indexed people → 0-indexed nodes
+        graph[a-1].append(b-1); graph[b-1].append(a-1)
+    col = {}
+    for node in range(n):
+        if node not in col and not colour(graph, node, col, 1):
+            return False
+    return True
+
+print(possible_bipartition(4, [[1, 2], [1, 3], [2, 4]]))   # True
+print(possible_bipartition(3, [[1, 2], [1, 3], [2, 3]]))   # False — mutual triangle of enemies
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+    static boolean colour(List<List<Integer>> g, int node, Map<Integer, Integer> col, int value) {
+        col.put(node, value);
+        for (int nb : g.get(node)) {
+            if (!col.containsKey(nb)) { if (!colour(g, nb, col, 1 - value)) return false; }
+            else if (col.get(nb) == value) return false;
+        }
+        return true;
+    }
+    static boolean possibleBipartition(int n, int[][] dislikes) {
+        List<List<Integer>> g = new ArrayList<>();
+        for (int i = 0; i < n; i++) g.add(new ArrayList<>());
+        for (int[] d : dislikes) { g.get(d[0]-1).add(d[1]-1); g.get(d[1]-1).add(d[0]-1); }
+        Map<Integer, Integer> col = new HashMap<>();
+        for (int node = 0; node < n; node++)
+            if (!col.containsKey(node) && !colour(g, node, col, 1)) return false;
+        return true;
+    }
+    public static void main(String[] args) {
+        System.out.println(possibleBipartition(4, new int[][]{{1,2},{1,3},{2,4}}));  // true
+        System.out.println(possibleBipartition(3, new int[][]{{1,2},{1,3},{2,3}}));  // false
+    }
+}
+```
+
+Both print `True` then `False`: four people with a chain of dislikes split fine; three people who all dislike each other form an odd cycle and can't. The four problems in this section's **Problems** folder drill the variants — direct 2-colouring, dislike pairs, repairing a partial colouring, and group assignment.
+
+## Reflect & Connect
+
+- **Bipartite is the gateway to matching.** Once you know a graph is bipartite, [maximum bipartite matching](/cortex/data-structures-and-algorithms/graphs-maximum-bipartite-matching) and assignment problems open up — 2-colouring is often the *first* check before running a matching or flow algorithm.
+- **2 vs. 3 is another complexity cliff.** Deciding 2-colourability is linear; deciding `k`-colourability for `k ≥ 3` is NP-complete. Same dramatic boundary you saw in [2-SAT](/cortex/data-structures-and-algorithms/graphs-2-sat) — and indeed 2-colouring reduces to 2-SAT (each "differ" edge becomes two clauses).
+- **It's cycle detection with a label.** The machinery is the same DFS/BFS used for [cycle detection](/cortex/data-structures-and-algorithms/graphs-cycle-detection); here the extra colour bit converts "is there a cycle?" into "is there an *odd* cycle?"
+- **BFS or DFS — your call.** Both are `O(V + E)`. On very large or grid graphs, prefer BFS (an explicit queue) to dodge recursion-depth limits; the colour rule and conflict check are identical.
+
+## Recall
+
+<details>
+<summary><strong>Q:</strong> State the three-way equivalence at the heart of this pattern.</summary>
+
+**A:** Two-colourable ⟺ bipartite ⟺ contains no odd-length cycle. The algorithmic, structural, and characterisation views of the same property.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What is the colouring algorithm, in one sentence?</summary>
+
+**A:** DFS/BFS the graph, paint each uncoloured neighbour the opposite colour, and on meeting an already-coloured neighbour verify it differs — a same-colour clash means not bipartite.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Which line actually detects non-bipartiteness?</summary>
+
+**A:** The conflict check on *already-coloured* neighbours (`else if colour[nb] == value: return false`). Propagation alone writes labels but never notices the contradiction on a back/closing edge.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why does an odd cycle break two-colouring?</summary>
+
+**A:** Colour flips at each step; after an odd number of edges you return to the start with the opposite colour — a contradiction. Even cycles return you to the same colour, so they're fine.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why the outer loop over all nodes?</summary>
+
+**A:** The graph may be disconnected; each component must be coloured independently and all must succeed. The outer loop reseeds an uncoloured node per component.
+
+</details>
+
+## Sources & Verify
+
+- **CLRS** (Cormen, Leiserson, Rivest, Stein), *Introduction to Algorithms*, 3rd ed., §22.2 (BFS) and the bipartite-graph exercises — the BFS-colouring test and the odd-cycle characterisation.
+- **Sedgewick & Wayne**, *Algorithms*, 4th ed., §4.1 — the `Bipartite` / two-colourability client built on DFS, with the odd-cycle proof.
+- **Skiena**, *The Algorithm Design Manual*, 3rd ed., §5.7.2 — two-colouring via BFS and its place in graph-colouring (and why `k ≥ 3` is hard).
+- **LeetCode 785** "Is Graph Bipartite?" and **886** "Possible Bipartition" are the canonical drills. The `True`/`False`, buggy-triangle, and bipartition outputs above come from the runnable blocks — re-run to verify.

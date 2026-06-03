@@ -1,269 +1,227 @@
 ---
 title: "LSM Trees in RocksDB and Cassandra"
-summary: "The Log-Structured Merge tree — the write-optimised alternative to B-trees that powers RocksDB, Cassandra, ScyllaDB, LevelDB, and CockroachDB. Sequential writes, periodic compaction, and the 100x write-throughput advantage."
+summary: "The Log-Structured Merge tree — the write-optimised alternative to the B-tree behind RocksDB, Cassandra, LevelDB, and CockroachDB. Buffer writes in memory, flush them as immutable sorted files, and merge those files in the background. Sequential writes instead of random ones, paid for with read amplification that compaction keeps in check."
 prereqs:
   - trees-b-tree-introduction-to-b-trees
   - probabilistic-and-advanced-skip-list
   - probabilistic-and-advanced-bloom-filter
 ---
 
-# 5. LSM Trees in RocksDB and Cassandra
-
-## The Hook
-
-A B+-tree (covered in the [B-tree chapter](/cortex/data-structures-and-algorithms/trees-b-tree-introduction-to-b-trees)) is *read-optimised*: hierarchical index, point lookups in `O(log n)` disk seeks, range queries via leaf-chain traversal. Writes are also `O(log n)` — but every write involves a *random* page modification, which on traditional spinning disks is dramatically slower than sequential writes.
-
-The **LSM Tree (Log-Structured Merge tree)** flips the trade-off. Writes go into a small in-memory buffer (the **memtable**, usually a skip list) and a sequential **WAL** for durability. When the memtable fills, it's flushed to disk as an immutable, sorted file (an **SSTable**). Subsequent flushes create more SSTables. Periodically, a background **compaction** merges SSTables into fewer, larger ones — essentially a streaming merge sort over the entire dataset.
-
-The result: write throughput is *sequential disk write speed* (hundreds of MB/s) instead of random write speed (a few hundred ops/s on spinning disk). The cost: reads now have to check multiple SSTables, and the compaction job consumes CPU and bandwidth.
-
-This chapter is the tour. RocksDB, Cassandra, ScyllaDB, CockroachDB, LevelDB, HBase, InfluxDB — all built on this idea, with different compaction strategies and tuning knobs.
-
----
-
-## Table of contents
-
-1. [Memtable + WAL + SSTables](#memtable-wal-sstables)
-2. [The compaction problem](#the-compaction-problem)
-3. [Compaction strategies: leveled vs tiered](#compaction-strategies-leveled-vs-tiered)
-4. [Reads with multiple SSTables](#reads-with-multiple-sstables)
-5. [The write-amplification trade-off](#the-write-amplification-trade-off)
-6. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
-7. [Production reality](#production-reality)
-8. [Cross-links](#cross-links)
-9. [Final takeaway](#final-takeaway)
-
-***
-
-# Memtable + WAL + SSTables
-
-A write to an LSM tree:
-
-1. Append to the **WAL** (a sequential file) for durability. Cheap — sequential write.
-2. Insert into the **memtable** — an in-memory sorted structure (skip list or RB-tree). Fast — pure-memory.
-3. When the memtable reaches a threshold (typically 64 MB), it's marked **immutable** and a new memtable starts accepting writes.
-4. The immutable memtable is flushed to disk as an **SSTable** — a sorted, compressed file with an index of keys.
-5. The WAL covering the flushed memtable is truncated.
-
-A read consults: the memtable, then each SSTable, in newest-to-oldest order. The first hit wins.
-
-The memtable's choice of structure (skip list in RocksDB / LevelDB; RB-tree in some forks) trades insertion speed for memory overhead. Skip lists offer easy concurrent inserts, important since writes hit the memtable at full rate.
-
-***
-
-# The compaction problem
-
-Without compaction, the number of SSTables grows linearly with writes. Reads slow proportionally — checking 1000 SSTables for a single key is unacceptable.
-
-**Compaction** merges SSTables. It reads multiple SSTables (in sorted-key order — they're already sorted, so this is a streaming merge), produces a new larger sorted SSTable, and deletes the old ones. Tombstones (deletion markers) are also resolved during compaction.
-
-The compaction job runs continuously in the background, consuming CPU and bandwidth proportional to the write rate. *Compaction must keep up with writes*, otherwise the SSTable count grows unboundedly.
-
-***
-
-# Compaction strategies: leveled vs tiered
-
-Two main strategies; choice depends on read/write balance.
-
-### Leveled compaction (LevelDB, RocksDB default)
-
-SSTables are organised into *levels* `L0, L1, L2, …`. Each level is `T` times the size of the previous (`T = 10` typical).
-
-- `L0` accepts flushes from the memtable; SSTables in `L0` may have overlapping key ranges.
-- `L_i` (for `i ≥ 1`) maintains *non-overlapping* key ranges within the level. To insert a new SSTable into `L_i`, merge it with overlapping `L_(i+1)` SSTables.
-
-Read amplification: at most one SSTable per level needs checking (because levels are non-overlapping). With 7 levels, ~7 SSTable checks per read.
-
-Write amplification: every key is rewritten ~10× as it migrates through levels (each level transition is a merge with the next).
-
-### Tiered compaction (Cassandra default)
-
-SSTables are grouped into *tiers* by size. When a tier accumulates `K` SSTables (often `K = 4`), they're merged into one SSTable in the next tier.
-
-Read amplification: must check every tier — typically 5-10 tiers, each with up to `K-1` overlapping SSTables. Worse than leveled.
-
-Write amplification: each key written `~log_K n` times. Better than leveled.
-
-The trade-off: leveled optimises reads, tiered optimises writes. RocksDB lets you choose; Cassandra used tiered by default until 4.0 and now offers both.
-
-***
-
-# Reads with multiple SSTables
-
-A read for key `K`:
-
-1. Check the memtable. Hit → return.
-2. Check the immutable memtable (if any). Hit → return.
-3. For each SSTable, newest first:
-   a. Check the SSTable's **Bloom filter**. If "definitely not", skip the SSTable.
-   b. Otherwise, binary-search the SSTable's index. Read the data block from disk if found.
-
-The Bloom filter (covered in the [Bloom Filter chapter](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-bloom-filter)) is critical. Without it, every SSTable would need a disk seek per read; with it, only the SSTables actually containing the key are read.
-
-***
-
-# The write-amplification trade-off
-
-The disk writes are sequential (good), but the *total* bytes written per logical write is more than 1× — the compaction overhead.
-
-For leveled compaction with `T = 10` and 7 levels: write amplification is ~70×. For every 1 GB of logical writes, the disk sees ~70 GB of writes after all compactions complete.
-
-This is the LSM tree's hidden cost. SSDs have finite write endurance; high write amplification translates to early SSD failure. Modern systems have flexible compaction policies (RocksDB has 8+ knobs) to tune the read/write/space-amplification triangle.
-
-The "**RUM conjecture**" (Athanassoulis et al., 2016) formalises this: any storage system trades off **R**ead, **U**pdate, and **M**emory amplifications. LSM trees minimise update amplification (sequential writes) at the cost of read and memory.
-
-***
-
-# Edge cases and pitfalls
-
-- **Tombstones don't free space immediately.** A `DELETE` writes a tombstone; the tombstone persists until a compaction merges it with the original key (which then drops both). Heavy delete workloads bloat SSTables.
-- **TTL expiration relies on compaction.** Cassandra's TTL feature marks entries with an expiry; entries are dropped during compaction, not at the moment they expire. A row with TTL = 1 day might still be readable for hours after expiration.
-- **Read-after-write may need to check the memtable.** The most recent write isn't yet in any SSTable. Reads must always check the memtable first.
-- **Write stalls under heavy load.** If compaction can't keep up, RocksDB stalls writes (slows them down) to give compaction breathing room. Tuning compaction throughput vs. write throughput is an art.
-- **Bloom filter false positives.** A read that hits a Bloom filter false positive incurs a wasted disk read. The default 1% FPR is fine for most workloads; lower it (1 KB extra per SSTable) for read-heavy workloads.
-- **Level-0 files can overlap in keys.** L0 SSTables haven't been compacted yet; multiple L0 files might contain the same key. Reads check all L0 files.
-
-***
-
-# Production reality
-
-- **RocksDB** (Facebook) — the canonical embedded LSM tree. Used by Apache Kafka (state stores), CockroachDB (SQL), Apache Flink (state), MongoDB (WiredTiger), Cassandra-fork ScyllaDB. Source at [github.com/facebook/rocksdb](https://github.com/facebook/rocksdb).
-- **LevelDB** (Google) — the original LSM tree implementation; predecessor to RocksDB. Smaller, fewer features, still maintained.
-- **Cassandra** — the canonical distributed LSM database. Per-node storage is LSM; replication and consistency are layered on top.
-- **HBase** — the Hadoop ecosystem's LSM database, similar architecture to Cassandra.
-- **InfluxDB**, **TimescaleDB** — time-series databases using LSM-like storage for write-heavy ingestion.
-- **Bigtable** (Google) — the original LSM-inspired distributed key-value store; described in the 2006 paper that spawned this entire family.
-- **DynamoDB** (Amazon) — internally uses an LSM-tree-like structure for some storage tiers.
-
-***
-
-# Memorize
-
-The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. LSM is the write-optimised alternative to B-trees; recognising when each one wins is the most-asked database-design question.
-
-## Quick recall
-
-Click any question to reveal the answer.
-
-<details>
-<summary><strong>Q:</strong> Three layers of an LSM-tree write path?</summary>
-
-**A:** **WAL** (sequential durability log), **memtable** (in-memory sorted structure, usually skip list), **SSTables** (immutable sorted files on disk after memtable flush).
-
-</details>
-<details>
-<summary><strong>Q:</strong> Why do writes go to a memtable + WAL instead of directly to disk?</summary>
-
-**A:** Sequential writes (to WAL + memtable, the latter in-memory) are dramatically cheaper than random writes (to a B-tree page on disk). LSM trades read amplification for write throughput.
-
-</details>
-<details>
-<summary><strong>Q:</strong> What does compaction do?</summary>
-
-**A:** Merges multiple SSTables into one (streaming merge sort). Resolves tombstones. Required to keep read amplification bounded — without compaction, reads check ever-more files.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Leveled vs tiered compaction?</summary>
-
-**A:** **Leveled**: each level non-overlapping, merge-with-next on flush. Lower read amp, higher write amp. **Tiered**: K SSTables per tier, merge to next when full. Higher read amp, lower write amp.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Why does each SSTable carry a Bloom filter?</summary>
-
-**A:** Reads might check every SSTable for a key. Bloom filter says "definitely not in this SSTable" → skip the disk read. Without it, every read = (# SSTables) disk seeks.
-
-</details>
-<details>
-<summary><strong>Q:</strong> What's the RUM conjecture?</summary>
-
-**A:** Storage systems trade off **R**ead, **U**pdate, and **M**emory amplifications. LSM minimises update amplification (sequential writes) at the cost of the others. B-trees do the opposite.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Typical write amplification for leveled compaction?</summary>
-
-**A:** ~70× (with `T = 10` levels and 7 levels). Every logical write hits disk ~70 times across the lifetime of compactions. Tunable; tiered compaction is lower.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Why does delete-heavy workload bloat LSM SSTables?</summary>
-
-**A:** Tombstones don't free space until a compaction merges them with the original key. Heavy deletes between compactions bloat both memory and disk.
-
-</details>
-
-## Source pointers
-
-```
-RocksDB (the canonical LSM):
-db/memtable.cc, db/memtable.h           — skip-list memtable
-db/db_impl/db_impl_write.cc             — write path (WAL + memtable)
-db/compaction/compaction_picker.cc      — leveled compaction picker
-db/version_set.cc                       — version metadata, level structure
-util/bloom_impl.h                       — per-SSTable Bloom filter
-include/rocksdb/options.h               — every tuning knob
-
-LevelDB (smaller predecessor):
-db/version_set.cc                       — level management
-db/log_writer.cc                        — WAL writer
-table/table.cc                          — SSTable format
-
-Cassandra:
-src/java/org/apache/cassandra/io/sstable/   — SSTable read/write
-src/java/org/apache/cassandra/db/compaction/ — compaction strategies
+## Why It Exists
+
+A [B-tree](/cortex/data-structures-and-algorithms/trees-b-tree-introduction-to-b-trees) — the structure behind [Postgres `nbtree`](/cortex/data-structures-and-algorithms/dsa-in-real-systems-postgres-b-tree-and-the-write-path) — is **read-optimised**: a point lookup is a handful of seeks, range scans walk linked leaves. But every *write* modifies a page in place, which is a **random** write to disk. On spinning disks a random write is hundreds of times slower than a sequential one, and even on SSDs random writes cost extra wear. For a write-heavy workload — metrics, logs, event streams, a busy key-value store — the B-tree's random-write tax dominates.
+
+The **LSM tree (Log-Structured Merge tree)** flips the trade-off by *never writing randomly*. Writes go into an in-memory buffer (the **memtable**) plus a sequential **WAL** for durability. When the memtable fills, it's flushed to disk as one **immutable, sorted file** — an **SSTable** — written sequentially, start to finish. More writes make more SSTables, and a background **compaction** merges them (a streaming merge-sort) into fewer, larger files. Every disk write is sequential; the price is that a read may have to consult several SSTables, and compaction burns CPU and bandwidth. That's the bargain RocksDB, Cassandra, LevelDB, ScyllaDB, HBase, and CockroachDB all take — trade read and space amplification for write throughput.
+
+## See It Work
+
+The defining behavior: writes accumulate newest-on-top, and a read returns the *first* (newest) version it finds. An update doesn't overwrite the old value on disk — it just shadows it.
+
+```python run
+TOMBSTONE = "<deleted>"
+class LSM:
+    def __init__(self):
+        self.memtable = {}      # in-memory buffer holding the newest writes
+        self.sstables = []      # immutable on-disk files, newest first
+    def put(self, k, v):
+        self.memtable[k] = v
+    def flush(self):            # memtable fills -> frozen into an immutable SSTable
+        self.sstables.insert(0, dict(self.memtable)); self.memtable = {}
+    def get(self, k):
+        for layer in [self.memtable] + self.sstables:   # newest -> oldest, first hit wins
+            if k in layer:
+                return None if layer[k] == TOMBSTONE else layer[k]
+        return None
+
+db = LSM()
+db.put("user:1", "alice")
+db.flush()                       # "alice" now lives in an SSTable on disk
+db.put("user:1", "alice2")       # update -> lands in the fresh memtable (newer)
+print("read user:1 ->", db.get("user:1"))
+print("# sstables:", len(db.sstables), "| old value still on disk:", db.sstables[0]["user:1"])
 ```
 
-## Pattern triggers
+```java run
+import java.util.*;
+public class Main {
+    static final String TOMBSTONE = "<deleted>";
+    static class LSM {
+        Map<String,String> memtable = new LinkedHashMap<>();   // newest writes, in memory
+        List<Map<String,String>> sstables = new ArrayList<>(); // immutable files, newest first
+        void put(String k, String v) { memtable.put(k, v); }
+        void flush() { sstables.add(0, new LinkedHashMap<>(memtable)); memtable = new LinkedHashMap<>(); }
+        String get(String k) {
+            List<Map<String,String>> layers = new ArrayList<>(); layers.add(memtable); layers.addAll(sstables);
+            for (Map<String,String> layer : layers)            // newest -> oldest, first hit wins
+                if (layer.containsKey(k)) { String v = layer.get(k); return v.equals(TOMBSTONE) ? null : v; }
+            return null;
+        }
+    }
+    public static void main(String[] x) {
+        LSM db = new LSM();
+        db.put("user:1", "alice");
+        db.flush();                       // "alice" now lives in an SSTable
+        db.put("user:1", "alice2");       // update -> fresh memtable (newer)
+        System.out.println("read user:1 -> " + db.get("user:1"));
+        System.out.println("# sstables: " + db.sstables.size() + " | old value still on disk: " + db.sstables.get(0).get("user:1"));
+    }
+}
+```
 
-- **"Write-heavy workload"** → LSM (RocksDB, Cassandra) over B-tree
-- **"Read-heavy workload"** → B-tree (Postgres) over LSM
-- **"Time-series / append-mostly data"** → LSM
-- **"Range queries dominant"** → B+-tree (sorted leaves are linked); LSM range scan is more expensive
-- **"Tombstones bloating disk"** → tune compaction; reduce delete frequency; consider TTL strategies
-- **"Why is the read slow?"** → too many SSTables; Bloom filter false positive; level-0 files overlap
-- **"Write stalls under load"** → compaction can't keep up; tune throughput / parallelism
-- **"Where to read the source?"** → RocksDB; the README and `include/rocksdb/options.h` are the entry points
+Both print `read user:1 -> alice2`, then `# sstables: 1 | old value still on disk: alice`. The update to `alice2` never touched the SSTable — it went into the new memtable, which the read checks *first*. The stale `alice` is still sitting on disk, harmlessly shadowed, until a future compaction discards it. Writes are append-only; reads layer newest-over-oldest.
 
-***
+## How It Works
 
-# Cross-links
+The whole machine is "buffer in memory, flush sequentially, merge in the background":
 
-- **Prerequisites:** [B-Tree](/cortex/data-structures-and-algorithms/trees-b-tree-introduction-to-b-trees) (the read-optimised alternative), [Skip List](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-skip-list) (memtable choice), [Bloom Filter](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-bloom-filter) (read optimisation).
-- **Sibling production deep-dive:** [Postgres B-Tree](/cortex/data-structures-and-algorithms/dsa-in-real-systems-postgres-b-tree-and-the-write-path).
+```d2
+direction: down
+w: "WRITE (k, v)" {style.fill: "#fef9c3"}
+wal: "WAL — sequential append (durable)" {style.fill: "#fde68a"; style.stroke: "#d97706"}
+mem: "MEMTABLE — in-memory sorted (skiplist)" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
+sst: "SSTables — immutable sorted files on disk\n(newest → oldest; each has a Bloom filter)" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
+comp: "COMPACTION — background merge-sort:\nkeep newest per key, drop tombstones\n→ fewer files, bounded read amplification" {style.fill: "#e9d5ff"; style.stroke: "#9333ea"}
+r: "READ (k): memtable first, then SSTables\nnewest → oldest, first hit wins" {style.fill: "#fed7aa"; style.stroke: "#ea580c"}
+w -> wal: "1. durability"
+w -> mem: "2. apply"
+mem -> sst: "flush when full"
+sst -> comp: "merge"
+r -> mem
+r -> sst
+```
 
-***
+<p align="center"><strong>Writes hit the WAL (durability) and the in-memory memtable (speed); a full memtable flushes to an immutable SSTable; compaction merges SSTables in the background. Reads check memtable then SSTables newest→oldest, with a Bloom filter skipping files that can't hold the key.</strong></p>
 
-# Final takeaway
+The load-bearing pieces:
 
-LSM trees are the write-optimised storage primitive of the modern era. Three patterns to internalise:
+- **The write path is all sequential.** A write appends to the WAL (durability) and inserts into the memtable — usually a [skip list](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-skip-list), chosen because it sorts on insert and handles concurrent writers cleanly. At ~64 MB the memtable is frozen and flushed to an SSTable: a sorted, compressed file written in one sequential pass. No random page writes ever happen.
+- **Reads layer newest-over-oldest, and Bloom filters cut the cost.** A lookup checks the memtable, then each SSTable from newest to oldest, returning the first hit. Left unchecked that's one disk seek *per SSTable*, so each SSTable carries a [Bloom filter](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-bloom-filter): if it says "definitely not here," the read skips that file entirely with no disk access. This is what keeps read amplification survivable.
+- **Compaction bounds the file count — two strategies.** Without merging, SSTables pile up and reads slow forever. Compaction streams several sorted SSTables together into one (keeping the newest value per key, dropping tombstones — [Your Turn](#your-turn)). **Leveled** compaction (RocksDB default) keeps non-overlapping levels each ~10× the last, so a read checks ~one file per level (~7 total) — low read amplification, but every key is rewritten ~70× over its life. **Tiered** compaction (Cassandra's classic default) merges K equal-size files into the next tier — fewer rewrites (lower write amplification) but more files to check per read. You can't win everywhere: the **RUM conjecture** says **R**ead, **U**pdate, and **M**emory amplification trade off against each other. LSM spends read and memory to minimise update cost; the B-tree does the reverse.
 
-1. **Sequential writes, periodic merge.** All writes go into a memtable and a WAL; flushes produce immutable SSTables; compaction merges them. Disk I/O is sequential, never random.
-2. **Read amplification is the cost.** Reads check the memtable plus all SSTables. Bloom filters mitigate; compaction strategy controls how aggressively SSTables are merged.
-3. **The trade-off triangle.** Read, update, and memory amplifications are constrained by the RUM conjecture. LSM minimises update amplification at the cost of the others. B-trees do the opposite. Pick by workload.
+> **Key takeaway.** An LSM tree turns random writes into sequential ones: buffer writes in an in-memory **memtable** (plus a WAL), flush a full memtable to an **immutable sorted SSTable**, and **compact** SSTables in the background. Reads layer newest-over-oldest (a Bloom filter per SSTable skips files that can't hold the key), so an update *shadows* the old value rather than overwriting it, and a delete writes a **tombstone**. The cost is read and space amplification that compaction keeps bounded — the **RUM** trade-off. It's the write-optimised mirror of the read-optimised [B-tree](/cortex/data-structures-and-algorithms/dsa-in-real-systems-postgres-b-tree-and-the-write-path); pick by whether your workload writes or reads more.
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+## Trace It
 
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
+If an update just shadows the old value, how do you *delete*? There's no random write to go erase the on-disk copy.
 
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
+**Predict before you run:** a key `k` is written and flushed to an SSTable. Then you delete `k` (which, in an LSM, writes a **tombstone** — a "deleted" marker — into the memtable). A read for `k` follows. Does it return the old value (still sitting in the SSTable), or "not found"?
 
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
+```python run
+TOMBSTONE = "<deleted>"
+class LSM:
+    def __init__(self): self.memtable = {}; self.sstables = []
+    def put(self, k, v): self.memtable[k] = v
+    def delete(self, k): self.memtable[k] = TOMBSTONE      # a delete is just a write of a tombstone
+    def flush(self): self.sstables.insert(0, dict(self.memtable)); self.memtable = {}
+    def get(self, k):
+        for layer in [self.memtable] + self.sstables:      # newest -> oldest
+            if k in layer:
+                return None if layer[k] == TOMBSTONE else layer[k]
+        return None
 
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
+db = LSM()
+db.put("k", "v"); db.flush()       # "v" is in an SSTable on disk
+db.delete("k")                      # delete -> writes a tombstone to the memtable
+print("read after delete:", db.get("k"))
+print("old value still on disk:", db.sstables[0]["k"])
+```
 
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+<details>
+<summary><strong>Reveal</strong></summary>
 
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
+The read returns `None` — "not found" — even though `old value still on disk: v` shows the original value is *still physically there* in the SSTable. The delete didn't erase anything; it wrote a tombstone into the memtable, which the read encounters *first* (newest layer) and interprets as "this key is gone," stopping before it ever reaches the older SSTable. The old `v` is dead weight until a compaction merges the tombstone with the original key and drops both. This is why **delete-heavy LSM workloads bloat**: every delete *adds* data (a tombstone) rather than removing it, and the space isn't reclaimed until compaction runs. It's also why Cassandra's TTL'd rows can linger past their expiry — expiration, like deletion, is resolved lazily at compaction time, not the instant the clock ticks over. The shadowing rule that makes writes cheap is the same rule that makes deletes a deferred cost.
 
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+</details>
+
+## Your Turn
+
+Tombstones and shadowed values pile up; **compaction** is the garbage collector that reclaims them. Merge two SSTables and watch it resolve everything in one streaming pass.
+
+**Predict:** a newer SSTable deletes `k1` (tombstone) and updates `k2` to `v2new`; an older SSTable holds `k1=v1`, `k2=v2old`, `k3=v3`. After compacting them into one file, which keys survive, and with what values?
+
+```python run
+TOMBSTONE = "<deleted>"
+def compact(sstables):                 # merge newest-first SSTables into one
+    merged = {}
+    for sst in reversed(sstables):     # apply OLDEST first so newer writes overwrite
+        merged.update(sst)
+    return {k: v for k, v in merged.items() if v != TOMBSTONE}   # drop tombstoned keys
+
+sst2 = {"k1": TOMBSTONE, "k2": "v2new"}             # newer SSTable: deletes k1, updates k2
+sst1 = {"k1": "v1", "k2": "v2old", "k3": "v3"}      # older SSTable
+before = [sst2, sst1]                                # newest first
+after = compact(before)
+print("before: 2 SSTables, keys per:", [sorted(s) for s in before])
+print("after compaction:", dict(sorted(after.items())))
+```
+
+```java run
+import java.util.*;
+public class Main {
+    static final String TOMBSTONE = "<deleted>";
+    static Map<String,String> compact(List<Map<String,String>> sstables) {
+        Map<String,String> merged = new TreeMap<>();
+        for (int i = sstables.size() - 1; i >= 0; i--) merged.putAll(sstables.get(i));   // oldest first -> newer overwrites
+        Map<String,String> out = new TreeMap<>();
+        for (var e : merged.entrySet()) if (!e.getValue().equals(TOMBSTONE)) out.put(e.getKey(), e.getValue());
+        return out;
+    }
+    public static void main(String[] x) {
+        Map<String,String> sst2 = new TreeMap<>(Map.of("k1", TOMBSTONE, "k2", "v2new"));        // newer
+        Map<String,String> sst1 = new TreeMap<>(Map.of("k1", "v1", "k2", "v2old", "k3", "v3")); // older
+        List<Map<String,String>> before = List.of(sst2, sst1);  // newest first
+        System.out.println("before: 2 SSTables, keys per: [" + new TreeSet<>(sst2.keySet()) + ", " + new TreeSet<>(sst1.keySet()) + "]");
+        System.out.println("after compaction: " + compact(before));
+    }
+}
+```
+
+Both compact the two files into one holding `k2=v2new` and `k3=v3` (Python prints `{'k2': 'v2new', 'k3': 'v3'}`, Java `{k2=v2new, k3=v3}`). Three things happened in a single sorted pass: `k1`'s tombstone met its old value and **both were dropped** (space reclaimed); `k2` kept only the **newer** `v2new`, discarding `v2old`; and `k3`, present in just the old file, carried through unchanged. Two SSTables became one, so the next read for any of these keys checks half as many files. That's compaction's double payoff — it reclaims the space shadowing leaves behind *and* shrinks read amplification — and it's why an LSM must keep compaction running fast enough to match the write rate.
+
+## Reflect & Connect
+
+- **Sequential beats random — that's the whole idea.** Buffering writes and flushing them as immutable sorted files means the disk only ever sees sequential writes, the fast kind. The same "make random writes sequential" instinct as the [WAL](/cortex/data-structures-and-algorithms/dsa-in-real-systems-postgres-b-tree-and-the-write-path), taken all the way to the primary storage layout.
+- **Shadowing is the unifying rule.** Updates and deletes both just *append* a newer version (a value or a tombstone) that shadows the old one; reads take the newest. It makes writes cheap and uniform, and makes deletes a deferred cost paid at compaction.
+- **Compaction is the price and the cleanup.** It reclaims shadowed values and tombstones and bounds read amplification — but it costs CPU, bandwidth, and write amplification (~70× for leveled). If it can't keep up, the system stalls writes.
+- **The RUM triangle has no free corner.** Read, Update, and Memory amplification trade off. LSM minimises update amplification; the [B-tree](/cortex/data-structures-and-algorithms/dsa-in-real-systems-postgres-b-tree-and-the-write-path) minimises read amplification. "Which database?" usually reduces to "which corner does my workload care about?"
+- **It's everywhere write-heavy.** RocksDB (Kafka, CockroachDB, Flink, MongoDB's WiredTiger), Cassandra, ScyllaDB, HBase, LevelDB, InfluxDB — all LSM. Recognising the memtable→SSTable→compaction shape lets you reason about all of them at once.
+
+## Recall
+
+<details>
+<summary><strong>Q:</strong> What are the three layers of an LSM write path, and why?</summary>
+
+**A:** WAL (sequential durability log), memtable (in-memory sorted buffer, usually a skip list), and SSTables (immutable sorted files flushed from the memtable). The point is that every disk write is sequential — append to the WAL, flush the memtable in one pass — never a random in-place page write.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does a read work when a key might be in several SSTables?</summary>
+
+**A:** Check the memtable, then SSTables newest to oldest, returning the first hit (newest wins). Each SSTable has a Bloom filter, so the read skips any file that "definitely" lacks the key without a disk seek — keeping read amplification bounded.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does an LSM tree delete a key, and what's the consequence?</summary>
+
+**A:** It writes a tombstone (a "deleted" marker) into the memtable; that shadows older copies so reads return "not found." Nothing is physically removed until a compaction merges the tombstone with the original key and drops both — so delete-heavy workloads bloat until compaction catches up.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What does compaction do, and why is it mandatory?</summary>
+
+**A:** It streams several sorted SSTables into one, keeping the newest value per key and dropping tombstones (and their shadowed values). Without it, SSTables accumulate without bound and every read checks ever-more files; compaction reclaims space and keeps read amplification bounded.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Leveled vs tiered compaction, and the RUM conjecture?</summary>
+
+**A:** Leveled (RocksDB) keeps non-overlapping levels — low read amplification, high write amplification (~70×). Tiered (Cassandra) merges K files per tier — lower write amplification, higher read amplification. The RUM conjecture says Read, Update, and Memory amplification trade off; you can't minimise all three.
+
+</details>
+
+## Sources & Verify
+
+- **O'Neil et al.** (1996), "The Log-Structured Merge-Tree (LSM-Tree)" — the original paper; **Chang et al.** (2006), "Bigtable" — the SSTable/memtable design that spawned this whole family.
+- **Athanassoulis et al.** (2016), "Designing Access Methods: The RUM Conjecture" — the Read/Update/Memory trade-off framework.
+- **RocksDB source & wiki**: `db/memtable.cc` (skip-list memtable), `db/db_impl/db_impl_write.cc` (WAL + memtable write path), `db/compaction/compaction_picker.cc` (leveled compaction), `util/bloom_impl.h` (per-SSTable Bloom filter); the [RocksDB wiki](https://github.com/facebook/rocksdb/wiki) is the best tour. Cassandra's compaction strategies live in `src/java/org/apache/cassandra/db/compaction/`.
+- The newest-shadows-oldest read (`alice2` while `alice` stays on disk), the tombstone delete (`None` returned while `v` persists), and the compaction (`k1` dropped, `k2=v2new`, `k3` kept) all come from the runnable blocks above (deterministic models of the LSM write/read/compaction path) — re-run to verify.

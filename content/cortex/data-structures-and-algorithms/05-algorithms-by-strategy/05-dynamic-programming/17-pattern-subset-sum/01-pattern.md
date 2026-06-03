@@ -1,117 +1,195 @@
 ---
 title: "Pattern: Subset Sum"
-summary: "1-D DP over item capacity where dp[j] = "can we hit target j?" — partition, discrepancy, and unbounded-knapsack variants."
+summary: "A 1-D DP over a target where dp[j] tells whether sum j is reachable from a subset. The boolean/count specialization of knapsack — values equal weights — solving partition, minimum-difference, and target-sum problems with a descending sweep."
 prereqs:
   - 05-algorithms-by-strategy/05-dynamic-programming/10-knapsack
 ---
 
-# The Subset-Sum Pattern
+## Why It Exists
 
-You saw subset sum in lesson 11 (knapsack applications) — a 2D boolean DP keyed on item count and remaining target. The pattern's structure:
+A huge family of problems is secretly one question: *can I pick a subset of these numbers that sums to exactly `T`* (or as close as possible, or in how many ways)? Splitting a list into two equal halves, balancing two teams, "last stone weight," target-sum with `±` signs — all of them. The moment you spot "choose a subset to hit/approach a number," you're in subset-sum territory.
 
-```
-dp[i][s] = dp[i - 1][s]                          — exclude arr[i - 1]
-        OR (arr[i - 1] ≤ s AND dp[i - 1][s - arr[i - 1]])   — include arr[i - 1]
-```
+It's the boolean (or counting) specialization of [knapsack](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-knapsack): set each item's *value equal to its weight* and ask not "max value under capacity" but "is capacity `j` reachable?" That collapses the 2-D knapsack table to a **1-D** array `dp[j]` over the target, swept **descending** so each number is used at most once. This lesson is the recognition layer — see the shape, reach for the 1-D boolean sweep.
 
-with base cases `dp[i][0] = true` (empty subset hits 0) and `dp[0][s > 0] = false` (no items can hit a positive sum).
+## See It Work
 
-Why give it a "pattern" lesson? Because two distinct downstream problems both reduce to "compute the subset-sum table, then read it differently."
+`dp[j]` = "is sum `j` reachable from some subset seen so far?" Seed `dp[0] = True` (the empty subset sums to 0). For each number, sweep targets **descending** and mark `dp[j]` reachable if `dp[j - x]` already was.
 
-> 🖼 Diagram — One DP table, two readings. The table is the same; only the question changes — which cell to consult, or which range to scan.
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#777777"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-  TBL["Subset-sum table<br/>dp[i][s] = subset of first i hits sum s?"]
-  TBL --> P1["Partition equal sum:<br/>read dp[n][total/2]"]
-  TBL --> P2["Smallest discrepancy:<br/>find largest j ≤ total/2<br/>with dp[n][j] = true"]
+```python run
+def subset_sum(nums, target):
+    dp = [False] * (target + 1)
+    dp[0] = True                                     # empty subset sums to 0 — the seed
+    for x in nums:
+        for j in range(target, x - 1, -1):           # DESCENDING -> each number used at most once
+            dp[j] = dp[j] or dp[j - x]
+    return dp[target]
+
+print(subset_sum([3, 34, 4, 12, 5, 2], 9))   # True   (4 + 5)
+print(subset_sum([1, 2, 5], 4))              # False
 ```
 
-<p align="center"><strong>One DP table, two readings. The table is the same; only the question changes — which cell to consult, or which range to scan.</strong></p>
+```java run
+public class Main {
+    static boolean subsetSum(int[] nums, int target) {
+        boolean[] dp = new boolean[target + 1];
+        dp[0] = true;                                    // the seed
+        for (int x : nums)
+            for (int j = target; j >= x; j--)            // descending -> 0/1
+                dp[j] = dp[j] || dp[j - x];
+        return dp[target];
+    }
+    public static void main(String[] args) {
+        System.out.println(subsetSum(new int[]{3, 34, 4, 12, 5, 2}, 9));   // true
+        System.out.println(subsetSum(new int[]{1, 2, 5}, 4));             // false
+    }
+}
+```
 
-> *Pause. Why do partition-equal-sum and smallest-discrepancy share a table? Predict the connection.*
+Both print `true` then `false`. `4 + 5 = 9` is reachable; no subset of `{1,2,5}` hits 4 (the reachable sums are 0,1,2,3,5,6,7,8). Cost `O(n · target)` — pseudo-polynomial, inherited from knapsack.
 
-Both ask "what subset sums are reachable from this array?" Equal-sum partition wants the specific cell `dp[n][total/2]`. Smallest discrepancy wants the *largest* reachable sum at or below `total/2` — once you have one subset's sum `s`, the other has sum `total - s`, and their difference is `total - 2s`. Minimising the difference means maximising `s` (subject to `s ≤ total/2`). Both reductions are mechanical once the table exists.
+## How It Works
 
-## Where this shows up
+The 2-D knapsack table has one row per item; subset sum only needs to know *reachability*, so a single row, overwritten per item, suffices — provided you sweep the right way:
 
-Beyond the two problems in this lesson: target-sum (assign +/- to each element to hit a target), count of subsets summing to `s` (replace OR with sum, getting an int DP), the partition number-theoretic problems that show up in scheduling, and the `0/1` integer-knapsack feasibility variant.
+```d2
+direction: right
+state: "dp[j] = is sum j reachable\nfrom a subset of items seen so far?" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
+seed: "dp[0] = True\n(empty subset sums to 0 — the only seed)" {style.fill: "#f3e8ff"; style.stroke: "#9333ea"}
+update: "for each x, for j DESCENDING:\n  dp[j] = dp[j] OR dp[j - x]\n(either j was already reachable,\nor it is via this x)" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
+dir: "DESCENDING j -> each x used ONCE (0/1)\nascending j -> each x reusable (unbounded)" {style.fill: "#fde68a"; style.stroke: "#d97706"}
+state -> seed
+state -> update
+update -> dir
+```
 
----
+<p align="center"><strong>One boolean array over the target. <code>dp[0]=True</code> seeds it; <code>dp[j] |= dp[j-x]</code> propagates reachability. The sweep direction decides 0/1 (descending) versus unbounded (ascending) — exactly the knapsack rule.</strong></p>
 
-## Key Takeaway
+Three things define the pattern:
 
-The subset-sum pattern is one DP table answering "which sums are reachable using which prefix of items." Many partition/discrepancy problems reduce to a one-line read of the table.
+- **State is the target, not the item count.** `dp[j]` answers "is `j` reachable?" — a 1-D array of size `target + 1`. The items are consumed by the outer loop, not stored as a dimension. This is the knapsack table with the item axis rolled away.
+- **`dp[0] = True` is the seed, and the whole engine.** Reachability propagates from it: `dp[x] = dp[0] or …` is how the first number ever marks anything. Forget it and the array stays all-False forever ([Trace It](#trace-it)).
+- **The sweep direction is the 0/1-vs-unbounded switch.** Descending `j` means `dp[j-x]` still reflects subsets *without* the current `x`, so `x` is used at most once — 0/1. Ascending reuses `x` — that's the *unbounded* variant (coin change). Identical line, opposite meaning — the [knapsack loop-direction rule](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-knapsack) again.
 
-# Final Takeaway
+> **Key takeaway.** Subset sum is knapsack with values = weights, reduced to a **1-D boolean** `dp[j]` over the target: seed `dp[0] = True`, then `dp[j] |= dp[j-x]` for each number, sweeping `j` **descending** (0/1). Swap `or` for `+=` to *count* subsets; sweep ascending for the *unbounded* variant. `O(n · target)`, pseudo-polynomial.
 
-The subset-sum pattern is one boolean DP that powers an entire family:
+## Trace It
 
-| Problem | Reduction |
-|---|---|
-| Subset sum | Direct: `dp[n][target]` |
-| Partition equal sum | `dp[n][total / 2]` (with parity check) |
-| Smallest discrepancy | Largest `s ≤ total / 2` with `dp[n][s] = true`; answer `total − 2s` |
-| Target sum (assign +/−) | Equivalent to subset sum on `(total + target) / 2` |
-| Count of subsets summing to `s` | Replace OR with sum, getting an int DP |
+The descending sweep gets all the attention, but the quieter bug is the seed. `dp[0] = True` encodes "the empty subset sums to 0" — and it's the only `True` the whole array starts with. Every other reachable sum is *derived* from it.
 
-**You didn't just learn two more problems. You learned that a *single* boolean DP table — "which sums are achievable with which prefix" — is the substrate for many competitive-programming partition problems. Build the table; reformulate the question as a read of it; collect your answer.**
+**Predict before you run:** you initialize `dp` to all-`False` and forget the `dp[0] = True` seed, but the descending sweep and `dp[j] |= dp[j-x]` update are perfect. Does `subset_sum([3, 4, 5], 9)` still find the `4 + 5` subset?
 
-> *Transfer challenge for the next lesson:* Drop arrays of integers entirely. Now you have a 2D grid (rows × cols), and you're walking from the top-left corner to the bottom-right corner, moving only right or down. Can you compute the path with the smallest sum of cell values? Predict the recurrence shape — note that the state is naturally 2D in the *grid coordinates*, not in some derived index.
+```python run
+def subset_sum(nums, target):                        # correct: seeded
+    dp = [False] * (target + 1)
+    dp[0] = True
+    for x in nums:
+        for j in range(target, x - 1, -1):
+            dp[j] = dp[j] or dp[j - x]
+    return dp[target]
+
+def subset_sum_buggy(nums, target):                  # bug: no dp[0] = True seed
+    dp = [False] * (target + 1)
+    for x in nums:
+        for j in range(target, x - 1, -1):
+            dp[j] = dp[j] or dp[j - x]
+    return dp[target]
+
+print("correct:", subset_sum([3, 4, 5], 9))
+print("buggy:  ", subset_sum_buggy([3, 4, 5], 9))
+```
 
 <details>
-<summary><strong>Answer</strong></summary>
+<summary><strong>Reveal</strong></summary>
 
-`dp[r][c]` = minimum-sum path from `(0, 0)` to `(r, c)`. Recurrence: `dp[r][c] = grid[r][c] + min(dp[r-1][c], dp[r][c-1])`. Base cases: row 0 and column 0 are running prefix sums. Same shape covers max-path, count-of-paths (replace min with sum), unique-paths-with-obstacles, and many other "walk a 2D grid" problems. The next lesson formalises this as the **2D-grid DP pattern**.
+Correct is `True`; the buggy version returns `False` — and it would return `False` for *every* input, because nothing is ever reachable. Trace it: the update `dp[j] = dp[j] or dp[j - x]` can only set `dp[j]` to `True` if some `dp[j - x]` is *already* `True`. With the array all-`False`, the right-hand side is always `False or False`, so nothing ever flips. The single `dp[0] = True` is the spark: processing `x = 3` reads `dp[3-3] = dp[0] = True` and lights up `dp[3]`; then `x = 4` lights `dp[7]` (from `dp[3]`) and `dp[4]` (from `dp[0]`); then `x = 5` reaches `dp[9]` from `dp[4]`. Pull the seed and the chain reaction never starts. The lesson: in a reachability/counting DP, the base case isn't bookkeeping — it's the generator the entire table unfolds from. (Counting versions seed `dp[0] = 1` for the same reason.)
 
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+## Your Turn
 
-<!-- TODO: Understanding the Pattern — missing, needs to be written -->
-<!--       Guidance: umbrella H2 with the subsections below -->
+**Minimum Subset Sum Difference** (a.k.a. Last Stone Weight II, [LeetCode 1049](https://leetcode.com/problems/last-stone-weight-ii/)) — split the numbers into two groups minimizing `|sum₁ − sum₂|`. The trick: one group's sum determines the other's, so find the *reachable* subset sum closest to `total/2`. Subset sum builds the full reachability set; you read off the best.
 
-<!-- TODO: Why Naive Isn't Enough — missing, needs to be written -->
-<!--       Guidance: motivation for why the obvious approach fails -->
+```python run
+def min_subset_diff(nums):
+    total = sum(nums)
+    half = total // 2
+    dp = [False] * (half + 1)
+    dp[0] = True
+    for x in nums:
+        for j in range(half, x - 1, -1):
+            dp[j] = dp[j] or dp[j - x]
+    best = max(j for j in range(half + 1) if dp[j])  # reachable sum closest to total/2
+    return total - 2 * best                          # the other group is total - best
 
-<!-- TODO: The Core Idea — missing, needs to be written -->
-<!--       Guidance: one paragraph: the central trick -->
+print(min_subset_diff([1, 2, 3, 9]))    # 3   ({1,2,3}=6  vs  {9}=9)
+print(min_subset_diff([1, 6, 11, 5]))   # 1   ({1,5,6}=12 vs  {11}=11)
+```
 
-<!-- TODO: How the Pointers/Window Move — missing, needs to be written -->
-<!--       Guidance: mechanics of the moving parts -->
+```java run
+public class Main {
+    static int minSubsetDiff(int[] nums) {
+        int total = 0; for (int x : nums) total += x;
+        int half = total / 2;
+        boolean[] dp = new boolean[half + 1];
+        dp[0] = true;
+        for (int x : nums)
+            for (int j = half; j >= x; j--)
+                dp[j] = dp[j] || dp[j - x];
+        int best = 0;
+        for (int j = half; j >= 0; j--) if (dp[j]) { best = j; break; }   // closest to half
+        return total - 2 * best;
+    }
+    public static void main(String[] args) {
+        System.out.println(minSubsetDiff(new int[]{1, 2, 3, 9}));    // 3
+        System.out.println(minSubsetDiff(new int[]{1, 6, 11, 5}));   // 1
+    }
+}
+```
 
-<!-- TODO: The Generic Algorithm — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
+Both print `3` then `1`. The reachability array is the same subset-sum DP; the only new step is scanning it for the sum nearest `total/2`. That move — *build the reachable set, then read the answer off it* — turns a boolean "can we?" into an optimization "how close can we get?", which is why this one pattern covers partition, balancing, and difference-minimization alike.
 
-<!-- TODO: Generic Implementation — missing, needs to be written -->
-<!--       Guidance: Python block + Java block of the skeleton -->
+## Reflect & Connect
 
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table -->
+- **Knapsack with values = weights.** Subset sum is the boolean/count specialization: capacity = target, "is `j` reachable?" instead of "max value." The 1-D array is the knapsack table with the item axis rolled away.
+- **`dp[0]` is the generator.** `dp[0] = True` (boolean) or `dp[0] = 1` (count) is the seed every other cell descends from. It is *the* base case; omit it and the table is inert.
+- **Descending = 0/1, ascending = unbounded.** Same loop, opposite semantics — straight from the [knapsack lesson](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-knapsack). Subset selection (each number once) needs descending.
+- **One pattern, three questions.** `or` answers *can we?*; `+=` *counts* subsets; building the full reachable set and scanning it answers *how close?* (minimum difference). The aggregator/read-out changes, the sweep doesn't.
+- **The family.** Partition equal subset ([416](https://leetcode.com/problems/partition-equal-subset-sum/)), target sum with ± ([494](https://leetcode.com/problems/target-sum/)), last stone weight II ([1049](https://leetcode.com/problems/last-stone-weight-ii/)), count of subsets with a given sum. The [problems here](02-problems) drill the recognition; it's pseudo-polynomial and NP-complete in general, so watch the target's magnitude.
 
-<!-- TODO: Variants / Taxonomy — missing, needs to be written -->
-<!--       Guidance: enumerate sub-shapes of this pattern -->
+## Recall
 
-<!-- TODO: Identifying — missing, needs to be written -->
-<!--       Guidance: per-variant: recognition checklist + canonical example -->
+<details>
+<summary><strong>Q:</strong> What is the subset-sum recurrence and its dimensions?</summary>
 
-<!-- TODO: Recognition Checklist — missing, needs to be written -->
-<!--       Guidance: 4-question diagnostic — the source of the Problem-section Diagnostic Questions -->
+**A:** A 1-D boolean array `dp[j]` over the target (`size target+1`). Seed `dp[0] = True`; for each number `x`, sweep `j` descending and set `dp[j] |= dp[j - x]`. The answer is `dp[target]`; cost `O(n · target)`.
 
-<!-- TODO: Canonical Example — missing, needs to be written -->
-<!--       Guidance: fully worked example: brute force → optimised → template fit -->
+</details>
+<details>
+<summary><strong>Q:</strong> Why must the inner loop sweep descending?</summary>
 
-<!-- TODO: Problems in This Category — missing, needs to be written -->
-<!--       Guidance: table with links to the 02-problems/ files -->
+**A:** Descending means `dp[j - x]` still reflects subsets *without* the current `x`, so `x` is added at most once — the 0/1 constraint. Ascending reuses `x` within one pass, which solves the *unbounded* variant instead.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is <code>dp[0] = True</code> essential?</summary>
+
+**A:** It encodes "the empty subset sums to 0" and is the only initially-`True` cell. The update `dp[j] |= dp[j-x]` can only propagate existing `True`s, so without the seed the array stays all-`False` and every query returns `False`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does subset sum relate to knapsack?</summary>
+
+**A:** It's knapsack with each item's value equal to its weight, asking "is capacity `j` reachable?" instead of "max value." That lets the 2-D table collapse to a 1-D reachability array.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How do you solve minimum subset-sum difference with this pattern?</summary>
+
+**A:** Run subset sum up to `total/2` to find all reachable sums, take the largest reachable `best ≤ total/2`, and return `total − 2·best` — the difference between the two groups when one sums to `best`.
+
+</details>
+
+## Sources & Verify
+
+- **CLRS** (Cormen, Leiserson, Rivest, Stein), *Introduction to Algorithms*, 3rd ed., Ch. 34–35 — subset sum as a canonical NP-complete problem and its pseudo-polynomial DP.
+- **LeetCode** 416 (Partition Equal Subset Sum), 494 (Target Sum), 1049 (Last Stone Weight II) are the canonical drills; the `true`/`false` reachability, the correct-vs-buggy seed on `[3,4,5]`, and the `3`/`1` minimum differences above all come from the runnable blocks — re-run to verify.

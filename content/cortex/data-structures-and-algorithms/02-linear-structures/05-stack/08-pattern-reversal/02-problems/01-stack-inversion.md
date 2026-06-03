@@ -10,19 +10,60 @@ difficulty: easy
 
 ## Problem Statement
 
-Given a stack `s`, return a new stack containing the same elements in *reversed* order.
+Given a stack `s`, return a new stack containing the same elements in *reversed* order. The stack is written bottom-to-top, so in `s = [9, 5, 1, 2]` the value `2` is on top.
 
-### Example
-> -   **Input:** `s = [9, 5, 1, 2]` (top is `2`)
-> -   **Output:** `[2, 1, 5, 9]` (top is `9`)
+<details>
+<summary><strong>Examples</strong></summary>
+
+**Example 1:**
+```
+Input:  s = [9, 5, 1, 2]   (top is 2)
+Output: [2, 1, 5, 9]       (top is 9)
+```
+
+**Example 2:**
+```
+Input:  s = [7]
+Output: [7]
+```
+
+**Example 3:**
+```
+Input:  s = []
+Output: []
+```
+
+</details>
+
+---
+
+## Intuition
+
+The **structural property** that makes this a reversal problem is that a stack only exposes its top, so the only legal read is a pop — and popping a stack already yields its elements in reverse order. The input `[9, 5, 1, 2]` has `2` on top, so the pops arrive as `2, 1, 5, 9`. There is no comparison and no index arithmetic; the order flips purely because of the Last In, First Out contract.
+
+The **placement** of the data is the whole trick: pop from the input and push directly onto a second, output stack. The first element popped from the input (its old top, `2`) is the first pushed onto the output, so it lands at the *bottom* of the output. The last element popped (the input's old bottom, `9`) is pushed last and ends on top. One element is in flight at any moment — there is no buffer and no auxiliary list, only a single transfer loop between two stacks.
+
+What **breaks if you reach for a naive approach**? You might try to index the stack as if it were an array and read `s[0], s[1], ...` into the output. That defeats the exercise: a real stack ADT has no index operator, so the code would not port to an actual stack. You might also pop into a temporary list and re-push — that works but adds an `O(N)` buffer the single transfer never needs. The clean move is pop-from-`s`, push-to-output, nothing in between.
+
+## Applying the Diagnostic Questions
+
+| Check | Answer for Stack Inversion |
+|---|---|
+| **Q1.** Does the problem ask for the sequence in opposite order? | **Yes** — the same elements, top-to-bottom reversed into a new stack. |
+| **Q2.** Is the input read through one end only (or its unit coarser than an index)? | **Yes** — a stack exposes only its top; pop is the only legal read, and pop already reverses. |
+| **Q3.** Are two linear passes (load, unload) enough with no comparison? | **One pass here** — the load and unload collapse into a single pop-then-push transfer; still no comparison. |
+| **Q4.** Is `O(N)` auxiliary space acceptable? | **Yes** — the output stack holds all `N` elements; `O(N)` time, `O(N)` space. |
 
 <details>
 <summary><h2>Approach</h2></summary>
 
 
-Two stacks. Pop everything from the input and push onto the output — *that single transfer reverses the order, because the topmost element of the input is pushed first onto the output, ending up at the bottom*.
+Two stacks, one transfer loop. Pop everything from the input and push onto the output — *that single transfer reverses the order, because the topmost element of the input is pushed first onto the output, ending up at the bottom*.
 
-> 🖼 Diagram — Stack inversion — pop the input top, push to output. The first popped item lands at the bottom of the output, which is exactly where it started in the input. The whole stack flips.
+1. **Create an empty output stack** to hold the reversed elements.
+2. **While the input stack is not empty,** read its top element, pop it off the input, and push it onto the output stack.
+3. **Return the output stack.** The input's old top is now at the output's bottom and the input's old bottom is on the output's top — the stack is reversed.
+
 ```d2
 direction: right
 
@@ -55,7 +96,7 @@ inp -> out: "pop, push"
 
 
 
-```python run
+```python run viz=array viz-root=reversed_stack viz-kind=stack
 from typing import List
 
 class Solution:
@@ -90,7 +131,7 @@ print(Solution().stack_inversion([1, 2, 3, 4, 5])) # [5, 4, 3, 2, 1]
 print(Solution().stack_inversion([-1, 0, 1]))       # [1, 0, -1] — negatives
 ```
 
-```java run
+```java run viz=array viz-root=reversed_stack viz-kind=stack
 import java.util.*;
 
 public class Main {
@@ -148,37 +189,43 @@ public class Main {
 
 > **Complexity** — Time: **O(N)** | Space: **O(N)**.
 
+### Dry Run
+
+Trace Example 1 with `s = [9, 5, 1, 2]`, written bottom-to-top so `2` is on top.
+
+```
+Init: s = [9, 5, 1, 2] (top 2), reversed_stack = []
+
+Iter 1: top = s[-1] = 2 → pop s → s = [9, 5, 1]    → push 2 → reversed_stack = [2]
+Iter 2: top = s[-1] = 1 → pop s → s = [9, 5]       → push 1 → reversed_stack = [2, 1]
+Iter 3: top = s[-1] = 5 → pop s → s = [9]          → push 5 → reversed_stack = [2, 1, 5]
+Iter 4: top = s[-1] = 9 → pop s → s = []           → push 9 → reversed_stack = [2, 1, 5, 9]
+
+s is empty → return reversed_stack = [2, 1, 5, 9]  (top is 9) ✓
+```
+
+The input's old top (`2`) was pushed first, so it sits at the bottom of the result; the old bottom (`9`) was pushed last and is now on top.
+
+### Complexity Analysis
+
+| | Complexity | Reason |
+|---|---|---|
+| **Time** | `O(N)` | Each of the `N` elements is popped from the input once and pushed onto the output once; both are `O(1)`. |
+| **Space** | `O(N)` | The output stack holds a full copy of the `N` elements. The input is drained as the output fills, but the two never overlap by more than the whole set. |
+
+### Edge Cases
+
+| Case | What happens |
+|---|---|
+| Empty stack (`[]`) | The `while` guard is false immediately; an empty output stack is returned. |
+| Single element (`[7]`) | One iteration moves `7` across; the result `[7]` is its own reverse. |
+| Two elements (`[1, 2]`, top `2`) | Pop `2` then `1`; output becomes `[2, 1]` (top `1`). |
+| All equal (`[3, 3, 3]`) | Values are never compared; three transfers produce `[3, 3, 3]`, indistinguishable by value but reversed by identity. |
+| Negatives (`[-1, 0, 1]`, top `1`) | Sign is irrelevant to a transfer; output is `[1, 0, -1]`. |
+| Mutates the input | The loop pops `s` to empty — the caller's input stack is consumed. Copy `s` first if it must survive. |
+
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+## Key Takeaway
 
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
-
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
-
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
-
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
-
-<!-- TODO: Solution — missing, needs to be written -->
-<!--       Guidance: Python block then Java block -->
-
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
-
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table: time / space / why -->
-
-<!-- TODO: Edge Cases — missing, needs to be written -->
-<!--       Guidance: table, min 5 rows -->
-
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->
+Stack inversion is the purest form of the pattern: popping a stack *is* the reversal, so a single pop-from-input, push-to-output transfer reverses it in `O(N)` time and `O(N)` space — no buffer and no indexing, only the LIFO contract.

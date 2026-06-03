@@ -1,375 +1,195 @@
 ---
 title: Introduction to Randomized Algorithms
-summary: Use randomness as a primitive. Monte Carlo (might be wrong, fast), Las Vegas (always right, expected fast). Randomized quicksort, randomized quickselect, reservoir sampling, and the trick that makes hashing safe against adversaries.
+summary: Use randomness as a primitive. Las Vegas algorithms are always correct with random (expected-fast) runtime; Monte Carlo algorithms have fixed runtime but a small failure probability that repetition drives down exponentially. Random pivots and random hash seeds defeat adversarial worst cases.
 prereqs:
   - foundations-asymptotic-analysis
-  - foundations-amortized-analysis
+  - 05-algorithms-by-strategy/02-divide-and-conquer/01-introduction-to-divide-and-conquer
 ---
 
-# 1. Introduction to Randomized Algorithms
+## Why It Exists
 
-## The Hook
+Most algorithms are deterministic: same input, same steps, same answer. But deliberately flipping coins inside an algorithm buys you things determinism can't. It **defeats adversaries** — quicksort has an `O(n²)` worst case on already-sorted input, but if the pivot is *random*, no fixed input can force that case, because the badness now depends on your private coin flips, not on the data. It **simplifies hard problems** — picking one item uniformly from a stream you can't re-read, or testing a 300-digit number for primality, have clean randomized solutions and ugly deterministic ones. And it **shrinks failure to nothing** — a method that's wrong 25% of the time becomes wrong one-in-a-million after ten independent tries.
 
-The textbook quicksort has a worst case of `O(n²)` — adversarial inputs (already-sorted, reverse-sorted, or all-equal) collapse the recursion tree into a chain. The fix isn't a fancier algorithm; it's a **coin flip**. Pick the pivot *at random* instead of at the start of the array. Now there's no adversarial input — the adversary doesn't know which pivot you'll pick. Expected time becomes `O(n log n)`. Worst case is still theoretically `O(n²)`, but the probability of hitting it on a million elements is roughly `2^(-1000)` — astronomically smaller than the chance of hardware failure.
+Randomized algorithms split into two families by *what* the randomness affects. **Las Vegas** algorithms are always correct; only their *runtime* is random (randomized quicksort always sorts — it just might take longer on an unlucky run). **Monte Carlo** algorithms have a fixed runtime but may be *wrong* with bounded probability (a fast primality test that occasionally calls a composite "prime"). Knowing which family you're in tells you what to trust.
 
-This is the deal randomised algorithms offer: *trade worst-case guarantees for expected-case performance, by making the algorithm's behaviour depend on coin flips you control*. When the deal is favourable, you get simpler algorithms with better practical performance — randomised quicksort, randomised quickselect, hash tables with random seeds, treaps, skip lists, primality testing, randomised MIN-CUT.
+## See It Work
 
-This chapter covers the mental model (Monte Carlo vs Las Vegas), three canonical algorithms, and the trick that makes most hash tables safe against denial-of-service attacks.
+Randomized quicksort picks a **random** pivot each call. It's Las Vegas: the output is *always* the fully sorted array — randomness changes the path, never the destination.
 
----
-
-## Table of contents
-
-1. [Monte Carlo vs Las Vegas](#monte-carlo-vs-las-vegas)
-2. [Randomized quicksort](#randomized-quicksort)
-3. [Randomized quickselect](#randomized-quickselect)
-4. [Reservoir sampling](#reservoir-sampling)
-5. [Why random hashing prevents HashDoS](#why-random-hashing-prevents-hashdos)
-6. [Implementation](#implementation)
-7. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
-8. [Production reality](#production-reality)
-9. [Practice ladder](#practice-ladder)
-10. [Cross-links](#cross-links)
-11. [Final takeaway](#final-takeaway)
-
-***
-
-# Monte Carlo vs Las Vegas
-
-Two classes of randomised algorithm:
-
-- **Monte Carlo.** Always finishes in bounded time, but the answer might be *wrong* with some bounded probability. Trade-off: faster, occasionally incorrect. *Examples:* Miller-Rabin primality test (probability of false positive is `< 4^-k` for `k` rounds), Bloom filters (false positives possible).
-- **Las Vegas.** Always finishes with the *correct* answer, but the *running time* is a random variable. Expected time is bounded; worst case might be unbounded. *Examples:* randomised quicksort, randomised quickselect, treaps.
-
-In practice, you tune Monte Carlo's error probability low enough to be irrelevant (run 50 rounds of Miller-Rabin → false positive rate `< 4^-50 ≈ 10^-30` — your hardware fails first). Las Vegas's worst-case time is similarly tuned away by the law of large numbers — `O(n log n)` *expected* with exponentially-tail-bounded variance is the same as `O(n log n)` for any practical purpose.
-
-***
-
-# Randomized Quicksort
-
-Standard quicksort with one change: *pick the pivot uniformly at random* from the subarray.
-
-**Expected time.** `O(n log n)`. The proof: each comparison happens between two specific elements `A[i] < A[j]` only if one of them is chosen as a pivot before any element in `(A[i], A[j])` is. The probability is `2 / (j - i + 1)`. Summing over all pairs gives an expected `O(n log n)` total comparisons.
-
-**Worst-case time.** `O(n²)` (the same pathological cases as deterministic quicksort), but the probability of hitting them with `n = 10⁶` is essentially zero.
-
-The same trick fixes hash tables (random hash seeds), treaps (random priorities), skip lists (random heights), and most other "deterministic version has a worst-case adversarial input" structures.
-
-***
-
-# Randomized Quickselect
-
-Find the `k`-th smallest element of an array in *expected* `O(n)` time. (Deterministically `O(n)` is possible via the median-of-medians algorithm, but the constant factor is so much worse that randomised is the production choice.)
-
-**Expected time.** `O(n)`. The recurrence (informally): half the time the pivot lands in the "good" middle 50%, so the subarray shrinks by at least 25%. The expected size shrinks by a constant factor each call, giving `O(n)` total work. Formal analysis: `T(n) ≤ T(3n/4) + n` in expectation, gives `T(n) = O(n)`.
-
-Used in `nth_element` in C++ STL, and in Python's `heapq.nsmallest`/`nlargest` for some sizes.
-
-***
-
-# Reservoir Sampling
-
-You're streaming a sequence of items, one at a time, and don't know how long the stream is. You want to pick **a uniform random sample of `k` items**.
-
-**Algorithm (reservoir sampling, k = 1):** keep the first item. For each subsequent item `x_i` (1-indexed), replace the current sample with `x_i` with probability `1/i`. After processing `n` items, every item has probability `1/n` of being the sample.
-
-**Algorithm (k items):** keep the first `k` items. For each subsequent item `x_i`, generate a random integer `j` in `[1, i]`. If `j ≤ k`, replace `sample[j-1]` with `x_i`. After processing, every item has probability `k/n`.
-
-**Cost.** `O(n)` time, `O(k)` space. The space is the magic: we never have to know `n` in advance, and we never have to store more than `k` items.
-
-Used in: log sampling at scale (sample 1% of requests for analysis), distributed systems with unknown stream sizes (Spark, Flink), database query result sampling.
-
-***
-
-# Why random hashing prevents HashDoS
-
-In 2003, security researchers showed that adversaries who knew the hash function used by a web server could craft request URLs that all hashed to the same hash-table bucket. The hash table degraded to a linked list; lookups went from `O(1)` to `O(n)`; the server slowed to a crawl. **HashDoS** attacks were a real threat.
-
-The fix: **per-process random hash seed**. Each process picks a random 64-bit seed at startup; the hash function mixes the input with the seed. The adversary can't predict the seed, can't precompute collisions.
-
-Python adopted random hash seeds in PEP 456 (Python 3.3, 2012). Java's `HashMap` mitigates differently (it converts long collision chains to red-black trees once they exceed a threshold). Rust's `HashMap` uses SipHash with a per-process seed by default. Languages without this protection are still vulnerable in 2026.
-
-This is randomisation as defence: not for performance, but for *security*. The same principle applies in Bloom filters' multiple hash functions, password salting, and DDoS-resistant routing.
-
-***
-
-# Implementation
-
-```python run viz=graph viz-root=sample
+```python run
 import random
 
-def partition(A, lo, hi):
-    pivot = A[hi]
-    i = lo - 1
-    for j in range(lo, hi):
-        if A[j] <= pivot:
-            i += 1
-            A[i], A[j] = A[j], A[i]
-    A[i + 1], A[hi] = A[hi], A[i + 1]
-    return i + 1
+def quicksort(arr):
+    if len(arr) <= 1:
+        return arr
+    pivot = arr[random.randrange(len(arr))]          # RANDOM pivot — no input is reliably bad
+    less    = [x for x in arr if x < pivot]
+    equal   = [x for x in arr if x == pivot]
+    greater = [x for x in arr if x > pivot]
+    return quicksort(less) + equal + quicksort(greater)
 
-def quickselect(A, k):
-    A = list(A)
-    lo, hi = 0, len(A) - 1
-    while lo < hi:
-        pivot_idx = random.randint(lo, hi)
-        A[pivot_idx], A[hi] = A[hi], A[pivot_idx]
-        p = partition(A, lo, hi)
-        if p == k: return A[p]
-        if p < k: lo = p + 1
-        else:     hi = p - 1
-    return A[lo]
-
-def reservoir_sample(stream, k):
-    sample = []
-    for i, x in enumerate(stream, start=1):
-        if i <= k:
-            sample.append(x)
-        else:
-            j = random.randint(1, i)
-            if j <= k:
-                sample[j - 1] = x
-    return sample
-
-
-if __name__ == "__main__":
-    A = [3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5]
-    sorted_A = sorted(A)
-    for k in range(len(A)):
-        assert quickselect(A, k) == sorted_A[k], f"failed for k={k}"
-    print("quickselect: 100% correct on test input")
-
-    # Reservoir sampling: empirical uniformity check
-    counts = [0] * 10
-    trials = 100_000
-    for _ in range(trials):
-        sample = reservoir_sample(range(10), k=1)
-        counts[sample[0]] += 1
-    print(f"reservoir sampling 1-of-10 over {trials:,} trials:")
-    print(f"  per-bucket counts: {counts} (expected ~{trials // 10})")
-    print(f"  max deviation: {(max(counts) - min(counts)) / (trials / 10) * 100:.1f}%")
+data = [3, 6, 1, 8, 2, 9, 4]
+print(quicksort(data))                               # always [1, 2, 3, 4, 6, 8, 9]
+print(quicksort(data) == sorted(data))               # always True, whatever the pivots
 ```
 
 ```java run
 import java.util.*;
-
 public class Main {
-    static Random rng = new Random();
-
-    static int partition(int[] A, int lo, int hi) {
-        int pivot = A[hi], i = lo - 1;
-        for (int j = lo; j < hi; j++) {
-            if (A[j] <= pivot) { i++; int t = A[i]; A[i] = A[j]; A[j] = t; }
-        }
-        int t = A[i+1]; A[i+1] = A[hi]; A[hi] = t;
-        return i + 1;
+    static final Random RNG = new Random();
+    static List<Integer> quicksort(List<Integer> arr) {
+        if (arr.size() <= 1) return arr;
+        int pivot = arr.get(RNG.nextInt(arr.size()));        // random pivot
+        List<Integer> less = new ArrayList<>(), eq = new ArrayList<>(), gr = new ArrayList<>();
+        for (int x : arr) { if (x < pivot) less.add(x); else if (x == pivot) eq.add(x); else gr.add(x); }
+        List<Integer> out = new ArrayList<>(quicksort(less));
+        out.addAll(eq);
+        out.addAll(quicksort(gr));
+        return out;
     }
-
-    static int quickselect(int[] A, int k) {
-        A = A.clone();
-        int lo = 0, hi = A.length - 1;
-        while (lo < hi) {
-            int pi = rng.nextInt(hi - lo + 1) + lo;
-            int t = A[pi]; A[pi] = A[hi]; A[hi] = t;
-            int p = partition(A, lo, hi);
-            if (p == k) return A[p];
-            if (p < k) lo = p + 1; else hi = p - 1;
-        }
-        return A[lo];
-    }
-
     public static void main(String[] args) {
-        int[] A = {3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5};
-        int[] sorted = A.clone(); Arrays.sort(sorted);
-        for (int k = 0; k < A.length; k++) {
-            assert quickselect(A, k) == sorted[k];
-        }
-        System.out.println("quickselect: 100% correct");
+        List<Integer> data = Arrays.asList(3, 6, 1, 8, 2, 9, 4);
+        System.out.println(quicksort(new ArrayList<>(data)));   // [1, 2, 3, 4, 6, 8, 9]
+        List<Integer> s = new ArrayList<>(data); Collections.sort(s);
+        System.out.println(quicksort(new ArrayList<>(data)).equals(s));   // true
     }
 }
 ```
 
-***
+Both print the sorted array then `true` — run them a thousand times and the output never changes, only the sequence of pivot choices (and the runtime) does. Expected time `O(n log n)`; the `O(n²)` worst case still *exists* but now requires a freak run of unlucky pivots, not a malicious input.
 
-# Edge cases and pitfalls
+## How It Works
 
-- **Pseudo-random vs cryptographic random.** For algorithms that just need *unpredictable-to-typical-adversaries*, `random.random()` and `Math.random()` are fine. For security-sensitive contexts (HashDoS defence, password salting), use `random.SystemRandom`, `SecureRandom`, or `/dev/urandom`. Don't ship cryptographic decisions made by `Math.random()`.
-- **Seeded RNG for reproducibility.** Sometimes you want randomised behaviour but reproducible results (debugging, testing). Seed the RNG explicitly: `random.seed(42)`. Forgetting this causes flaky tests.
-- **Reservoir sampling with k=1: the off-by-one.** The chapter's algorithm uses 1-indexed `i`. Implementations using 0-indexed `i` need `j = random.randint(0, i)` and replace if `j == 0`. Easy to get backwards.
-- **Quicksort/quickselect: recursive depth.** The expected depth is `O(log n)` but variance exists. For `n = 10⁹` arrays, switch to iterative or tail-call versions to avoid stack overflow. Production library implementations use iterative quickselect.
-- **The "always pick the median" temptation.** Picking the *exact* median as pivot guarantees `O(n log n)` worst-case quicksort. But computing the exact median costs `O(n)` per call (or `O(n)` via median-of-medians). Net cost: same expected runtime as random pivots, with much higher constants. *Random* is the practical winner.
-- **Probabilistic correctness vs probabilistic running time.** Bloom filters return wrong answers (false positives) but always finish quickly. Quicksort returns the right answer but might take a while. Don't conflate the two.
+The two families answer "what is random?" differently, and that determines how you use them:
 
-***
-
-# Production reality
-
-- **CPython's `heapq.nsmallest` / `nlargest`** uses quickselect for some sizes. The standard library "find the k smallest" is asymptotically better than sort-then-slice when `k << n`.
-- **C++ STL's `nth_element`** is a linear-expected-time selection algorithm (essentially quickselect).
-- **Database query optimisers** sample data to estimate cardinalities. Reservoir sampling is one strategy; "block sampling" (sample whole disk pages) is another. Postgres's `ANALYZE` and the autovacuum sampler use various flavours.
-- **Bloom filters and Count-Min sketches.** Probabilistic data structures (covered in [Probabilistic and Advanced](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-index)) lean heavily on randomised hashing.
-- **Treaps and skip lists** are randomised data structures with `O(log n)` expected operations. Skip lists in particular show up in LevelDB, Redis, and Java's `ConcurrentSkipListMap`.
-- **Miller-Rabin primality testing.** OpenSSL, GnuPG, and every cryptographic library use Miller-Rabin (Monte Carlo) for primality testing during RSA key generation. With 50 rounds, false-positive rate is below cosmic-ray bit-flip probability.
-- **Randomised load balancing.** "Power of two choices" — pick two random servers, route to the less loaded one. Beats a single random pick by a huge margin (logarithmic vs linear maximum load). Used in NGINX, HAProxy, Akamai.
-- **Distributed consensus.** Some Byzantine fault-tolerant protocols (HoneyBadgerBFT) use randomised coin-flips to break ties.
-
-***
-
-# Practice ladder
-
-1. **Implement randomised quicksort.** Verify correctness on stress tests. Time it against a deterministic-pivot quicksort on already-sorted input — the gap should be dramatic.
-   > *Hint:* the chapter's quicksort. The deterministic pivot (always pick first or last) goes `O(n²)` on sorted input.
-
-2. **Quickselect for Top-K** ([LeetCode 215](https://leetcode.com/problems/kth-largest-element-in-an-array/)) — `O(n)` expected solution.
-   > *Hint:* the chapter's quickselect, asking for the `k`-th largest = `n-k`-th smallest.
-
-3. **Linked List Random Node** ([LeetCode 382](https://leetcode.com/problems/linked-list-random-node/)) — return a random node of a singly-linked list, but you don't know its length in advance.
-   > *Hint:* reservoir sampling with `k=1`.
-
-4. **Random Pick with Weight** ([LeetCode 528](https://leetcode.com/problems/random-pick-with-weight/)) — given an array of weights, return a random index proportional to its weight.
-   > *Hint:* prefix sum + binary search. Random number in `[0, total)`, then binary-search the first prefix sum exceeding it.
-
-5. **Implement Miller-Rabin Primality Test.** Test if a 64-bit integer is prime in `O(k log³ n)` for `k` rounds.
-   > *Hint:* write `n - 1 = 2^s · d`. Pick `k` random witnesses `a`. Compute `a^d mod n`; if it's 1 or `n - 1`, witness is happy. Otherwise, square `s - 1` times; if any equals `n - 1`, happy. If none, `n` is composite. After `k` happy witnesses, return "probably prime".
-
-***
-
-# Memorize
-
-The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Randomisation defuses adversarial inputs and turns worst cases into expected cases — but only if you reach for it deliberately.
-
-## Quick recall
-
-Click any question to reveal the answer.
-
-<details>
-<summary><strong>Q:</strong> Monte Carlo vs Las Vegas — what's the difference?</summary>
-
-**A:** **Monte Carlo:** always finishes in bounded time, may be *wrong* with bounded probability. **Las Vegas:** always *correct*, running time is a random variable with bounded expectation.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Expected complexity of randomised quicksort?</summary>
-
-**A:** `O(n log n)` expected; `O(n²)` worst case. Probability of hitting worst case on `n = 10⁶` is essentially zero.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Expected complexity of randomised quickselect?</summary>
-
-**A:** `O(n)` expected; `O(n²)` worst case. Used for `nth_element` in C++ STL.
-
-</details>
-<details>
-<summary><strong>Q:</strong> What is reservoir sampling?</summary>
-
-**A:** Pick `k` uniform-random items from a stream of unknown length using `O(k)` memory. Each new item replaces a random slot with probability `k/i`.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Why do hash tables use random hash seeds?</summary>
-
-**A:** **HashDoS defence.** Without random seeding, an attacker who knows the hash function can craft keys that all collide, degrading lookup to `O(n)` per operation.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Miller-Rabin primality testing — Monte Carlo or Las Vegas?</summary>
-
-**A:** Monte Carlo. False-positive probability is `< 4^-k` for `k` rounds. With 50 rounds, `< 10^-30` — below cosmic-ray bit-flip rate.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Why is "power of two choices" load balancing better than random?</summary>
-
-**A:** Pick two random servers; route to the less-loaded. Maximum load grows as `log log n` instead of `log n / log log n` for plain random — exponentially better tail behaviour.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Pseudo-random vs cryptographic random — when does the choice matter?</summary>
-
-**A:** **Pseudo-random** (`random.random()`, `Math.random()`) is fine for shuffling, sampling, simulations. **Cryptographic** (`SecureRandom`, `/dev/urandom`) is mandatory for keys, salts, HashDoS defence, anything an attacker shouldn't predict.
-
-</details>
-
-## Code template
-
-```python
-import random
-
-# Randomised quickselect — O(n) expected, O(n²) worst case.
-def quickselect(A, k):
-    A = list(A)
-    lo, hi = 0, len(A) - 1
-    while lo < hi:
-        pivot_idx = random.randint(lo, hi)
-        A[pivot_idx], A[hi] = A[hi], A[pivot_idx]
-        p = partition(A, lo, hi)
-        if p == k: return A[p]
-        if p < k: lo = p + 1
-        else:     hi = p - 1
-    return A[lo]
-
-# Reservoir sampling for k items from a stream of unknown length.
-def reservoir_sample(stream, k):
-    sample = []
-    for i, x in enumerate(stream, start=1):
-        if i <= k:
-            sample.append(x)
-        else:
-            j = random.randint(1, i)
-            if j <= k:
-                sample[j - 1] = x
-    return sample
+```d2
+direction: right
+lv: "LAS VEGAS\nalways CORRECT\nruntime is random (expected bound)\nex: randomized quicksort / quickselect" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
+mc: "MONTE CARLO\nruntime is FIXED\nmay be WRONG (bounded probability)\nex: Miller-Rabin primality" {style.fill: "#fde68a"; style.stroke: "#d97706"}
+trust: "What can you trust?\nLas Vegas: the ANSWER (wait longer if unlucky)\nMonte Carlo: the TIME (repeat to shrink error)" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
+lv -> trust
+mc -> trust
 ```
 
-## Pattern triggers
+<p align="center"><strong>Las Vegas trades a fixed answer for a random runtime; Monte Carlo trades a fixed runtime for a small chance of a wrong answer. You convert between them by waiting (Las Vegas) or by repeating (Monte Carlo).</strong></p>
 
-- **Worst-case input is suspiciously easy to construct** → randomise the algorithm; defuse the adversary
-- **"Top-K from a huge unsorted array"** → randomised quickselect, `O(n)` expected
-- **"Sample uniformly from a stream of unknown length"** → reservoir sampling
-- **"Find a duplicate / collision in a hash"** → birthday paradox; `O(√n)` expected
-- **Hash-flood / HashDoS attack** → random hash seed
-- **Primality test for a giant number** → Miller-Rabin (Monte Carlo)
-- **Probabilistic data structure (Bloom, CMS, HLL)** → randomness in the hash seed
-- **Load balancing across servers** → "power of two choices"
-- **Crypto / security-sensitive randomness** → use `SecureRandom`, never `Math.random()`
+Three ideas to carry forward:
 
-***
+- **Randomness moves the worst case off the input and onto the coins.** Deterministic quicksort's `O(n²)` is triggered by *specific inputs* (sorted, reverse-sorted). Random pivots make every input *equally likely* to be easy or hard, so an adversary who sees your code but not your coin flips cannot force the bad case. The worst case still exists; it's just no longer *reachable on demand*.
+- **Expected time is an average over the coins, not over inputs.** "Expected `O(n log n)`" means: fix *any* input, then average the runtime over the algorithm's random choices. That's a stronger promise than average-case analysis (which averages over inputs and assumes a distribution) — it holds for every input, including adversarial ones.
+- **Monte Carlo error falls off a cliff with repetition.** If one run is wrong with probability `p` and runs are independent, then `k` runs all agreeing is wrong with probability `pᵏ` — *exponential* decay. That's why a coin-flip-grade test (`p = ½`) becomes astronomically reliable after a few dozen tries, and it's the engine behind practical primality testing.
 
-# Cross-links
+> **Key takeaway.** Randomized algorithms use coin flips as a primitive. **Las Vegas** = always correct, runtime random (randomized quicksort/quickselect, expected `O(n log n)` / `O(n)`); **Monte Carlo** = fixed runtime, error probability `p` that `k` independent repeats cut to `pᵏ` (Miller-Rabin). Randomness relocates the worst case from specific *inputs* to unlucky *coin flips* — defeating adversaries (quicksort pivots, HashDoS-resistant hashing).
 
-- **Foundations:** [Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis) (expected vs worst-case), [Amortized Analysis](/cortex/data-structures-and-algorithms/foundations-amortized-analysis).
-- **Used by:** [Sorting](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-quicksort) (randomised quicksort), [Hash Table](/cortex/data-structures-and-algorithms/linear-structures-hash-table-introduction-to-hash-tables) (random seed for HashDoS).
-- **Probabilistic structures:** [Skip List, Bloom Filter, Count-Min Sketch, HyperLogLog, Treap](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-index).
+## Trace It
 
-***
+The exponential error decay is the most counterintuitive — and most useful — fact about Monte Carlo methods. Suppose a primality test, run once on a composite number, wrongly says "prime" with probability `¼`. You run it `k` *independent* times and only believe "prime" if *all* `k` agree.
 
-# Final Takeaway
+**Predict before you run:** after 10 independent trials, is the false-"prime" probability roughly `1/40` (linear: `¼ ÷ 10`), or something dramatically smaller?
 
-Randomised algorithms trade worst-case for expected-case. Three patterns to internalise:
+```python run
+p = 0.25                                          # one trial's error on a composite
+for k in (1, 5, 10):
+    print(f"{k:>2} trials, all agree -> error = (1/4)^{k} = {p**k:.7f}")
+```
 
-1. **Monte Carlo and Las Vegas are different deals.** Monte Carlo: fast, occasionally wrong. Las Vegas: always right, expected fast. Pick deliberately.
-2. **Randomisation defeats adversaries.** HashDoS, sorted-input quicksort, and a dozen other "worst case is suspiciously easy to construct" bugs are fixed by adding randomness to the algorithm. The adversary can't aim if they don't know the seed.
-3. **The expected case is what matters in practice.** When variance is exponentially small (as in randomised quicksort), the expected-case bound is operationally indistinguishable from a worst-case bound. Don't be paranoid about the theoretical `O(n²)` if the practical probability is `2^-1000`.
+<details>
+<summary><strong>Reveal</strong></summary>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+It's `(¼)¹⁰ ≈ 0.00000095` — about *one in a million*, not `1/40`. Independent trials *multiply*: each extra trial cuts the error by another factor of 4, so the probability is `(¼)ᵏ`, decaying **exponentially** in `k`, not linearly. Ten trials take a number that's wrong a quarter of the time down to one-in-a-million; twenty trials reach one-in-a-trillion. This is why Monte Carlo algorithms are *practical* despite "maybe wrong": you dial the error to any target — `10⁻⁹`, `10⁻¹⁸` — for the price of a handful of repeats, and the cost is only *linear* in the number of trials while the reliability gain is *exponential*. The catch is the word **independent**: the trials must use fresh randomness (e.g. different random bases in Miller-Rabin). Reuse the same coin flips and the errors are perfectly correlated — ten identical wrong answers shrink nothing. Real primality tests (Miller-Rabin) have per-trial error `≤ ¼`, so a few dozen rounds certify primes to a confidence beyond hardware failure rates.
 
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
+</details>
 
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
+## Your Turn
 
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
+**Kth Largest Element** ([LeetCode 215](https://leetcode.com/problems/kth-largest-element-in-an-array/)) via randomized **quickselect** — quicksort's one-sided cousin. Partition on a random pivot, then recurse into *only* the side that contains the rank you want. Las Vegas again: the answer is always the correct order statistic; the random pivot buys *expected `O(n)`* (versus sorting's `O(n log n)`).
 
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
+```python run
+import random
 
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+def quickselect(arr, k):                             # k = 0-indexed rank (k-th smallest)
+    pivot = arr[random.randrange(len(arr))]
+    less    = [x for x in arr if x < pivot]
+    equal   = [x for x in arr if x == pivot]
+    greater = [x for x in arr if x > pivot]
+    if k < len(less):
+        return quickselect(less, k)                  # recurse LEFT only
+    elif k < len(less) + len(equal):
+        return pivot                                 # the pivot IS the answer
+    else:
+        return quickselect(greater, k - len(less) - len(equal))   # recurse RIGHT only
 
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+A = [3, 6, 1, 8, 2, 9, 4]
+print(quickselect(A, 0))                             # 1   (smallest)
+print(quickselect(A, 2))                             # 3   (3rd smallest)
+print(quickselect(A, 2) == sorted(A)[2])             # True, regardless of pivots
+```
+
+```java run
+import java.util.*;
+public class Main {
+    static final Random RNG = new Random();
+    static int quickselect(List<Integer> arr, int k) {
+        int pivot = arr.get(RNG.nextInt(arr.size()));
+        List<Integer> less = new ArrayList<>(), eq = new ArrayList<>(), gr = new ArrayList<>();
+        for (int x : arr) { if (x < pivot) less.add(x); else if (x == pivot) eq.add(x); else gr.add(x); }
+        if (k < less.size()) return quickselect(less, k);
+        if (k < less.size() + eq.size()) return pivot;
+        return quickselect(gr, k - less.size() - eq.size());
+    }
+    public static void main(String[] args) {
+        List<Integer> A = Arrays.asList(3, 6, 1, 8, 2, 9, 4);
+        System.out.println(quickselect(new ArrayList<>(A), 0));   // 1
+        System.out.println(quickselect(new ArrayList<>(A), 2));   // 3
+    }
+}
+```
+
+Both print `1` then `3`. By recursing into only one side, quickselect expects to do `n + n/2 + n/4 + … ≈ 2n` work — *linear*, beating a full sort when you need just one order statistic. Same Las Vegas guarantee as quicksort: the rank you get back is always correct; only the runtime rolls the dice.
+
+## Reflect & Connect
+
+- **Las Vegas vs Monte Carlo is the first question to ask.** Is the *answer* guaranteed (Las Vegas — trust it, just wait on unlucky runs) or only *probable* (Monte Carlo — repeat to shrink error)? It dictates how you deploy and test the algorithm.
+- **Random pivots defeat adversaries.** Quicksort and quickselect move the worst case from "sorted input" to "unlucky coin flips," which an attacker who can't see your randomness cannot trigger. Expected `O(n log n)` / `O(n)` holds for *every* input.
+- **Repetition is exponential leverage.** Monte Carlo error `p` becomes `pᵏ` over `k` *independent* runs — linear cost, exponential reliability. Miller-Rabin primality is the canonical case (`p ≤ ¼` per round).
+- **Reservoir sampling** picks `k` items uniformly from a stream of *unknown* length in one pass: keep the `i`-th item with probability `k/i`, evicting a random current pick. Each element ends up chosen with probability `k/n` — no second pass, `O(1)` memory. The trick when you can't see the whole input at once.
+- **Random hashing is security, not speed.** A fixed hash function lets an attacker craft keys that all collide, degrading a hash table to `O(n)` per op (a HashDoS). A *random* per-process seed makes the collision pattern unpredictable — the same "move the worst case onto private coins" idea, applied to [hash tables](/cortex/data-structures-and-algorithms/linear-structures-hash-table-what-is-a-hash-table).
+
+## Recall
+
+<details>
+<summary><strong>Q:</strong> What distinguishes Las Vegas from Monte Carlo algorithms?</summary>
+
+**A:** Las Vegas is *always correct* with a *random runtime* (e.g. randomized quicksort — always sorts, expected `O(n log n)`). Monte Carlo has a *fixed runtime* but may be *wrong* with bounded probability (e.g. Miller-Rabin primality). You trust Las Vegas's answer and Monte Carlo's time.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does a random pivot defeat quicksort's adversarial worst case?</summary>
+
+**A:** Deterministic quicksort's `O(n²)` is triggered by specific inputs (sorted/reverse). A random pivot makes the bad case depend on private coin flips, not the data — an adversary who can't see your randomness can't force it. The worst case still exists but isn't reachable on demand; expected time is `O(n log n)` for *every* input.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why does running a Monte Carlo algorithm k times cut the error to <code>pᵏ</code>?</summary>
+
+**A:** Independent trials multiply: if each is wrong with probability `p`, all `k` agreeing wrongly has probability `pᵏ` — exponential decay. The trials must use *fresh* randomness; reusing coin flips correlates the errors and shrinks nothing.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is quickselect expected <code>O(n)</code> while quicksort is <code>O(n log n)</code>?</summary>
+
+**A:** Quickselect recurses into only *one* side of the partition (the one holding the target rank), so the expected work is `n + n/2 + n/4 + … ≈ 2n`. Quicksort must recurse into *both* sides, adding the `log n` factor.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does reservoir sampling pick a uniform item from a stream of unknown length?</summary>
+
+**A:** Keep the `i`-th element with probability `k/i` (for a reservoir of size `k`), evicting a random current member when you keep it. Each element ends up selected with probability `k/n` in a single pass using `O(k)` memory — no need to know `n` in advance.
+
+</details>
+
+## Sources & Verify
+
+- **CLRS** (Cormen, Leiserson, Rivest, Stein), *Introduction to Algorithms*, 3rd ed., Ch. 5 (Probabilistic Analysis and Randomized Algorithms) and §7.3 (randomized quicksort) — Las Vegas analysis and the expected-time argument.
+- **Motwani & Raghavan**, *Randomized Algorithms* (1995) — the standard reference for Monte Carlo / Las Vegas classification, error amplification, and Miller-Rabin.
+- **LeetCode** 215 (Kth Largest Element, quickselect) and 382 (Linked List Random Node, reservoir sampling) are the canonical drills; the sorted-array output, the `(1/4)ᵏ` error values, and the `1`/`3` quickselect results above come from the runnable blocks — the Las Vegas outputs are deterministic (only the runtime is random), so re-run to verify.

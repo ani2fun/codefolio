@@ -8,9 +8,9 @@ difficulty: medium
 
 # Reverse increasing groups
 
-## The Problem
+## Problem Statement
 
-Given the **head** of a doubly linked list, reverse the list in groups of **increasing size**: first group has size 1, next size 2, then 3, and so on. Return the head of the modified list. If the trailing fragment is shorter than the next required group size, leave it alone.
+Given the **head** of a doubly linked list, reverse the list in groups of **increasing size**: first group has size 1, next size 2, then 3, and so on. Return the head of the modified list. If the trailing fragment is shorter than the next required group size, leave it alone. Both `prev` and `next` chains must remain consistent after every chunk reversal.
 
 ```
 Input : head = [5, 7, 3, 10, 6, 8]
@@ -27,13 +27,56 @@ Output:        [5]
 Explanation: only one group of size 1; reversing it is a no-op.
 ```
 
+---
+
+<details>
+<summary><h2>Examples</h2></summary>
+
+**Example 1**
+```
+Input:  head = [5, 7, 3, 10, 6, 8]
+Output: [5, 3, 7, 8, 6, 10]
+Explanation: Three chunks of sizes 1, 2, 3 cover the list. Reverse each: (5) stays (5); (7, 3) → (3, 7); (10, 6, 8) → (8, 6, 10). Concatenate to [5, 3, 7, 8, 6, 10] with both chains intact.
+```
+
+**Example 2**
+```
+Input:  head = [5, 7, 3, 10, 6]
+Output: [5, 3, 7, 10, 6]
+Explanation: Two chunks of sizes 1 and 2 reverse to (5) and (3, 7). The remaining two nodes (10, 6) cannot form a chunk of size 3, so they stay untouched.
+```
+
+**Example 3**
+```
+Input:  head = [5]
+Output: [5]
+Explanation: One chunk of size 1 covers the list; reversing a single node is a no-op (the helper short-circuits on `start == end`).
+```
+
+**Example 4**
+```
+Input:  head = [1, 2, 3, 4, 5, 6, 7]
+Output: [1, 3, 2, 6, 5, 4, 7]
+Explanation: Three chunks of sizes 1, 2, 3 cover 6 nodes; the trailing node 7 is shorter than the next required size 4 and stays untouched.
+```
+
+</details>
+<details>
+<summary><h2>Intuition</h2></summary>
+
+The **structural property** is that the chunk size is not fixed — it grows by one after every iteration: `group_size = 1, 2, 3, 4, …`. The list decomposes into chunks of sizes `1, 2, 3, …` until the remaining length cannot accommodate the next size. Each chunk is its own segment-reversal subproblem and the chunks do not interact. The difference from reverse-k-segments is purely in the outer driver's stopping rule and counter update — the inner bidirectional reversal primitive and the seam-detection logic are unchanged.
+
+The **pointer placement** uses the same boundaries as reverse-k-segments with one extra piece of state: `length` (the remaining list length, initially `findLength(head)`) and `group_size` (initially `1`). After each chunk reversal, `length -= group_size` and `group_size += 1`. The loop continues while `length >= group_size`, which is the only check that determines whether the next chunk fits. `start`, `end`, and the implicit `leftBound`/`rightBound` cached inside `reverse` behave exactly as in reverse-k-segments — the only call-site change is that `getNodeAtPosition(start, group_size)` uses the current counter instead of a fixed `k`.
+
+What **breaks if you reach for a recursive solution**? A recursive formulation `reverse_groups(head, size)` could compute "reverse the first `size` nodes, then recurse on the rest with `size + 1`." That works algorithmically but consumes `O(√n)` stack frames (the chunk sizes sum to `1 + 2 + … + g ≈ g²/2 = n`, so `g ≈ √(2n)`). The iterative form stays `O(1)` space and exposes the boundary mechanics directly. The shared `reverse(start, end)` helper resolves the rewrite per chunk in `O(group_size)` and re-stitches both chains without any per-chunk re-traversal from `head`.
+
+</details>
 <details>
 <summary><h2>What Does "Increasing Groups" Mean?</h2></summary>
 
 
 Same template, dynamic window. The K-segments problem fixed `k` for every iteration. Here, `k` grows: 1 on iteration 1, 2 on iteration 2, 3 on iteration 3. The loop guard becomes "do I have at least `groupSize` nodes left?"
 
-> 🖼 Diagram — Reverse increasing groups — group size grows by 1 each iteration. The cumulative coverage is 1 + 2 + 3 + … = n(n+1)/2.
 ```mermaid
 ---
 config:
@@ -64,11 +107,14 @@ flowchart TB
 <details>
 <summary><h2>Applying the Diagnostic Questions</h2></summary>
 
+Reverse-increasing-groups extends the chapter pattern with a growing counter. The diagnostic confirms that the outer-driver change does not break any of the four conditions.
 
-| Question | Answer |
+| Check | Answer for Reverse Increasing Groups |
 |---|---|
-| **Q1.** Can the problem be broken into smaller subproblems? | **Yes** — one reversal per growing window |
-| **Q2.** Can each subproblem be solved by reversing a part? | **Yes** — same `reverse(start, end)`, with `end` walked `groupSize-1` hops |
+| **Q1.** Can the problem or solution be broken down into smaller subproblems? | **Yes** — the rewrite decomposes into chunks of sizes `1, 2, 3, …` until the remaining length is too short. Each chunk is an independent reversal subproblem. |
+| **Q2.** Can any subproblem be solved by reversing a part of the linked list? | **Yes** — each chunk is one call to `reverse(start, end)` where `end` is `start` advanced by `group_size − 1` hops. The chunk of size `1` is a degenerate reversal (the `start == end` guard inside `reverse` short-circuits); chunks of size `≥ 2` swap `prev`/`next` per node as usual. |
+| **Q3.** Does the algorithm only need to walk each node a constant number of times? | **Yes** — `getNodeAtPosition` walks `group_size − 1` hops and the inner reversal walks the same chunk once. Summed across all chunks this is still one `O(n)` outer walk. |
+| **Q4.** Is each chunk's boundary computable from local state? | **Yes** — `end` is `start` plus the local counter `group_size`; the seam stitch uses `start.prev`/`end.next` (read inside the helper). The remaining length and counter are constant-size scalars. |
 
 ### Q1 — Why "one reversal per growing window"?
 
@@ -91,7 +137,6 @@ What breaks if you don't increment `groupSize` after each iteration: you've redu
 <summary><h2>The Increasing-Group Strategy (Visualised)</h2></summary>
 
 
-> 🖼 Diagram — The Increasing-Group Strategy — same skeleton as K-segments with two new bookkeeping lines: shrink length, grow groupSize.
 ```mermaid
 ---
 config:
@@ -276,7 +321,7 @@ head = from_list([10, 20, 30, 40, 50, 60])
 print(to_list(Solution().reverse_increasing_groups(head)))  # [10, 20, 30, 60, 50, 40]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -473,27 +518,69 @@ This trace shows the only "trick": iteration 1 with `group_size = 1` is a no-op 
 | `groupSize = 1` first iter | always | no-op reversal | `start == end`; reverse short-circuits |
 
 </details>
+<details>
+<summary><h2>Approach</h2></summary>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+Seven numbered steps. No code; the solution block above is the implementation.
 
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
+1. **Guard the trivial cases.** If `head` is `None` or `head.next` is `None`, the list has zero or one node; the first chunk of size `1` is trivially the whole list. Return `head` unchanged.
+2. **Precompute the remaining length.** Walk the list once to find `length`. The outer loop will decrement `length` after every chunk to track what is still available.
+3. **Initialise the boundary pointer and counter.** Set `start = head` and `group_size = 1`. The `reverse` helper reads `start.prev` directly, so there is no separate `leftBound` cache; the first-chunk seam is detected post-hoc via `end.prev == None`.
+4. **Drive the outer loop while `length >= group_size`.** As soon as the remaining length is shorter than the next chunk's size, the loop ends and any trailing fragment is left untouched.
+5. **Reverse the current chunk and detect the first-chunk seam.** Let `end = getNodeAtPosition(start, group_size)`. Call `reverse(start, end)` to swap `prev`/`next` on every node in `[start, end]` and re-stitch the four boundary links. If `end.prev` is `None`, the predecessor was `None` (this was the first chunk) and the global `head` must be updated to `end`.
+6. **Slide the boundary forward.** After the reversal the old `start` is the chunk's tail, so `start.next` is the next chunk's head. Set `start = start.next` and repeat.
+7. **Update the counters for the next chunk.** Decrement `length` by `group_size`, then increment `group_size` by `1`. The next iteration's check `length >= group_size` uses the updated values.
 
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
+</details>
+<details>
+<summary><h2>Dry Run — Example 1</h2></summary>
 
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
+`head = [5, 7, 3, 10, 6, 8]`. Precompute `length = 6`. Initial state: `start = 5`, `group_size = 1`.
 
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
+**Iteration 1 — chunk `(5)`, `group_size = 1`:** `length = 6 >= 1`.
 
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
+| step | state |
+|---|---|
+| `end = getNodeAtPosition(start, 1)` | `end = 5` (loop body runs zero hops) |
+| `reverse(5, 5)` | guard `start == end` triggers; helper returns immediately. List unchanged. |
+| `end.prev is None` → promote head | `head = 5` (unchanged) |
+| `start = start.next` | `start = 7` |
+| `length -= group_size; group_size += 1` | `length = 5`, `group_size = 2` |
 
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->
+List after iteration 1: `5 ↔ 7 ↔ 3 ↔ 10 ↔ 6 ↔ 8` (single-node "reversal" is a no-op on values; the post-hoc head check still fires harmlessly).
+
+**Iteration 2 — chunk `(7, 3)`, `group_size = 2`:** `length = 5 >= 2`.
+
+| step | state |
+|---|---|
+| `end = getNodeAtPosition(start, 2)` | `end = 3` |
+| `reverse(7, 3)` | `leftBound = 7.prev = 5`, `rightBound = 3.next = 10`. Swap `prev`/`next` on nodes 7, 3; stitch `7.next = 10`, `10.prev = 7`, `3.prev = 5`, `5.next = 3`. List now `5 ↔ 3 ↔ 7 ↔ 10 ↔ 6 ↔ 8`. |
+| `end.prev is not None` (`3.prev = 5`) → head unchanged | |
+| `start = start.next` | `start = 10` |
+| `length -= 2; group_size += 1` | `length = 3`, `group_size = 3` |
+
+List after iteration 2: `5 ↔ 3 ↔ 7 ↔ 10 ↔ 6 ↔ 8`.
+
+**Iteration 3 — chunk `(10, 6, 8)`, `group_size = 3`:** `length = 3 >= 3`.
+
+| step | state |
+|---|---|
+| `end = getNodeAtPosition(start, 3)` | `end = 8` |
+| `reverse(10, 8)` | `leftBound = 10.prev = 7`, `rightBound = 8.next = None`. Swap `prev`/`next` on nodes 10, 6, 8; stitch `10.next = None`, `8.prev = 7`, `7.next = 8`. List now `5 ↔ 3 ↔ 7 ↔ 8 ↔ 6 ↔ 10`. |
+| `end.prev is not None` (`8.prev = 7`) → head unchanged | |
+| `start = start.next` | `start = None` |
+| `length -= 3; group_size += 1` | `length = 0`, `group_size = 4` |
+
+List after iteration 3: `5 ↔ 3 ↔ 7 ↔ 8 ↔ 6 ↔ 10`.
+
+**Iteration 4 — loop guard:** `length = 0 < group_size = 4` → exit.
+
+**Return:** `head = 5`, forward traversal yields `[5, 3, 7, 8, 6, 10]` ✓. The reverse-direction traversal from node 10 confirms both chains are consistent.
+
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
+Reverse-increasing-groups on a doubly linked list is reverse-k-segments with a growing counter — the outer driver tracks `(length, group_size)` and the loop exits the moment the remaining length is shorter than the next chunk. The bidirectional `reverse(start, end)` helper handles every chunk, including the degenerate size-1 first chunk which short-circuits on `start == end`.
+
+</details>

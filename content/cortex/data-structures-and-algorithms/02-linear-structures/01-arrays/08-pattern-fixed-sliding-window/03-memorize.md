@@ -2,7 +2,7 @@
 title: "Memorize: Fixed Sliding Window"
 summary: "Pattern recognition triggers, template code, common mistakes, and quick recall."
 prereqs:
-  - 08-pattern-fixed-sliding-window/02-problems
+  - 08-pattern-fixed-sliding-window/01-pattern
 ---
 
 # Memorize: Fixed Sliding Window
@@ -30,8 +30,6 @@ Picture a train car with exactly four seats moving along a track. As the train i
 ---
 
 ## Visual Summary
-
-> 🖼 Diagram — TODO: 3 frames — initial window `[0..k−1]` with the running aggregate; one slide showing `arr[0]` leaving and `arr[k]` entering with the O(1) update; final window `[n−k..n−1]` with the final aggregate.
 
 ---
 

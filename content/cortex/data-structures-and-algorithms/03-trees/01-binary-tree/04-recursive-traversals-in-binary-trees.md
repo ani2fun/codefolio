@@ -1,924 +1,231 @@
 ---
-title: "Recursive Traversals In Binary Trees"
-summary: "<!-- TODO: summary -->"
+tier: spine
+title: "Recursive Traversals in Binary Trees"
+summary: "One three-line recursive function, three orderings. Move the visit step before, between, or after the two recursive calls and you get preorder, inorder, or postorder — each O(N) time, O(h) space, and each the right tool for a different real job: serialize a tree, read a BST in sorted order, or free children before their parent."
+prereqs:
+  - trees-binary-tree-introduction-to-binary-trees
+  - trees-binary-tree-linked-list-implementation-of-binary-trees
 ---
 
-# 4. Recursive Traversals in Binary Trees
+## Why It Exists
 
-## The Hook
+A list has an obvious order — front to back. A [binary tree](/cortex/data-structures-and-algorithms/trees-binary-tree-linked-list-implementation-of-binary-trees) has none: from a node you can go *left* or *right*, and there's no single "next." A **traversal** is the rule that imposes a linear order on the tree — the recipe for visiting every node exactly once. The surprise is how little code it takes, and how much the *order of three lines* changes the result.
 
-A linear data structure has *one* way to traverse it: start at the head, walk to the tail, visit each element exactly once. There's nothing to discuss.
+Every recursive traversal does the same three things at each node: **visit** this node, recurse **left**, recurse **right**. The only choice is *when* you visit relative to the two recursive calls — and that single choice gives three classical orders. Visit first → **preorder**. Visit between → **inorder**. Visit last → **postorder**. Each is `O(N)` time (every node touched once) and `O(h)` space (the recursion stack goes as deep as the tree's height). And each one is the natural tool for a different job: preorder hands you the root before its subtrees, which is how you *copy or serialize* a tree; inorder, run over a [binary search tree](/cortex/data-structures-and-algorithms/trees-binary-search-tree-introduction-to-binary-search-trees), emits the values in *sorted* order; postorder visits both children before their parent, which is how you *free* a tree or *evaluate an expression tree*. One function, one moved line, three superpowers.
 
-Trees are not linear. At every internal node, the algorithm hits a fork — visit the left subtree first, or the right? Visit the current node *before* recursing, *between* the recursions, or *after*? Each combination of those choices produces a different traversal, and — surprisingly — each one turns out to have a *different practical use*. The three classical depth-first orderings — **preorder**, **inorder**, and **postorder** — each appear in real software, each in places where the others wouldn't work.
+## See It Work
 
-- **Preorder** (root → left → right) is how you serialise a tree to disk so you can reconstruct it later. It's how the `clone()` function for any tree works. It's how prefix expressions work in functional languages.
-- **Inorder** (left → root → right) is how you read out the values of a *binary search tree* in sorted order. Every database index, every BST, every red-black tree's iterator uses this.
-- **Postorder** (left → right → root) is how you safely **delete** a tree (you can't free a parent before its children, or you'd lose access to them). It's also how compilers evaluate expressions, how Kotlin's coroutines unwind cancellation, and how dependency-graph build systems compute targets.
-
-The miraculous thing? *All three traversals are written as the same three-line recursive function*. Only the **order** of those three lines changes — visit, recurse-left, recurse-right — and that single line-shuffle changes the entire output and entire use case. Three patterns hiding inside a single recursive shape.
-
-This lesson walks through all three, in order, with mermaid diagrams of the traversal path, the recursive algorithm in plain language, and a clean implementation in Python and Java. By the end you should be able to write any of the three from memory in either language — which you'll be doing constantly for the rest of the chapter.
-
----
-
-## Table of contents
-
-1. [The recursive shape — visit, left, right (in some order)](#the-recursive-shape--visit-left-right-in-some-order)
-2. [Preorder traversal — root → left → right](#preorder-traversal--root--left--right)
-3. [Inorder traversal — left → root → right](#inorder-traversal--left--root--right)
-4. [Postorder traversal — left → right → root](#postorder-traversal--left--right--root)
-5. [Comparing the three](#comparing-the-three)
-
-***
-
-# The recursive shape — visit, left, right (in some order)
-
-Every recursive traversal is built from three building blocks:
-
-1. **V** — visit the current node (do whatever work the algorithm needs: print, accumulate, transform).
-2. **L** — recursively traverse the left subtree.
-3. **R** — recursively traverse the right subtree.
-
-Plus a base case: if the current node is `null`, return immediately (nothing to visit, nothing to recurse into).
-
-The three classical orderings are simply the three sensible permutations:
-
-| Name       | Order   | Mnemonic            | Output flavour                                |
-|------------|---------|---------------------|-----------------------------------------------|
-| Preorder   | V L R   | "*Pre*" = before    | Roots first; useful for *building* / serialising |
-| Inorder    | L V R   | "*In*" = between    | Sorted output on a BST                        |
-| Postorder  | L R V   | "*Post*" = after    | Leaves first; useful for *destroying* / evaluating |
-
-The remaining three permutations (R V L, R L V, V R L) are real traversals too, just less commonly used — they reverse the left/right preference but otherwise behave identically.
-
-> **Why is recursion so natural for trees?** Because the *definition* of a binary tree is itself recursive — *"a binary tree is empty, or a node with a left subtree and a right subtree"*. The traversal mirrors the definition exactly: the base case handles the empty tree, the recursive case visits the node and recurses into the two subtrees. The code writes itself. Every recursive tree algorithm in this entire chapter follows the same shape — internalise it now and the rest of the chapter is filling in the "what work do I do at the visit step?" part.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    A["recurse(node):"]
-    B["if node is null: return"]
-    C["⟨ visit, left, right — in some order ⟩"]
-    A --> B --> C
-```
-
-<p align="center"><strong>The skeleton of every recursive traversal in this chapter — base case + three actions in some order. Swap the order and you swap the traversal.</strong></p>
-
-***
-
-# Preorder traversal — root → left → right
-
-**Visit the current node first**, then recurse into the left subtree, then the right.
-
-```text
-preorder(node):
-  if node is null: return
-  visit(node)        # ← V
-  preorder(left)     # ← L
-  preorder(right)    # ← R
-```
-
-<details>
-<summary><h2>Walking through it</h2></summary>
-
-
-Take this tree:
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    R((1))
-    A((2))
-    B((3))
-    C((4))
-    D((7))
-    R --> A
-    R --> B
-    A --> C
-    B --> D
-```
-
-Apply the recursive shape:
-
-- Visit `1`. Recurse left into `2`.
-  - Visit `2`. Recurse left into `4`.
-    - Visit `4`. Both children are `null`. Done with `4`.
-  - Right of `2` is `null`. Done with `2`.
-- Recurse right of `1` into `3`.
-  - Right of `3`'s left is `null`. Recurse right of `3` into `7`.
-    - Visit `7`. Both children are `null`. Done.
-
-The values are visited in the order: **`1, 2, 4, 3, 7`**. *Roots before subtrees*; *left before right*.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    R(("1<br/>(1st)"))
-    A(("2<br/>(2nd)"))
-    B(("3<br/>(4th)"))
-    C(("4<br/>(3rd)"))
-    D(("7<br/>(5th)"))
-    R --> A
-    R --> B
-    A --> C
-    B --> D
-    style R fill:#fef9c3,stroke:#f59e0b
-    style A fill:#dbeafe,stroke:#3b82f6
-    style C fill:#dcfce7,stroke:#22c55e
-    style B fill:#fee2e2,stroke:#ef4444
-    style D fill:#ede9fe,stroke:#7c3aed
-```
-
-<p align="center"><strong>Preorder visit sequence on the example tree — <strong><code>1 → 2 → 4 → 3 → 7</code></strong>. The root is always visited <em>first</em> for any subtree; that's where the name comes from.</strong></p>
-
-</details>
-<details>
-<summary><h2>Why preorder?</h2></summary>
-
-
-Preorder shows up wherever you need to *emit a parent before its children*:
-
-- **Tree serialisation / cloning.** If you write the values in preorder, with explicit `null` markers, you can reconstruct the tree exactly. Most binary-tree serialisation formats (LeetCode's `[1,2,3,null,null,4,5]` notation, for example) are essentially preorder dumps.
-- **Prefix expression notation.** `(3 + 4) * 5` becomes `* + 3 4 5` in prefix — exactly the preorder traversal of its expression tree.
-- **File-system copying.** Visit the directory before its contents, so the destination directory exists before you try to populate it.
-
-</details>
-<details>
-<summary><h2>Solution &amp; Analysis</h2></summary>
-
-### Implementation
-
-A three-line recursive helper (`preorder`) does the work — visit, recurse-left, recurse-right — and a thin wrapper (`recursive_preorder_traversal`) seeds the `result` list and kicks it off.
-
+Three traversals over the same tree. Watch how only the placement of `[n.val]` differs between the three functions:
 
 ```python run viz=binary-tree viz-root=root
-from typing import List, Optional
-
-
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
-        self.val = val
-        self.left = left
-        self.right = right
+        self.val, self.left, self.right = val, left, right
+#        1
+#       / \
+#      2   3
+#     / \
+#    4   5
+root = TreeNode(1, TreeNode(2, TreeNode(4), TreeNode(5)), TreeNode(3))
 
+def preorder(n):  return [] if n is None else [n.val] + preorder(n.left) + preorder(n.right)  # visit, L, R
+def inorder(n):   return [] if n is None else inorder(n.left) + [n.val] + inorder(n.right)     # L, visit, R
+def postorder(n): return [] if n is None else postorder(n.left) + postorder(n.right) + [n.val] # L, R, visit
 
-def from_level_order(values):
-    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
-    if not values:
-        return None
-    root = TreeNode(values[0])
-    queue = [root]
-    i = 1
-    while queue and i < len(values):
-        node = queue.pop(0)
-        if i < len(values) and values[i] is not None:
-            node.left = TreeNode(values[i])
-            queue.append(node.left)
-        i += 1
-        if i < len(values) and values[i] is not None:
-            node.right = TreeNode(values[i])
-            queue.append(node.right)
-        i += 1
-    return root
-
-
-class Solution:
-    def preorder(
-        self, root: Optional[TreeNode], result: List[int]
-    ) -> None:
-
-        # Base case: If the current node is None (empty), return.
-        if root is None:
-            return
-
-        # Step 1: Visit the current node and store its value in the
-        # 'result' list
-        result.append(root.val)
-
-        # Step 2: Recursively traverse the left subtree
-        self.preorder(root.left, result)
-
-        # Step 3: Recursively traverse the right subtree
-        self.preorder(root.right, result)
-
-    def recursive_preorder_traversal(
-        self, root: Optional[TreeNode]
-    ) -> List[int]:
-
-        # Create an empty list to store the preorder traversal result.
-        result: List[int] = []
-
-        # Start the recursive preorder traversal from the 'root' node.
-        self.preorder(root, result)
-
-        # Return the final result containing the preorder traversal of
-        # the binary tree.
-        return result
-
-
-# Examples from the problem statement
-print(Solution().recursive_preorder_traversal(from_level_order([1, 2, 3, 4, None, None, 7])))  # [1, 2, 4, 3, 7]
-print(Solution().recursive_preorder_traversal(from_level_order([1, 8, 4, None, None, 2, 7])))  # [1, 8, 4, 2, 7]
-
-# Edge cases
-print(Solution().recursive_preorder_traversal(None))                                           # []
-print(Solution().recursive_preorder_traversal(from_level_order([1])))                          # [1]
-print(Solution().recursive_preorder_traversal(from_level_order([1, 2, None, 3, None, 4])))    # [1, 2, 3, 4]
-print(Solution().recursive_preorder_traversal(from_level_order([1, None, 2, None, 3])))       # [1, 2, 3]
-print(Solution().recursive_preorder_traversal(from_level_order([1, 2, 3, 4, 5, 6, 7])))      # [1, 2, 4, 5, 3, 6, 7]
-print(Solution().recursive_preorder_traversal(from_level_order([5, 5, 5, 5, 5])))             # [5, 5, 5, 5, 5]
+print("preorder :", preorder(root))    # [1, 2, 4, 5, 3]
+print("inorder  :", inorder(root))     # [4, 2, 5, 1, 3]
+print("postorder:", postorder(root))   # [4, 5, 2, 3, 1]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
-
 public class Main {
     static class TreeNode {
-        int val;
-        TreeNode left;
-        TreeNode right;
-        TreeNode() {}
+        int val; TreeNode left, right;
         TreeNode(int val) { this.val = val; }
+        TreeNode(int val, TreeNode left, TreeNode right) { this.val = val; this.left = left; this.right = right; }
     }
-
-    static TreeNode fromLevelOrder(Integer... values) {
-        if (values.length == 0 || values[0] == null) return null;
-        TreeNode root = new TreeNode(values[0]);
-        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
-        queue.add(root);
-        int i = 1;
-        while (!queue.isEmpty() && i < values.length) {
-            TreeNode node = queue.poll();
-            if (i < values.length && values[i] != null) {
-                node.left = new TreeNode(values[i]);
-                queue.add(node.left);
-            }
-            i++;
-            if (i < values.length && values[i] != null) {
-                node.right = new TreeNode(values[i]);
-                queue.add(node.right);
-            }
-            i++;
-        }
-        return root;
-    }
-
-    static class Solution {
-        private void preorder(TreeNode root, List<Integer> result) {
-
-            // Base case: If the current node is null (empty), return.
-            if (root == null) {
-                return;
-            }
-
-            // Step 1: Visit the current node and store its value in the
-            // 'result' list
-            result.add(root.val);
-
-            // Step 2: Recursively traverse the left subtree
-            preorder(root.left, result);
-
-            // Step 3: Recursively traverse the right subtree
-            preorder(root.right, result);
-        }
-
-        public List<Integer> recursivePreorderTraversal(TreeNode root) {
-
-            // Create an empty list to store the preorder traversal result.
-            List<Integer> result = new ArrayList<>();
-
-            // Start the recursive preorder traversal from the 'root' node.
-            preorder(root, result);
-
-            // Return the final result containing the preorder traversal of
-            // the binary tree.
-            return result;
-        }
-    }
-
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().recursivePreorderTraversal(fromLevelOrder(1, 2, 3, 4, null, null, 7)));  // [1, 2, 4, 3, 7]
-        System.out.println(new Solution().recursivePreorderTraversal(fromLevelOrder(1, 8, 4, null, null, 2, 7)));  // [1, 8, 4, 2, 7]
-
-        // Edge cases
-        System.out.println(new Solution().recursivePreorderTraversal(null));                                        // []
-        System.out.println(new Solution().recursivePreorderTraversal(fromLevelOrder(1)));                           // [1]
-        System.out.println(new Solution().recursivePreorderTraversal(fromLevelOrder(1, 2, null, 3, null, 4)));     // [1, 2, 3, 4]
-        System.out.println(new Solution().recursivePreorderTraversal(fromLevelOrder(1, null, 2, null, 3)));        // [1, 2, 3]
-        System.out.println(new Solution().recursivePreorderTraversal(fromLevelOrder(1, 2, 3, 4, 5, 6, 7)));       // [1, 2, 4, 5, 3, 6, 7]
-        System.out.println(new Solution().recursivePreorderTraversal(fromLevelOrder(5, 5, 5, 5, 5)));              // [5, 5, 5, 5, 5]
+    static List<Integer> preorder(TreeNode n)  { List<Integer> o=new ArrayList<>(); if(n==null) return o; o.add(n.val); o.addAll(preorder(n.left)); o.addAll(preorder(n.right)); return o; }
+    static List<Integer> inorder(TreeNode n)   { List<Integer> o=new ArrayList<>(); if(n==null) return o; o.addAll(inorder(n.left)); o.add(n.val); o.addAll(inorder(n.right)); return o; }
+    static List<Integer> postorder(TreeNode n) { List<Integer> o=new ArrayList<>(); if(n==null) return o; o.addAll(postorder(n.left)); o.addAll(postorder(n.right)); o.add(n.val); return o; }
+    public static void main(String[] a) {
+        TreeNode root = new TreeNode(1, new TreeNode(2, new TreeNode(4), new TreeNode(5)), new TreeNode(3));
+        System.out.println("preorder : " + preorder(root));
+        System.out.println("inorder  : " + inorder(root));
+        System.out.println("postorder: " + postorder(root));
     }
 }
 ```
 
-### Complexity
+Both print `preorder : [1, 2, 4, 5, 3]`, `inorder : [4, 2, 5, 1, 3]`, `postorder: [4, 5, 2, 3, 1]`. Three different orderings of the same five nodes — and the *only* difference between the three functions is whether `[n.val]` sits before, between, or after the two recursive calls.
 
-Each node is visited exactly once → **O(N) time**. The recursion uses one stack frame per active call, and the maximum depth equals the tree's height → **O(h) space** for the call stack.
+## How It Works
 
-> **Best case** — balanced tree, `h = log N`:  Time **O(N)**, Space **O(log N)**.
->
-> **Worst case** — skew tree, `h = N`: Time **O(N)**, Space **O(N)**.
-
-</details>
-
-***
-
-# Inorder traversal — left → root → right
-
-**Recurse into the left subtree first**, then visit the current node, then recurse into the right.
-
-```text
-inorder(node):
-  if node is null: return
-  inorder(left)      # ← L
-  visit(node)        # ← V
-  inorder(right)     # ← R
-```
-
-<details>
-<summary><h2>Walking through it</h2></summary>
-
-
-Same tree:
+Trace the three orders against the tree and the pattern is visible: the node `1` comes *first* in preorder, *last* in postorder, and *in the middle* in inorder — exactly tracking where its visit line sits.
 
 ```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
 flowchart TB
-    R(("1<br/>(3rd)"))
-    A(("2<br/>(2nd)"))
-    B(("3<br/>(4th)"))
-    C(("4<br/>(1st)"))
-    D(("7<br/>(5th)"))
-    R --> A
-    R --> B
-    A --> C
-    B --> D
-    style C fill:#fef9c3,stroke:#f59e0b
-    style A fill:#dbeafe,stroke:#3b82f6
-    style R fill:#dcfce7,stroke:#22c55e
-    style B fill:#fee2e2,stroke:#ef4444
-    style D fill:#ede9fe,stroke:#7c3aed
+  A["1"]
+  B["2"]
+  C["3"]
+  D["4"]
+  E["5"]
+  A --> B
+  A --> C
+  B --> D
+  B --> E
 ```
 
-<p align="center"><strong>Inorder visit sequence — <strong><code>4 → 2 → 1 → 3 → 7</code></strong>. Each subtree is fully drained on the left before its root is visited; then the right subtree is drained.</strong></p>
+<p align="center"><strong>The tree from See It. preorder <code>[1,2,4,5,3]</code> (root before subtrees) · inorder <code>[4,2,5,1,3]</code> (left subtree, root, right subtree) · postorder <code>[4,5,2,3,1]</code> (subtrees before root). Same five nodes, three orders, one moved line.</strong></p>
 
-The recursion goes *all the way down the left spine* before producing any output. For the example, it descends `1 → 2 → 4`, hits a `null` left of `4`, visits `4`, returns, visits `2`, descends `2`'s right (which is `null`), returns, visits `1`, descends right into `3`, finds `null` left of `3`, visits `3`, descends right into `7`, visits `7`.
+| Order | Recursion shape | The root is… | The job it's built for |
+|---|---|---|---|
+| **Preorder** | `visit, L, R` | **first** | Copy / serialize a tree — you need the root before you can attach its rebuilt subtrees. (= **prefix** notation.) |
+| **Inorder** | `L, visit, R` | in the middle | A **BST** emits values in **sorted** order. (= **infix** notation.) |
+| **Postorder** | `L, R, visit` | **last** | Free/delete a tree, or **evaluate an expression tree** — you must finish both children before the parent. (= **postfix** notation.) |
+
+- **Cost is the same for all three.** Each visits every node exactly once → `O(N)` time. The only memory is the recursion stack, which is as deep as the tree is tall → `O(h)` space: `O(log N)` for a balanced tree, `O(N)` for a degenerate skew.
+- **The base case is the `null` child.** All three functions return the empty list for `None` — the same null-child boundary the [linked representation](/cortex/data-structures-and-algorithms/trees-binary-tree-linked-list-implementation-of-binary-trees) is built on. No `null` check, and the first leaf's child dereference crashes.
+- **All three are depth-first.** They dive to a leaf before backtracking. The breadth-first cousin — level-order — needs a queue instead of the call stack, and gets its own lesson.
+
+> **Key takeaway.** A recursive traversal visits every node once via `visit` + recurse-`left` + recurse-`right`; *where* the `visit` sits among the two recursive calls picks the order. Visit-first = **preorder** (root first → serialize). Visit-between = **inorder** (sorted, on a BST). Visit-last = **postorder** (children before parent → free/evaluate). All three are `O(N)` time and `O(h)` space, bottoming out on the `null` child.
+
+## Trace It
+
+Here's where the three orders stop being abstract. Take the **expression tree** for `(2 + 3) * 4` — operators at internal nodes, operands at leaves:
+
+```
+       *
+      / \
+     +   4
+    / \
+   2   3
+```
+
+**Predict before you run:** what do preorder, inorder, and postorder produce on this tree — and have you seen those three strings before?
+
+```python run
+class N:
+    def __init__(self, v, l=None, r=None):
+        self.v, self.l, self.r = v, l, r
+expr = N('*', N('+', N('2'), N('3')), N('4'))   # (2 + 3) * 4
+
+def walk(n, order):
+    if n is None: return []
+    if order == 'pre': return [n.v] + walk(n.l, order) + walk(n.r, order)   # visit, L, R
+    if order == 'in':  return walk(n.l, order) + [n.v] + walk(n.r, order)   # L, visit, R
+    return walk(n.l, order) + walk(n.r, order) + [n.v]                      # L, R, visit (post)
+
+print("preorder  ->", ' '.join(walk(expr, 'pre')))   # prefix
+print("inorder   ->", ' '.join(walk(expr, 'in')))    # infix
+print("postorder ->", ' '.join(walk(expr, 'post')))  # postfix
+```
+
+<details>
+<summary><strong>Reveal</strong></summary>
+
+```
+preorder  -> * + 2 3 4
+inorder   -> 2 + 3 * 4
+postorder -> 2 3 + 4 *
+```
+
+These are exactly the three notations from the [stack expression lessons](/cortex/data-structures-and-algorithms/linear-structures-stack-infix-postfix-and-prefix-notations): **preorder is prefix**, **inorder is infix**, **postorder is postfix**. A traversal order *is* a notation — that's not a coincidence, it's the same structure read two ways. Notice the catch: the inorder string `2 + 3 * 4` has lost the parentheses, so read with normal precedence it means `2 + (3 * 4)`, not `(2 + 3) * 4`. That's *why* infix needs parentheses and precedence rules while prefix and postfix don't — the tree shape carries the grouping, and only inorder throws it away. Postorder (`2 3 + 4 *`) is exactly what a stack evaluator consumes left-to-right, which is why postorder is the traversal that *evaluates* an expression tree.
 
 </details>
-<details>
-<summary><h2>Why inorder?</h2></summary>
 
+## Your Turn
 
-The killer application: **inorder traversal of a binary search tree visits the values in sorted ascending order**. This is the property that makes BSTs useful as ordered iterators — every database index, every `std::map`, every `TreeMap`, every BST in any language standard library uses inorder for its iterator. We'll prove this when we get to BSTs in the next chapter.
+The one order with a near-magical property is **inorder on a binary search tree** — a tree where every node's left subtree holds smaller values and its right subtree larger. Inorder reads them out *sorted*, for free.
 
-Inorder also shows up in:
-- **Infix expression** — `3 + 4 * 5` is the inorder traversal of its expression tree.
-- **Predecessor / successor lookups** in BSTs (find the previous and next value in sorted order).
+**Predict:** for this BST, what does inorder (`left, visit, right`) print?
 
-</details>
-<details>
-<summary><h2>Solution &amp; Analysis</h2></summary>
-
-### Implementation
-
-Same shape as preorder; only the order of `visit` and the left recursion swap.
-
-
-```python run viz=binary-tree viz-root=root
-from typing import List, Optional
-
-
+```python run
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
-        self.val = val
-        self.left = left
-        self.right = right
+        self.val, self.left, self.right = val, left, right
+# a binary SEARCH tree: left < node < right everywhere
+#        5
+#       / \
+#      3   8
+#     / \   \
+#    1   4   9
+root = TreeNode(5, TreeNode(3, TreeNode(1), TreeNode(4)), TreeNode(8, None, TreeNode(9)))
 
+def inorder(n):
+    if n is None: return []
+    return inorder(n.left) + [n.val] + inorder(n.right)   # left, visit, right
 
-def from_level_order(values):
-    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
-    if not values:
-        return None
-    root = TreeNode(values[0])
-    queue = [root]
-    i = 1
-    while queue and i < len(values):
-        node = queue.pop(0)
-        if i < len(values) and values[i] is not None:
-            node.left = TreeNode(values[i])
-            queue.append(node.left)
-        i += 1
-        if i < len(values) and values[i] is not None:
-            node.right = TreeNode(values[i])
-            queue.append(node.right)
-        i += 1
-    return root
-
-
-class Solution:
-    def inorder(
-        self, root: Optional[TreeNode], result: List[int]
-    ) -> None:
-
-        # Base case: If the current node is None (empty), return.
-        if root is None:
-            return
-
-        # Step 1: Recursively traverse the left subtree.
-        self.inorder(root.left, result)
-
-        # Step 2: Visit the current node and store its value in 'result'.
-        result.append(root.val)
-
-        # Step 3: Recursively traverse the right subtree.
-        self.inorder(root.right, result)
-
-    def recursive_inorder_traversal(
-        self, root: Optional[TreeNode]
-    ) -> List[int]:
-
-        # Create an empty list to store the inorder traversal result.
-        result: List[int] = []
-
-        # Start the recursive inorder traversal from the 'root' node.
-        self.inorder(root, result)
-
-        # Return the final result containing the inorder traversal of the
-        # binary tree.
-        return result
-
-
-# Examples from the problem statement
-print(Solution().recursive_inorder_traversal(from_level_order([1, 2, 3, 4, None, None, 7])))  # [4, 2, 1, 3, 7]
-print(Solution().recursive_inorder_traversal(from_level_order([1, 8, 4, None, None, 2, 7])))  # [8, 1, 2, 4, 7]
-
-# Edge cases
-print(Solution().recursive_inorder_traversal(None))                                            # []
-print(Solution().recursive_inorder_traversal(from_level_order([1])))                           # [1]
-print(Solution().recursive_inorder_traversal(from_level_order([1, 2, None, 3, None, 4])))     # [4, 3, 2, 1]
-print(Solution().recursive_inorder_traversal(from_level_order([1, None, 2, None, 3])))        # [1, 2, 3]
-print(Solution().recursive_inorder_traversal(from_level_order([1, 2, 3, 4, 5, 6, 7])))       # [4, 2, 5, 1, 6, 3, 7]
-print(Solution().recursive_inorder_traversal(from_level_order([5, 5, 5, 5, 5])))              # [5, 5, 5, 5, 5]
+print("inorder:", inorder(root))   # [1, 3, 4, 5, 8, 9] — sorted!
 ```
 
 ```java run
 import java.util.*;
-
 public class Main {
     static class TreeNode {
-        int val;
-        TreeNode left;
-        TreeNode right;
-        TreeNode() {}
+        int val; TreeNode left, right;
         TreeNode(int val) { this.val = val; }
+        TreeNode(int val, TreeNode left, TreeNode right) { this.val = val; this.left = left; this.right = right; }
     }
-
-    static TreeNode fromLevelOrder(Integer... values) {
-        if (values.length == 0 || values[0] == null) return null;
-        TreeNode root = new TreeNode(values[0]);
-        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
-        queue.add(root);
-        int i = 1;
-        while (!queue.isEmpty() && i < values.length) {
-            TreeNode node = queue.poll();
-            if (i < values.length && values[i] != null) {
-                node.left = new TreeNode(values[i]);
-                queue.add(node.left);
-            }
-            i++;
-            if (i < values.length && values[i] != null) {
-                node.right = new TreeNode(values[i]);
-                queue.add(node.right);
-            }
-            i++;
-        }
-        return root;
+    static List<Integer> inorder(TreeNode n) {
+        List<Integer> out = new ArrayList<>();
+        if (n == null) return out;
+        out.addAll(inorder(n.left)); out.add(n.val); out.addAll(inorder(n.right));   // left, visit, right
+        return out;
     }
-
-    static class Solution {
-        private void inorder(TreeNode root, List<Integer> result) {
-
-            // Base case: If the current node is null, return.
-            if (root == null) {
-                return;
-            }
-
-            // Step 1: Recursively traverse the left subtree.
-            inorder(root.left, result);
-
-            // Step 2: Visit the current node and store its value in
-            // 'result'.
-            result.add(root.val);
-
-            // Step 3: Recursively traverse the right subtree.
-            inorder(root.right, result);
-        }
-
-        public List<Integer> recursiveInorderTraversal(TreeNode root) {
-
-            // Create an empty list to store the inorder traversal result.
-            List<Integer> result = new ArrayList<>();
-
-            // Start the recursive inorder traversal from the 'root' node.
-            inorder(root, result);
-
-            // Return the final result containing the inorder traversal of
-            // the binary tree.
-            return result;
-        }
-    }
-
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().recursiveInorderTraversal(fromLevelOrder(1, 2, 3, 4, null, null, 7)));  // [4, 2, 1, 3, 7]
-        System.out.println(new Solution().recursiveInorderTraversal(fromLevelOrder(1, 8, 4, null, null, 2, 7)));  // [8, 1, 2, 4, 7]
-
-        // Edge cases
-        System.out.println(new Solution().recursiveInorderTraversal(null));                                        // []
-        System.out.println(new Solution().recursiveInorderTraversal(fromLevelOrder(1)));                           // [1]
-        System.out.println(new Solution().recursiveInorderTraversal(fromLevelOrder(1, 2, null, 3, null, 4)));     // [4, 3, 2, 1]
-        System.out.println(new Solution().recursiveInorderTraversal(fromLevelOrder(1, null, 2, null, 3)));        // [1, 2, 3]
-        System.out.println(new Solution().recursiveInorderTraversal(fromLevelOrder(1, 2, 3, 4, 5, 6, 7)));       // [4, 2, 5, 1, 6, 3, 7]
-        System.out.println(new Solution().recursiveInorderTraversal(fromLevelOrder(5, 5, 5, 5, 5)));              // [5, 5, 5, 5, 5]
+    public static void main(String[] a) {
+        TreeNode root = new TreeNode(5, new TreeNode(3, new TreeNode(1), new TreeNode(4)),
+                                        new TreeNode(8, null, new TreeNode(9)));
+        System.out.println("inorder: " + inorder(root));
     }
 }
 ```
 
-### Complexity
+Both print `inorder: [1, 3, 4, 5, 8, 9]` — perfectly sorted. The BST's ordering invariant (left < node < right) plus inorder's `left, visit, right` shape means every node is emitted *after* everything smaller and *before* everything larger. This is the single most-used fact about BSTs, and it falls straight out of the traversal you just wrote.
 
-Same as preorder: **O(N) time, O(h) space**.
+## Reflect & Connect
 
-</details>
+- **One function, three orders.** `visit` + recurse-`left` + recurse-`right`; move the `visit` line and you move between preorder, inorder, and postorder. Nothing else changes.
+- **Order follows the job.** Root-first preorder serializes; sorted inorder reads a BST; children-first postorder frees a tree and evaluates an expression tree. Pick the order by what has to happen first.
+- **A traversal order is a notation.** Preorder/inorder/postorder of an [expression tree](/cortex/data-structures-and-algorithms/linear-structures-stack-infix-postfix-and-prefix-notations) are prefix/infix/postfix — and only infix needs parentheses, because inorder is the one that drops the tree's grouping.
+- **Cost is structural.** `O(N)` time always; `O(h)` space because the recursion stack tracks the current root-to-node path — the same `O(h)` that becomes `O(N)` on a skew and `O(log N)` when balanced.
+- **Next: making the stack explicit.** The recursion *is* a stack. The [iterative traversals](/cortex/data-structures-and-algorithms/trees-binary-tree-iterative-traversals-in-binary-trees) lesson replaces the call stack with an explicit one — same orders, no recursion — which is how you traverse a tree too deep to recurse safely.
 
-***
-
-# Postorder traversal — left → right → root
-
-**Recurse into both subtrees first**, *then* visit the current node.
-
-```text
-postorder(node):
-  if node is null: return
-  postorder(left)    # ← L
-  postorder(right)   # ← R
-  visit(node)        # ← V
-```
+## Recall
 
 <details>
-<summary><h2>Walking through it</h2></summary>
+<summary><strong>Q:</strong> What is the only difference between the preorder, inorder, and postorder functions?</summary>
 
-
-Same tree, third order:
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    R(("1<br/>(5th)"))
-    A(("2<br/>(2nd)"))
-    B(("3<br/>(4th)"))
-    C(("4<br/>(1st)"))
-    D(("7<br/>(3rd)"))
-    R --> A
-    R --> B
-    A --> C
-    B --> D
-    style C fill:#fef9c3,stroke:#f59e0b
-    style A fill:#dbeafe,stroke:#3b82f6
-    style D fill:#dcfce7,stroke:#22c55e
-    style B fill:#fee2e2,stroke:#ef4444
-    style R fill:#ede9fe,stroke:#7c3aed
-```
-
-<p align="center"><strong>Postorder visit sequence — <strong><code>4 → 2 → 7 → 3 → 1</code></strong>. The root of <em>every</em> subtree is visited <em>last</em>; leaves emerge first, the global root emerges dead last.</strong></p>
-
-The recursion goes deep into the left subtree, then deep into the right subtree, *and only then* visits the current node. For the example: descend `1 → 2 → 4`, visit `4`, return, visit `2`, return, descend `1 → 3 → 7`, visit `7`, return, visit `3`, return, finally visit `1`.
+**A:** Where the "visit this node" step sits relative to the two recursive calls: before both (preorder, `visit-L-R`), between them (inorder, `L-visit-R`), or after both (postorder, `L-R-visit`). The recursion is otherwise identical.
 
 </details>
 <details>
-<summary><h2>Why postorder?</h2></summary>
+<summary><strong>Q:</strong> What are the time and space costs of a recursive traversal, and why?</summary>
 
-
-Postorder is what you use whenever a node's *result depends on its children's results*:
-
-- **Tree deletion / freeing memory.** You must free the children before the parent — otherwise you'd lose the pointers needed to reach them. *Every* tree-destruction routine in a manual-memory language uses postorder.
-- **Computing subtree sizes / heights.** `size(n) = 1 + size(left) + size(right)` — the parent computes its answer from already-computed child answers. Same for height, weight, max-depth, sum-of-values, etc.
-- **Expression evaluation.** `(3 + 4) * 5` becomes `3 4 + 5 *` in postfix (RPN). Evaluate left-to-right with a stack — exactly how postfix calculators and JVM bytecode work.
-- **Build systems / dependency resolution.** A target depends on its dependencies; you build the dependencies first (postorder over the dependency graph), then the target. `make`, Bazel, npm install — all do postorder traversal of the dependency DAG.
+**A:** `O(N)` time — every node is visited exactly once. `O(h)` space — the only memory is the recursion stack, whose depth equals the tree's height `h` (`O(log N)` balanced, `O(N)` for a degenerate skew).
 
 </details>
 <details>
-<summary><h2>Solution &amp; Analysis</h2></summary>
+<summary><strong>Q:</strong> Which traversal reads a binary search tree in sorted order, and why?</summary>
 
-### Implementation
+**A:** Inorder (`left, visit, right`). A BST keeps smaller values left and larger right, so visiting the left subtree, then the node, then the right subtree emits every value after everything smaller and before everything larger — i.e. ascending.
 
-```python run viz=binary-tree viz-root=root
-from typing import List, Optional
+</details>
+<details>
+<summary><strong>Q:</strong> Why is postorder the right traversal to free a tree or evaluate an expression tree?</summary>
 
+**A:** Postorder visits both children before their parent. You must free a node's children before the node itself (or you'd lose the pointers to them), and you must evaluate both operand subtrees before applying the operator at the parent.
 
-class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
-        self.val = val
-        self.left = left
-        self.right = right
+</details>
+<details>
+<summary><strong>Q:</strong> How do the three traversal orders relate to prefix, infix, and postfix notation?</summary>
 
-
-def from_level_order(values):
-    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
-    if not values:
-        return None
-    root = TreeNode(values[0])
-    queue = [root]
-    i = 1
-    while queue and i < len(values):
-        node = queue.pop(0)
-        if i < len(values) and values[i] is not None:
-            node.left = TreeNode(values[i])
-            queue.append(node.left)
-        i += 1
-        if i < len(values) and values[i] is not None:
-            node.right = TreeNode(values[i])
-            queue.append(node.right)
-        i += 1
-    return root
-
-
-class Solution:
-    def postorder(self, root: Optional[TreeNode], result: List[int]):
-
-        # Base case: If the current node is None (empty), return.
-        if root is None:
-            return
-
-        # Step 1: Recursively traverse the left subtree.
-        self.postorder(root.left, result)
-
-        # Step 2: Recursively traverse the right subtree.
-        self.postorder(root.right, result)
-
-        # Step 3: Visit the current node and store its value in 'result'.
-        result.append(root.val)
-
-    def recursive_postorder_traversal(
-        self, root: Optional[TreeNode]
-    ) -> List[int]:
-
-        # Create an empty list to store the postorder traversal result.
-        result: List[int] = []
-
-        # Start the recursive postorder traversal from the 'root' node.
-        self.postorder(root, result)
-
-        # Return the final result containing the postorder traversal of
-        # the binary tree.
-        return result
-
-
-# Examples from the problem statement
-print(Solution().recursive_postorder_traversal(from_level_order([1, 2, 3, 4, None, None, 7])))  # [4, 2, 7, 3, 1]
-print(Solution().recursive_postorder_traversal(from_level_order([1, 8, 4, None, None, 2, 7])))  # [8, 2, 7, 4, 1]
-
-# Edge cases
-print(Solution().recursive_postorder_traversal(None))                                            # []
-print(Solution().recursive_postorder_traversal(from_level_order([1])))                           # [1]
-print(Solution().recursive_postorder_traversal(from_level_order([1, 2, None, 3, None, 4])))     # [4, 3, 2, 1]
-print(Solution().recursive_postorder_traversal(from_level_order([1, None, 2, None, 3])))        # [3, 2, 1]
-print(Solution().recursive_postorder_traversal(from_level_order([1, 2, 3, 4, 5, 6, 7])))       # [4, 5, 2, 6, 7, 3, 1]
-print(Solution().recursive_postorder_traversal(from_level_order([5, 5, 5, 5, 5])))              # [5, 5, 5, 5, 5]
-```
-
-```java run
-import java.util.*;
-
-public class Main {
-    static class TreeNode {
-        int val;
-        TreeNode left;
-        TreeNode right;
-        TreeNode() {}
-        TreeNode(int val) { this.val = val; }
-    }
-
-    static TreeNode fromLevelOrder(Integer... values) {
-        if (values.length == 0 || values[0] == null) return null;
-        TreeNode root = new TreeNode(values[0]);
-        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
-        queue.add(root);
-        int i = 1;
-        while (!queue.isEmpty() && i < values.length) {
-            TreeNode node = queue.poll();
-            if (i < values.length && values[i] != null) {
-                node.left = new TreeNode(values[i]);
-                queue.add(node.left);
-            }
-            i++;
-            if (i < values.length && values[i] != null) {
-                node.right = new TreeNode(values[i]);
-                queue.add(node.right);
-            }
-            i++;
-        }
-        return root;
-    }
-
-    static class Solution {
-        private void postorder(TreeNode root, List<Integer> result) {
-
-            // Base case: If the current node is null (empty), return.
-            if (root == null) {
-                return;
-            }
-
-            // Step 1: Recursively traverse the left subtree.
-            postorder(root.left, result);
-
-            // Step 2: Recursively traverse the right subtree.
-            postorder(root.right, result);
-
-            // Step 3: Visit the current node and store its value in
-            // 'result'.
-            result.add(root.val);
-        }
-
-        public List<Integer> recursivePostorderTraversal(TreeNode root) {
-
-            // Create an empty list to store the postorder traversal result.
-            List<Integer> result = new ArrayList<>();
-
-            // Start the recursive postorder traversal from the 'root' node.
-            postorder(root, result);
-
-            // Return the final result containing the postorder traversal of
-            // the binary tree.
-            return result;
-        }
-    }
-
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().recursivePostorderTraversal(fromLevelOrder(1, 2, 3, 4, null, null, 7)));  // [4, 2, 7, 3, 1]
-        System.out.println(new Solution().recursivePostorderTraversal(fromLevelOrder(1, 8, 4, null, null, 2, 7)));  // [8, 2, 7, 4, 1]
-
-        // Edge cases
-        System.out.println(new Solution().recursivePostorderTraversal(null));                                        // []
-        System.out.println(new Solution().recursivePostorderTraversal(fromLevelOrder(1)));                           // [1]
-        System.out.println(new Solution().recursivePostorderTraversal(fromLevelOrder(1, 2, null, 3, null, 4)));     // [4, 3, 2, 1]
-        System.out.println(new Solution().recursivePostorderTraversal(fromLevelOrder(1, null, 2, null, 3)));        // [3, 2, 1]
-        System.out.println(new Solution().recursivePostorderTraversal(fromLevelOrder(1, 2, 3, 4, 5, 6, 7)));       // [4, 5, 2, 6, 7, 3, 1]
-        System.out.println(new Solution().recursivePostorderTraversal(fromLevelOrder(5, 5, 5, 5, 5)));              // [5, 5, 5, 5, 5]
-    }
-}
-```
-
-### Complexity
-
-Same as the others: **O(N) time, O(h) space**.
+**A:** On an expression tree they're identical: preorder = prefix, inorder = infix, postorder = postfix. Infix (inorder) is the only one needing parentheses, because it drops the grouping the tree shape encodes.
 
 </details>
 
-***
+## Sources & Verify
 
-# Comparing the three
-
-Same example tree, three orders side by side:
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    subgraph TREE["the tree"]
-        R((1))
-        A((2))
-        B((3))
-        C((4))
-        D((7))
-        R --> A
-        R --> B
-        A --> C
-        B --> D
-    end
-    subgraph ORDERS["traversal outputs"]
-        direction TB
-        P["preorder  V L R   →   1, 2, 4, 3, 7"]
-        I["inorder   L V R   →   4, 2, 1, 3, 7"]
-        O["postorder L R V   →   4, 2, 7, 3, 1"]
-    end
-    TREE ~~~ ORDERS
-```
-
-<p align="center"><strong>One tree, three orderings — only the position of <em>V</em> (visit) within the L/R recursion changes, and the entire output flips. Spot the patterns: preorder starts with the root, postorder ends with the root, inorder puts the root in the middle of the left and right halves.</strong></p>
-
-| Property                              | Preorder | Inorder | Postorder |
-|---------------------------------------|----------|---------|-----------|
-| First value in output                 | Root     | Leftmost descendant | Leftmost descendant |
-| Last value in output                  | Rightmost leaf-subtree node | Rightmost descendant | Root      |
-| Root visited                          | First    | Middle  | Last      |
-| Useful for…                           | Serialise/clone | BST sorted iteration | Free/evaluate |
-| Time complexity                       | O(N)     | O(N)    | O(N)      |
-| Space complexity                      | O(h)     | O(h)    | O(h)      |
-| Lines of code                         | 3        | 3       | 3         |
-
-***
-
-## Final Takeaway
-
-Recursive traversals are the gateway drug to tree algorithms. Once the *shape* — base case + visit + two recursions — is muscle memory, every later pattern in this chapter (subtree sums, heights, balanced-checks, path sums, LCAs, validation) is just a *fancier visit step* layered onto the same skeleton.
-
-1. **The traversal *is* the recursion.** A tree's recursive definition (*"node + two subtrees"*) maps one-to-one onto a recursive function (*"do work + two recursive calls"*). Resist the urge to write iterative versions until you've fully internalised the recursive ones — every iterative tree algorithm is just a recursive one with a manually-managed stack, and you'll appreciate the abstraction the recursive form gives you.
-2. **The order of V/L/R changes everything.** Three lines in the same function, three different output sequences, three different real-world applications. Memorise which order matches which need: pre = root-first (build), in = sorted (BST), post = root-last (free, evaluate).
-3. **Stack space is paid in tree height.** Every recursive call adds a frame to the call stack; on a balanced tree this is `O(log N)`, on a skew tree it's `O(N)`. For trees of height millions (yes, they happen — sequential insertion into a naive BST), recursive traversals can blow the stack. The next lesson — iterative traversals with an explicit stack — exists precisely to dodge that bullet.
-
-> *Coming up — iterative traversals. Same three orderings, but implemented with an explicit stack so we can traverse arbitrarily deep trees without risking a stack overflow. The iterative versions are uglier than the recursive ones, but they're production-grade for adversarial inputs and they teach you a lot about how the recursive call stack actually works under the hood.*
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
-
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
-
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
-
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
-
-<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
-<!--       Guidance: bulleted list of gotchas -->
-
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
-
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
-
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
-
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
-
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
+- **CLRS**, *Introduction to Algorithms*, §12.1 (Binary search trees — inorder tree walk) — the `O(N)` inorder traversal and the sorted-order property; **Sedgewick & Wayne**, *Algorithms* §3.2 — pre/in/post order on linked tree nodes.
+- The [stack expression-notation lessons](/cortex/data-structures-and-algorithms/linear-structures-stack-infix-postfix-and-prefix-notations) for prefix/infix/postfix, and the [iterative-traversals lesson](/cortex/data-structures-and-algorithms/trees-binary-tree-iterative-traversals-in-binary-trees) for the same three orders without recursion.
+- `preorder [1,2,4,5,3]`, `inorder [4,2,5,1,3]`, `postorder [4,5,2,3,1]`; the expression-tree `* + 2 3 4` / `2 + 3 * 4` / `2 3 + 4 *`; and the sorted BST inorder `[1,3,4,5,8,9]` all come from the runnable blocks above (deterministic) — re-run to verify.

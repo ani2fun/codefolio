@@ -1,317 +1,60 @@
 ---
 title: "Cycle Detection"
-summary: "<!-- TODO: summary -->"
+summary: "Does the graph contain a cycle? DFS answers it — but with two different rules: undirected graphs exclude the parent edge (a back edge to any non-parent visited node = cycle), while directed graphs track the recursion stack (a back edge to a node still on the current path = cycle). The grey/black distinction is the whole game."
+prereqs:
+  - graphs-traversing-a-graph
 ---
 
-# 6. Cycle detection
+# Cycle Detection
 
-This lesson teaches you to answer one of the most common questions asked of graphs: **"is there a cycle?"** — and shows you why the answer is *one* algorithm for undirected graphs and a *different* algorithm for directed graphs, even though both look like DFS at first glance.
+## Why It Exists
 
-## Table of contents
+"Is there a cycle?" is one of the most-asked questions of a graph. A cycle in a build's dependency graph is a circular `import` that won't compile; a cycle in a lock-acquisition graph is a **deadlock**; a cycle in a task scheduler means there's no valid order to run things ([topological sort](/cortex/data-structures-and-algorithms/graphs-topological-sort) fails exactly when a cycle exists). Spreadsheets reject cyclic formulas for the same reason.
 
-1. [Why cycles matter](#why-cycles-matter)
-2. [Cycle detection in an undirected graph](#cycle-detection-in-an-undirected-graph)
-3. [Undirected — implementation](#undirected--implementation)
-4. [Why directed graphs need a different rule](#why-directed-graphs-need-a-different-rule)
-5. [Cycle detection in a directed graph](#cycle-detection-in-a-directed-graph)
-6. [Directed — implementation](#directed--implementation)
+Both answers are a [DFS](/cortex/data-structures-and-algorithms/graphs-traversing-a-graph) — but the *rule* for "I found a cycle" differs by graph type, and that difference trips people up. In an **undirected** graph, finding an already-visited neighbour means a cycle *unless* it's the parent you just came from (every edge is two-way, so walking back isn't a loop). In a **directed** graph, that's not enough: you need a back edge to a node that's **still on the current DFS path** — being merely "visited" isn't a cycle. Getting the right rule for the right graph is the lesson.
 
-***
+## See It Work
 
-# Why Cycles Matter
+Undirected cycle detection: DFS, and flag a back edge to a visited node that **isn't the parent**. A square has a cycle; a tree doesn't. Run it.
 
-A **cycle** is a path that starts and ends at the same node without crossing any other node twice. Cycles aren't just an academic curiosity — they decide whether a piece of software actually works:
-
-- **Build systems** (Make, Bazel, npm) refuse to compile when their dependency graph has a cycle. *"Module A imports B which imports A"* is unrunnable.
-- **Spreadsheets** must reject `A1 = B1 + 1; B1 = A1 + 1` — a circular reference. Excel literally pops up an error.
-- **Operating-system schedulers** detect cycles in resource-acquisition graphs to avoid deadlock.
-- **Course planners** can't grant you a degree if the prerequisite graph has cycles.
-
-So the question "does this graph have a cycle?" lives at the heart of dozens of real systems. The catch: the answer differs based on whether the graph is **undirected** or **directed**.
-
-> *Before reading on — sketch a 4-node undirected graph and a 4-node directed graph. For each, find the smallest example with a cycle. Notice anything different about what counts as a cycle in each case?*
-
-In an undirected graph, any cycle has at least 3 nodes (you can't form a cycle with just 2 — the edge would have to be both "there" and "back" simultaneously). In a directed graph, cycles can be tighter: even a single self-loop or a 2-node `A → B → A` qualifies. That structural difference is what forces two different algorithms.
-
-***
-
-# Cycle Detection in an Undirected Graph
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    subgraph Cyc["Has a cycle"]
-      direction LR
-      C0((0)) --- C1((1))
-      C1 --- C2((2))
-      C2 --- C3((3))
-      C3 --- C0
-    end
-    subgraph Acyc["No cycle (a tree)"]
-      direction LR
-      A0((0)) --- A1((1))
-      A0 --- A2((2))
-      A1 --- A3((3))
-    end
-```
-
-<p align="center"><strong>Two undirected graphs of 4 nodes. The left has the 4-cycle 0→1→2→3→0; the right is a tree.</strong></p>
-
-The simplest possible rule for cycle detection in an undirected graph is also the right one:
-
-> **During a DFS, if you reach a node you've already visited (and that node isn't the parent you just came from), there's a cycle.**
-
-That's the entire algorithm. Run DFS, track which nodes you've seen, and when you cross an edge to a *non-parent* visited node, you've closed a loop.
-
----
-
-## Why "Non-Parent"?
-
-Without the parent exclusion, every undirected edge would falsely register as a cycle. Walk through it concretely:
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    A((A)) --- B((B))
-```
-
-A trivial 2-node, 1-edge graph. Run DFS from A:
-
-1. Mark A visited.
-2. Walk to B (A's neighbour). Mark B visited.
-3. From B, look at neighbours. B's only neighbour is **A** — and A is already visited!
-4. If we naively cried "cycle!", we'd be wrong: the only "loop" is just walking back across the same edge.
-
-The fix is to remember which node we came *from* — A is B's parent in the DFS tree. When we look at B's neighbours, we ignore the one that's our parent. Now A→B and walking-back-to-A is silent. **A real cycle would require visiting a non-parent visited node.**
-
-> *Before reading on — does the parent rule still work for a 3-cycle 0–1–2–0? Trace it once before scrolling.*
-
-DFS from 0: visit 0. Visit 1 (parent=0). From 1's neighbours: 0 (parent → skip), 2 (unvisited → recurse). Visit 2 (parent=1). From 2's neighbours: 1 (parent → skip), 0 (visited, non-parent → **cycle!**). Yes — the rule fires exactly where we want.
-
----
-
-## The Algorithm
-
-> **`hasCycle(node, parent, graph, visited)`**
-> 1. Mark `node` as visited.
-> 2. For each `neighbour` in `graph[node]`:
->    - If `neighbour` is not visited, recursively call `hasCycle(neighbour, node, …)`. If it returns `true`, propagate `true`.
->    - Otherwise (neighbour is visited): if `neighbour != parent`, return `true` — a cycle.
-> 3. Return `false`.
->
-> **`detectCycleUndirected(graph)`**
-> 1. Create empty `visited` set.
-> 2. For each `node`: if not visited, call `hasCycle(node, -1, …)`. If it returns `true`, return `true`.
-> 3. Return `false`.
-
-The outer loop covers disconnected graphs — a cycle could live in a component that's unreachable from node 0.
-
----
-
-## Proof of Correctness (Sketch)
-
-Why is "non-parent visited neighbour" both *necessary* and *sufficient* for a cycle in an undirected graph?
-
-**Sufficient direction.** If during DFS from `a` we reach `x` and find a non-parent visited neighbour `v`, then `v` was visited earlier in the *same* DFS tree (we'll defend that in a second). Both `v` and `x` are in the current DFS tree, so there's a tree path from `a → v` and a tree path from `a → x`. Joining them via the edge `x – v` closes a loop. Cycle.
-
-**Why "same DFS tree"?** If `v` had been visited in some *earlier* DFS (a different connected component), then since `v` is connected to `x` via an undirected edge, that earlier DFS would have walked across the edge `v – x` and visited `x` too — contradicting our assumption that `x` was just being entered fresh.
-
-**Necessary direction.** If a cycle exists, DFS from any of its nodes must eventually walk around the loop and bump into a visited non-parent. (DFS visits everything reachable; a cycle is reachable from every node on it.)
-
-That's the whole proof. The key insight: **the parent check is the precise filter that distinguishes "I'm walking back across the edge I just came in on" from "I'm closing a loop"**.
-
-***
-
-# Undirected — Implementation
-
-
-```python run viz=graph viz-root=graph
-from typing import List, Set
-
-class Solution:
-    def has_cycle(
-        self,
-        graph: List[List[int]],
-        node: int,
-        parent: int,
-        visited: Set[int],
-    ) -> bool:
-
-        # Mark the current node as visited in the graph to avoid
-        # visiting it again
+```python run
+def has_cycle_undirected(graph):
+    visited = set()
+    def dfs(node, parent):
         visited.add(node)
-
-        # Recursively visit all the adjacent nodes
-        for neighbour in graph[node]:
-
-            # If the neighbour node is not visited, visit it recursively
-            if neighbour not in visited:
-                if self.has_cycle(graph, neighbour, node, visited):
+        for nb in graph[node]:
+            if nb not in visited:
+                if dfs(nb, node):           # carry the parent down
                     return True
-
-            # If the neighbour node is already visited and is not the
-            # parent node, a cycle is detected
-            elif neighbour != parent:
+            elif nb != parent:              # visited AND not parent ⇒ cycle
                 return True
-
-        # No cycle detected
         return False
+    for v in range(len(graph)):             # outer loop ⇒ all components
+        if v not in visited and dfs(v, -1):
+            return True
+    return False
 
-    def detect_cycle_in_undirected_graph(
-        self, graph: List[List[int]]
-    ) -> bool:
-
-        # Set to keep track of visited nodes
-        visited = set()
-
-        # Perform DFS on each unvisited node
-        for node in range(len(graph)):
-            if node not in visited:
-                if self.has_cycle(graph, node, -1, visited):
-                    return True
-
-        return False
-
-
-# Examples from the problem statement
-print(Solution().detect_cycle_in_undirected_graph([[1,2],[0,4],[0,3],[2,4],[1,3]]))  # True
-print(Solution().detect_cycle_in_undirected_graph([[1],[0,2],[1]]))                  # False
-
-# Edge cases
-print(Solution().detect_cycle_in_undirected_graph([[]]))                             # False — single isolated node
-print(Solution().detect_cycle_in_undirected_graph([[1],[0]]))                        # False — single edge, no cycle
-print(Solution().detect_cycle_in_undirected_graph([[1,2],[0,2],[0,1]]))              # True — triangle
-print(Solution().detect_cycle_in_undirected_graph([[1],[0],[3],[2]]))                # False — two disconnected edges
-print(Solution().detect_cycle_in_undirected_graph([[0]]))                            # True — self-loop
+square = [[1,2], [0,4], [0,3], [2,4], [1,3]]    # contains a cycle
+tree   = [[1,2], [0,3], [0], [1]]               # acyclic
+print(has_cycle_undirected(square))   # True
+print(has_cycle_undirected(tree))     # False
 ```
 
-```java run
-import java.util.*;
+## How It Works
 
-public class Main {
-    static class Solution {
-        private boolean hasCycle(
-            List<List<Integer>> graph,
-            int node,
-            int parent,
-            Set<Integer> visited
-        ) {
+**Undirected** — DFS carrying the `parent`. A neighbour that's already visited *and* isn't the parent closes a loop. The parent exclusion is essential: without it, the trivial edge `A—B` would "find" `A` again from `B` and falsely report a cycle, because an undirected edge is traversable both ways. (DSU is an alternative: union each edge; an edge whose endpoints are already in the same set is a cycle.)
 
-            // Mark the current node as visited in the graph to avoid
-            // visiting it again
-            visited.add(node);
+**Directed** — the parent trick fails, because edge *direction* matters. You need to know not just "visited?" but "still on the path from the root to here?" Give each node three states:
 
-            // Recursively visit all the adjacent nodes
-            for (int neighbour : graph.get(node)) {
+| State | Meaning |
+|---|---|
+| **White** | not yet visited |
+| **Grey** | entered, not finished — **on the recursion stack (current path)** |
+| **Black** | finished — it and all its descendants are done |
 
-                // If the neighbour node is not visited, visit it recursively
-                if (!visited.contains(neighbour)) {
-                    if (hasCycle(graph, neighbour, node, visited)) {
-                        return true;
-                    }
-                }
-
-                // If the neighbour node is already visited and is not the
-                // parent node, a cycle is detected
-                else if (neighbour != parent) {
-                    return true;
-                }
-            }
-
-            // No cycle detected
-            return false;
-        }
-
-        public boolean detectCycleInUndirectedGraph(
-            List<List<Integer>> graph
-        ) {
-
-            // Set to keep track of visited nodes
-            Set<Integer> visited = new HashSet<>();
-
-            // Perform DFS on each unvisited node
-            for (int node = 0; node < graph.size(); node++) {
-                if (!visited.contains(node)) {
-                    if (hasCycle(graph, node, -1, visited)) {
-                        return true;
-                    }
-                }
-            }
-
-            return false;
-        }
-    }
-
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().detectCycleInUndirectedGraph(
-            List.of(List.of(1,2),List.of(0,4),List.of(0,3),List.of(2,4),List.of(1,3))));  // true
-        System.out.println(new Solution().detectCycleInUndirectedGraph(
-            List.of(List.of(1),List.of(0,2),List.of(1))));            // false
-
-        // Edge cases
-        System.out.println(new Solution().detectCycleInUndirectedGraph(
-            List.of(new ArrayList<>())));                              // false — isolated node
-        System.out.println(new Solution().detectCycleInUndirectedGraph(
-            List.of(List.of(1),List.of(0))));                         // false — single edge
-        System.out.println(new Solution().detectCycleInUndirectedGraph(
-            List.of(List.of(1,2),List.of(0,2),List.of(0,1))));        // true — triangle
-        System.out.println(new Solution().detectCycleInUndirectedGraph(
-            List.of(List.of(1),List.of(0),List.of(3),List.of(2))));   // false — two edges
-        System.out.println(new Solution().detectCycleInUndirectedGraph(
-            List.of(List.of(0))));                                     // true — self-loop
-    }
-}
-```
-
-
-## Complexity Analysis
-
-| | Complexity | Reasoning |
-|---|---|---|
-| **Time** | O(N + E) | Each node is visited at most once; each edge is examined at most twice (once per endpoint) |
-| **Space** | O(N) | Visited set + recursion stack are both bounded by N |
-
-The early-return on cycle detection means we may terminate well before O(N + E) in practice — but worst-case (a long acyclic chain) we examine the whole graph.
-
-***
-
-# Why Directed Graphs Need a Different Rule
-
-Try to apply the undirected algorithm to this directed graph:
+A directed edge to a **grey** node is a cycle (you've looped back onto your own path); an edge to a **black** node is fine. In code you keep two sets: `visited` (grey ∪ black) and `in_path` (grey only) — add to `in_path` on entry, **remove on exit** (that's the grey→black flip).
 
 ```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
 flowchart LR
     A((A)) --> B((B))
     A --> C((C))
@@ -319,353 +62,115 @@ flowchart LR
     C --> D
 ```
 
-<p align="center"><strong>A "diamond" DAG. No cycle exists, but a naive DFS will see <code>D</code> twice.</strong></p>
+<p align="center"><strong>a "diamond" DAG: <code>D</code> is reachable two ways from <code>A</code>, but there's no cycle. The grey/black distinction is what tells it apart from a real loop.</strong></p>
 
-DFS from A: visit A → B → D. Backtrack. Try A → C → **D — already visited!** A naive "visited node = cycle" rule would falsely declare a cycle. But there isn't one — D was just reached by a *different* path from A. The diamond is acyclic.
+Both run in `O(V + E)` — one DFS, each vertex and edge touched once, the outer loop covering disconnected components.
 
-The undirected parent trick doesn't save us either, because the *direction* of the edges matters: in a directed graph, the path A → C → D wasn't going "back across" any edge we just came in on.
+### Key Takeaway
 
-So we need a stricter rule: **a cycle exists only when DFS reaches a node that's currently on the stack — i.e. on the path from the DFS root to the current node**, not just any visited node.
+Cycle detection is DFS with the right "back edge" rule. **Undirected:** a visited neighbour that isn't the parent = cycle (exclude the edge you came in on). **Directed:** a neighbour still on the current DFS path (grey) = cycle — track a recursion-stack set and remove a node from it on exit (grey→black). Both `O(V+E)`.
 
----
+## Trace It
 
-## Three States Per Node
+Take the diamond above — `A→B→D` and `A→C→D`, no cycle. Now *misapply* the undirected rule to it: "a visited non-parent neighbour means a cycle."
 
-The cleanest way to capture this distinction is to give each node *one of three states* during DFS:
+Before you read on: DFS goes `A→B→D`, backtracks, then `A→C→D` and finds `D` already visited (and `D` isn't `C`'s parent). The undirected rule shouts "cycle!" — but the diamond is acyclic. Why is it wrong, and what does the directed algorithm check instead that gets it right?
 
-| State | Meaning |
-|---|---|
-| **White / unvisited** | DFS hasn't seen this node yet |
-| **Grey / in current path** | DFS entered this node and hasn't finished it yet — it's on the recursion stack |
-| **Black / fully done** | DFS has finished this node and all its descendants |
+The undirected rule conflates **"visited"** with **"on my current path,"** and on a directed graph those are different. When `C` reaches `D` the second time, `D` was already **finished** — DFS entered it from `B`, explored it fully, and backtracked out. In three-state terms `D` is **black**, not grey: it's *not* on the path `A→C→…` currently being explored, it's just a node that happens to have been completed earlier via another route. There's no loop, because following the edges never returns you to a node you're *currently inside*. The directed algorithm asks the precise question — **"is this neighbour grey (still on the recursion stack)?"** — and `D` is black, so it correctly says "no cycle." Add the edge `D→A` and re-run: now from `D` you look at `A`, which is **grey** (you're still inside `A`'s call — it's the root of the current path), so you've closed a loop and it's a true cycle. The load-bearing line is `in_path.remove(node)` on exit: it flips a node grey→black so that finishing a node *takes it off the path*. Delete that one line and every visited node stays grey forever — the diamond's second visit to `D` finds it "grey" and you're back to the false positive. So the rules aren't arbitrary per graph type: undirected needs *parent exclusion* (because edges are bidirectional), directed needs *path membership* (because a back edge only loops if it points at an ancestor you haven't left yet). Same DFS skeleton, two different "what counts as a back edge" tests.
 
-```d2
-direction: right
+## Your Turn
 
-states: "Three node states during DFS" {
-  grid-rows: 3
-  grid-columns: 1
-  grid-gap: 0
-  white: |md
-    **WHITE** — never visited
-  |
-  grey: |md
-    **GREY** — entered, not yet finished (on the call stack)
-  |
-  black: |md
-    **BLACK** — fully processed (popped off the stack)
-  |
-}
-```
+Both detectors in both languages — undirected (parent rule) and directed (recursion-stack rule):
 
-<p align="center"><strong>Each node passes through White → Grey → Black exactly once. Hitting a Grey neighbour during DFS is the unmistakable signature of a cycle.</strong></p>
-
-The rule is now sharp: **if you find a directed edge to a Grey node, you've closed a loop**. Hitting a Black node is fine — that's just the diamond case (a node finished long ago, on a different path).
-
-In practice we don't usually maintain three explicit colours; we maintain two sets — `visited` (= grey ∪ black) and `nodesInPath` (= grey). A node is "grey" if it's in `nodesInPath`. We *add* to `nodesInPath` on entry and *remove* on exit; that's how a node transitions Grey → Black.
-
-> *Before reading on — for the diamond DAG above, walk through the DFS and write down each node's state at each step. Where does each transition happen?*
-
-Steps for the diamond:
-
-| Step | Action | A | B | C | D |
-|---|---|---|---|---|---|
-| 1 | enter A | grey | white | white | white |
-| 2 | enter B | grey | grey | white | white |
-| 3 | enter D from B | grey | grey | white | grey |
-| 4 | leave D (no neighbours) | grey | grey | white | **black** |
-| 5 | leave B | grey | **black** | white | black |
-| 6 | enter C | grey | black | grey | black |
-| 7 | from C, look at D — D is **black**, not grey → no cycle | grey | black | grey | black |
-| 8 | leave C, leave A | **black** | black | **black** | black |
-
-No grey hit ⇒ no cycle. Now repeat the trace with an extra edge `D → A`:
-
-| Step | Action | A | B | C | D |
-|---|---|---|---|---|---|
-| 1 | enter A | grey | white | white | white |
-| 2 | enter B | grey | grey | white | white |
-| 3 | enter D | grey | grey | white | grey |
-| 4 | from D, look at A — A is **grey** → **cycle!** | | | | |
-
-Grey hit ⇒ cycle. The state machine catches the difference between "diamond" and "loop" perfectly.
-
-***
-
-# Cycle Detection in a Directed Graph
-
-The algorithm:
-
-> **`hasCycle(node, graph, visited, nodesInPath)`**
-> 1. Mark `node` as visited.
-> 2. Add `node` to `nodesInPath` (= turn it grey).
-> 3. For each `neighbour` in `graph[node]`:
->    - If `neighbour` is in `nodesInPath` → return `true` (cycle).
->    - Else if `neighbour` is not visited → recurse; if it returns `true`, propagate.
-> 4. Remove `node` from `nodesInPath` (= turn it black).
-> 5. Return `false`.
->
-> **`detectCycleDirected(graph)`**
-> 1. Create empty `visited` and `nodesInPath` sets.
-> 2. For each `node`: if not visited, call `hasCycle`. If true, return true.
-> 3. Return `false`.
-
-The crucial line is `nodesInPath.remove(node)` at step 4 — the **back-tracking** step that flips a finished node from Grey to Black. Without it, every visited node would stay grey forever and the diamond would falsely register as a cycle.
-
-***
-
-# Directed — Implementation
-
-
-```python run viz=graph viz-root=graph
-from typing import List, Set
-
-class Solution:
-    def has_cycle(
-        self,
-        graph: List[List[int]],
-        node: int,
-        visited: Set[int],
-        nodes_in_path: Set[int],
-    ) -> bool:
-
-        # Mark the current node as visited in the graph to avoid
-        # visiting it again
+```python run
+def has_cycle_undirected(graph):
+    visited = set()
+    def dfs(node, parent):
         visited.add(node)
-
-        # Insert the current node into the set of nodes in the current
-        # path to detect cycles
-        nodes_in_path.add(node)
-
-        # Recursively visit all the adjacent nodes
-        for neighbour in graph[node]:
-
-            # If the neighbour node is not visited, visit it recursively
-            if neighbour not in visited:
-                if self.has_cycle(
-                    graph, neighbour, visited, nodes_in_path
-                ):
-                    return True
-
-            # If the neighbour node is already visited and present in
-            # the current path, a cycle is detected
-            elif neighbour in nodes_in_path:
-                return True
-
-        # Remove the current node from the current path as we are done
-        # exploring it
-        nodes_in_path.remove(node)
-
-        # No cycle detected
+        for nb in graph[node]:
+            if nb not in visited:
+                if dfs(nb, node): return True
+            elif nb != parent: return True
         return False
+    return any(v not in visited and dfs(v, -1) for v in range(len(graph)))
 
-    def detect_cycle_in_directed_graph(
-        self, graph: List[List[int]]
-    ) -> bool:
-
-        # Set to keep track of visited nodes
-        visited: Set[int] = set()
-
-        # Set to keep track of nodes in the current path
-        nodes_in_path: Set[int] = set()
-
-        # Perform DFS on each unvisited node
-        for node in range(len(graph)):
-            if node not in visited:
-                if self.has_cycle(graph, node, visited, nodes_in_path):
-                    return True
-
+def has_cycle_directed(graph):
+    visited, in_path = set(), set()
+    def dfs(node):
+        visited.add(node); in_path.add(node)
+        for nb in graph[node]:
+            if nb in in_path: return True               # grey neighbour ⇒ cycle
+            if nb not in visited and dfs(nb): return True
+        in_path.remove(node)                             # grey → black on exit
         return False
+    return any(v not in visited and dfs(v) for v in range(len(graph)))
 
-
-# Examples from the problem statement
-print(Solution().detect_cycle_in_directed_graph([[1,2],[4],[3],[0],[2,3]]))  # True
-print(Solution().detect_cycle_in_directed_graph([[4],[5],[3],[5],[1],[]]))   # False
-
-# Edge cases
-print(Solution().detect_cycle_in_directed_graph([[]]))                       # False — isolated node
-print(Solution().detect_cycle_in_directed_graph([[1],[0]]))                  # False — no directed cycle
-print(Solution().detect_cycle_in_directed_graph([[1],[2],[0]]))              # True — 3-node cycle
-print(Solution().detect_cycle_in_directed_graph([[0]]))                      # True — self-loop
-print(Solution().detect_cycle_in_directed_graph([[1],[]]))                   # False — one edge, no cycle
+print(has_cycle_undirected([[1,2],[0,4],[0,3],[2,4],[1,3]]))   # True
+print(has_cycle_directed([[1,2],[3],[3],[]]))                  # False — diamond DAG
+print(has_cycle_directed([[1,2],[3],[3],[0]]))                 # True  — diamond + D→A
+print(has_cycle_directed([[4],[5],[3],[5],[1],[]]))            # False — a DAG
 ```
 
 ```java run
 import java.util.*;
-
 public class Main {
-    static class Solution {
-        private boolean hasCycle(
-            List<List<Integer>> graph,
-            int node,
-            Set<Integer> visited,
-            Set<Integer> nodesInPath
-        ) {
-
-            // Mark the current node as visited in the graph to avoid
-            // visiting it again
-            visited.add(node);
-
-            // Insert the current node into the set of nodes in the current
-            // path to detect cycles
-            nodesInPath.add(node);
-
-            // Recursively visit all the adjacent nodes
-            for (int neighbour : graph.get(node)) {
-
-                // If the neighbour node is not visited, visit it recursively
-                if (!visited.contains(neighbour)) {
-                    if (hasCycle(graph, neighbour, visited, nodesInPath)) {
-                        return true;
-                    }
-                }
-
-                // If the neighbour node is already visited and present in
-                // the current path, a cycle is detected
-                else if (nodesInPath.contains(neighbour)) {
-                    return true;
-                }
-            }
-
-            // Remove the current node from the current path as we are done
-            // exploring it
-            nodesInPath.remove(node);
-
-            // No cycle detected
-            return false;
-        }
-
-        public boolean detectCycleInDirectedGraph(
-            List<List<Integer>> graph
-        ) {
-
-            // Set to keep track of visited nodes
-            Set<Integer> visited = new HashSet<>();
-
-            // Set to keep track of nodes in the current path
-            Set<Integer> nodesInPath = new HashSet<>();
-
-            // Perform DFS on each unvisited node
-            for (int node = 0; node < graph.size(); node++) {
-                if (!visited.contains(node)) {
-                    if (hasCycle(graph, node, visited, nodesInPath)) {
-                        return true;
-                    }
-                }
-            }
-
-            return false;
-        }
+  static boolean dfsDir(List<List<Integer>> g, int node, boolean[] visited, boolean[] inPath) {
+    visited[node] = true; inPath[node] = true;
+    for (int nb : g.get(node)) {
+      if (inPath[nb]) return true;                       // grey ⇒ cycle
+      if (!visited[nb] && dfsDir(g, nb, visited, inPath)) return true;
     }
-
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().detectCycleInDirectedGraph(
-            List.of(List.of(1,2),List.of(4),List.of(3),List.of(0),List.of(2,3))));  // true
-        System.out.println(new Solution().detectCycleInDirectedGraph(
-            List.of(List.of(4),List.of(5),List.of(3),List.of(5),List.of(1),new ArrayList<>())));  // false
-
-        // Edge cases
-        System.out.println(new Solution().detectCycleInDirectedGraph(
-            List.of(new ArrayList<>())));                              // false
-        System.out.println(new Solution().detectCycleInDirectedGraph(
-            List.of(List.of(1),List.of(0))));                         // false — no directed cycle
-        System.out.println(new Solution().detectCycleInDirectedGraph(
-            List.of(List.of(1),List.of(2),List.of(0))));              // true — 3-node cycle
-        System.out.println(new Solution().detectCycleInDirectedGraph(
-            List.of(List.of(0))));                                     // true — self-loop
-        System.out.println(new Solution().detectCycleInDirectedGraph(
-            List.of(List.of(1),new ArrayList<>())));                   // false
-    }
+    inPath[node] = false;                                // grey → black
+    return false;
+  }
+  static boolean hasCycleDirected(List<List<Integer>> g) {
+    boolean[] visited = new boolean[g.size()], inPath = new boolean[g.size()];
+    for (int v = 0; v < g.size(); v++)
+      if (!visited[v] && dfsDir(g, v, visited, inPath)) return true;
+    return false;
+  }
+  public static void main(String[] a) {
+    System.out.println(hasCycleDirected(List.of(List.of(1,2), List.of(3), List.of(3), List.of())));   // false
+    System.out.println(hasCycleDirected(List.of(List.of(1,2), List.of(3), List.of(3), List.of(0))));  // true
+  }
 }
 ```
 
+Then: detect a cycle in an undirected graph with **DSU** (union edges; same-set endpoints = cycle); return the **actual cycle** (track parents and walk back when you hit a grey node); and use directed cycle detection as the **feasibility check** for a topological sort.
 
-<details>
-<summary><strong>Trace — graph = [[1], [2], [0]] (a 3-cycle)</strong></summary>
+## Reflect & Connect
 
-```
-Step │ Stack      │ Action                                  │ visited   │ nodes_in_path
-─────┼────────────┼─────────────────────────────────────────┼───────────┼───────────────
-1    │ dfs(0)     │ enter 0; mark visited+nodes_in_path     │ {0}       │ {0}
-2    │ dfs(1)     │ neighbour 1 unvisited; recurse          │ {0,1}     │ {0,1}
-3    │ dfs(2)     │ neighbour 2 unvisited; recurse          │ {0,1,2}   │ {0,1,2}
-4    │ dfs(2)     │ from 2, neighbour 0 IN nodes_in_path!   │           │
-       │            │ → return true (cycle)                   │           │
-Result: true ✓
-```
+Cycle detection is the canonical "same DFS, graph-type-specific rule" lesson:
 
-</details>
+- **Two rules, one skeleton** — undirected excludes the *parent* (edges are bidirectional, so the come-from edge isn't a loop); directed checks *path membership* (grey), because a back edge loops only if it points to an unfinished ancestor. Picking the wrong rule is the classic bug — the undirected rule false-positives on the directed diamond.
+- **Directed cycle detection ⇔ "is it a DAG?"** — a directed graph has a valid [topological order](/cortex/data-structures-and-algorithms/graphs-topological-sort) *if and only if* it has no cycle. The grey-node check here is exactly the failure condition topo sort watches for; the two algorithms are the same DFS read two ways.
+- **The 3-colour pattern recurs** — white/grey/black (unvisited / in-progress / done) is the general DFS-state vocabulary; it reappears in [strongly-connected components](/cortex/data-structures-and-algorithms/graphs-strongly-connected-components), [bridges and articulation points](/cortex/data-structures-and-algorithms/graphs-bridges-and-articulation-points), and any algorithm that distinguishes tree/back/forward/cross edges.
+- **Two tools for undirected** — DFS-parent and [DSU](/cortex/data-structures-and-algorithms/trees-disjoint-set-union-introduction-to-disjoint-set-union) (union-find) both detect undirected cycles in near-linear time; DSU shines when edges arrive as a stream (Kruskal's MST uses exactly this to skip cycle-forming edges).
 
-## Complexity Analysis
+**Prerequisites:** [Traversing a Graph](/cortex/data-structures-and-algorithms/graphs-traversing-a-graph).
+**What's next:** order a DAG so every edge points "forward" — and see why it's possible *exactly when* there's no cycle — [Topological Sort](/cortex/data-structures-and-algorithms/graphs-topological-sort).
 
-| | Complexity | Reasoning |
-|---|---|---|
-| **Time** | O(N + E) | Each node visited at most once; each edge examined at most once |
-| **Space** | O(N) | Visited and nodesInPath sets each hold up to N entries; recursion stack at most N deep |
+## Recall
 
-The complexity is identical to the undirected case — the directed version simply tracks an extra bit (`nodesInPath`) per node.
+> **Mnemonic:** *Both are DFS. UNDIRECTED: visited non-PARENT neighbour ⇒ cycle (exclude the come-from edge). DIRECTED: neighbour still on the current path (GREY) ⇒ cycle — keep an in_path set, remove on exit (grey→black). Black neighbour = fine (diamond).*
 
----
+| | |
+|---|---|
+| Undirected rule | visited neighbour `≠ parent` ⇒ cycle |
+| Why parent-exclude | edges are bidirectional; the come-from edge isn't a loop |
+| Directed rule | neighbour in `in_path` (grey) ⇒ cycle |
+| States | white (unvisited) / grey (on path) / black (finished) |
+| Load-bearing line | `in_path.remove(node)` on exit (grey→black) |
+| Both | `O(V + E)`; directed cycle-free ⇔ has a topological order |
 
-## Final Takeaway
+- **Q:** What's the undirected cycle rule, and why the parent exclusion? **A:** A visited neighbour that isn't the parent = cycle; without excluding the parent, every bidirectional edge would falsely look like a back edge.
+- **Q:** Why doesn't the undirected rule work for directed graphs? **A:** It treats any visited node as a back edge; in a directed graph a node can be visited via a *different* finished path (the diamond) without forming a cycle.
+- **Q:** What's the directed cycle rule? **A:** A directed edge to a node still on the current DFS path (grey / in the recursion stack) is a cycle; an edge to a finished (black) node is not.
+- **Q:** Why is `in_path.remove(node)` on exit essential? **A:** It flips a node grey→black so a finished node leaves the path; without it the diamond's re-visited node looks grey and false-positives.
+- **Q:** How does directed cycle detection relate to topological sort? **A:** A directed graph is topologically sortable iff it's acyclic — the grey-node check is exactly topo sort's failure condition.
 
-The two algorithms differ in *exactly* one place:
+## Sources & Verify
 
-- **Undirected:** "visited and not parent" → cycle.
-- **Directed:** "in current DFS path" → cycle.
-
-Both ride on top of a standard DFS. Both handle disconnected graphs the same way. Once you internalise the *reason* the rules differ — undirected edges are bidirectional and need a parent guard; directed edges aren't and need the path-membership test — you'll never confuse them.
-
-Cycle detection is also the gateway to one of the most useful directed-graph algorithms in existence: **topological sort**, which orders nodes such that every edge points "forward" — and which is only possible *if and only if* the graph has no cycles. That's the next lesson.
-
-> **Transfer challenge.** You have a build system with 1 000 packages and 5 000 dependency edges. A circular import is reported. Write the 4-line algorithm sketch (no language) that locates not just *whether* there's a cycle but *which packages* are in it. *(Hint: when you detect a cycle, the path from the cycle node back to itself is sitting on the DFS stack.)*
-
-<details>
-<summary><strong>Sketch</strong></summary>
-
-1. Run the directed-graph DFS. Maintain a `parent[]` array recording, for each grey node, who DFS came from.
-2. When the DFS finds an edge `cur → grey_node`, you have a cycle.
-3. Walk `parent[]` backwards from `cur` until you re-encounter `grey_node` — collecting nodes as you go.
-4. Reverse the collected list and prepend `grey_node` to get the cycle in path order.
-
-Same algorithm as detection — only the bookkeeping changes.
-
-</details>
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: The Hook — missing, needs to be written -->
-<!--       Guidance: real-world story opening before any definition -->
-
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
-
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
-
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
-
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
-
-<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
-<!--       Guidance: bulleted list of gotchas -->
-
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
-
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
-
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
-
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
-
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
+- **CLRS**, *Introduction to Algorithms*, 4th ed., §20.3 — DFS, edge classification, and the white/grey/black colours; back edges ⇔ cycles.
+- **Sedgewick & Wayne**, *Algorithms*, 4th ed., §4.1–4.2 — cycle detection in undirected and directed graphs.
+- Both runnable blocks are verified by running (undirected: square ⇒ True, tree ⇒ False; directed: diamond ⇒ False, diamond+`D→A` ⇒ True, a DAG ⇒ False). The false-positive is confirmed: the undirected parent-rule misapplied to the directed diamond returns True.

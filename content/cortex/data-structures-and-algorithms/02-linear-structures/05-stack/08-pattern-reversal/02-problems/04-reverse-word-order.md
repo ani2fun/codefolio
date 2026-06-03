@@ -12,11 +12,47 @@ difficulty: medium
 
 Given a string `s` containing multiple space-separated words, reverse the **order of words** without reversing the letters within each word.
 
-### Example 1
-> -   **Input:** `s = "This is a string"` → **Output:** `"string a is This"`
+<details>
+<summary><strong>Examples</strong></summary>
 
-### Example 2
-> -   **Input:** `s = "abc"` → **Output:** `"abc"`
+**Example 1:**
+```
+Input:  s = "This is a string"
+Output: "string a is This"
+```
+
+**Example 2:**
+```
+Input:  s = "abc"
+Output: "abc"
+```
+
+**Example 3:**
+```
+Input:  s = "hello world"
+Output: "world hello"
+```
+
+</details>
+
+---
+
+## Intuition
+
+The **structural property** that makes this a reversal problem is hidden behind a tokenisation step. The raw input is a flat character sequence, but the task reverses *words*, not characters. Once you split `"This is a string"` into the list `[This, is, a, string]`, it becomes an ordinary reverse-the-sequence problem — and a stack reverses any sequence by load-then-unload.
+
+The **placement** of the data shifts the unit from a character to a whole word. The build step scans the string and accumulates characters into a `word` buffer; on each space it pushes the completed word onto the stack and clears the buffer, and after the scan it pushes the final word. The stack now holds `[This, is, a, string]` with `string` on top. The unload pass pops words and joins them with single spaces, so the word order flips while each word's internal letters stay exactly as they were — the letters never enter the stack individually.
+
+What **breaks if you reach for a naive approach**? Two traps appear. First, pushing characters instead of words would reverse the letters too, producing `"gnirts a si sihT"` — wrong unit. Second, the join introduces a trailing space: appending `word + " "` after every pop leaves one space dangling at the end, so the result needs an `rstrip` (or a length trim) before returning. Forgetting that cleanup is the only real bug surface in an otherwise textbook reversal.
+
+## Applying the Diagnostic Questions
+
+| Check | Answer for Reverse Word Order |
+|---|---|
+| **Q1.** Does the problem ask for the sequence in opposite order? | **Yes** — the order of words is reversed (the letters within each word are not). |
+| **Q2.** Is the input read through one end only (or its unit coarser than an index)? | **Yes** — the reversal unit is a whole *word*, coarser than a character index. |
+| **Q3.** Are two linear passes (load, unload) enough with no comparison? | **Yes** — tokenise-and-push, then pop-and-join; words are never compared. |
+| **Q4.** Is `O(N)` auxiliary space acceptable? | **Yes** — the stack holds every word and the result string grows to length `N`; `O(N)` time, `O(N)` space. |
 
 <details>
 <summary><h2>Approach</h2></summary>
@@ -24,7 +60,11 @@ Given a string `s` containing multiple space-separated words, reverse the **orde
 
 Same reversal pattern, **but the unit is a word, not a character**. Tokenise on spaces, push each word, pop into a result with single-space separators. The trailing-space cleanup at the end is the only fiddly part.
 
-> 🖼 Diagram — Reverse word order — push whole words, not characters; the stack reverses their order, while each word's internal letters are untouched. The unit of reversal is whatever you push.
+1. **Build the stack of words.** Scan `s` character by character into a `word` buffer; on each space, push the buffered word (if non-empty) and reset the buffer. After the scan, push the final buffered word if it is non-empty.
+2. **Unload pass.** While the word stack is not empty, pop a word and append it to the result, followed by a single space.
+3. **Trim the trailing space.** The append-with-space loop leaves one extra space at the end; strip it.
+4. **Return the result string** — the words now appear in reversed order, each with its letters intact.
+
 ```mermaid
 ---
 config:
@@ -52,7 +92,7 @@ flowchart LR
 
 
 
-```python run
+```python run viz=array viz-root=stack viz-kind=stack
 from typing import List
 
 class Solution:
@@ -115,7 +155,7 @@ print(Solution().reverse_word_order("one"))                # one — single word
 print(Solution().reverse_word_order("x y"))                # y x — two words
 ```
 
-```java run
+```java run viz=array viz-root=stack viz-kind=stack
 import java.util.*;
 
 public class Main {
@@ -190,9 +230,49 @@ public class Main {
 }
 ```
 
+### Dry Run
+
+Trace Example 1 with `s = "This is a string"`.
+
+```
+Build the stack of words (scan into a buffer, push on each space):
+  read "This" → space → push "This"        stack: This
+  read "is"   → space → push "is"           stack: This is
+  read "a"    → space → push "a"            stack: This is a
+  read "string" → end → push "string"       stack: This is a string   (top is "string")
+
+Unload pass (pop + append + single space):
+  pop "string" → result = "string "
+  pop "a"      → result = "string a "
+  pop "is"     → result = "string a is "
+  pop "This"   → result = "string a is This "
+
+Trim trailing space → "string a is This" ✓
+```
+
+Each word is pushed whole, so the stack reverses word order while every word's letters stay in place. The unload loop appends a space after each word, leaving one trailing space that the final trim removes.
+
+### Complexity Analysis
+
+| | Complexity | Reason |
+|---|---|---|
+| **Time** | `O(N)` | The build scan reads each of the `N` characters once; the unload pass touches each word once. Both are linear in the input length. |
+| **Space** | `O(N)` | The word stack and the result string each hold up to `N` characters' worth of data. |
+
+### Edge Cases
+
+| Case | What happens |
+|---|---|
+| Empty string (`""`) | No word is ever buffered; nothing is pushed; the trim guard sees an empty result and returns `""`. |
+| Single word (`"abc"`) | One word is pushed and popped; the result is `"abc"` (its own reverse at the word level). |
+| Two words (`"x y"`) | Push `x, y`; pop `y, x`; result `"y x"`. |
+| Spaces between words only | The build step pushes a word only when the buffer is non-empty, so single internal spaces tokenise cleanly into words. |
+| Trailing/leading space handling | A space with an empty buffer pushes nothing; the final `rstrip` removes the one trailing separator the join adds. |
+| Letters never reversed | The letters enter the buffer in order and the whole word is pushed as one unit, so internal letter order is preserved. |
+
 </details>
 <details>
-<summary><h2>Final Takeaway</h2></summary>
+<summary><h2>Key Takeaway</h2></summary>
 
 
 Three lessons:
@@ -205,35 +285,6 @@ Three lessons:
 
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+## Key Takeaway
 
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
-
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
-
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
-
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
-
-<!-- TODO: Solution — missing, needs to be written -->
-<!--       Guidance: Python block then Java block -->
-
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
-
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table: time / space / why -->
-
-<!-- TODO: Edge Cases — missing, needs to be written -->
-<!--       Guidance: table, min 5 rows -->
-
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->
+This is the word-unit instance of the pattern: tokenise first, then reverse the *words* with the same load-then-unload loop. The two new ideas versus the earlier problems are that the reversal unit is coarser than a character and the join needs a trailing-space trim.

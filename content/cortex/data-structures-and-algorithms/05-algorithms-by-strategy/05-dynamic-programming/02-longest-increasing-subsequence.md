@@ -1,803 +1,189 @@
 ---
 title: "Longest Increasing Subsequence"
-summary: "<!-- TODO: summary -->"
+summary: "The longest strictly-increasing subsequence (gaps allowed). The recurrence lis(i) = 1 + max(lis(j) for j<i, arr[j]<arr[i]) gives an O(n^2) DP that looks back at every earlier index — so it can't be space-optimised to a rolling window."
+prereqs:
+  - 05-algorithms-by-strategy/05-dynamic-programming/01-linear-dp
 ---
 
-# 2. Longest Increasing Subsequence
+## Why It Exists
 
-A monitoring graph crosses your screen and you ask one simple question: *what's the longest run where the metric kept improving?* Not consecutive — improvements are allowed to be interrupted by dips, as long as you skip the dips. The graph might be 10,000 points; the answer might be 47. On the surface this is a "look at the picture" question. Underneath it's one of the foundational problems of dynamic programming, and the algorithm that solves it shows up in version-control diff tools, financial trend detection, and the analysis of any sequence where you want to find the longest "improving" sub-trace.
+A metric crosses your screen and you ask: *what's the longest run where it kept improving?* — not *consecutive*, because you're allowed to skip the dips. The graph might be 10,000 points; the answer might be 47. That's the **Longest Increasing Subsequence** (LIS): the longest subsequence (keep relative order, but pick any subset) that's strictly increasing. It powers version-control diff tools, trend detection, and patience-sorting card games.
 
-By the end of this lesson you'll know the **Longest Increasing Subsequence** (LIS) recurrence — `lis(i) = 1 + max(lis(j))` over earlier `j` with `arr[j] < arr[i]` — the `O(n²)` DP that follows from it, the trick to recover the actual subsequence from the table, and the related "largest sum ascending subsequence" variant that's structurally identical with one operator changed.
+LIS is the [linear-DP](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-linear-dp) shape with a twist that matters: `lis(i)` (the longest increasing subsequence *ending at* `i`) looks back at **every** earlier index, not a fixed handful. That's the transfer challenge the linear-DP lesson left you with — and the reason LIS *can't* be space-optimised to a rolling window.
 
-## Table of contents
+## See It Work
 
-1. [The Increasing-Subsequence Problem](#the-increasing-subsequence-problem)
-2. [Optimal Substructure — Why DP Applies](#optimal-substructure--why-dp-applies)
-3. [Overlapping Subproblems — Why DP Wins](#overlapping-subproblems--why-dp-wins)
-4. [Longest Increasing Subsequence](#longest-increasing-subsequence)
-5. [Largest Sum Ascending Subsequence](#largest-sum-ascending-subsequence)
+`lis(i) = 1 + max(lis(j))` over all `j < i` with `arr[j] < arr[i]` (or just `1` if no such `j`). The answer is the max over all `i`.
 
-***
+```python run
+def lis(arr):
+    if not arr: return 0
+    dp = [1] * len(arr)                              # dp[i] = LIS ending at i (at least itself)
+    for i in range(len(arr)):
+        for j in range(i):                           # look back at EVERY earlier index
+            if arr[j] < arr[i]:
+                dp[i] = max(dp[i], dp[j] + 1)
+    return max(dp)
 
-# The Increasing-Subsequence Problem
-
-Given an array `arr` of length `n`, a **subsequence** is any selection of elements from `arr` that preserves their original order. Elements don't have to be adjacent — you can skip any number of them — but you can't reorder.
-
-```d2
-direction: right
-arr: "Array — pick a subsequence by selecting any subset, preserving order" {
-  grid-rows: 2
-  grid-columns: 6
-  grid-gap: 0
-  v0: "9"
-  v1: "5" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  v2: "10"
-  v3: "6" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  v4: "9"
-  v5: "7" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  l0: "[0]"
-  l1: "[1]"
-  l2: "[2]"
-  l3: "[3]"
-  l4: "[4]"
-  l5: "[5]"
-}
-```
-
-<p align="center"><strong>From <code>[9, 5, 10, 6, 9, 7]</code>, the highlighted indices [1, 3, 5] form the subsequence <code>[5, 6, 7]</code>. Order preserved; skipping allowed; not necessarily contiguous.</strong></p>
-
-The **longest increasing subsequence** is the longest such selection where every element is strictly greater than the one before it in the subsequence. For `[9, 5, 10, 6, 9, 7, 8]` the LIS is `[5, 6, 7, 8]` with length 4. (`[5, 9]` is also increasing but shorter; `[5, 6, 7, 8]` is the longest.)
-
-The brute force is to enumerate all `2^n` subsequences and check each. That's hopeless for `n > 30` or so. DP brings it to `O(n²)`. (A clever variant gets to `O(n log n)`, which we'll mention but not implement here.)
-
-> *Predict before reading on — for the array <code>[5, 6, 1, 4, 3, 8, 2]</code>, what's the LIS? Sketch it before reading on.*
-
-The LIS is `[5, 6, 8]` (length 3) or equivalently `[1, 4, 8]` or `[1, 3, 8]`. All three are length 3; the algorithm only needs to return the *length*, but each could be reconstructed if needed.
-
----
-
-## Key Takeaway
-
-A subsequence preserves order but allows skipping. The LIS is the longest such selection that's strictly increasing. Brute force is exponential; DP makes it polynomial.
-
-***
-
-# Optimal Substructure — Why DP Applies
-
-Define `lis(i)` = the length of the longest increasing subsequence **ending exactly at index `i`**. Two facts make DP work:
-
-**Fact 1 — Any LIS ending at `i` extends a shorter LIS ending at some earlier `j`.** If the LIS ending at `i` is `[..., arr[j], arr[i]]`, then dropping the last element yields an increasing subsequence ending at `j` — which must have been the longest such (otherwise we could swap it for an even longer one and get a longer LIS at `i`, a contradiction).
-
-**Fact 2 — The element preceding `arr[i]` in the LIS must be less than `arr[i]`.** That's the definition of "increasing." So the predecessor `j` is constrained: `j < i` and `arr[j] < arr[i]`.
-
-Combining both:
-
-```
-lis(i) = 1 + max( lis(j) for all j where 0 ≤ j < i and arr[j] < arr[i] )
-       = 1                                    if no such j exists
-```
-
-The base case is `lis(0) = 1` — the single element `arr[0]` on its own. For any later `i` with no earlier `arr[j]` smaller than `arr[i]`, we still get `lis(i) = 1` (the element by itself).
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#777777"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-  subgraph PRE["candidates for predecessor of arr[i]"]
-    J0["j=0<br/>arr[0]"]
-    J1["j=1<br/>arr[1]"]
-    J2["..."]
-    J3["j=i-1"]
-  end
-  PRE -->|"keep only those<br/>with arr[j] &lt; arr[i]"| FILTER["filtered candidates"]
-  FILTER -->|"take max(lis[j])"| MAX["best predecessor"]
-  MAX -->|"+1 for arr[i]"| LIS["lis(i)"]
-```
-
-<p align="center"><strong>The recurrence: scan all earlier indices; keep those whose value is less than <code>arr[i]</code>; take the longest LIS among them; add 1 for <code>arr[i]</code> itself.</strong></p>
-
-**Why is the answer not simply `lis(n-1)`?** Because the LIS could end *anywhere*, not necessarily at the last index. The final answer is `max(lis(i))` over all `i ∈ [0, n-1]`.
-
----
-
-## Key Takeaway
-
-`lis(i)` is the LIS ending at `i`. Each is built by extending an earlier `lis(j)` where `arr[j] < arr[i]`. The answer is `max(lis(i))` over all `i` because the LIS doesn't have to end at the last index.
-
-***
-
-# Overlapping Subproblems — Why DP Wins
-
-If we compute `lis(i)` recursively without caching, the same `lis(j)` gets computed many times — once for every later index `i'` where `arr[j] < arr[i']`. The recursion's call graph is dense: subproblems repeat heavily.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#777777"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-  L4["lis(4)"] --> L3a["lis(3)"]
-  L4 --> L2a["lis(2)"]
-  L4 --> L1a["lis(1)"]
-  L3a --> L2b["lis(2)"]
-  L3a --> L1b["lis(1)"]
-  L2a --> L1c["lis(1)"]
-  L2b --> L1d["lis(1)"]
-```
-
-<p align="center"><strong>Recursive call tree for <code>lis(4)</code> on a typical input. <code>lis(2)</code> appears twice, <code>lis(1)</code> appears four times. Without caching this duplication blows up exponentially.</strong></p>
-
-DP collapses this into one computation per `i`. The bottom-up table has `n` cells; filling each cell requires scanning `i` earlier cells; total `O(n²)`.
-
----
-
-## Key Takeaway
-
-The recursion's call graph contains the same subproblems many times over. Caching turns the duplicate work into a single pass, taking us from exponential to `O(n²)`.
-
-***
-
-# Longest Increasing Subsequence
-
-## The Problem
-
-Given an array `arr`, return the length of the longest strictly increasing subsequence.
-
-```
-Input:  arr = [9, 5, 10, 6, 9, 7, 8]
-Output: 4               LIS: [5, 6, 7, 8]
-
-Input:  arr = [5, 6, 1, 4, 3, 8, 2]
-Output: 3               LIS: [5, 6, 8] or [1, 4, 8] or [1, 3, 8]
-
-Input:  arr = [9, 5, 4, 3]
-Output: 1               No element is greater than any earlier one
-```
-
----
-
-<details>
-<summary><h2>Applying the Diagnostic Questions</h2></summary>
-
-
-| # | Question | Answer |
-|---|---|---|
-| **Q1** | Is there optimal substructure? | **Yes** — the LIS at `i` extends an LIS at some earlier `j`. |
-| **Q2** | Are there overlapping subproblems? | **Yes** — `lis(j)` is used by every `lis(i')` for `i' > j` where `arr[j] < arr[i']`. |
-| **Q3** | Is the state 1D? | **Yes** — indexed by a single integer `i`, so `dp` is a 1D array. |
-
-### Q1 — Why "Yes"?
-
-**Mental model.** Picture the LIS as a chain of stepping stones. Each new step can only land on a higher stone than the one before it. To extend the chain to a new stone, you start from the *longest* chain that ends below the new stone's height — extending a shorter chain would give a shorter total.
-
-**Concrete numbers.** For `arr = [9, 5, 10, 6, 9, 7, 8]`:
-- `lis(0) = 1` (just `[9]`)
-- `lis(1) = 1` (just `[5]`)
-- `lis(2) = 2` (extends `lis(0)`: `[9, 10]`, or `lis(1)`: `[5, 10]`)
-- `lis(3) = 2` (extends `lis(1)`: `[5, 6]`)
-- `lis(4) = 3` (extends `lis(3)`: `[5, 6, 9]`, or `lis(1)`+something else)
-- `lis(5) = 3` (extends `lis(3)`: `[5, 6, 7]`)
-- `lis(6) = 4` (extends `lis(5)`: `[5, 6, 7, 8]`)
-
-**What breaks otherwise.** If we ever extended a *non-longest* `lis(j)`, the resulting chain would be shorter than the alternative — contradicting "longest."
-
-### Q2 — Why "Yes"?
-
-**Mental model.** When computing `lis(i)`, we look at *all* earlier `j` with `arr[j] < arr[i]`. But each of those `j` is a candidate predecessor for many later `i' > i` too. Without caching, the same `lis(j)` value is recomputed for each.
-
-**Concrete numbers.** For `arr = [1, 3, 2, 4]`, computing `lis(3)` looks at `lis(0)`, `lis(1)`, `lis(2)`. Computing `lis(2)` looks at `lis(0)`, `lis(1)`. So `lis(0)` and `lis(1)` are each requested twice (once from `lis(3)`, once from `lis(2)`). For larger arrays the duplication grows quadratically.
-
-**What breaks otherwise.** Without caching, the recursion is `O(2^n)`. With caching it's `O(n²)`.
-
-### Q3 — Why "Yes"?
-
-**Mental model.** The state of any subproblem is fully captured by one integer: which index `i` does the subsequence end at? No second dimension needed.
-
-**Concrete numbers.** `dp` is just `int[n]`. For `n = 7`, that's 7 cells.
-
-**What breaks otherwise.** If the state needed two indices (e.g., end-index *and* a constraint on the previous element's value), we'd need `dp[i][j]` — a 2D array. We see exactly that in LCS (the next lesson).
-
-</details>
-<details>
-<summary><h2>The DP Strategy (Visualised)</h2></summary>
-
-
-```d2
-direction: right
-grid: "dp for arr = [9, 5, 10, 6, 9, 7, 8]" {
-  grid-rows: 3
-  grid-columns: 7
-  grid-gap: 0
-  a0: "9"
-  a1: "5"
-  a2: "10"
-  a3: "6"
-  a4: "9"
-  a5: "7"
-  a6: "8"
-  d0: "1"
-  d1: "1"
-  d2: "2"
-  d3: "2"
-  d4: "3"
-  d5: "3"
-  d6: "4" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  i0: "[0]"
-  i1: "[1]"
-  i2: "[2]"
-  i3: "[3]"
-  i4: "[4]"
-  i5: "[5]"
-  i6: "[6]"
-}
-```
-
-<p align="center"><strong>Top row: the array. Middle row: <code>dp[i]</code> = LIS ending at index <code>i</code>. Bottom row: indices. The maximum entry in the middle row (<code>dp[6] = 4</code>) is the answer.</strong></p>
-
-</details>
-<details>
-<summary><h2>Solution &amp; Analysis</h2></summary>
-
-### The Solution
-
-```python run viz=array viz-root=dp
-from typing import List
-
-class Solution:
-    def longest_increasing_subsequence(self, arr: List[int]) -> int:
-        n: int = len(arr)
-        if n == 0:
-            return 0
-
-        # Create a list to store the lengths of increasing subsequences
-        dp: List[int] = [1] * n
-
-        # Compute the lengths of increasing subsequences ending at each
-        # position
-        for i in range(1, n):
-            for j in range(i):
-
-                # If the current element is greater than the previous
-                # element, update the length of the increasing
-                # subsequence
-                if arr[i] > arr[j]:
-                    dp[i] = max(dp[i], dp[j] + 1)
-
-        # Find the maximum length of the increasing subsequence
-        max_lis_length: int = dp[0]
-        for i in range(1, n):
-            if dp[i] > max_lis_length:
-                max_lis_length = dp[i]
-
-        return max_lis_length
-
-
-# Examples from the problem statement
-print(Solution().longest_increasing_subsequence([9, 5, 10, 6, 9, 7, 8]))  # 4
-print(Solution().longest_increasing_subsequence([5, 6, 1, 4, 3, 8, 2]))   # 3
-print(Solution().longest_increasing_subsequence([9, 5, 4, 3]))             # 1
-
-# Edge cases
-print(Solution().longest_increasing_subsequence([]))                       # 0
-print(Solution().longest_increasing_subsequence([7]))                      # 1
-print(Solution().longest_increasing_subsequence([1, 2]))                   # 2
-print(Solution().longest_increasing_subsequence([1, 2, 3, 4, 5]))         # 5
-print(Solution().longest_increasing_subsequence([5, 4, 3, 2, 1]))         # 1
+print(lis([10, 9, 2, 5, 3, 7, 101, 18]))             # 4  e.g. [2, 3, 7, 101]
 ```
 
 ```java run
 import java.util.*;
-
 public class Main {
-    static class Solution {
-        public int longestIncreasingSubsequence(int[] arr) {
-            int n = arr.length;
-            if (n == 0) {
-                return 0;
-            }
-
-            // Create an array to store the lengths of increasing
-            // subsequences
-            int[] dp = new int[n];
-            Arrays.fill(dp, 1);
-
-            // Compute the lengths of increasing subsequences ending at each
-            // position
-            for (int i = 1; i < n; i++) {
-                for (int j = 0; j < i; j++) {
-
-                    // If the current element is greater than the previous
-                    // element, update the length of the increasing
-                    // subsequence
-                    if (arr[i] > arr[j]) dp[i] = Math.max(dp[i], dp[j] + 1);
-                }
-            }
-
-            // Find the maximum length of the increasing subsequence
-            int maxLISLength = dp[0];
-            for (int i = 1; i < n; i++) {
-                if (dp[i] > maxLISLength) maxLISLength = dp[i];
-            }
-
-            return maxLISLength;
+    static int lis(int[] a) {
+        if (a.length == 0) return 0;
+        int[] dp = new int[a.length]; Arrays.fill(dp, 1); int best = 1;
+        for (int i = 0; i < a.length; i++) {
+            for (int j = 0; j < i; j++) if (a[j] < a[i]) dp[i] = Math.max(dp[i], dp[j] + 1);
+            best = Math.max(best, dp[i]);
         }
+        return best;
     }
-
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().longestIncreasingSubsequence(new int[]{9, 5, 10, 6, 9, 7, 8}));  // 4
-        System.out.println(new Solution().longestIncreasingSubsequence(new int[]{5, 6, 1, 4, 3, 8, 2}));   // 3
-        System.out.println(new Solution().longestIncreasingSubsequence(new int[]{9, 5, 4, 3}));             // 1
-
-        // Edge cases
-        System.out.println(new Solution().longestIncreasingSubsequence(new int[]{}));                       // 0
-        System.out.println(new Solution().longestIncreasingSubsequence(new int[]{7}));                      // 1
-        System.out.println(new Solution().longestIncreasingSubsequence(new int[]{1, 2}));                   // 2
-        System.out.println(new Solution().longestIncreasingSubsequence(new int[]{1, 2, 3, 4, 5}));         // 5
-        System.out.println(new Solution().longestIncreasingSubsequence(new int[]{5, 4, 3, 2, 1}));         // 1
+        System.out.println(lis(new int[]{10, 9, 2, 5, 3, 7, 101, 18}));   // 4
     }
 }
 ```
 
+Both print `4` — e.g. `[2, 3, 7, 101]`, picked out of the array by skipping the dips. Cost: `O(n²)` (the nested loop), `O(n)` space.
 
-<details>
-<summary><strong>Trace — arr = [9, 5, 10, 6, 9, 7, 8]</strong></summary>
+## How It Works
 
-```
-Initial: dp = [1, 1, 1, 1, 1, 1, 1]
-
-i=1 (arr[1]=5):
-  j=0: arr[0]=9 ≥ 5 — skip
-  dp[1] = 1
-
-i=2 (arr[2]=10):
-  j=0: arr[0]=9 < 10 → dp[2] = max(1, dp[0]+1) = 2
-  j=1: arr[1]=5 < 10 → dp[2] = max(2, dp[1]+1) = 2
-  dp[2] = 2
-
-i=3 (arr[3]=6):
-  j=0: 9 ≥ 6 — skip
-  j=1: 5 < 6 → dp[3] = max(1, dp[1]+1) = 2
-  j=2: 10 ≥ 6 — skip
-  dp[3] = 2
-
-i=4 (arr[4]=9):
-  j=0: 9 ≥ 9 — skip (strict inequality)
-  j=1: 5 < 9 → dp[4] = max(1, dp[1]+1) = 2
-  j=2: 10 ≥ 9 — skip
-  j=3: 6 < 9 → dp[4] = max(2, dp[3]+1) = 3
-  dp[4] = 3
-
-i=5 (arr[5]=7):
-  j=0: 9 ≥ 7 — skip
-  j=1: 5 < 7 → dp[5] = 2
-  j=2: 10 ≥ 7 — skip
-  j=3: 6 < 7 → dp[5] = 3
-  j=4: 9 ≥ 7 — skip
-  dp[5] = 3
-
-i=6 (arr[6]=8):
-  j=0: 9 ≥ 8 — skip
-  j=1: 5 < 8 → dp[6] = 2
-  j=2: 10 ≥ 8 — skip
-  j=3: 6 < 8 → dp[6] = 3
-  j=4: 9 ≥ 8 — skip
-  j=5: 7 < 8 → dp[6] = 4
-  dp[6] = 4
-
-Final: dp = [1, 1, 2, 2, 3, 3, 4]
-max(dp) = 4 ✓
-```
-
-</details>
-
-### Complexity Analysis
-
-| Aspect | Cost | Why |
-|---|---|---|
-| Time | `O(n²)` | Outer loop over `i`, inner loop over `j < i`. |
-| Space | `O(n)` | The `dp` array. The recurrence references *every* earlier cell, so we can't space-optimise to `O(1)`. |
-
-**A faster `O(n log n)` algorithm exists** using patience sorting (or a binary-search trick on a "tails" array), but it's a different algorithm — not a DP optimisation. The `O(n²)` DP is what generalises to the problem variants in the rest of this section.
-
-### Edge Cases
-
-| Case | Example | Expected | Reasoning |
-|---|---|---|---|
-| Empty array | `[]` | `0` | Guarded explicitly; no LIS exists. |
-| Single element | `[5]` | `1` | The element alone is an LIS of length 1. |
-| Strictly decreasing | `[9, 5, 4, 3]` | `1` | No element is greater than any earlier — every `lis(i) = 1`. |
-| Strictly increasing | `[1, 2, 3, 4]` | `4` | Each `lis(i) = i + 1`; best = `n`. |
-| All equal | `[5, 5, 5]` | `1` | Strict `<` means no element is a valid predecessor of a duplicate. |
-| Negative numbers | `[-3, -1, -2, 0]` | `3` | LIS: `[-3, -1, 0]`. The recurrence works on any totally ordered values. |
-
-</details>
-<details>
-<summary><h2>Final Takeaway</h2></summary>
-
-
-LIS is the canonical 1D-state DP with a "look at all earlier indices" recurrence. Define `dp[i]` as the LIS ending at `i`, scan all earlier `j` with `arr[j] < arr[i]`, take the max + 1. Total `O(n²)`.
-
-> *Transfer challenge:* Modify the algorithm to return the actual LIS array, not just its length. (Hint: store a `prev[i]` array tracking which `j` gave the max; reconstruct by walking backward.)
-
-<details>
-<summary><strong>Answer</strong></summary>
-
-Track `prev[i]` = the index `j` that produced `dp[i]`'s maximum (or `-1` if `arr[i]` started a new LIS). When the loop ends, find the index with the maximum `dp` value, then walk backward through `prev` to reconstruct. The next problem (Largest Sum Ascending Subsequence) does exactly this.
-
-</details>
-
-</details>
-
-***
-
-# Largest Sum Ascending Subsequence
-
-A natural variant: instead of the longest *length*, find the *largest sum* — and return the subsequence itself, not just a number. Same recurrence shape, swap "+1" for "+arr[i]", and add path reconstruction.
-
-## The Problem
-
-Given an array `arr`, return the strictly-ascending subsequence whose sum is largest.
-
-```
-Input:  arr = [1, 7, 3, 5, 9, 8, 6]
-Output: [1, 3, 5, 9]
-        Sum 18 — largest of any ascending subsequence.
-
-Input:  arr = [9, 8, 7, 6]
-Output: [9]
-        No ascending subsequence of length > 1; pick the max single element.
-
-Input:  arr = [9, 1, 2, 3]
-Output: [9]
-        [1, 2, 3] sums to 6; [9] sums to 9.
-```
-
----
-
-<details>
-<summary><h2>What Changes from LIS</h2></summary>
-
-
-Two changes:
-
-1. **The recurrence's "+1" becomes "+arr[i]".** Instead of "longest count," we want "largest sum." The DP cell holds the *sum* of the best subsequence ending at `i`, not its length.
-2. **We reconstruct the subsequence.** A `prev[i]` array tracks which earlier `j` produced `dp[i]`'s maximum. Walking backward from the final answer's end-index gives the actual subsequence.
-
-The recurrence:
-
-```
-dp[i] = arr[i]                                  if no valid j
-dp[i] = max( dp[j] + arr[i] )                   for j where 0 ≤ j < i and arr[j] < arr[i]
-prev[i] = j*                                    where j* is the j that achieved the max (or -1)
-```
-
-The final answer ends at the index where `dp` is maximal — call it `endIndex`. Walk backward through `prev` to materialise the subsequence.
+The DP table for `[10, 9, 2, 5, 3, 7, 101, 18]` fills like this:
 
 ```d2
-direction: right
-grid: "Reconstruction via prev[]" {
+table: "LIS dp[i] = longest increasing subsequence ending at i" {
   grid-rows: 3
-  grid-columns: 7
+  grid-columns: 9
   grid-gap: 0
-  a0: "1"
-  a1: "7"
-  a2: "3"
-  a3: "5"
-  a4: "9" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  a5: "8"
-  a6: "6"
-  d0: "1"
-  d1: "8"
-  d2: "4"
-  d3: "9"
-  d4: "18" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  d5: "17"
-  d6: "15"
-  p0: "-1"
-  p1: "0"
-  p2: "0"
-  p3: "2"
-  p4: "3"
-  p5: "3"
-  p6: "3"
+  h:  "index"  ; h0: "0"  ; h1: "1" ; h2: "2" ; h3: "3" ; h4: "4" ; h5: "5" ; h6: "6"   ; h7: "7"
+  a:  "arr"    ; a0: "10" ; a1: "9" ; a2: "2" ; a3: "5" ; a4: "3" ; a5: "7" ; a6: "101" ; a7: "18"
+  d:  "dp"     ; d0: "1"  ; d1: "1" ; d2: "1" ; d3: "2" ; d4: "2" ; d5: "3" ; d6: "4"   ; d7: "4" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
 }
 ```
 
-<p align="center"><strong>Top: array. Middle: <code>dp[i]</code> = max sum ending at <code>i</code>. Bottom: <code>prev[i]</code> = predecessor index. Best ends at <code>i = 4</code> (sum 18). Walk back: 4 → 3 → 2 → 0. Reverse to get <code>[1, 3, 5, 9]</code>.</strong></p>
+<p align="center"><strong>Each <code>dp[i]</code> scans all earlier <code>j</code> with a smaller value and takes the best + 1. The answer is the table's maximum (4), not <code>dp[n-1]</code>.</strong></p>
+
+LIS has both DP properties: **optimal substructure** (the LIS ending at `i` extends an LIS ending at some earlier `j`) and **overlapping subproblems** (`dp[j]` is reused by every later `i` that can follow it). Two things to note:
+
+- **It can't be space-optimised.** Unlike Fibonacci's fixed 2-cell window, `dp[i]` may reference `dp[0]`, the *very first* cell — so you need the whole array. (That's the linear-DP transfer-challenge answer.)
+- **`O(n log n)` is possible** with patience sorting: maintain the smallest possible tail for each length and binary-search the insertion point. Same answer, faster — but the `O(n²)` DP is the one to understand first.
+
+> **Key takeaway.** LIS = `1 + max(lis(j) for j<i with arr[j]<arr[i])`, an `O(n²)` linear-DP that looks back at *all* earlier indices (so no rolling-window space-opt). It's a *subsequence* — gaps allowed — which is exactly why a single-pass "longest run" undercounts it. A patience-sorting variant reaches `O(n log n)`.
+
+## Trace It
+
+The word *subsequence* is the whole subtlety. It's tempting to scan once and track the current ascending run — but a subsequence may *skip* elements that a contiguous run cannot.
+
+**Predict before you run:** for `[10, 9, 2, 5, 3, 7, 101, 18]`, the longest *contiguous* ascending run is `[3, 7, 101]`. Does the single-pass run-length match the true LIS, or fall short?
+
+```python run
+def longest_run(arr):                                # longest CONTIGUOUS ascending run
+    best = cur = 1
+    for i in range(1, len(arr)):
+        cur = cur + 1 if arr[i] > arr[i - 1] else 1
+        best = max(best, cur)
+    return best
+
+def lis(arr):                                        # longest increasing SUBSEQUENCE
+    dp = [1] * len(arr)
+    for i in range(len(arr)):
+        for j in range(i):
+            if arr[j] < arr[i]: dp[i] = max(dp[i], dp[j] + 1)
+    return max(dp)
+
+A = [10, 9, 2, 5, 3, 7, 101, 18]
+print("contiguous run:", longest_run(A))
+print("LIS (subsequence):", lis(A))
+```
+
+<details>
+<summary><strong>Reveal</strong></summary>
+
+The contiguous run is `3` (`[3, 7, 101]`); the true LIS is `4` (`[2, 3, 7, 101]` or `[2, 5, 7, 18]`). The single pass is forced to *reset* at every dip — when `101` drops to `18`, its counter restarts. LIS doesn't reset: it *skips* the `9`, the `5`, the `101`, keeping only the elements that extend an increasing chain. That's the difference between a **substring** (contiguous, what the single pass finds) and a **subsequence** (order-preserving but gappy, what LIS finds) — and it's why LIS needs the look-back-at-all-`j` DP rather than an `O(n)` scan. Confusing the two is the single most common LIS mistake.
 
 </details>
-<details>
-<summary><h2>Solution &amp; Analysis</h2></summary>
 
-### The Solution
+## Your Turn
 
-```python run viz=array viz-root=dp
-from typing import List
+**Maximum Sum Increasing Subsequence** — same DP, one operator changed. Instead of *counting* elements, *sum* their values: `dp[i] = arr[i] + max(dp[j] for j<i, arr[j]<arr[i])`. The longest isn't always the heaviest.
 
-class Solution:
-    def largest_sum_ascending_subsequence(
-        self, arr: List[int]
-    ) -> List[int]:
-        n: int = len(arr)
+```python run
+def max_sum_increasing(arr):
+    dp = arr[:]                                      # dp[i] = best sum of an increasing subseq ending at i
+    for i in range(len(arr)):
+        for j in range(i):
+            if arr[j] < arr[i]:
+                dp[i] = max(dp[i], dp[j] + arr[i])
+    return max(dp)
 
-        # List to store the maximum sum subsequence ending at index i
-        dp: List[int] = [0] * n
-
-        # List to store the previous index of each element in the maximum
-        # sum subsequence
-        prev_index: List[int] = [-1] * n
-
-        # Variable to track the maximum sum
-        max_sum: int = 0
-
-        # Variable to track the index of the last element in the maximum
-        # sum subsequence
-        end_index: int = 0
-
-        for i in range(n):
-
-            # Initialize the maximum sum subsequence at index i with the
-            # element itself
-            dp[i] = arr[i]
-
-            # Initialize the previous index as -1 (indicating no previous
-            # element)
-            prev_index[i] = -1
-
-            for j in range(i):
-                if arr[j] < arr[i] and dp[j] + arr[i] > dp[i]:
-
-                    # If element at j is less than element at i and
-                    # adding element at i with maximum sum subsequence
-                    # ending at j gives a larger sum, update the maximum
-                    # sum subsequence ending at i and store the previous
-                    # index as j
-                    dp[i] = dp[j] + arr[i]
-                    prev_index[i] = j
-
-            if dp[i] > max_sum:
-
-                # If the maximum sum subsequence ending at i is greater
-                # than the current maximum sum, update the maximum sum
-                # and the index of the last element in the subsequence
-                max_sum = dp[i]
-                end_index = i
-
-        subsequence: List[int] = []
-        while end_index != -1:
-
-            # Reconstruct the maximum sum subsequence by starting from
-            # the last element and following the previous index
-            subsequence.append(arr[end_index])
-            end_index = prev_index[end_index]
-
-        # Reverse the subsequence to get the correct order
-        subsequence.reverse()
-        return subsequence
-
-
-# Examples from the problem statement
-print(Solution().largest_sum_ascending_subsequence([1, 7, 3, 5, 9, 8, 6]))  # [1, 3, 5, 9]
-print(Solution().largest_sum_ascending_subsequence([9, 8, 7, 6]))            # [9]
-print(Solution().largest_sum_ascending_subsequence([9, 1, 2, 3]))            # [9]
-
-# Edge cases
-print(Solution().largest_sum_ascending_subsequence([5]))                     # [5]
-print(Solution().largest_sum_ascending_subsequence([1, 2]))                  # [1, 2]
-print(Solution().largest_sum_ascending_subsequence([2, 1]))                  # [2]
-print(Solution().largest_sum_ascending_subsequence([1, 2, 3, 4, 5]))        # [1, 2, 3, 4, 5]
-print(Solution().largest_sum_ascending_subsequence([3, 1, 4, 1, 5, 9]))     # [1, 4, 5, 9]
+print(max_sum_increasing([1, 101, 2, 3, 100, 4, 5]))   # 106  ([1,2,3,100])
+print(max_sum_increasing([3, 4, 5, 10]))               # 22   (whole array)
 ```
 
 ```java run
 import java.util.*;
-
 public class Main {
-    static class Solution {
-        public int[] largestSumAscendingSubsequence(int[] arr) {
-            int n = arr.length;
-
-            // Array to store the maximum sum subsequence ending at index i
-            int[] dp = new int[n];
-
-            // Array to store the previous index of each element in the
-            // maximum sum subsequence
-            int[] prevIndex = new int[n];
-
-            // Variable to track the maximum sum
-            int maxSum = 0;
-
-            // Variable to track the index of the last element in the maximum
-            // sum subsequence
-            int endIndex = 0;
-
-            for (int i = 0; i < n; i++) {
-
-                // Initialize the maximum sum subsequence at index i with the
-                // element itself
-                dp[i] = arr[i];
-
-                // Initialize the previous index as -1 (indicating no
-                // previous element)
-                prevIndex[i] = -1;
-
-                for (int j = 0; j < i; j++) {
-                    if (arr[j] < arr[i] && dp[j] + arr[i] > dp[i]) {
-
-                        // If element at j is less than element at i and
-                        // adding element at i with maximum sum subsequence
-                        // ending at j gives a larger sum, update the maximum
-                        // sum subsequence ending at i and store the previous
-                        // index as j
-                        dp[i] = dp[j] + arr[i];
-                        prevIndex[i] = j;
-                    }
-                }
-
-                if (dp[i] > maxSum) {
-
-                    // If the maximum sum subsequence ending at i is greater
-                    // than the current maximum sum, update the maximum sum
-                    // and the index of the last element in the subsequence
-                    maxSum = dp[i];
-                    endIndex = i;
-                }
-            }
-
-            List<Integer> subsequence = new ArrayList<>();
-            while (endIndex != -1) {
-
-                // Reconstruct the maximum sum subsequence by starting from
-                // the last element and following the previous index
-                subsequence.add(arr[endIndex]);
-                endIndex = prevIndex[endIndex];
-            }
-
-            // Reverse the subsequence to get the correct order
-            Collections.reverse(subsequence);
-
-            // Convert the List<Integer> to int[]
-            int[] result = new int[subsequence.size()];
-            for (int i = 0; i < subsequence.size(); i++) {
-                result[i] = subsequence.get(i);
-            }
-
-            return result;
+    static int maxSumIncreasing(int[] a) {
+        int[] dp = a.clone(); int best = 0;
+        for (int i = 0; i < a.length; i++) {
+            for (int j = 0; j < i; j++) if (a[j] < a[i]) dp[i] = Math.max(dp[i], dp[j] + a[i]);
+            best = Math.max(best, dp[i]);
         }
+        return best;
     }
-
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(Arrays.toString(new Solution().largestSumAscendingSubsequence(new int[]{1, 7, 3, 5, 9, 8, 6})));  // [1, 3, 5, 9]
-        System.out.println(Arrays.toString(new Solution().largestSumAscendingSubsequence(new int[]{9, 8, 7, 6})));            // [9]
-        System.out.println(Arrays.toString(new Solution().largestSumAscendingSubsequence(new int[]{9, 1, 2, 3})));            // [9]
-
-        // Edge cases
-        System.out.println(Arrays.toString(new Solution().largestSumAscendingSubsequence(new int[]{5})));                     // [5]
-        System.out.println(Arrays.toString(new Solution().largestSumAscendingSubsequence(new int[]{1, 2})));                  // [1, 2]
-        System.out.println(Arrays.toString(new Solution().largestSumAscendingSubsequence(new int[]{2, 1})));                  // [2]
-        System.out.println(Arrays.toString(new Solution().largestSumAscendingSubsequence(new int[]{1, 2, 3, 4, 5})));        // [1, 2, 3, 4, 5]
-        System.out.println(Arrays.toString(new Solution().largestSumAscendingSubsequence(new int[]{3, 1, 4, 1, 5, 9})));     // [1, 4, 5, 9]
+        System.out.println(maxSumIncreasing(new int[]{1,101,2,3,100,4,5}));   // 106
+        System.out.println(maxSumIncreasing(new int[]{3,4,5,10}));            // 22
     }
 }
 ```
 
+Both print `106` then `22`. Note `[1,2,3,100]` (sum 106, length 4) beats `[1,2,3,4,5]` (sum 15, length 5) — maximising sum and maximising length are different objectives on the same DP skeleton. The remaining DP lessons keep this move: same scaffold, a different subproblem definition and recurrence.
+
+## Reflect & Connect
+
+- **This is the linear-DP transfer challenge, answered.** Fibonacci's window was two cells, so it space-optimised to `O(1)`. LIS's `dp[i]` can reach back to `dp[0]`, so the whole `O(n)` table is required — *the* reason some linear DPs can't be reduced to scalars.
+- **`O(n²)` DP vs `O(n log n)` patience sorting.** The DP is the transparent baseline; patience sorting (keep the smallest tail per length, binary-search insertions) is the production-speed version with the same answer. Learn the DP first; reach for patience sorting when `n` is large.
+- **Subsequence ≠ substring.** A subsequence keeps relative order but may skip elements; a substring is contiguous. LIS, LCS, and edit distance are all *subsequence* DPs — the gappy structure is exactly what makes them DP rather than a single scan.
+- **One operator changes the problem.** Swap `+1` for `+arr[i]` and "longest" becomes "max-sum"; swap `<` for `<=` and "strictly increasing" becomes "non-decreasing". The recurrence skeleton is reusable across a whole family.
+
+## Recall
 
 <details>
-<summary><strong>Trace — arr = [1, 7, 3, 5, 9, 8, 6]</strong></summary>
+<summary><strong>Q:</strong> What is the LIS recurrence?</summary>
 
-```
-Init: dp = [1, 7, 3, 5, 9, 8, 6], prev = [-1, -1, -1, -1, -1, -1, -1]
-
-i=0: nothing to do. dp[0]=1.
-i=1: j=0, arr[0]=1 < 7, dp[0]+7=8 > 7 → dp[1]=8, prev[1]=0
-i=2: j=0, 1<3, dp[0]+3=4 > 3 → dp[2]=4, prev[2]=0
-     j=1, 7≥3 — skip
-i=3: j=0, 1<5, dp[0]+5=6 > 5 → dp[3]=6, prev[3]=0
-     j=1, 7≥5 — skip
-     j=2, 3<5, dp[2]+5=9 > 6 → dp[3]=9, prev[3]=2
-i=4: j=0, 1<9, dp[0]+9=10 > 9 → dp[4]=10, prev[4]=0
-     j=1, 7<9, dp[1]+9=17 > 10 → dp[4]=17, prev[4]=1
-     j=2, 3<9, dp[2]+9=13 < 17 — skip
-     j=3, 5<9, dp[3]+9=18 > 17 → dp[4]=18, prev[4]=3
-i=5: j=3, 5<8, dp[3]+8=17 > 8 → dp[5]=17, prev[5]=3
-     ...
-i=6: similar; dp[6]=15, prev[6]=3
-
-dp = [1, 8, 4, 9, 18, 17, 15]
-endIndex = 4 (dp[4] = 18 is max)
-
-Reconstruct: 4 → prev[4]=3 → prev[3]=2 → prev[2]=0 → prev[0]=-1
-Reverse: [arr[0], arr[2], arr[3], arr[4]] = [1, 3, 5, 9]  ✓
-```
-
-</details>
-
-### Complexity Analysis
-
-| Aspect | Cost | Why |
-|---|---|---|
-| Time | `O(n²)` | Same nested loops as LIS. |
-| Space | `O(n)` | `dp` + `prev`. The reconstruction adds `O(n)` for the result. |
-
-### Edge Cases
-
-| Case | Example | Expected | Reasoning |
-|---|---|---|---|
-| Strictly decreasing | `[9, 8, 7, 6]` | `[9]` | Each `dp[i] = arr[i]`; max is `dp[0] = 9`. |
-| Single element | `[5]` | `[5]` | `endIndex = 0`, walk back yields `[5]`. |
-| All equal | `[3, 3, 3]` | `[3]` | Strict `<` blocks all extensions; max `dp` is the element value. |
-| Negatives + positives | `[-1, 2, -3, 4]` | `[2, 4]` | `dp[1] = 2` (extending `[-1]` would give sum 1, smaller than 2 alone); `dp[3] = dp[1] + 4 = 6`. The max sum is 6 with `endIndex = 3`, `prev[3] = 1`, `prev[1] = -1` — reconstruction yields `[2, 4]`. |
-| All negative | `[-3, -1, -2]` | `[-3]` | Every `dp[i]` is negative, so the `dp[i] > max_sum` guard (with `max_sum` initialised to `0`) never fires. `end_index` stays at its default `0`, and reconstruction returns just `[arr[0]] = [-3]`. **Watch out:** the `max_sum = 0` initialisation is a latent bug for all-negative inputs — defensive code should initialise it to `arr[0]` (or `-∞`) so the true maximum is tracked. |
+**A:** `lis(i) = 1 + max(lis(j))` over all `j < i` with `arr[j] < arr[i]` (or `1` if none); the answer is `max(lis(i))` over all `i`. `O(n²)` time, `O(n)` space.
 
 </details>
 <details>
-<summary><h2>Final Takeaway</h2></summary>
+<summary><strong>Q:</strong> Why can't LIS be space-optimised to a rolling window?</summary>
 
+**A:** `dp[i]` may reference *any* earlier `dp[j]`, including `dp[0]` — the look-back isn't a fixed `k` cells, so the entire table must be kept (unlike Fibonacci's 2-cell window).
 
-Largest-sum-ascending is LIS with the count-1 swapped for the value, plus a `prev` array for reconstruction. The pattern — predecessor chains stored alongside the DP — recurs throughout this section whenever you need the *path*, not just the *length*.
-
-> *Transfer challenge for the next lesson:* Both LIS and Largest-Sum-Ascending compare elements *within the same array*. What changes if we compare across *two* arrays — finding the longest sequence of elements appearing in both, in order? Sketch what `dp` should be indexed by before reading on.
-
+</details>
 <details>
-<summary><strong>Answer</strong></summary>
+<summary><strong>Q:</strong> Subsequence vs substring — why does it matter here?</summary>
 
-The natural state is `dp[i][j]` = LCS of `arr1[0..i]` and `arr2[0..j]`. We've moved from a 1D state to a 2D one. The next lesson formalises this as **Longest Common Subsequence**.
+**A:** LIS is a subsequence (order-preserving but may skip elements), so a single-pass "longest contiguous ascending run" undercounts it. The gaps are what require the `O(n²)` look-back DP.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How do you get `O(n log n)` for LIS?</summary>
+
+**A:** Patience sorting: maintain an array of the smallest possible tail value for each achievable length, and binary-search the insertion point for each element. Same answer, `O(n log n)` time.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does "maximum-sum increasing subsequence" differ from LIS?</summary>
+
+**A:** One operator: `dp[i] = arr[i] + max(dp[j] …)` instead of `1 + max(dp[j] …)`. It maximises the *sum* of an increasing subsequence, not its length — and the answers can differ.
 
 </details>
 
-</details>
+## Sources & Verify
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: The Hook — missing, needs to be written -->
-<!--       Guidance: real-world story opening before any definition -->
-
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
-
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
-
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
-
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
-
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
-
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
-
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
-
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
-
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
-
-<!-- TODO: Final Takeaway — missing, needs to be written -->
-<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->
+- **CLRS** (Cormen, Leiserson, Rivest, Stein), *Introduction to Algorithms*, 3rd ed., Ch. 15 — DP on sequences; LIS appears as an exercise built on optimal substructure + overlapping subproblems.
+- **Schensted** (1961) / patience sorting — the `O(n log n)` LIS; see also Aldous & Diaconis, "Longest increasing subsequences: from patience sorting to the Baik–Deift–Johansson theorem" (1999).
+- **LeetCode** 300 (Longest Increasing Subsequence) and 673 (Number of LIS) are the canonical drills; the `4`, the contiguous-vs-LIS `3`/`4`, and the max-sum `106`/`22` above come from the runnable blocks — re-run to verify.

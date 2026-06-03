@@ -2,7 +2,7 @@
 title: "Memorize: Reversal"
 summary: "Pattern recognition triggers, template code, common mistakes, and quick recall."
 prereqs:
-  - 08-pattern-reversal/02-problems
+  - 07-pattern-reversal/01-pattern
 ---
 
 # Memorize: Reversal
@@ -30,8 +30,6 @@ Picture a one-way conga line where every dancer faces the next person's back, an
 ---
 
 ## Visual Summary
-
-> 🖼 Diagram — TODO: 3 frames — (1) initial state with `previous = null` and `current = head` on a 4-node list; (2) mid-walk with two nodes already flipped (their `next` points backward) and the three pointers visible (`previous` trailing, `current` at the next-to-flip node, `next` snapshot); (3) terminal state with every `next` pointing backward, `current = null`, and `previous` highlighted as the new head.
 
 ---
 

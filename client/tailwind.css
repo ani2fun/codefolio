@@ -47,6 +47,7 @@
        past the shadcn semantic layer. */
     --cream: 36 28% 92%;
     --roast: 30 12% 6%;
+
 }
 .dark {
     --background: 30 12% 6%;
@@ -68,6 +69,7 @@
     --border: 30 8% 18%;
     --input: 30 8% 18%;
     --ring: 18 65% 62%;
+
 }
 
 /* @theme inline: bake hsl(var(...)) into each utility. Without `inline`,
@@ -208,5 +210,6 @@
 @import "./src/styles/components/d3-widgets.css";
 @import "./src/styles/components/traced-code.css";
 @import "./src/styles/components/visualise-modal.css";
+@import "./src/styles/components/algolens.css";
 @import "./src/styles/components/sign-in-modal.css";
 @import "./src/styles/components/quota-notice.css";

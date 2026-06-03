@@ -1,214 +1,332 @@
 ---
 title: Lock-Free Queue
-summary: The Michael-Scott queue — a linked-list FIFO where enqueues and dequeues are wait-free using CAS. The structure inside every JVM, .NET runtime, and high-performance message broker.
+summary: "The Michael-Scott queue — a linked FIFO whose enqueue and dequeue use CAS instead of locks. A dummy head node lets the two ends operate independently; enqueue is two CAS steps, so the tail can lag one node behind, and threads HELP advance it. Inside the JVM's ConcurrentLinkedQueue and every fast message broker."
 prereqs:
   - concurrency-and-systems-cas-and-atomics
-  - linear-structures-queue-introduction-to-queues
+  - linear-structures-queue-what-is-a-queue
 ---
 
-# 2. Lock-Free Queue
+## Why It Exists
 
-## The Hook
+A queue is the backbone of producer/consumer systems — task pools, message brokers, event loops. Guard it with a single mutex and *every* enqueue and dequeue serialises through that one lock; under load it becomes the bottleneck, and a thread descheduled while holding it stalls everyone. You want producers and consumers to make progress *concurrently*, without locks.
 
-A producer-consumer queue is the most-used concurrent data structure in software. Whenever you have one thread producing work and another consuming it — request handling, event loops, background workers, GPU command submission — you need a queue that handles concurrent enqueue/dequeue without serialising threads.
+The **Michael-Scott queue** is the classic answer, built entirely on [CAS](/cortex/data-structures-and-algorithms/concurrency-and-systems-cas-and-atomics). It's a singly-linked list with two tricks. First, a **dummy (sentinel) head node** that holds no value: `head` always points at it, and the first *real* element is `head.next`. This decouples the two ends — enqueue only ever touches the `tail` pointer, dequeue only the `head` pointer — so producers and consumers don't fight over the same word. Second, enqueue is **two CAS steps** (link the node, then advance the tail), which means the `tail` pointer can momentarily *lag* one node behind the true last element — and any thread that notices **helps** advance it. That helping is what keeps the whole thing lock-free. It's the queue inside Java's `ConcurrentLinkedQueue`, the .NET runtime, and high-throughput brokers.
 
-The naive approach is a `std::queue` plus a `std::mutex`. Both producer and consumer take the lock. Under low contention, fine. Under heavy contention, the mutex becomes the bottleneck — every enqueue serialises with every dequeue, and lock-acquisition cost dominates.
+## See It Work
 
-The **Michael-Scott queue** (1996) does this lock-free. Enqueues and dequeues both use CAS on `head` and `tail` pointers. Two threads can enqueue concurrently without blocking each other (both succeed via CAS retries). Same for dequeues. Producer and consumer never block each other except in pathological CAS-retry cases.
+Enqueue links a node and (best-effort) advances the tail; dequeue swings `head` past the dummy and returns the next value. (Python has no real CAS — the GIL serialises bytecode — so we *simulate* it; Java's `AtomicReference` gives genuine CAS on references.)
 
-This chapter is the algorithm. By the end you'll have implemented a working lock-free queue in C, recognise the standard tricks (sentinel nodes, ABA mitigation), and know which queue to reach for in production (spoiler: usually a library, not your own implementation).
+```python run
+class Node:
+    __slots__ = ("value", "next")
+    def __init__(self, value=None):
+        self.value = value; self.next = None
 
----
+def cas(obj, field, expected, new):                    # SIMULATED compare-and-swap on a field
+    if getattr(obj, field) is expected:
+        setattr(obj, field, new); return True
+    return False
 
-## Table of contents
+class MSQueue:
+    def __init__(self):
+        dummy = Node()                                 # sentinel; head and tail both start here
+        self.head = dummy; self.tail = dummy
+    def enqueue(self, x):
+        node = Node(x)
+        while True:
+            tail = self.tail; nxt = tail.next
+            if tail is self.tail:                      # snapshot still consistent?
+                if nxt is None:
+                    if cas(tail, "next", None, node):  # step 1: link the new node
+                        cas(self, "tail", tail, node)  # step 2: advance tail (best-effort)
+                        return
+                else:
+                    cas(self, "tail", tail, nxt)       # tail lagged -> help advance it, then retry
+    def dequeue(self):
+        while True:
+            head = self.head; tail = self.tail; nxt = head.next
+            if head is self.head:
+                if head is tail:
+                    if nxt is None: return None        # empty
+                    cas(self, "tail", tail, nxt)       # help advance a lagging tail
+                else:
+                    value = nxt.value
+                    if cas(self, "head", head, nxt):   # swing head past the old dummy
+                        return value
 
-1. [The Michael-Scott shape](#the-michael-scott-shape)
-2. [Enqueue](#enqueue)
-3. [Dequeue](#dequeue)
-4. [Implementation](#implementation)
-5. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
-6. [Production reality](#production-reality)
-7. [Cross-links](#cross-links)
-8. [Final takeaway](#final-takeaway)
-
-***
-
-# The Michael-Scott shape
-
-A singly-linked list with two pointers: `head` (the dummy sentinel) and `tail` (the last node). The first real element is `head.next`.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
----
-flowchart LR
-  HEAD["head (dummy)"] --> N1((1)) --> N2((2)) --> N3((3))
-  TAIL["tail"] -.-> N3
+q = MSQueue()
+for x in [1, 2, 3]:
+    q.enqueue(x)
+print(q.dequeue(), q.dequeue(), q.dequeue())           # 1 2 3  (FIFO)
+print(q.dequeue())                                     # None   (empty)
 ```
 
-<p align="center"><strong>Michael-Scott queue: a linked list with sentinel <code>head</code> and a <code>tail</code> pointer. The dummy sentinel simplifies the empty-queue case.</strong></p>
+```java run
+import java.util.concurrent.atomic.AtomicReference;
+public class Main {
+    static class Node {
+        Integer value;
+        AtomicReference<Node> next = new AtomicReference<>(null);
+        Node(Integer v) { value = v; }
+    }
+    static class MSQueue {
+        AtomicReference<Node> head, tail;
+        MSQueue() { Node d = new Node(null); head = new AtomicReference<>(d); tail = new AtomicReference<>(d); }
+        void enqueue(int x) {
+            Node node = new Node(x);
+            while (true) {
+                Node t = tail.get(), next = t.next.get();
+                if (t == tail.get()) {
+                    if (next == null) {
+                        if (t.next.compareAndSet(null, node)) { tail.compareAndSet(t, node); return; }  // link, then advance
+                    } else {
+                        tail.compareAndSet(t, next);                                                    // help advance lagging tail
+                    }
+                }
+            }
+        }
+        Integer dequeue() {
+            while (true) {
+                Node h = head.get(), t = tail.get(), next = h.next.get();
+                if (h == head.get()) {
+                    if (h == t) {
+                        if (next == null) return null;              // empty
+                        tail.compareAndSet(t, next);                // help advance
+                    } else {
+                        Integer value = next.value;
+                        if (head.compareAndSet(h, next)) return value;   // swing head past dummy
+                    }
+                }
+            }
+        }
+    }
+    public static void main(String[] args) {
+        MSQueue q = new MSQueue();
+        for (int x : new int[]{1, 2, 3}) q.enqueue(x);
+        System.out.println(q.dequeue() + " " + q.dequeue() + " " + q.dequeue());   // 1 2 3
+        System.out.println(q.dequeue());                                           // null
+    }
+}
+```
 
-The dummy sentinel is the key trick — it means `head` is never null, even when the queue is empty. The empty queue has `head == tail` pointing at the sentinel.
+Both print `1 2 3` then `None`/`null` — first-in-first-out, no locks. The retry loops never spin here because there's only one thread; under real contention, a thread whose CAS loses simply re-reads the fresh `head`/`tail` and tries again, always making progress.
 
-***
+## How It Works
 
-# Enqueue
+The dummy node and the two-step enqueue are the whole design. Picture the list mid-enqueue:
 
-Enqueue is conceptually: "create a new node; CAS-link it onto `tail.next`; advance `tail`."
+```d2
+direction: right
+dummy: "DUMMY (sentinel)\nno value" {style.fill: "#94a3b8"; style.stroke: "#475569"}
+n1: "node 10" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
+n2: "node 20  <- just LINKED (step 1)" {style.fill: "#fde68a"; style.stroke: "#d97706"}
+dummy -> n1: "next"
+n1 -> n2: "next"
+head: "head -> dummy\n(dequeue works HERE)" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
+tail: "tail -> node 10  *** LAGS one behind! ***\n(step 2 'advance tail' not done yet)\n(enqueue works HERE)" {style.fill: "#fecaca"; style.stroke: "#dc2626"}
+head -> dummy
+tail -> n1
+note: "enqueue = CAS-link (step 1) THEN CAS-advance-tail (step 2).\nBetween them tail.next != null -> any thread HELPS advance tail." {style.fill: "#f3e8ff"; style.stroke: "#9333ea"}
+```
 
-Two CASes per enqueue: one to link the new node into the list, one to advance `tail`. The second CAS is *best-effort* — if it fails (another thread advanced tail first), we don't retry; the next enqueue will fix it.
+<p align="center"><strong>The dummy node keeps <code>head</code> and <code>tail</code> on different memory, so enqueue and dequeue never contend. Because enqueue links then advances in two CAS steps, <code>tail</code> can point one node behind the real last — a state every thread detects (<code>tail.next != null</code>) and helps fix.</strong></p>
 
-The "help advance lagging tail" branch is essential — without it, an enqueuer could complete its first CAS but be preempted before the second, leaving `tail` stale. Other enqueuers help advance.
+Three load-bearing facts:
 
-***
+- **The dummy node decouples the two ends.** With a sentinel that always sits at `head`, enqueue only ever CASes the `tail` (and the last node's `next`), while dequeue only CASes the `head`. They touch different words, so a producer and consumer can both succeed at the same instant without conflict — and an empty queue (`head == tail`, both at the dummy) needs no special wrapping.
+- **Enqueue is two CAS steps, so the tail lags.** Step 1 links the new node: `CAS(last.next, null, node)`. Step 2 advances the tail: `CAS(tail, last, node)`. Between them — or if the enqueuing thread is descheduled after step 1 — `tail` points one node *behind* the real end, with `tail.next` non-null. The [Trace It](#trace-it) makes this concrete.
+- **Helping makes it lock-free.** A thread that finds `tail.next != null` knows the tail is lagging, so before doing its own work it *helps* by advancing the tail (`CAS(tail, tail, tail.next)`) — completing another thread's unfinished step 2. No one waits for the slow thread; whoever notices the half-done operation finishes it. That cooperative "finish the other guy's work" is the essence of lock-free progress.
 
-# Dequeue
+> **Key takeaway.** The Michael-Scott queue is a linked FIFO on CAS with a **dummy head node** (decoupling enqueue at the tail from dequeue at the head) and a **two-step enqueue** (link, then advance tail). The tail can lag one node behind; any thread that sees `tail.next != null` **helps** advance it, so no operation ever blocks on another — lock-free progress. It's the standard concurrent queue (Java's `ConcurrentLinkedQueue`).
 
-The `first == last && next == null` case is "actually empty". The `first == last && next ≠ null` case is "tail is lagging behind; we help" — same as the enqueue branch.
+## Trace It
 
-***
+The "tail lags" claim is the subtlest part, and seeing the intermediate state demystifies the helping logic.
 
-# Implementation
+**Predict before you run:** an enqueuing thread runs step 1 (CAS-link the new node) and is then preempted *before* step 2 (advance the tail). At that moment, where does `tail` point — at the node it just linked, or one node *behind* it?
 
-A working Michael-Scott queue in C with C11 atomics:
+```python run
+class Node:
+    __slots__ = ("value", "next")
+    def __init__(self, value=None):
+        self.value = value; self.next = None
+def cas(obj, field, expected, new):
+    if getattr(obj, field) is expected:
+        setattr(obj, field, new); return True
+    return False
+class MSQueue:
+    def __init__(self):
+        dummy = Node(); self.head = dummy; self.tail = dummy
+    def enqueue(self, x):
+        node = Node(x)
+        while True:
+            tail = self.tail; nxt = tail.next
+            if tail is self.tail:
+                if nxt is None:
+                    if cas(tail, "next", None, node):
+                        cas(self, "tail", tail, node); return
+                else:
+                    cas(self, "tail", tail, nxt)
+    def dequeue(self):
+        while True:
+            head = self.head; tail = self.tail; nxt = head.next
+            if head is self.head:
+                if head is tail:
+                    if nxt is None: return None
+                    cas(self, "tail", tail, nxt)
+                else:
+                    value = nxt.value
+                    if cas(self, "head", head, nxt): return value
 
-The Java/Scala versions use `AtomicReference`; the Python implementation falls back to `threading.Lock` because Python's GIL makes "real" lock-free benchmarks meaningless. Production code uses `java.util.concurrent.ConcurrentLinkedQueue` (a Michael-Scott implementation), `boost::lockfree::queue`, or one of the higher-performance variants below.
-
-***
-
-# Edge cases and pitfalls
-
-- **The ABA problem.** Without ABA mitigation, the dequeue's `head` CAS can succeed on a recycled node, leading to corrupted state. Standard fixes: tagged pointers (double-CAS on a pointer + version counter), hazard pointers, or rely on a GC.
-- **Memory reclamation.** When you dequeue, you free the dummy. But if another thread is still reading that node, you've created a use-after-free. GCed languages (Java, Go) avoid this; C/C++/Rust need hazard pointers or epoch-based reclamation.
-- **The "help advance tail" branch is non-optional.** Skipping it gives correct behaviour in the common case but can deadlock if the original enqueuer is preempted.
-- **`weak` vs `strong` CAS.** In ARM (LL/SC), `weak` allows spurious failures; the loop is fine since you'll retry. `strong` is more expensive on weak-memory architectures.
-- **MPMC vs SPSC vs SPMC vs MPSC.** Different concurrency patterns admit different optimisations:
-  - **SPSC** (single producer, single consumer): the simplest, can use just a ring buffer with two atomic counters. No CAS needed.
-  - **MPMC** (multiple of each): the Michael-Scott queue.
-  - **MPSC** (multi-producer, single-consumer): used in actor frameworks. CAS on enqueue, no CAS on dequeue.
-  Each has dedicated production-grade implementations.
-
-***
-
-# Production reality
-
-- **Java's `java.util.concurrent.ConcurrentLinkedQueue`** is a Michael-Scott implementation. Used internally by `Executor`s, `ForkJoinPool`, and many higher-level concurrency primitives.
-- **.NET's `System.Collections.Concurrent.ConcurrentQueue`** uses a similar lock-free design.
-- **Boost.Lockfree.Queue** for C++ — fixed-size MPMC queue with optional tagged-pointer ABA mitigation.
-- **JCTools** for Java — high-performance lock-free queues optimised for specific producer/consumer patterns. Used by Netty, Vert.x, Apache Kafka.
-- **The LMAX Disruptor** — a different design (ring buffer with sequence numbers) that avoids most CAS contention by giving each producer and consumer their own slot.
-- **Linux kernel `kfifo`** — SPSC ring buffer used in many drivers.
-- **Apache Kafka producers** internally use lock-free queues for batching; LinkedIn's original Kafka design relied heavily on these.
-- **RUST's `crossbeam_channel`** is a state-of-the-art MPMC channel used by Tokio and many Rust async runtimes.
-
-***
-
-# Memorize
-
-The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. The Michael-Scott queue is the canonical lock-free queue; once you can sketch the two-CAS-per-enqueue pattern, you've understood every JVM/CLR concurrent queue implementation.
-
-## Quick recall
-
-Click any question to reveal the answer.
+q = MSQueue()
+q.enqueue(10)                                          # tail at node(10)
+# a thread does step 1 (link node 20) but is preempted before step 2 (advance tail):
+node = Node(20)
+cas(q.tail, "next", None, node)                        # ONLY the link, no advance
+print("tail.value:", q.tail.value, " tail.next.value:", q.tail.next.value)
+print("tail is lagging (tail.next is not None):", q.tail.next is not None)
+q.enqueue(30)                                          # a fresh enqueue: HELPS advance tail, then links 30
+print("drain:", q.dequeue(), q.dequeue(), q.dequeue())
+```
 
 <details>
-<summary><strong>Q:</strong> What does the dummy sentinel node do in Michael-Scott?</summary>
+<summary><strong>Reveal</strong></summary>
 
-**A:** Simplifies the empty-queue case. `head == tail == sentinel` means empty; otherwise the first real element is `head.next`. Both pointers always non-null.
+`tail.value` is `10` while `tail.next.value` is `20` — the tail points *one node behind* the real last element. Step 1 linked `node(20)` onto `node(10).next`, but step 2 (advance the tail to `node(20)`) never ran, so the structure is momentarily "ahead" of where `tail` claims. The check `tail.next is not None` is `True` — that non-null `next` is precisely the *signal* a lagging tail leaves behind. When the next `enqueue(30)` comes along, it reads `tail` (still `node(10)`), sees `tail.next != None`, and rather than failing or waiting, it **helps**: it CAS-advances `tail` to `node(20)` (finishing the stalled thread's step 2), then retries and links `node(30)`. The `drain` confirms everything stayed correct: `10, 20, 30` in FIFO order, no element lost or duplicated despite the half-finished enqueue. This is lock-free progress in miniature — the system never depends on the slow thread waking up, because whoever trips over the unfinished work completes it. (It's also why this queue is *ABA*-prone: pointers being reused need [hazard pointers or RCU](/cortex/data-structures-and-algorithms/concurrency-and-systems-rcu-and-hazard-pointers) for safe memory reclamation, the next lesson.)
+
+</details>
+
+## Your Turn
+
+**Interleave** producers and consumers and confirm FIFO holds through a mixed sequence — enqueue some, dequeue some, repeat, and drain to empty.
+
+```python run
+class Node:
+    __slots__ = ("value", "next")
+    def __init__(self, value=None):
+        self.value = value; self.next = None
+def cas(obj, field, expected, new):
+    if getattr(obj, field) is expected:
+        setattr(obj, field, new); return True
+    return False
+class MSQueue:
+    def __init__(self):
+        dummy = Node(); self.head = dummy; self.tail = dummy
+    def enqueue(self, x):
+        node = Node(x)
+        while True:
+            tail = self.tail; nxt = tail.next
+            if tail is self.tail:
+                if nxt is None:
+                    if cas(tail, "next", None, node):
+                        cas(self, "tail", tail, node); return
+                else:
+                    cas(self, "tail", tail, nxt)
+    def dequeue(self):
+        while True:
+            head = self.head; tail = self.tail; nxt = head.next
+            if head is self.head:
+                if head is tail:
+                    if nxt is None: return None
+                    cas(self, "tail", tail, nxt)
+                else:
+                    value = nxt.value
+                    if cas(self, "head", head, nxt): return value
+
+q = MSQueue()
+out = []
+q.enqueue(1); q.enqueue(2)
+out.append(q.dequeue())        # 1
+q.enqueue(3)
+out.append(q.dequeue())        # 2
+out.append(q.dequeue())        # 3
+out.append(q.dequeue())        # None (empty)
+print(out)                     # [1, 2, 3, None]
+```
+
+```java run
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
+public class Main {
+    static class Node { Integer value; AtomicReference<Node> next = new AtomicReference<>(null); Node(Integer v){value=v;} }
+    static class MSQueue {
+        AtomicReference<Node> head, tail;
+        MSQueue() { Node d = new Node(null); head = new AtomicReference<>(d); tail = new AtomicReference<>(d); }
+        void enqueue(int x) {
+            Node node = new Node(x);
+            while (true) {
+                Node t = tail.get(), next = t.next.get();
+                if (t == tail.get()) {
+                    if (next == null) { if (t.next.compareAndSet(null, node)) { tail.compareAndSet(t, node); return; } }
+                    else tail.compareAndSet(t, next);
+                }
+            }
+        }
+        Integer dequeue() {
+            while (true) {
+                Node h = head.get(), t = tail.get(), next = h.next.get();
+                if (h == head.get()) {
+                    if (h == t) { if (next == null) return null; tail.compareAndSet(t, next); }
+                    else { Integer v = next.value; if (head.compareAndSet(h, next)) return v; }
+                }
+            }
+        }
+    }
+    public static void main(String[] args) {
+        MSQueue q = new MSQueue();
+        List<Integer> out = new ArrayList<>();
+        q.enqueue(1); q.enqueue(2); out.add(q.dequeue());
+        q.enqueue(3); out.add(q.dequeue()); out.add(q.dequeue()); out.add(q.dequeue());
+        System.out.println(out);   // [1, 2, 3, null]
+    }
+}
+```
+
+Both print `[1, 2, 3, None]`/`[1, 2, 3, null]`. The mixed order in, the same order out, and a clean `None`/`null` once the dummy is all that's left. The structure never special-cases "queue became empty" with a flag — the `head == tail` (both at the sentinel) condition handles it, which is exactly the kind of invariant a sentinel node buys you.
+
+## Reflect & Connect
+
+- **CAS on `head`/`tail`, decoupled by a dummy.** Enqueue touches the tail, dequeue the head; the sentinel keeps them on different words so producers and consumers don't contend, and empty-queue handling falls out of `head == tail`.
+- **Two-step enqueue → tail lag → helping.** Link the node, then advance the tail; in between, `tail.next != null` signals a lagging tail, and any thread *helps* finish the advance. That cooperative completion is what makes the queue lock-free (no thread blocks on a slow one).
+- **It's ABA-prone.** Reused node pointers can fool a CAS (the [ABA problem](/cortex/data-structures-and-algorithms/concurrency-and-systems-cas-and-atomics)); safe memory reclamation needs hazard pointers or [RCU/epochs](/cortex/data-structures-and-algorithms/concurrency-and-systems-rcu-and-hazard-pointers) — you can't just `free` a dequeued node while another thread might still hold a pointer to it.
+- **Lock-free, not wait-free.** Some thread always progresses, but an individual thread can retry indefinitely under heavy contention. That's the usual, practical guarantee — and far better than a lock that can stall everyone.
+- **It's the production default.** Java's `ConcurrentLinkedQueue`, .NET's `ConcurrentQueue`, and many brokers are Michael-Scott queues. Master the dummy node + two-step enqueue + helping, and concurrent stacks (Treiber) and skip-list maps are the same CAS-retry ideas on a different shape.
+
+## Recall
+
+<details>
+<summary><strong>Q:</strong> What does the dummy (sentinel) head node accomplish?</summary>
+
+**A:** It decouples the two ends: `head` always points at the dummy and the first real value is `head.next`, so enqueue only CASes the `tail` and dequeue only the `head` — they never contend on the same word. It also makes the empty case (`head == tail`) need no special flag.
 
 </details>
 <details>
-<summary><strong>Q:</strong> How many CASes per enqueue?</summary>
+<summary><strong>Q:</strong> Why is enqueue two CAS steps, and what's the consequence?</summary>
 
-**A:** Two. **CAS 1**: link new node onto `tail.next`. **CAS 2**: advance `tail` (best-effort; lagging tail fixed by next enqueuer).
-
-</details>
-<details>
-<summary><strong>Q:</strong> Why "best-effort" on the tail-advance CAS?</summary>
-
-**A:** If it fails, another thread already advanced `tail`. No retry needed; correctness is preserved by the help-the-lagging-tail branch in subsequent operations.
+**A:** Step 1 links the node (`CAS(last.next, null, node)`); step 2 advances the tail (`CAS(tail, last, node)`). Between them, `tail` lags one node behind the real end (with `tail.next != null`) — the structure is momentarily ahead of where `tail` claims to be.
 
 </details>
 <details>
-<summary><strong>Q:</strong> What's the "help advance lagging tail" branch?</summary>
+<summary><strong>Q:</strong> What is "helping," and why does it matter?</summary>
 
-**A:** A reader/writer that finds `tail.next` non-null knows tail is stale and CASes `tail` forward themselves. Cooperative; ensures no thread can stall the queue by being preempted.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Variants you should know by name?</summary>
-
-**A:** **MPMC** (multi-producer, multi-consumer) — Michael-Scott. **SPSC** (single producer, single consumer) — ring buffer with two atomic counters; no CAS needed. **MPSC** (used in actor frameworks). **SPMC** (rare).
+**A:** A thread that sees `tail.next != null` (a lagging tail) advances the tail itself — completing another thread's unfinished step 2 — before doing its own work. It means no thread waits for a slow/descheduled thread, which is what makes the queue lock-free.
 
 </details>
 <details>
-<summary><strong>Q:</strong> Why is memory reclamation hard in C/C++ but easy in Java?</summary>
+<summary><strong>Q:</strong> Is the Michael-Scott queue wait-free? What's the actual guarantee?</summary>
 
-**A:** Java's GC won't free a node while any thread holds a reference. C/C++ need hazard pointers, RCU, or tagged-pointer ABA mitigation to defer frees safely.
+**A:** It's lock-free, not wait-free: *some* thread always makes progress, but a given thread can retry indefinitely under contention. No thread can block all others (unlike a mutex), which is the practical win.
 
 </details>
 <details>
-<summary><strong>Q:</strong> What does the LMAX Disruptor do differently?</summary>
+<summary><strong>Q:</strong> Why does the queue need hazard pointers or RCU?</summary>
 
-**A:** Ring buffer with per-producer/per-consumer sequence numbers. Avoids most CAS contention by giving each thread its own slot to advance.
+**A:** It's ABA-prone — a freed-and-reused node pointer can fool a CAS into "succeeding" against stale memory. Safe reclamation (you can't free a dequeued node while another thread may still reference it) requires hazard pointers, epochs, or RCU.
 
 </details>
 
-## Code template
+## Sources & Verify
 
-## Pattern triggers
-
-- **"Producer-consumer queue, mostly Java/.NET"** → `ConcurrentLinkedQueue` / `ConcurrentQueue` (Michael-Scott)
-- **"Producer-consumer in C/C++/Rust"** → `boost::lockfree::queue`, JCTools, `crossbeam_channel`
-- **"Single producer, single consumer"** → SPSC ring buffer (no CAS needed)
-- **"Many threads contending on one queue"** → consider Disruptor pattern (per-slot sequence numbers)
-- **"Use-after-free in lock-free queue"** → memory reclamation strategy missing (hazard pointers or RCU)
-- **"Don't roll your own"** → use a library; correct lock-free queues are fiddly
-
-***
-
-# Cross-links
-
-- **Prerequisites:** [CAS and Atomics](/cortex/data-structures-and-algorithms/concurrency-and-systems-cas-and-atomics), [Queue](/cortex/data-structures-and-algorithms/linear-structures-queue-introduction-to-queues).
-- **Sibling structures:** [Concurrent Hash Map](/cortex/data-structures-and-algorithms/concurrency-and-systems-concurrent-hash-map), [RCU and Hazard Pointers](/cortex/data-structures-and-algorithms/concurrency-and-systems-rcu-and-hazard-pointers).
-
-***
-
-# Final takeaway
-
-The Michael-Scott queue is the canonical lock-free queue. Three patterns to internalise:
-
-1. **Two CASes per enqueue.** Link the new node, then advance tail. The second is best-effort; lagging tail is fixed by the next enqueuer.
-2. **Cooperative behaviour.** Both enqueuers and dequeuers help advance a lagging tail. Without this, preempted threads can stall the structure.
-3. **Memory reclamation is the hard part.** Lock-free in GCed languages: clean and easy. In C/C++/Rust: hazard pointers or epoch-based reclamation. Skipping reclamation entirely is a memory leak; doing it wrong is a use-after-free.
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
-
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
-
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
-
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
-
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
-
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
-
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+- **Michael & Scott** (1996), "Simple, fast, and practical non-blocking and blocking concurrent queue algorithms", *PODC* — the original two-lock and lock-free queues, the dummy node, and the helping mechanism.
+- **Herlihy & Shavit**, *The Art of Multiprocessor Programming* (2nd ed.) — the M-S queue with correctness and ABA/reclamation discussion.
+- **Java** `java.util.concurrent.ConcurrentLinkedQueue` and **.NET** `ConcurrentQueue<T>` are production Michael-Scott queues; the `1 2 3` / `None` FIFO, the tail-lag (`tail.value 10`, `tail.next.value 20`) trace, and the `[1, 2, 3, None]` interleave above come from the runnable blocks — the Python ones *simulate* CAS (GIL = no real atomic); the Java ones use real `AtomicReference`. Re-run to verify.

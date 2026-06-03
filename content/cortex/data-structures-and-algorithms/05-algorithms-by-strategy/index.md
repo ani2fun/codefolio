@@ -2,62 +2,23 @@
 
 A "strategy" is a way of *thinking* about problems — a question you ask before you write a single line of code. Recursion asks "can I solve a smaller version and stitch the answer back together?". Greedy asks "can I make a locally-best choice that's also globally optimal?". DP asks "are subproblems shared across the recursion tree?". The strategies in this module are the menu you flip through when you read a new problem statement.
 
-## Chapters
+> How to read this chapter: follow **Start Here** top to bottom — that is the teaching path. Drill it in **Practice** once it clicks.
 
-- [Introduction To Memory Model](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-introduction-to-memory-model)
+## Start Here — the learning path
+
+- [Introduction to the Memory Model](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-introduction-to-memory-model)
 - [Nested Functions](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-nested-functions)
 - [Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-recursion)
-- [Memorize: Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-memorize)
 - [Pattern: Head Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-head-recursion-pattern)
-- [Forward Sequence](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-head-recursion-problems-forward-sequence)
-- [Calculate Factorial](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-head-recursion-problems-calculate-factorial)
-- [Sum of Digits](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-head-recursion-problems-sum-of-digits)
-- [Reverse a Queue](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-head-recursion-problems-reverse-a-queue)
-- [Memorize: Head Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-head-recursion-memorize)
 - [Pattern: Tail Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-tail-recursion-pattern)
-- [Reverse Sequence](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-tail-recursion-problems-reverse-sequence)
-- [Search Element](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-tail-recursion-problems-search-element)
-- [Is Palindrome](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-tail-recursion-problems-is-palindrome)
-- [Reverse a List](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-tail-recursion-problems-reverse-a-list)
-- [Memorize: Tail Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-tail-recursion-memorize)
 - [Pattern: Multiple Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multiple-recursion-pattern)
-- [Fibonacci Number](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multiple-recursion-problems-fibonacci-number)
-- [Zigzag Sequence](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multiple-recursion-problems-zigzag-sequence)
-- [Climb Stairs](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multiple-recursion-problems-climb-stairs)
-- [Catalan Number](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multiple-recursion-problems-catalan-number)
-- [Memorize: Multiple Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multiple-recursion-memorize)
 - [Pattern: Multidimensional Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multidimensional-recursion-pattern)
-- [Binomial Coefficient](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multidimensional-recursion-problems-binomial-coefficient)
-- [Lattice Paths](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multidimensional-recursion-problems-lattice-paths)
-- [Ackermann Function](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multidimensional-recursion-problems-ackermann-function)
-- [Egg Dropping](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multidimensional-recursion-problems-egg-dropping)
-- [Memorize: Multidimensional Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multidimensional-recursion-memorize)
-- [Pattern Synthesis: Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-synthesis)
 - [Introduction to Divide and Conquer](/cortex/data-structures-and-algorithms/algorithms-by-strategy-divide-and-conquer-introduction-to-divide-and-conquer)
-- [Memorize: Divide And Conquer](/cortex/data-structures-and-algorithms/algorithms-by-strategy-divide-and-conquer-memorize)
 - [Introduction to Greedy Algorithms](/cortex/data-structures-and-algorithms/algorithms-by-strategy-greedy-introduction-to-greedy-algorithms)
-- [Memorize: Greedy](/cortex/data-structures-and-algorithms/algorithms-by-strategy-greedy-memorize)
 - [Introduction to Backtracking](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-introduction-to-backtracking)
-- [Memorize: Backtracking](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-memorize)
 - [Pattern: Unconditional Enumeration](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-unconditional-enumeration-pattern)
-- [Unique Subsets](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-unconditional-enumeration-problems-unique-subsets)
-- [Case Transformations](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-unconditional-enumeration-problems-case-transformations)
-- [Number Sequence](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-unconditional-enumeration-problems-number-sequence)
-- [Phone Combinations](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-unconditional-enumeration-problems-phone-combinations)
-- [Memorize: Unconditional Enumeration](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-unconditional-enumeration-memorize)
 - [Pattern: Conditional Enumeration](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-conditional-enumeration-pattern)
-- [Generate Parentheses](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-conditional-enumeration-problems-generate-parentheses)
-- [Target Sum Combinations](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-conditional-enumeration-problems-target-sum-combinations)
-- [Generate IP Addresses](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-conditional-enumeration-problems-generate-ip-addresses)
-- [String Permutations](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-conditional-enumeration-problems-string-permutations)
-- [Memorize: Conditional Enumeration](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-conditional-enumeration-memorize)
 - [Pattern: Backtracking Search](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-backtracking-search-pattern)
-- [Rat in a Maze](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-backtracking-search-problems-rat-in-a-maze)
-- [Word Quest](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-backtracking-search-problems-word-quest)
-- [Solve N Queens](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-backtracking-search-problems-solve-n-queens)
-- [Solve Sudoku](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-backtracking-search-problems-solve-sudoku)
-- [Memorize: Backtracking Search](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-backtracking-search-memorize)
-- [Pattern Synthesis: Backtracking](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-synthesis)
 - [Linear DP](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-linear-dp)
 - [Longest Increasing Subsequence](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-longest-increasing-subsequence)
 - [Longest Common Subsequence](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-longest-common-subsequence)
@@ -69,30 +30,77 @@ A "strategy" is a way of *thinking* about problems — a question you ask before
 - [Word Break](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-word-break)
 - [The Knapsack Family](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-knapsack)
 - [Knapsack Applications](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-knapsack-applications)
-- [Optimal Stratergy](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-optimal-stratergy)
+- [Optimal Game Strategy](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-optimal-stratergy)
 - [Boolean Parenthesization](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-boolean-parenthesization)
 - [Matrix Chain Multiplication](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-matrix-chain-multiplication)
-- [Memorize: Dynamic Programming](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-memorize)
 - [Pattern: Edit Distance](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-edit-distance-pattern)
+- [Pattern: Subset Sum](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-subset-sum-pattern)
+- [Pattern: 2D Grid](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-2d-grid-pattern)
+- [Pattern: Prefix Sum (2D)](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-prefix-sum-pattern)
+- [Practice — Mixed DP Problems](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-practise)
+- [Introduction to Randomized Algorithms](/cortex/data-structures-and-algorithms/algorithms-by-strategy-randomized-algorithms-introduction-to-randomized-algorithms)
+
+## Practice
+
+Do these after the matching pattern in Start Here.
+
+### Head Recursion
+- [Forward Sequence](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-head-recursion-problems-forward-sequence)
+- [Calculate Factorial](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-head-recursion-problems-calculate-factorial)
+- [Sum of Digits](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-head-recursion-problems-sum-of-digits)
+- [Reverse a Queue](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-head-recursion-problems-reverse-a-queue)
+
+### Tail Recursion
+- [Reverse Sequence](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-tail-recursion-problems-reverse-sequence)
+- [Search Element](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-tail-recursion-problems-search-element)
+- [Is Palindrome](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-tail-recursion-problems-is-palindrome)
+- [Reverse a List](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-tail-recursion-problems-reverse-a-list)
+
+### Multiple Recursion
+- [Fibonacci Number](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multiple-recursion-problems-fibonacci-number)
+- [Zigzag Sequence](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multiple-recursion-problems-zigzag-sequence)
+- [Climb Stairs](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multiple-recursion-problems-climb-stairs)
+- [Catalan Number](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multiple-recursion-problems-catalan-number)
+
+### Multidimensional Recursion
+- [Binomial Coefficient](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multidimensional-recursion-problems-binomial-coefficient)
+- [Lattice Paths](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multidimensional-recursion-problems-lattice-paths)
+- [Ackermann Function](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multidimensional-recursion-problems-ackermann-function)
+- [Egg Dropping](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multidimensional-recursion-problems-egg-dropping)
+
+### Unconditional Enumeration
+- [Unique Subsets](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-unconditional-enumeration-problems-unique-subsets)
+- [Case Transformations](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-unconditional-enumeration-problems-case-transformations)
+- [Number Sequence](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-unconditional-enumeration-problems-number-sequence)
+- [Phone Combinations](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-unconditional-enumeration-problems-phone-combinations)
+
+### Conditional Enumeration
+- [Generate Parentheses](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-conditional-enumeration-problems-generate-parentheses)
+- [Target Sum Combinations](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-conditional-enumeration-problems-target-sum-combinations)
+- [Generate IP Addresses](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-conditional-enumeration-problems-generate-ip-addresses)
+- [String Permutations](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-conditional-enumeration-problems-string-permutations)
+
+### Backtracking Search
+- [Rat in a Maze](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-backtracking-search-problems-rat-in-a-maze)
+- [Word Quest](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-backtracking-search-problems-word-quest)
+- [Solve N Queens](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-backtracking-search-problems-solve-n-queens)
+- [Solve Sudoku](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-backtracking-search-problems-solve-sudoku)
+
+### Edit Distance
 - [Wildcard Pattern Matching](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-edit-distance-problems-wildcard-pattern-matching)
 - [Interleaving Check](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-edit-distance-problems-interleaving-check)
-- [Memorize: Edit Distance](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-edit-distance-memorize)
-- [Pattern: Subset Sum](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-subset-sum-pattern)
+
+### Subset Sum
 - [Partition with Equal Sum](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-subset-sum-problems-partition-with-equal-sum)
-- [Sets With Smallest Discrepancy](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-subset-sum-problems-sets-with-smallest-discrepancy)
-- [Memorize: Subset Sum](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-subset-sum-memorize)
-- [Pattern: 2D Grid](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-2d-grid-pattern)
+- [Sets with Smallest Discrepancy](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-subset-sum-problems-sets-with-smallest-discrepancy)
+
+### 2D Grid
 - [Longest Ascending Route](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-2d-grid-problems-longest-ascending-route)
 - [Largest Square Area of 1s](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-2d-grid-problems-largest-square-area-of-1s)
 - [Destination Path Count](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-2d-grid-problems-destination-path-count)
 - [Largest Plus of 1s](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-2d-grid-problems-largest-plus-of-1s)
-- [Memorize: 2D Grid](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-2d-grid-memorize)
-- [Pattern: Prefix Sum (2D)](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-prefix-sum-pattern)
+
+### Prefix Sum (2D)
 - [K-Limited Submatrix Sum](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-prefix-sum-problems-k-limited-submatrix-sum)
 - [Maximum Submatrix Sum](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-prefix-sum-problems-maximum-submatrix-sum)
 - [Range Sum Finder](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-prefix-sum-problems-range-sum-finder)
-- [Memorize: Prefix Sum (2D)](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-prefix-sum-memorize)
-- [Practice — Mixed DP Problems](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-practise)
-- [Pattern Synthesis: Dynamic Programming](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-synthesis)
-- [Introduction to Randomized Algorithms](/cortex/data-structures-and-algorithms/algorithms-by-strategy-randomized-algorithms-introduction-to-randomized-algorithms)
-- [Memorize: Randomized Algorithms](/cortex/data-structures-and-algorithms/algorithms-by-strategy-randomized-algorithms-memorize)

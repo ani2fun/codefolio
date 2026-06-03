@@ -12,11 +12,56 @@ difficulty: easy
 
 Given a string `s`, return its reverse using a stack.
 
-### Example 1
-> -   **Input:** `s = "abcdefgh"` → **Output:** `"hgfedcba"`
+<details>
+<summary><strong>Examples</strong></summary>
 
-### Example 2
-> -   **Input:** `s = "c"` → **Output:** `"c"`
+**Example 1:**
+```
+Input:  s = "abcdefgh"
+Output: "hgfedcba"
+```
+
+**Example 2:**
+```
+Input:  s = "c"
+Output: "c"
+```
+
+**Example 3:**
+```
+Input:  s = ""
+Output: ""
+```
+
+</details>
+
+---
+
+## Intuition
+
+The **structural property** that makes this a reversal problem is that a string is a flat sequence of characters and the task asks for those characters in the opposite order. A stack delivers reverse order for free: push the characters left to right, and the last one pushed is the first one popped. Routing the string through a stack converts "reverse the order" into "load, then unload", with no index math.
+
+The **placement** of the data is two distinct containers. The stack is the temporary holding area — after the load pass it holds every character with the last one (`'h'` for `"abcdefgh"`) on top. The result is a separate growing string that the unload pass appends to. The character is the unit being reversed, so the letters themselves flip; if the problem instead pushed whole words, the same loop would reverse word order and leave letters intact.
+
+What **breaks if you reach for a naive approach**? Nothing breaks for a plain string — reading `s` back-to-front with an index is `O(N)` time and arguably simpler. The stack version is the teaching vehicle: it uses pop-only reads, so the exact same code reverses a true stack ADT, a linked-list-backed stack, or any source that refuses random access. The transferable skill is the load-then-unload shape, not this specific string.
+
+## Applying the Diagnostic Questions
+
+| Check | Answer for Reverse the String |
+|---|---|
+| **Q1.** Does the problem ask for the sequence in opposite order? | **Yes** — return the characters of `s` reversed. |
+| **Q2.** Is the input read through one end only (or its unit coarser than an index)? | **Acceptable** — characters are indexable, but the pattern reads pop-only so it ports to index-free sources. |
+| **Q3.** Are two linear passes (load, unload) enough with no comparison? | **Yes** — push every character, then pop every character; no character is ever compared. |
+| **Q4.** Is `O(N)` auxiliary space acceptable? | **Yes** — the stack holds all `N` characters; `O(N)` time, `O(N)` space. |
+
+## Approach
+
+Load the stack with characters, then unload it into a result string.
+
+1. **Create an empty stack** of characters and an empty result string.
+2. **Load pass.** Iterate over `s` left to right; push each character onto the stack. The last character of `s` ends on top.
+3. **Unload pass.** While the stack is not empty, pop the top character and append it to the result string.
+4. **Return the result string.** It now holds the characters of `s` in reverse order.
 
 <details>
 <summary><h2>Solution</h2></summary>
@@ -25,7 +70,7 @@ Given a string `s`, return its reverse using a stack.
 The textbook two-pass: push every character, then pop until empty into a result string.
 
 
-```python run
+```python run viz=array viz-root=stack viz-kind=stack
 from typing import List
 
 class Solution:
@@ -63,7 +108,7 @@ print(Solution().reverse_the_string("12345"))      # 54321 — digits
 print(Solution().reverse_the_string("aAbB"))       # BbAa — mixed case
 ```
 
-```java run
+```java run viz=array viz-root=stack viz-kind=stack
 import java.util.*;
 
 public class Main {
@@ -108,37 +153,46 @@ public class Main {
 }
 ```
 
+### Dry Run
+
+Trace Example 1 with `s = "abcdefgh"`. Shown on the shorter prefix `"abc"` for space; the full string follows the same shape.
+
+```
+Load pass — push every character (stack shown bottom→top):
+  push 'a' → a
+  push 'b' → a b
+  push 'c' → a b c        (top is 'c')
+
+Unload pass — pop into result:
+  pop 'c' → result = "c"     stack: a b
+  pop 'b' → result = "cb"    stack: a
+  pop 'a' → result = "cba"   stack: (empty)
+
+Return "cba".  For the full input "abcdefgh" the same process returns "hgfedcba" ✓
+```
+
+The last character pushed (`'c'`) is the first popped, so it leads the result; the first character pushed (`'a'`) is popped last and ends the result.
+
+### Complexity Analysis
+
+| | Complexity | Reason |
+|---|---|---|
+| **Time** | `O(N)` | One push per character in the load pass and one pop per character in the unload pass; both are `O(1)`. |
+| **Space** | `O(N)` | The stack holds all `N` characters, and the result string grows to `N` characters. |
+
+### Edge Cases
+
+| Case | What happens |
+|---|---|
+| Empty string (`""`) | The load pass pushes nothing; the unload `while` never runs; an empty result is returned. |
+| Single character (`"c"`) | One push, one pop; the result `"c"` is its own reverse. |
+| Two characters (`"ab"`) | Push `a, b`; pop `b, a`; result `"ba"`. |
+| Palindrome (`"aba"`) | Characters are never compared; the reversed result `"aba"` happens to read the same. |
+| Mixed case (`"aAbB"`) | Case is preserved per character; result is `"BbAa"`. |
+| Digits (`"12345"`) | Digit characters reverse like any others; result `"54321"`. |
+
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+## Key Takeaway
 
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
-
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
-
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
-
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
-
-<!-- TODO: Solution — missing, needs to be written -->
-<!--       Guidance: Python block then Java block -->
-
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
-
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table: time / space / why -->
-
-<!-- TODO: Edge Cases — missing, needs to be written -->
-<!--       Guidance: table, min 5 rows -->
-
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->
+Reversing a string is the character-unit instance of the pattern — load every character, unload into a result — and it is the canonical example precisely because the pop-only read pattern survives unchanged on any index-free source.

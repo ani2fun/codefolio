@@ -1,324 +1,189 @@
 ---
 title: "Pattern: Two Pointers"
-summary: "Two-pointer inward scan leveraging O(1) bidirectional access for palindrome check, two-sum, and three-sum on doubly-linked lists."
+summary: "Converge two pointers from the head and the tail, walking inward. A doubly list's prev pointer makes the right pointer's leftward step O(1) — the same converging scan that's impractical on a singly list. Powers two-sum, palindrome checks, and sorted-pair search."
 prereqs:
-  - 02-linear-structures/04-doubly-linked-list/01-introduction-to-doubly-linked-lists
+  - 02-linear-structures/04-doubly-linked-list/01-doubly-linked-lists
 ---
 
-# Understanding the Two-Pointer Pattern
+# Pattern: Two Pointers
 
-## The World — Two Walkers, One Hallway
+## Why It Exists
 
-Picture a long hallway with numbered doors lined up in increasing order. One person stands at the first door, another at the last. They walk toward each other, comparing the numbers on their doors at every step. If the **sum** of the two numbers is too small, the left walker advances; if it's too large, the right walker steps back. Eventually they shake hands in the middle — and somewhere along the way, they've inspected every *useful* combination of doors without ever doubling back.
+The converging two-pointer scan — one pointer from the front, one from the back, both walking inward — is a workhorse on arrays: "find two sorted values that sum to a target," "is this a palindrome?" The natural question is whether a linked list can do the same.
 
-That's the two-pointer technique. On a doubly linked list, the hallway is the list itself, the walkers are `left` and `right` pointers, and "stepping" is just `left = left.next` or `right = right.prev`.
+A **singly** list can't, not efficiently. The right pointer has to move *leftward*, but a singly node has no link back — to step `right` one position left you'd re-walk from the head to find its predecessor, turning each step into `O(n)` and the whole scan into `O(n²)`. A **doubly** list removes exactly that obstacle: every node carries a `prev` pointer, so `right = right.prev` is a single `O(1)` hop. The pattern that's impractical on a singly list is natural here — it's the clearest payoff of the backward pointer.
 
-> 🖼 Diagram — Two-pointer traversal on a DLL — left walks forward via next, right walks backward via prev. They converge from both ends until they meet (or cross) in the middle.
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    HEAD(["head / left"]) --> A["1"] <--> B["3"] <--> C["5"] <--> D["7"] <--> E["9"]
-    TAIL(["tail / right"]) -.-> E
-    A -->|"left advances →"| B
-    E -->|"← right retreats"| D
-    style A fill:#dcfce7,stroke:#16a34a
-    style E fill:#fee2e2,stroke:#dc2626
-```
+## See It Work
 
-<p align="center"><strong>Two-pointer traversal on a DLL — <code>left</code> walks forward via <code>next</code>, <code>right</code> walks backward via <code>prev</code>. They converge from both ends until they meet (or cross) in the middle.</strong></p>
+On a **sorted** doubly list `1 ⇄ 2 ⇄ 4 ⇄ 7 ⇄ 11 ⇄ 15`, find two values that sum to `15`. Start wide (head + tail) and squeeze inward. Run it, then **Visualise** the two pointers converge.
 
-## Why a Singly Linked List Can't Do This
+> ▶ Run it, then click **Visualise** — `left` starts at the head, `right` at the tail; too-small a sum advances `left`, too-large retreats `right` (one `prev` hop).
 
-To perform any operation on the data items in a **singly** linked list, we must traverse from `head` to `tail` and find those items in one direction only. A doubly linked list, however, can be traversed in *two* directions — head-to-tail or tail-to-head — and depending on the problem, we may choose one direction over the other.
-
-Some problems, though, require us to traverse the linked list in *both* directions **simultaneously**. With a singly linked list this is impossible without first reversing or copying the list (extra space, extra time). With a DLL it's free — every node already stores `prev`, so the `right` walker has somewhere to go.
-
-> **The key claim:** the two-pointer technique allows us to solve certain problems in **linear time, single-pass, O(1) space** — problems that would otherwise force nested loops or auxiliary data structures.
-
-The two-pointer pattern is the family of problems solvable using this two-pointer traversal technique.
-
-## The Two-Pointer Technique
-
-The technique uses two references, `left` and `right`, initialised at `head` and `tail` respectively. We traverse in both directions by following `next` from `left` and `prev` from `right`, until they meet in the middle or `left` crosses past `right`. At each iteration we inspect the nodes held by `left` and `right`, do whatever the problem demands, and decide which pointer to advance — possibly both, possibly only one — to close the gap.
-
-> 🖼 Diagram — Each iteration: act on left and right, then move one or both inward by one step.
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    subgraph S["Each iteration"]
-        direction LR
-        L(["left"]) --> N1["node"] -->|"left = left.next"| N2["node"]
-        R(["right"]) -.-> N5["node"]
-        N5 -->|"right = right.prev"| N4["node"]
-    end
-```
-
-<p align="center"><strong>Each iteration: act on <code>left</code> and <code>right</code>, then move one or both inward by one step.</strong></p>
-
-## The Generic Algorithm
-
-> -   **Step 1:** Initialise `left = head` and `right = tail`.
-> -   **Step 2:** Loop while `left != right` **and** `left.prev != right` (the second guard catches the moment they cross — see the friction prompt below):
->     -   **Step 2.1:** Perform the operation on the nodes held by `left` and `right` as the problem dictates.
->     -   **Step 2.2:** Decide whether `left` should advance — if yes, set `left = left.next` (possibly more than once).
->     -   **Step 2.3:** Decide whether `right` should retreat — if yes, set `right = right.prev` (possibly more than once).
-
-> *Friction prompt — before reading on:* why do we need **both** termination guards? What goes wrong with only `left != right`? Predict before scrolling.
->
-> Answer: with an even-length list, `left` and `right` never land on the *same* node — they swap past each other. After one final inward step, `left.prev == right` (they crossed). Without the second guard, the loop would run one iteration too many on already-processed nodes, comparing them backwards. The pair `(left != right) && (left.prev != right)` covers both odd-length (meet) and even-length (cross) lists.
-
-## Generic Implementation
-
-The skeleton below is the template every problem in this lesson specialises. Read it once, then watch how each problem changes only the *condition* and the *what to do at each step*.
-
-
-```python run
-
-"""
-Definition for doubly-linked list.
-class ListNode:
+```python run viz=linked-list viz-root=head viz-kind=list-double
+class Node:
     def __init__(self, val):
         self.val = val
         self.prev = None
         self.next = None
-"""
 
-from typing import Optional
+vals = [1, 2, 4, 7, 11, 15]                  # sorted doubly list
+nodes = [Node(v) for v in vals]
+for i in range(len(nodes) - 1):
+    nodes[i].next = nodes[i + 1]; nodes[i + 1].prev = nodes[i]
+head = nodes[0]
 
-def two_pointer(head: Optional[ListNode], tail: Optional[ListNode]) -> None:
-    # If the head and tail are the same or adjacent, nothing needs to be done
-    if not head or not tail or head == tail or head.next == tail:
-        return
+left = head
+right = nodes[-1]                            # the tail
+target = 15
+answer = None
+while left is not right:
+    s = left.val + right.val
+    if s == target:
+        answer = (left.val, right.val); break
+    elif s < target:
+        left = left.next                     # need a bigger sum → move left rightward
+    else:
+        right = right.prev                   # need a smaller sum → move right leftward (O(1))
+print(answer)                                # (4, 11)
+```
 
-    # Initialize left and right references
+## How It Works
+
+`left` starts at the head, `right` at the tail. The list is **sorted**, so the sum `left.val + right.val` reacts predictably to each move: advancing `left` (`left.next`) can only *raise* the sum; retreating `right` (`right.prev`) can only *lower* it. So:
+
+- `sum < target` → the sum is too small → `left = left.next`.
+- `sum > target` → too large → `right = right.prev`.
+- `sum == target` → found.
+
+Each step eliminates one value that can't be part of any solution, and the pointers march toward each other until they meet.
+
+```mermaid
+flowchart TB
+  I["left = head; right = tail"] --> Q{"left ≠ right?"}
+  Q -->|"yes"| C{"left.val + right.val vs target"}
+  C -->|"< target"| L["left = left.next"]
+  C -->|"> target"| R["right = right.prev  (O(1) via prev)"]
+  C -->|"== target"| F(["found the pair"])
+  L --> Q
+  R --> Q
+  Q -->|"no — crossed"| N(["no pair"])
+```
+
+<p align="center"><strong>converge from both ends: compare the sum to the target, advance <code>left</code> if too small, retreat <code>right</code> if too large, stop when they meet or match.</strong></p>
+
+The entire scan is **`O(n)` time, `O(1)` space** — but only because `right.prev` is `O(1)`. That single fact is the whole reason this pattern lives in the doubly-list chapter and not the singly one. (It also needs the **tail**; a doubly list that tracks its tail hands you the right pointer's start for free.)
+
+### Key Takeaway
+
+Converge `left` from the head and `right` from the tail on a sorted doubly list: too-small a sum advances `left`, too-large retreats `right` (`prev`), a match wins. `O(n)` time, `O(1)` space — and it's the `O(1)` backward `prev` step that makes the scan possible at all.
+
+## Trace It
+
+Target `15` on `1 ⇄ 2 ⇄ 4 ⇄ 7 ⇄ 11 ⇄ 15`:
+
+| `left` | `right` | sum | vs 15 | move |
+|---|---|---|---|---|
+| `1` | `15` | 16 | `>` | `right = 11` |
+| `1` | `11` | 12 | `<` | `left = 2` |
+| `2` | `11` | 13 | `<` | `left = 4` |
+| `4` | `11` | 15 | `=` | **found (4, 11)** |
+
+Before you read on: at the very first step the sum `16` was too big, so we moved `right` from `15` to `11` via `right.prev`. On a *singly* list, how expensive would that one backward step have been — and what would it do to the whole scan?
+
+On a singly list there's no `prev`, so finding the node before `15` means walking from the head again — `O(n)` for that *single* step. Do that on every "retreat right," and the `O(n)` scan balloons to `O(n²)`, erasing the advantage over just checking all pairs. The doubly list's `prev` makes the retreat `O(1)`, which is the only reason the converging scan stays linear. Same algorithm as the array version — it just needed the backward pointer to be viable on a list.
+
+## Your Turn
+
+The reusable sorted two-sum on a doubly list:
+
+```python run
+class Node:
+    def __init__(self, val):
+        self.val = val
+        self.prev = None
+        self.next = None
+
+def two_sum(head, target):
     left = head
-    right = tail
-
-    while left != right and left.prev != right:
-        '''
-        Perform the operation on left and right.
-        You can include your specific logic here.
-        '''
-
-        # Adjust pointers based on conditions
-        if should_move_left:  # You should define this condition according to your logic
+    right = head
+    while right.next:                # find the tail
+        right = right.next
+    while left is not right:
+        s = left.val + right.val
+        if s == target:
+            return (left.val, right.val)
+        elif s < target:
             left = left.next
+        else:
+            right = right.prev       # O(1) backward step
+    return None
 
-        if should_move_right:  # You should define this condition according to your logic
-            right = right.prev
-
-    return
+vals = [1, 2, 4, 7, 11, 15]
+nodes = [Node(v) for v in vals]
+for i in range(len(nodes) - 1):
+    nodes[i].next = nodes[i + 1]; nodes[i + 1].prev = nodes[i]
+print(two_sum(nodes[0], 15))         # (4, 11)
 ```
 
 ```java run
+public class Main {
+  static class Node { int val; Node prev, next; Node(int v){ val = v; } }
 
-/**
- * Definition for doubly-linked list.
- * class ListNode {
- *     int val;
- *     ListNode prev;
- *     ListNode next;
- *     ListNode() {}
- *     ListNode(int val) { this.val = val; }
- * };
- */
-
-class TwoPointer {
-
-        public void twoPointer(ListNode head, ListNode tail) {
-        // If the head and tail are the same or adjacent, nothing needs to be done
-        if (head == null || tail == null || head == tail || head.next == tail) {
-            return;
-        }
-
-        // Initialize left and right references
-        ListNode left = head;
-        ListNode right = tail;
-
-        // Loop until the left and right pointers meet or cross each other
-        while (left != right && left.prev != right) {
-            /*
-            Perform the operation on left and right
-            Example: swapping values, comparing nodes, etc.
-            */
-
-            // Adjust pointers based on conditions
-            if (shouldMoveLeft) {
-                left = left.next;
-            }
-
-            if (shouldMoveRight) {
-                right = right.prev;
-            }
-        }
+  static int[] twoSum(Node head, int target) {
+    Node left = head, right = head;
+    while (right.next != null) right = right.next;   // find the tail
+    while (left != right) {
+      int s = left.val + right.val;
+      if (s == target) return new int[]{left.val, right.val};
+      else if (s < target) left = left.next;
+      else right = right.prev;                       // O(1) backward step
     }
+    return null;
+  }
 
+  public static void main(String[] args) {
+    int[] vals = {1, 2, 4, 7, 11, 15};
+    Node[] n = new Node[vals.length];
+    for (int i = 0; i < vals.length; i++) n[i] = new Node(vals[i]);
+    for (int i = 0; i < vals.length - 1; i++) { n[i].next = n[i + 1]; n[i + 1].prev = n[i]; }
+    int[] r = twoSum(n[0], 15);
+    System.out.println(r == null ? "none" : "(" + r[0] + ", " + r[1] + ")");   // (4, 11)
+  }
 }
 ```
 
+Drill the family in **Practice** — [Palindrome Number](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-two-pointers-problems-palindrome-number), [Two Sum](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-two-pointers-problems-two-sum), [Duplicate-Aware Two Sum](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-two-pointers-problems-duplicate-aware-two-sum), and [Approximate Three Sum](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-two-pointers-problems-approximate-three-sum).
 
-## Complexity Analysis
+## Reflect & Connect
 
-Both pointers traverse the list once, from opposite ends, and meet in the middle — collectively visiting each node at most once. That's logically equivalent to one full sweep.
+The converging scan transfers directly once you have `O(1)` backward movement:
 
-| Measure | Value | Why |
-|---|---|---|
-| Time  | **O(N)** | `left` and `right` together cover every node exactly once before crossing. |
-| Space | **O(1)** | Two pointers, no auxiliary structure. |
+- **The family** — sorted two-sum (above), **palindrome check** (compare `left.val` and `right.val`, step inward), **three-sum** (fix one node, converge the other two over the rest). All are "squeeze from both ends."
+- **The `prev` pointer is the enabler** — this is the canonical demonstration of *why* a doubly list exists: it makes backward traversal `O(1)`, which turns an `O(n²)`-on-a-singly-list scan into `O(n)`. When you see "two values from both ends of a sorted sequence," reach for converging pointers.
+- **Where each structure stands** — arrays give `O(1)` movement in *both* directions (indices), so they're the most natural home for this pattern; a doubly list matches them for traversal here; a singly list is the odd one out. Same idea from the [array two-pointers](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-pattern) pattern, now on links.
 
-> **Best Case**: Time **O(N)**, Space **O(1)**
->
-> **Worst Case**: Time **O(N)**, Space **O(1)**
+**Prerequisites:** [Doubly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-doubly-linked-lists).
+**What's next:** restructure a doubly list by weaving from both ends — [Reorder](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-reorder-pattern).
 
-We unlocked a structural superpower — but where exactly is it the *right* tool? That's the next question.
+## Recall
 
-# Identifying the Two-Pointer Pattern
+> **Mnemonic:** *`left` from head, `right` from tail, squeeze inward. Sum too small → `left.next`; too big → `right.prev`. The `O(1)` `prev` hop is what makes it work.*
 
-Almost every two-pointer **array** problem can be reformulated as a doubly linked list problem and solved the same way. These tend to be **medium** or **hard** on a DLL because pointer plumbing and null-checks are more delicate than array indexing — but the underlying logic is identical.
+| | |
+|---|---|
+| Setup | `left = head`, `right = tail` (sorted list) |
+| Too small | `left = left.next` (raise the sum) |
+| Too large | `right = right.prev` (lower the sum) — `O(1)` only with `prev` |
+| Stop | values match, or pointers meet |
+| Cost | `O(n)` time, `O(1)` space |
 
-If a problem statement (or its naive solution) fits the template below, it's a two-pointer problem:
+- **Q:** Why can't a singly list run the converging two-pointer scan efficiently? **A:** Moving `right` leftward needs its predecessor, which costs `O(n)` per step without a `prev` pointer — the scan degrades to `O(n²)`.
+- **Q:** On a sorted list, why is moving one pointer always the right call? **A:** Advancing `left` only raises the sum and retreating `right` only lowers it, so each move discards a value that can't be in any solution.
+- **Q:** What two things does the pattern require from the list? **A:** Access to the tail (the right pointer's start) and `O(1)` backward movement (`prev`).
+- **Q:** How does three-sum build on this? **A:** Fix one node, then converge two pointers over the remaining sorted values.
 
-> **Template:** Given a doubly linked list, perform an operation on two nodes `left` and `right` where `left` starts at `x` and `right` starts at `y` with `x` to the left of `y`, and on each iteration `left` and `right` move strictly closer to each other.
+## Sources & Verify
 
-## Worked Example — Spotting It in the Wild
-
-> **Problem:** Given the `head` and `tail` of a doubly linked list of integers sorted non-decreasing, and an integer `target`, return `true` if any two nodes have values summing to `target`.
-
-Take the list below with `target = 13` — two nodes obviously satisfy the requirement.
-
-> 🖼 Diagram — Find a pair summing to 13 — sorted order plus DLL bidirectionality is the exact recipe two-pointers eats for breakfast.
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    H(["head"]) --> A["1"] <--> B["3"] <--> C["4"] <--> D["6"] <--> E["7"] <--> F["9"]
-    T(["tail"]) -.-> F
-    style A fill:#dcfce7,stroke:#16a34a
-    style F fill:#fee2e2,stroke:#dc2626
-```
-
-<p align="center"><strong>Find a pair summing to 13 — sorted order plus DLL bidirectionality is the exact recipe two-pointers eats for breakfast.</strong></p>
-
-### The Two-Pointer Solution
-
-The classic Two-Sum array solution sorts the array, then uses two pointers (the proof of correctness was covered in the array two-pointer chapter). Here, the values are *already* sorted — so we can apply the same logic directly:
-
-- Plant `left = head`, `right = tail`.
-- Compute `sum = left.val + right.val`.
-- If `sum < target`, `left.val` is paired against the *largest* possible partner and still falls short — that means `left.val` can never participate in a valid pair, **so advance `left`** (drop it).
-- If `sum > target`, `right.val` is paired against the *smallest* possible partner and still overshoots — `right.val` can never participate, **so retreat `right`**.
-- If `sum == target`, record the pair and shrink both inward.
-
-This fits the template exactly.
-
-> 🖼 Diagram — Finding a pair with sum 13 — each iteration shrinks the search range by discarding a value that provably cannot participate.
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    S0["[1, 3, 4, 6, 7, 9]<br/>L=1, R=9 → sum=10 < 13<br/>L++"]
-    S1["[1, 3, 4, 6, 7, 9]<br/>L=3, R=9 → sum=12 < 13<br/>L++"]
-    S2["[1, 3, 4, 6, 7, 9]<br/>L=4, R=9 → sum=13 ✓<br/>found!"]
-    S0 --> S1 --> S2
-```
-
-<p align="center"><strong>Finding a pair with sum 13 — each iteration shrinks the search range by discarding a value that provably cannot participate.</strong></p>
-
-The reference C++ implementation (we'll see the Python and Java versions in the dedicated Two Sum section below):
-
-```cpp
-class Solution {
-public:
-    vector<vector<int>> twoSum(ListNode *head, ListNode *tail, int target) {
-        if (!head || !head->next) return {};
-        vector<vector<int>> result;
-        ListNode *left = head, *right = tail;
-        while (left && right && left->val < right->val) {
-            int sum = left->val + right->val;
-            if (sum == target) {
-                result.push_back({left->val, right->val});
-                left = left->next; right = right->prev;
-            } else if (sum < target) {
-                left = left->next;
-            } else {
-                right = right->prev;
-            }
-        }
-        return result;
-    }
-};
-```
-
-Single pass, no extra space — exactly the speedup the pattern promises.
-
-## The Problem Roster
-
-We'll now cement the technique with four concrete problems of growing difficulty:
-
-> -   **Palindrome Number** — pure mirror check
-> -   **Two Sum** — the canonical sorted-pair search
-> -   **Duplicate-Aware Two Sum** — same idea, but skip-duplicate plumbing
-> -   **Approximate Three Sum** — fix one node, two-pointer the rest
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Why Naive Isn't Enough — missing, needs to be written -->
-<!--       Guidance: motivation for why the obvious approach fails -->
-
-<!-- TODO: The Core Idea — missing, needs to be written -->
-<!--       Guidance: one paragraph: the central trick -->
-
-<!-- TODO: How the Pointers/Window Move — missing, needs to be written -->
-<!--       Guidance: mechanics of the moving parts -->
-
-<!-- TODO: Variants / Taxonomy — missing, needs to be written -->
-<!--       Guidance: enumerate sub-shapes of this pattern -->
-
-<!-- TODO: Recognition Checklist — missing, needs to be written -->
-<!--       Guidance: 4-question diagnostic — the source of the Problem-section Diagnostic Questions -->
-
-<!-- TODO: Canonical Example — missing, needs to be written -->
-<!--       Guidance: fully worked example: brute force → optimised → template fit -->
-
-<!-- TODO: Problems in This Category — missing, needs to be written -->
-<!--       Guidance: table with links to the 02-problems/ files -->
+- **CLRS**, *Introduction to Algorithms*, 4th ed., §10.2 — doubly linked lists and bidirectional traversal.
+- **Sedgewick & Wayne**, *Algorithms*, 4th ed., §1.3 — linked structures; the two-pointer technique on ordered data.
+- The sorted two-sum / converging-pointer scan is standard; both runnable blocks are verified by running (output `(4, 11)`; the `16 ⇒ (1,15)` and no-pair cases checked).

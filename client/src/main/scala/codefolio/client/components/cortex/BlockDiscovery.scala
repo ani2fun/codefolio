@@ -72,7 +72,8 @@ object BlockDiscovery:
       val viz     = nonEmpty(node.getAttribute("data-viz"))
       val vizRoot = nonEmpty(node.getAttribute("data-viz-root"))
       val vizCase = nonEmpty(node.getAttribute("data-viz-case"))
-      Blocks.decodeRunnableCode(lang, src, label, viz, vizRoot, vizCase)
+      val vizKind = nonEmpty(node.getAttribute("data-viz-kind"))
+      Blocks.decodeRunnableCode(lang, src, label, viz, vizRoot, vizCase, vizKind)
 
   private object RunnableGroup extends Discoverer:
     override val className: String = "runnable-group"
@@ -96,7 +97,8 @@ object BlockDiscovery:
             runnable = obj.runnable.asInstanceOf[js.UndefOr[Boolean]].toOption,
             viz = obj.viz.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty),
             vizRoot = obj.vizRoot.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty),
-            vizCase = obj.vizCase.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
+            vizCase = obj.vizCase.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty),
+            vizKind = obj.vizKind.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
           )
         }
       } match
@@ -146,7 +148,26 @@ object BlockDiscovery:
     override def decode(node: dom.HTMLElement): Either[BlockDecodeError, Block] =
       val lang = nonEmpty(node.getAttribute("data-lang"))
       val src  = nonEmpty(node.getAttribute("data-source")).flatMap(uriDecode)
-      Blocks.decodeTracedCode(lang, src)
+      val companions = nonEmpty(node.getAttribute("data-companions")).flatMap(uriDecode)
+        .map(parseCompanions).getOrElse(Nil)
+      Blocks.decodeTracedCode(lang, src, companions)
+
+    // Defensive JSON parse of the `data-companions` array:
+    //   `[{language: "kotlin", source: "..."}, ...]`
+    // Any parse failure silently produces an empty list — one bad companion doesn't kill the block.
+    private def parseCompanions(json: String): List[Block.TraceCompanion] =
+      Try {
+        val arr = js.JSON.parse(json).asInstanceOf[js.Array[js.Dynamic]]
+        arr.toList.flatMap { obj =>
+          val lang = obj.language.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
+          val src  = obj.source.asInstanceOf[js.UndefOr[String]].toOption.getOrElse("")
+          lang.map(Block.TraceCompanion(_, src))
+        }
+      } match
+        case Success(v) => v
+        case Failure(t) =>
+          dom.console.warn(s"chapter: skipping trace companions — malformed JSON: ${t.getMessage}")
+          Nil
 
   private object LikeC4 extends Discoverer:
     override val className: String = "likec4-iframe"

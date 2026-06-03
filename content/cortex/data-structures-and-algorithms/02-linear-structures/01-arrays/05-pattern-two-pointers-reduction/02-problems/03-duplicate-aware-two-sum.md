@@ -59,7 +59,6 @@ Place `left = 0` and `right = n − 1` after sorting; the move rule on mismatche
 
 What breaks if you skip the duplicate-skip step? On `arr = [2, 2, 2, 2]` with `target = 4`, every pair `(left, right)` evaluates to `2 + 2 = 4` — without the skip, the same `[2, 2]` is recorded `O(n)` times before the pointers cross. With the skip, the first match jumps both pointers past their duplicate runs and the loop terminates with a single `[2, 2]`. The skip preserves correctness without changing the asymptotic cost — each index is still visited at most once across the entire run.
 
-> 🖼 Diagram — Duplicate Aware Two Sum — after each match, exhaust all consecutive duplicates on both sides before advancing the pointers.
 ```mermaid
 ---
 config:
@@ -223,7 +222,7 @@ print(Solution().duplicate_aware_two_sum([2, 2, 2, 2], 4))         # [[2, 2]] �
 print(Solution().duplicate_aware_two_sum([-1, 0, 1, 2], 1))        # [[-1, 2], [0, 1]]
 ```
 
-```java run
+```java run viz=array viz-root=arr
 import java.util.*;
 
 public class Main {

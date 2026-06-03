@@ -2,7 +2,7 @@
 title: "Memorize: Reversal (Subproblem)"
 summary: "Pattern recognition triggers, template code, common mistakes, and quick recall."
 prereqs:
-  - 08-pattern-reversal-subproblem/02-problems
+  - 08-pattern-reversal-subproblem/01-pattern
 ---
 
 # Memorize: Reversal (Subproblem)
@@ -30,8 +30,6 @@ Picture a row of train cars on a single track and a crew that has been told to f
 ---
 
 ## Visual Summary
-
-> 🖼 Diagram — TODO: 3 frames showing (1) the outer driver locating `start` and `end` of the next chunk while `left_bound` caches the predecessor, (2) the inner segment reversal flipping links inside `[start, end]` with `right_bound = end.next` cached, (3) the seam stitched (`left_bound.next = reversed_head`) and the boundary pointers slid forward (`left_bound = old start`, `start = left_bound.next`) ready for the next chunk.
 
 ---
 

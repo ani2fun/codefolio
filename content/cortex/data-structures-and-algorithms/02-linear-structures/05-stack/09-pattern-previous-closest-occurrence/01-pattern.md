@@ -1,214 +1,148 @@
 ---
 title: "Pattern: Previous Closest Occurrence"
-summary: "Monotonic stack scanning left-to-right; for each element, pop until the stack top is the nearest greater/smaller to the left."
+summary: "A monotonic stack scanned left-to-right: for each element, pop everything it dominates, and whatever remains on top is the nearest greater (or smaller) element to its left. Each element is pushed and popped once — O(n) total."
 prereqs:
-  - 02-linear-structures/05-stack/01-introduction-to-stacks
+  - 02-linear-structures/05-stack/01-what-is-a-stack
 ---
 
-# Understanding the previous closest occurrence pattern
+# Pattern: Previous Closest Occurrence
 
-The pattern: for each index `i`, find the *closest preceding* index `j < i` whose value satisfies some predicate (`> arr[i]`, `< arr[i]`, etc.). The naive nested loop is O(N²). The monotonic-stack solution is O(N).
+## Why It Exists
 
-> 🖼 Diagram — Previous-greater-element (PGE) for an array — for every position, the most recent strictly-greater value to its left, or −1 if none exists. The brute force is O(N²); the monotonic-stack solution is O(N).
-```d2
-direction: right
+A recurring question: "for each element, what's the nearest element to its **left** that is larger?" (the *previous greater element*). It powers stock-span calculations, histogram problems, "how long until a warmer day," and more.
 
-arr: arr {
-  grid-columns: 6
-  grid-gap: 0
-  i0: "3"
-  i1: "5"
-  i2: "1"
-  i3: "6"
-  i4: "8"
-  i5: "7"
-}
+Brute force scans left from each position until it finds a bigger value — `O(n²)` in the worst case. The insight that collapses it: when you place an element and it has a larger element somewhere to its left, any **smaller** elements sitting between them are now useless — nothing further right will ever pick them as a "nearest greater," because this newer, larger element blocks them. So maintain only the still-useful candidates on a stack kept **monotonic** (here, strictly decreasing). Each new element pops everything it dominates; whatever survives on top is its previous-greater. Since every element is pushed once and popped at most once, the whole scan is `O(n)`.
 
-out: "previous greater (PGE)" {
-  grid-columns: 6
-  grid-gap: 0
-  o0: "−1"
-  o1: "−1"
-  o2: "5" {style.fill: "#fef9c3"; style.stroke: "#f59e0b"}
-  o3: "−1"
-  o4: "−1"
-  o5: "8"
-}
+## See It Work
 
-note: "e.g. arr[2]=1: closest earlier value > 1 is 5" {shape: text}
-note -> out.o2: "" {style.stroke-dash: 3}
+For each element of `[2, 5, 3, 7, 1]`, find the nearest larger value to its left (`None` if there isn't one). Run it, then **Visualise** the stack stay decreasing.
 
-arr -> out
+> ▶ Run it, then click **Visualise** — each element pops the smaller values off the stack; the top that remains is its previous-greater.
+
+```python run viz=array viz-root=stack viz-kind=stack
+arr = [2, 5, 3, 7, 1]
+stack = []                              # holds candidates, kept strictly decreasing
+result = []
+for x in arr:
+    while stack and stack[-1] <= x:     # pop everything this element dominates
+        stack.pop()
+    result.append(stack[-1] if stack else None)   # nearest taller to the left
+    stack.append(x)
+print(result)                           # [None, None, 5, None, 7]
 ```
 
-<p align="center"><strong>Previous-greater-element (PGE) for an array — for every position, the most recent strictly-greater value to its left, or −1 if none exists. The brute force is O(N²); the monotonic-stack solution is O(N).</strong></p>
+## How It Works
 
-## The previous closest occurrence technique
+Scan left to right, keeping a stack of values that is always strictly decreasing from bottom to top. For each element `x`:
 
-Walk the array left to right. Maintain a **monotonic decreasing stack** of values seen so far (top = smallest, bottom = largest). For each new element `x`:
+1. **Pop** while the top is `≤ x`. Those popped values are smaller than `x` and sit to its left, so they can never be the "previous greater" for `x` *or for anything after it* — `x` shadows them.
+2. **Read** the answer: whatever is now on top is the nearest value to the left greater than `x` (or `None` if the stack emptied).
+3. **Push** `x`, so it becomes a candidate for elements further right.
 
-1. **Pop** every value `≤ x` from the top of the stack. These values can never again be a "previous greater" for any future element — `x` itself is between them and any future query, and `x ≥ them`.
-2. **The new top** (if any) is `x`'s **previous greater** — the closest earlier value that's still strictly greater. If the stack is empty, no such value exists; record `-1`.
-3. **Push `x`** so it's a candidate for elements to come.
-
-> 🖼 Diagram — Monotonic-stack core loop — pop everything that's been "dominated" by the current element, then the new top is the answer. Each value enters the stack at most once and leaves at most once → total work is O(N).
 ```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    R["read arr[i] = x"] --> POP["while stack.top() ≤ x:<br/>pop"]
-    POP --> CHK{"stack empty?"}
-    CHK -->|"yes"| W1["PGE[i] = -1"]
-    CHK -->|"no"| W2["PGE[i] = stack.top()"]
-    W1 --> PUSH["push x"]
-    W2 --> PUSH
-    PUSH --> R
+flowchart TB
+  N["next element x"] --> P["pop while top ≤ x"]
+  P --> R["answer = top (or None)"]
+  R --> PU["push x"]
+  PU --> N
 ```
 
-<p align="center"><strong>Monotonic-stack core loop — pop everything that's been "dominated" by the current element, then the new top is the answer. Each value enters the stack at most once and leaves at most once → total work is O(N).</strong></p>
+<p align="center"><strong>for each element, pop the values it dominates, record the surviving top as the previous-greater, then push it; the stack stays monotonically decreasing.</strong></p>
 
-## Why is this O(N)?
+Why is this `O(n)` despite the inner `while`? Because each element is **pushed exactly once and popped at most once** — across the whole run the pops total at most `n`. The inner loop isn't nested cost; it's amortized `O(1)` per element. **`O(n)` time, `O(n)` space.** Swap the comparison (`pop while top ≥ x`) and the same machinery finds the previous *smaller* element with an increasing stack.
 
-The operations look unbounded — there's a `while` loop nested inside the `for` loop — but the **amortised analysis** says otherwise. Across the entire run, every array element is **pushed exactly once** and **popped at most once**. Total stack operations: at most 2N. The outer loop runs N times. Total work: O(N).
+### Key Takeaway
 
-This is one of the most beautiful amortised arguments in algorithms — a nested `while` masquerading as O(N²) but actually O(N) when you count operations across the whole input rather than per iteration.
+A monotonic stack answers "nearest greater/smaller to the left" in one `O(n)` pass: pop everything the current element dominates, read the surviving top as the answer, then push. The amortized `O(1)`-per-element bound comes from each value being pushed and popped at most once.
 
-## Algorithm
+## Trace It
 
-> **Algorithm — previous greater element (PGE)**
->
-> -   **Step 1:** Initialise an empty stack and a result array `pge[0..n-1]` filled with `-1`.
-> -   **Step 2:** For `i` from 0 to n−1:
->     -   While the stack is non-empty and `stack.top() <= arr[i]`: pop.
->     -   If the stack is non-empty: `pge[i] = stack.top()`.
->     -   Push `arr[i]`.
-> -   **Step 3:** Return `pge`.
+Previous-greater over `[2, 5, 3, 7, 1]`:
 
-For **previous smaller element (PSE)**, swap the comparison: pop while `stack.top() >= arr[i]`.
+| `x` | pops (`≤ x`) | stack after | answer |
+|---|---|---|---|
+| `2` | — | `[2]` | `None` |
+| `5` | `2` | `[5]` | `None` |
+| `3` | — | `[5, 3]` | `5` |
+| `7` | `3, 5` | `[7]` | `None` |
+| `1` | — | `[7, 1]` | `7` |
 
-## Implementation — generic PGE walker
+Before you read on: when `7` arrived it popped both `3` and `5`. Could either of those ever be the "previous greater" for the `1` that comes next — and why does popping them early not lose information?
 
+No. `1` needs the nearest *larger* value to its left, and `7` (which now sits on the stack, closer to `1` than `3` or `5` were) is larger than both of them — so `7` shadows them completely. Any element after `7` that's smaller than `7` will find `7` first; any element larger than `7` would have popped `7` too. `3` and `5` can never again be the nearest-greater for anything, so discarding them loses nothing. That "once shadowed, gone forever" property is exactly what keeps the stack small and the pops bounded by `n`.
+
+## Your Turn
+
+The reusable previous-greater (flip the comparison for previous-smaller):
 
 ```python run
-from typing import List
-
-def previous_greater_occurrence(arr: List[int]) -> List[int]:
-    """
-    Find the previous greater occurrence for each element in the array.
-
-    :param arr: A list of integers.
-    :return: A list of integers where each element represents the previous greater element
-             in the input array, or -1 if no such element exists.
-    """
-    # List to store the previous greater elements for arr
-    previous_greater: List[int] = [-1] * len(arr)
-
-    # Stack to hold the chain of previous greater items
-    stack: List[int] = []
-
-    # Iterate over the array
-    for i in range(len(arr)):
-        # Keep popping elements from the stack
-        # until we find an item greater than the current item
-        while stack and stack[-1] < arr[i]:
+def previous_greater(arr):
+    stack, result = [], []
+    for x in arr:
+        while stack and stack[-1] <= x:      # >= x  →  previous-smaller instead
             stack.pop()
+        result.append(stack[-1] if stack else None)
+        stack.append(x)
+    return result
 
-        # If the stack is not empty, the top item is the previous greater item
-        if stack:
-            previous_greater[i] = stack[-1]
-
-        # Push the current element onto the stack
-        stack.append(arr[i])
-
-    return previous_greater
+print(previous_greater([2, 5, 3, 7, 1]))     # [None, None, 5, None, 7]
+print(previous_greater([4, 3, 2, 1]))        # [None, 4, 3, 2]
 ```
 
 ```java run
-class Solution {
-    public List<Integer> previousGreaterOccurrence(List<Integer> arr) {
+import java.util.*;
 
-        // Array to store the previous greater elements for arr
-        List<Integer> previousGreater = new ArrayList<>();
-        for (int i = 0; i < arr.size(); i++) {
-            previousGreater.add(-1);
-        }
-
-        // Stack to hold the chain of previous greater items
-        Stack<Integer> stack = new Stack<>();
-
-        // Iterate over the array
-        for (int i = 0; i < arr.size(); i++) {
-            // Keep popping elements from the stack
-            // until we find an item greater than the current item
-            while (!stack.isEmpty() && stack.peek() < arr.get(i)) {
-                stack.pop();
-            }
-
-            // If the stack is not empty, the top item is the previous greater item
-            if (!stack.isEmpty()) {
-                previousGreater.set(i, stack.peek());
-            }
-
-            // Push the current element onto the stack
-            stack.push(arr.get(i));
-        }
-
-        return previousGreater;
+public class Main {
+  static Integer[] previousGreater(int[] arr) {
+    Deque<Integer> stack = new ArrayDeque<>();
+    Integer[] result = new Integer[arr.length];
+    for (int i = 0; i < arr.length; i++) {
+      int x = arr[i];
+      while (!stack.isEmpty() && stack.peek() <= x) stack.pop();   // >= x → previous-smaller
+      result[i] = stack.isEmpty() ? null : stack.peek();
+      stack.push(x);
     }
+    return result;
+  }
+
+  public static void main(String[] args) {
+    System.out.println(Arrays.toString(previousGreater(new int[]{2, 5, 3, 7, 1})));   // [null, null, 5, null, 7]
+  }
 }
 ```
 
+Drill the family in **Practice** — [Preceding Superior Element](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-previous-closest-occurrence-problems-preceding-superior-element), [Preceding Inferior Element](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-previous-closest-occurrence-problems-preceding-inferior-element), [Preceding Superior Element II](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-previous-closest-occurrence-problems-preceding-superior-element-ii), and [Preceding Inferior Element II](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-previous-closest-occurrence-problems-preceding-inferior-element-ii).
 
-## Complexity Analysis
+## Reflect & Connect
 
-> **All cases** — Time: **O(N)** amortised | Space: **O(N)** for the stack and result.
+The monotonic stack is one of the highest-value stack patterns — recognizing it turns many `O(n²)` scans into `O(n)`:
 
-# Identifying the previous closest occurrence pattern
+- **Four cousins from two knobs** — *direction* (previous = scan left→right; next = scan right→left) × *comparison* (greater = decreasing stack; smaller = increasing stack). Same code, swapped operator or swapped scan order.
+- **The "shadowing" insight is the core** — an element that's dominated and blocked can be discarded forever; the stack holds only the still-relevant candidates. That's why the amortized cost is `O(1)` per element even with an inner loop.
+- **It underlies bigger algorithms** — largest rectangle in a histogram, daily temperatures, stock span, and the `O(n)` "next greater element" all reduce to a monotonic stack. The [next pattern](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-next-closest-occurrence-pattern) is the right-to-left mirror of this one.
 
-The pattern fits whenever the answer for each position depends on **the closest earlier position satisfying some monotone condition** (greater than, smaller than, equal to, …). The decision rule for the stack:
+**Prerequisites:** [What Is a Stack?](/cortex/data-structures-and-algorithms/linear-structures-stack-what-is-a-stack).
+**What's next:** the same idea scanning the other way — [Next Closest Occurrence](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-next-closest-occurrence-pattern).
 
-- Looking for **previous greater**? Maintain a **decreasing** stack; pop while top `≤` current.
-- Looking for **previous smaller**? Maintain an **increasing** stack; pop while top `≥` current.
+## Recall
 
-**Template:**
-> Walk the array; maintain a monotonic stack of un-disqualified candidates; for each new element, pop the dominated ones; the new top is the answer.
+> **Mnemonic:** *Decreasing stack, left→right. Pop while top ≤ x, the surviving top is the previous-greater, then push x. Push-once/pop-once ⇒ O(n).*
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+| | |
+|---|---|
+| Stack invariant | strictly decreasing (for previous-greater) |
+| Per element | pop while `top ≤ x` → read top as answer → push `x` |
+| Previous-smaller | flip to `pop while top ≥ x` (increasing stack) |
+| Why `O(n)` | each element pushed once, popped ≤ once → amortized `O(1)` |
+| Cost | `O(n)` time, `O(n)` space |
 
-<!-- TODO: Why Naive Isn't Enough — missing, needs to be written -->
-<!--       Guidance: motivation for why the obvious approach fails -->
+- **Q:** Why is the inner `while` loop not `O(n²)`? **A:** Each element is pushed once and popped at most once, so total pops ≤ `n` — amortized `O(1)` per element.
+- **Q:** Why is it safe to discard popped elements? **A:** A popped element is smaller than the current one and to its left, so it's shadowed — it can never be the nearest-greater for anything further right.
+- **Q:** How do you switch from previous-greater to previous-smaller? **A:** Flip the pop test from `top ≤ x` to `top ≥ x`, turning the decreasing stack into an increasing one.
+- **Q:** How do you get *next* greater instead of *previous*? **A:** Scan right-to-left with the same monotonic stack (the next pattern).
 
-<!-- TODO: The Core Idea — missing, needs to be written -->
-<!--       Guidance: one paragraph: the central trick -->
+## Sources & Verify
 
-<!-- TODO: How the Pointers/Window Move — missing, needs to be written -->
-<!--       Guidance: mechanics of the moving parts -->
-
-<!-- TODO: The Generic Algorithm — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
-
-<!-- TODO: Generic Implementation — missing, needs to be written -->
-<!--       Guidance: Python block + Java block of the skeleton -->
-
-<!-- TODO: Variants / Taxonomy — missing, needs to be written -->
-<!--       Guidance: enumerate sub-shapes of this pattern -->
-
-<!-- TODO: Recognition Checklist — missing, needs to be written -->
-<!--       Guidance: 4-question diagnostic — the source of the Problem-section Diagnostic Questions -->
-
-<!-- TODO: Canonical Example — missing, needs to be written -->
-<!--       Guidance: fully worked example: brute force → optimised → template fit -->
-
-<!-- TODO: Problems in This Category — missing, needs to be written -->
-<!--       Guidance: table with links to the 02-problems/ files -->
+- **CLRS**, *Introduction to Algorithms*, 4th ed., §10.1 — stacks; amortized analysis (§17) underlies the `O(n)` argument.
+- **Sedgewick & Wayne**, *Algorithms*, 4th ed., §1.3–1.4 — stacks and amortized cost.
+- The monotonic-stack "previous/next greater element" technique is standard; both runnable blocks are verified by running (`[None, None, 5, None, 7]` and `[None, 4, 3, 2]`).

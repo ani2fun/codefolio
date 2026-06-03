@@ -1,66 +1,60 @@
 ---
-title: "Introduction To Memory Model"
-summary: "<!-- TODO: summary -->"
+title: "Introduction to the Memory Model"
+summary: "Every running process is partitioned into four memory regions — heap, stack, static, and code. Recursion lives on the stack, which is why deep recursion overflows: a memory-layout bug, not an algorithm bug."
 ---
 
-# 1. Introduction to the Memory Model
+## Why It Exists
 
-Recursive code looks innocent. A function that calls itself, a base case, three lines total. Then a million-row test case crashes the process and the stack trace is a wall of identical frames. **You didn't write a bad algorithm — you ran out of a region of memory most tutorials never show you.** Before recursion makes sense, you need to see the four invisible regions every running program already lives in. Get this right and recursion clicks. Skip it and stack overflows feel like dark magic for the rest of your career.
+You write a clean three-line recursive function. It works on small inputs, you ship it, and six weeks later a million-row test case crashes the process with `StackOverflowError`. You add a `try/catch`; it crashes again. You raise `sys.setrecursionlimit(10**6)`; now the interpreter *segfaults*. The limit you raised wasn't the limit that mattered.
 
-## Table of contents
+You didn't write a bad algorithm — you ran out of a **region of memory** most tutorials never show you. Every running program is partitioned into four regions, and recursion lives in one of them: the **stack**. Before recursion can make sense, you need to see those four regions, because recursion is nothing more exotic than *one region put under stress*. Name the regions and you can predict, for any value in your code, where it lives, how long it lives, who frees it, and what happens when that region runs out.
 
-1. [Why memory layout matters](#why-memory-layout-matters)
-2. [A process is a building under construction](#a-process-is-a-building-under-construction)
-3. [Heap — the lumber yard](#heap--the-lumber-yard)
-4. [Stack — the scaffolding](#stack--the-scaffolding)
-5. [Static — the foundation](#static--the-foundation)
-6. [Code segment — the blueprint](#code-segment--the-blueprint)
-7. [Putting it all together](#putting-it-all-together)
+## See It Work
 
-***
+Recursion makes the stack *visible*. Each call pushes a frame; each return pops one. Watch `fact(3)` stack three frames deep, hit the base case, then unwind last-in-first-out:
 
-# Why Memory Layout Matters
+```python run
+def fact(n, depth=0):
+    pad = "  " * depth
+    print(f"{pad}push fact({n})")                 # a frame is pushed onto the stack
+    if n <= 1:
+        print(f"{pad}base -> 1")
+        return 1
+    r = n * fact(n - 1, depth + 1)
+    print(f"{pad}pop  fact({n}) = {r}")           # this frame pops; caller resumes
+    return r
 
-You write a clean, three-line recursive function. It works on small inputs. You ship it. Six weeks later, a customer hits it with a list of a million items and the production process dies with `StackOverflowError`. You add a `try/catch`. The next customer hits it with two million items. The same crash. You add `sys.setrecursionlimit(10**6)`. The Python interpreter still segfaults — because the limit you raised wasn't the limit that mattered.
+print("result:", fact(3))
+```
 
-There is a region of memory called **the stack**, and recursion lives there. Every function call your program makes — recursive or not — is written into that region in a very specific way. When the region runs out of space, your program ends. Not your function. Your *process*.
+```java run
+public class Main {
+    static int fact(int n, int depth) {
+        String pad = "  ".repeat(depth);
+        System.out.println(pad + "push fact(" + n + ")");   // frame pushed
+        if (n <= 1) { System.out.println(pad + "base -> 1"); return 1; }
+        int r = n * fact(n - 1, depth + 1);
+        System.out.println(pad + "pop  fact(" + n + ") = " + r);   // frame popped
+        return r;
+    }
+    public static void main(String[] args) {
+        System.out.println("result: " + fact(3, 0));
+    }
+}
+```
 
-If you've never been shown where the stack is, what shares space with it, and how it's reclaimed, recursion will feel like betrayal: the same code that worked on `n=10` crashes on `n=100000` and the error message is in C, not in your language. The fix isn't a try/catch. The fix is *knowing where your code is running*.
+Both print the same nested trace ending in `result: 6`. Three frames — `fact(3)`, `fact(2)`, `fact(1)` — are alive at the deepest point, and they unwind in reverse: `fact(1)` returns first, `fact(3)` last. That LIFO order *is* recursion.
 
----
+## How It Works
 
-## The Question Most Tutorials Skip
+When your program starts, the OS hands it a plot of address space and four "crews" stake out regions that never move:
 
-When you type `int x = 5;`, where does the `5` go? When you write `new int[1000]`, what does "new" actually allocate, and from where? When you call `factorial(100)`, why does that work but `factorial(1_000_000)` crash with no `try/except` powerful enough to save it?
-
-Answers to all three questions live in **the four memory regions every running process is partitioned into**. Once you can name those regions, you can predict where anything in your code lives, why it dies when it does, and which optimisations actually move the needle.
-
----
-
-## What You'll Carry Out of This Lesson
-
-By the time you finish this page, you'll be able to look at any line of code and answer:
-
-- Which of the four regions does this value live in?
-- How long is it going to live there?
-- Who frees it — me, the runtime, or nobody?
-- What happens if I run out of space in this region?
-
-Recursion adds exactly one new behaviour on top of these answers: it pushes a new entry into one of the four regions every time the function calls itself. That's it. Recursion isn't magic — it's just *one specific region under stress*. We have to see the regions before we can see what stresses them.
-
----
-
-## Key Takeaway
-
-Stack overflow isn't a recursion bug, it's a *memory layout* bug — and you can't see the bug until you can see the layout. Next, we'll draw a picture of that layout you can carry around in your head, with one analogy that survives every weird case the next chapters will throw at it.
-
-***
-
-# A Process Is a Building Under Construction
-
-Imagine the moment your program starts. The operating system gives it a chunk of address space — a tall, empty plot of land. Inside that plot, four crews show up and stake out their territories. They will not move for the entire run of your program. Every value you ever create, every function you ever call, ends up living with one of these four crews.
-
-This is a building under construction. The plot is your process's address space. The four crews are the four memory regions. Each one has its own job, its own rules for handing out space, and its own way of failing when it runs out.
+| Region | Its job | Construction-site stand-in | Fails by |
+|---|---|---|---|
+| **Heap** | Hand out arbitrary-sized chunks on demand (`new`, `malloc`, `list()`). Freed manually or by a GC. | The **lumber yard** | Memory leak / OOM |
+| **Stack** | Track who's calling whom — one **frame** per call, LIFO. | The **scaffolding** | **Stack overflow** |
+| **Static** | Globals and constants; live the whole program. | The poured **foundation** | Fixed at startup |
+| **Code** | The program's instructions; read-only, shared. | The **blueprint** | `SIGSEGV` if you write |
 
 ```d2
 proc: Process address space {
@@ -76,393 +70,9 @@ proc: Process address space {
 }
 ```
 
-<p align="center"><strong>The four regions of a running process. The heap grows upward; the stack grows downward into the same free zone. Static and code sit in fixed positions and never move.</strong></p>
+<p align="center"><strong>The four regions. Heap grows up, stack grows down into the same free zone; static and code never move.</strong></p>
 
----
-
-## The Four Crews
-
-Each region has one job. Memorise these — every later concept in this course is just a consequence of these four roles.
-
-| Region | The crew's job | Real-world stand-in |
-|---|---|---|
-| **Heap** | Hand out arbitrarily-sized chunks of space on demand. Cleanup is either manual (you call `free`) or automatic (a garbage collector). | The **lumber yard** — pile of materials; foreman walks over and grabs what's needed. Forget to return the scrap and the yard fills with junk. |
-| **Stack** | Track who's calling whom. Each function call gets its own slip of paper (a *frame*) pushed onto the top. When the function returns, its slip is thrown away — last in, first out. | The **scaffolding** — last tier erected, first tier dismantled. Every call adds a new tier. |
-| **Static** | Hold values that exist for the entire run of the program — globals, configuration, top-level constants. Allocated when the program starts, gone only when it exits. | The **poured foundation + utility hookups** — laid on day one, present until demolition. Every floor stands on it. |
-| **Code segment** | Hold the actual instructions of the program — compiled machine code, JVM bytecode, or interpreter ops. Read-only, often shared between processes. | The **blueprint roll** — read-only, every crew works from the same copy, never altered mid-build. |
-
-> *Before reading on — for each of the four regions, predict one situation that would make it fail. (Hint: each region fails differently. The heap fills up over time; the stack overflows; the static region is fixed at startup; the code segment can be corrupted but rarely runs out.) Don't peek; just predict.*
-
----
-
-## Why This Mental Model Survives
-
-A bad analogy collapses on the first edge case. A good one predicts the edge cases. The construction-site image earns its keep because it tells you the failure mode of each region without you having to memorise extra rules:
-
-- *Forget to return scrap to the lumber yard?* Memory leak.
-- *Stack the scaffolding too many tiers high?* It collapses under its own weight — that's stack overflow.
-- *Try to add a new wing to the foundation after construction starts?* You can't — the foundation is fixed at the start (statically sized at compile time on most systems).
-- *Try to scribble on the blueprint?* The contractor stops you — that's a segmentation fault when you write to a read-only page.
-
-We'll come back to this analogy by name in every region below, in the Nested Functions lesson when we walk into stack overflow, and in the Recursion lesson when we trace the recursion stack. It's the single most important picture in this course.
-
----
-
-## Key Takeaway
-
-Four regions, one analogy. But "they exist" isn't enough — each region behaves differently, and the differences are the whole point. We'll start with the one most languages share and the one most likely to leak: the heap.
-
-***
-
-# Heap — The Lumber Yard
-
-The heap is the most flexible region in the building site, and the most dangerous. Anything you can ask for — a one-byte integer, a million-element array, a graph of objects pointing at each other — comes out of the heap. The catch is that the heap doesn't track who owns what. If you forget to return what you took, the heap doesn't reclaim it; it just keeps shrinking until the process dies.
-
----
-
-## What the Heap Is For
-
-The heap is for **data whose size or lifetime isn't known when the function is written.** Read a file of unknown length? Heap. Build up a list whose size depends on user input? Heap. Construct an object that has to outlive the function that created it? Heap.
-
-Every language has a way to say "give me a chunk of the heap right now":
-
-- C and C++: `malloc` / `new`
-- Java, Kotlin, Scala: `new` (and the JVM's primitive boxing)
-- Python: every list, dict, object, even most numbers — implicitly heap-allocated
-- JavaScript and TypeScript: arrays, objects — heap, every time
-- Go: `make` for slices/maps/channels; the compiler decides whether structs go on stack or heap (escape analysis)
-- Rust: `Box::new`, `Vec::new`, `String::new` — heap, but the compiler tracks ownership so cleanup is deterministic
-
-What changes between languages is **who frees the memory** when you're done with it.
-
----
-
-## How Low-Level Languages Use the Heap
-
-In low-level languages — C, C++, and (with caveats) Rust — heap memory is managed by the programmer. You ask for it explicitly with `malloc` or `new`, and you must release it explicitly with `free` or `delete`. If you forget, the operating system thinks the memory is still in use, and your process slowly bloats until something kills it. That's a **memory leak**.
-
-> *Before reading on — predict what happens after a C++ snippet like `int* arr = new int[5];` runs **a million times in a long-running web server** with no matching `delete`. The pointer `arr` goes out of scope at the end of `main()`. Is the heap memory it pointed to released? What's the long-run consequence?*
-
-In Python and Java the same allocations look like the snippets below — but here the runtime, not the programmer, reclaims the memory once nothing references it:
-
-
-```python run viz=array viz-root=arr
-# Dynamically allocate a list on the heap
-arr = [0] * 5
-
-# Dynamically allocate an integer
-x = 6
-
-# Memory is automatically managed by Python's
-# garbage collector
-```
-
-```java run
-class HeapExample {
-    public static void main(String[] args) {
-        // Dynamically allocate an array on the heap
-        int[] arr = new int[5];
-
-        // Dynamically allocate an Integer object on the heap
-        Integer x = new Integer(6);
-
-        // No need to free memory manually.
-        // Garbage collector handles it
-    }
-}
-```
-
-
-```d2
-direction: right
-
-src: Source code {
-  l1: "int* arr = new int[5];"
-  l2: "int* x   = new int();"
-}
-
-heap: Heap region {
-  arr_label: "arr →"
-  cells: array {
-    grid-rows: 1
-    grid-columns: 5
-    grid-gap: 0
-    c0: "?"
-    c1: "?"
-    c2: "?"
-    c3: "?"
-    c4: "?"
-  }
-  x_cell: "6" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-}
-
-src.l1 -> heap.cells: allocates 5 cells
-src.l2 -> heap.x_cell: allocates 1 cell
-```
-
-<p align="center"><strong><code>new</code> carves out cells in the heap. The pointer (<code>arr</code>, <code>x</code>) lives elsewhere — on the stack — but the actual data lives in the lumber yard until you call <code>delete</code>.</strong></p>
-
-**The friction-prompt answer.** When `main()` returns in the C++ snippet above, the *pointer* `arr` (a stack variable) disappears. The five-int *block* in the heap that `arr` was pointing at does not. The operating system has no way to know nobody references it anymore — there's no garbage collector to scan. So those bytes stay marked "in use." Run that pattern in a long-running web server, a million times an hour, and the process bloats by gigabytes per day until the kernel kills it.
-
-That's the heap's signature failure mode. We'll see the trap up close in `## The Memory-Leak Trap` below.
-
----
-
-## How High-Level Languages Use the Heap
-
-High-level languages — Python, Java, Kotlin, Scala, Go, JavaScript, TypeScript, Rust — handle the heap for you. The mechanism is different in each language, but the contract is the same: **you don't write `free`. The runtime figures it out.**
-
-- **JVM languages (Java, Kotlin, Scala)** — a *garbage collector* runs periodically, finds objects nothing points to, and reclaims their bytes. Pause time depends on the GC.
-- **Python** — *reference counting* + a cycle collector. When an object's reference count drops to zero, its memory is released immediately.
-- **JavaScript and TypeScript** — engine-specific GC (V8, SpiderMonkey, JavaScriptCore). Mark-and-sweep with generational tuning.
-- **Go** — concurrent GC tuned for low pause times. Often imperceptible.
-- **Rust** — *no GC at all*. The compiler tracks ownership statically; when a value goes out of scope, its `Drop` impl runs and the memory is released. Deterministic, no pauses.
-
-The point is the same across all of them: **the lumber yard cleans itself.** You take what you need; sweepers come through later.
-
-
-```python run viz=array viz-root=arr
-# Python: every container is a heap object. The garbage collector
-# (reference counting + cycle collector) reclaims when nothing references it.
-arr = [0] * 5            # List object on the heap
-obj = {"name": "alice"}  # Dict object on the heap
-n = 10 ** 100            # Big int — also a heap object
-
-# `del` drops a name binding; the object is freed once nothing else references it.
-del arr  # The list is unreachable now and will be collected.
-```
-
-```java run
-public class Main {
-    public static void main(String[] args) {
-        int[] arr = new int[5];               // Heap allocation
-        Integer x = Integer.valueOf(6);       // Heap allocation (boxing)
-
-        // No manual free — when nothing references arr or x anymore,
-        // the GC will reclaim the bytes on its next sweep.
-    }
-}
-```
-
-
-```d2
-direction: right
-
-before: "Heap before GC" {
-  grid-rows: 1
-  grid-columns: 6
-  grid-gap: 0
-  a: "obj1\n(reachable)"
-  b: "obj2\n(reachable)"
-  c: "obj3\n(orphan)" {style.fill: "#fecaca"; style.stroke: "#dc2626"}
-  d: "obj4\n(orphan)" {style.fill: "#fecaca"; style.stroke: "#dc2626"}
-  e: "obj5\n(reachable)"
-  f: "obj6\n(reachable)"
-}
-
-after: "Heap after GC sweep" {
-  grid-rows: 1
-  grid-columns: 6
-  grid-gap: 0
-  a: "obj1"
-  b: "obj2"
-  c: "free" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
-  d: "free" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
-  e: "obj5"
-  f: "obj6"
-}
-
-before -> after: GC sweep
-```
-
-<p align="center"><strong>High-level languages skip the <code>delete</code> step. The GC walks the heap on its own schedule, finds cells nothing points to, and marks them free.</strong></p>
-
----
-
-## The Memory-Leak Trap
-
-This is the heap's signature failure. In manually-managed languages, the trap appears every time a long-running program allocates without freeing — even if every individual allocation looks correct. The classic example:
-
-Each `process_one_request()` call leaks 1 KB. After a million calls — about a millisecond of real-world traffic for a busy service — the process has burned a gigabyte of RAM that no code can reach but no GC will reclaim. Eventually the kernel's OOM killer steps in.
-
-GC'd languages avoid this *specific* failure but invent new ones (cycles holding each other alive, long-lived references in caches, growing-but-never-shrinking lookup tables). Rust catches both at compile time by enforcing a single owner per allocation. The lumber yard's rule is universal: **what you take, you eventually return — or someone returns it for you.**
-
----
-
-## Key Takeaway
-
-The heap is permissive — anything fits, but cleanup is on you (or a garbage collector). The next region is the opposite: rigid, automatic, and the single most important region to understand before recursion. It's where every function call you've ever written has lived.
-
-***
-
-# Stack — The Scaffolding
-
-The stack is the region recursion lives in. Every function call you make — whether it calls itself or anything else — gets a slip of paper called a *stack frame* pushed onto the top of the stack. When the function returns, the slip is thrown away. The most recent frame is always the next one to leave. Last in, first out.
-
-If you understand only one region in this lesson, make it this one.
-
----
-
-## What the Stack Is For
-
-The stack tracks **the call path your program is currently inside.** Right now, on a real computer running code, the topmost stack frame is whatever function is *executing this very instruction*. The frame below it is whoever called that function. The frame below that is whoever called *them*. All the way down to `main`.
-
-Every frame holds:
-
-- The function's **parameters** (the arguments it was called with)
-- The function's **local variables**
-- A **return address** — the line of caller code to jump back to when this function returns
-- Some bookkeeping (saved registers, frame pointer, etc.)
-
-When a function returns, all of that disappears in one operation. **No `free`. No GC.** The stack pointer just moves; the bytes are reusable immediately.
-
-That's why the stack is fast — there's literally one CPU instruction to allocate a frame (subtract from the stack pointer) and one to deallocate it. It's also why the stack is small. A typical thread gets 1–8 MB of stack, total. That's not much room for a million recursive calls each carrying their own variables.
-
----
-
-## Local Variables and Parameters Live Here
-
-Stack-only code is the inverse of heap code: **no `new`, no `malloc`, no list creation.** Just parameters and locals.
-
-> *Before reading on — sketch the stack at the moment `int total = x + n` runs inside `main → outer(3) → inner(10)`. How many frames are alive? In what order? Which frame disappears first when execution returns?*
-
-
-```python run
-def total(a: int, b: int) -> int:
-    # `a` and `b` are parameters — bound on the call stack frame for total().
-    # `result` is a local — also frame-local.
-    result = a + b
-    return result
-    # When this function returns, `a`, `b`, `result` all vanish.
-    # CPython internally allocates the frame *object* on the heap, but the
-    # call-stack semantics are identical: each call pushes a frame, returns
-    # pop it. The LIFO model holds even when the implementation is heapy.
-
-print(total(3, 4))
-```
-
-```java run
-public class Main {
-    static class Solution {
-        static int total(int a, int b) {
-            // a, b — parameters on the frame
-            int result = a + b;          // Local on the frame
-            return result;
-            // Frame disappears when total() returns; a, b, result all gone.
-        }
-    }
-
-    public static void main(String[] args) {
-        System.out.println(Solution.total(3, 4));
-    }
-}
-```
-
-
-> **Note for dynamic languages.** In Python, JavaScript, and TypeScript the *frame objects themselves* are heap-allocated by the runtime — but the LIFO call-stack abstraction is identical. The runtime maintains a stack of frame pointers; every call pushes; every return pops. From the perspective of "what data is reachable right now?", the model is exactly the same as in C.
-
----
-
-## How Low-Level Languages Use the Stack
-
-In C, C++, and Rust, every local variable that doesn't escape its scope lives on the stack by default. That includes structs, fixed-size arrays, and any value whose lifetime is bounded by the function. The compiler computes the frame size at compile time and emits a single instruction to push and pop it.
-
-The diagram below traces a small program through three frames as it pushes, runs, and unwinds.
-
-<div class="d2-slides" data-caption="Each function call pushes a new stack frame. When the function returns, its frame is popped — automatically, no `free()` needed.">
-
-```d2
-proc: "Process address space" {
-  grid-rows: 4
-  grid-columns: 1
-  grid-gap: 0
-  code: "Code segment"
-  static: "Static / data"
-  free: "↕ free space ↕"
-  stack: "Stack" {
-    grid-rows: 1
-    grid-columns: 1
-    grid-gap: 0
-    main: "main()\n— argc, argv" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
-  }
-}
-```
-
-```d2
-proc: "Process address space" {
-  grid-rows: 4
-  grid-columns: 1
-  grid-gap: 0
-  code: "Code segment"
-  static: "Static / data"
-  free: "↕ free space ↕"
-  stack: "Stack" {
-    grid-rows: 2
-    grid-columns: 1
-    grid-gap: 0
-    f: "f(n=5)\n— local x" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-    main: "main()\n— argc, argv" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
-  }
-}
-```
-
-```d2
-proc: "Process address space" {
-  grid-rows: 4
-  grid-columns: 1
-  grid-gap: 0
-  code: "Code segment"
-  static: "Static / data"
-  free: "↕ free space ↕"
-  stack: "Stack — f() returned" {
-    grid-rows: 1
-    grid-columns: 1
-    grid-gap: 0
-    main: "main()\n— argc, argv" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
-  }
-}
-```
-
-</div>
-
-The three frames above tell the whole story:
-
-1. `main()` is the only frame on the stack at startup.
-2. `main` calls `f(5)` — a new frame is pushed on top. Both frames are alive simultaneously. `main` is paused inside its call.
-3. `f` returns — its frame is popped. `main` resumes from where it paused. The bytes that held `f`'s locals are immediately reusable for the next call.
-
-Notice what *isn't* there: no `free`, no GC, no cleanup code. The stack pointer moves and that's it.
-
----
-
-## How High-Level Languages Use the Stack
-
-In Java, JavaScript, Kotlin, and the others, the stack is still doing exactly this work — but with a twist. Primitives (int, boolean, double) live in the frame just like in C. Objects don't — they live on the heap, and the frame holds only a *reference* (a pointer) to them.
-
-The reason is lifetime: a local primitive's lifetime is tied to its frame, but an object created locally might escape (be returned, stored in a field, passed to another thread). The runtime puts every object on the heap so it can outlive whatever frame created it.
-
-```d2
-direction: right
-
-stack: "Stack frame" {
-  grid-rows: 3
-  grid-columns: 1
-  grid-gap: 0
-  prim: "int x = 6\n← value lives here"
-  ref:  "Object obj\n← reference lives here, →"
-  note: "(Java / JS / Kotlin)"
-}
-
-heap: "Heap" {
-  obj: "Object {\n  name: 'alice'\n  age: 30\n}" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-}
-
-stack.ref -> heap.obj: "points to"
-```
-
-<p align="center"><strong>In Java and JavaScript primitives sit on the stack but objects live on the heap with the stack holding a reference. In Python <em>every</em> value is a heap object — the stack only ever holds references.</strong></p>
-
-Python is the extreme case. Even integers like `x = 6` are heap objects in CPython; the stack frame holds a reference, the actual integer (with its reference count, type pointer, and value) sits on the heap. This is why CPython is slower than C for arithmetic — every `+` walks through a heap dereference.
+The **stack** is the one that matters for recursion. Every function call gets a *frame* holding its **parameters**, **local variables**, and a **return address** (the caller line to resume at). Allocating a frame is one CPU instruction (move the stack pointer down); freeing it is one instruction (move it back up) — no `free`, no GC. That's why the stack is fast. It's also why it's *small*: a thread typically gets just 1–8 MB. A million recursive calls, each carrying its own locals, blows past that — and *that* is stack overflow.
 
 ```mermaid
 ---
@@ -481,450 +91,114 @@ flowchart LR
     direction TB
     M["main()"] --> A["A()"] --> B["B()"] --> C["C()"]
   end
-
   subgraph STACK["Stack at deepest call"]
     direction TB
-    SC["frame: C — locals"] --> SB["frame: B — locals"] --> SA["frame: A — locals"] --> SM["frame: main — argc, argv"]
+    SC["frame: C — locals"] --> SB["frame: B — locals"] --> SA["frame: A — locals"] --> SM["frame: main"]
   end
-
   CALLS -.->|"materialised as"| STACK
 ```
 
-<p align="center"><strong>The call tree on the left exists conceptually; the stack on the right exists physically in memory. Every nested call deepens the stack by one frame.</strong></p>
+<p align="center"><strong>The call tree is conceptual; the stack is physical. Every nested call deepens the stack by one frame — and recursion is just a call tree that calls itself.</strong></p>
 
----
+> **Key takeaway.** Four regions, four roles. Recursion lives on the **stack**: each call pushes a frame (params + locals + return address), each return pops one, last-in-first-out. The stack is fast and automatic but small (1–8 MB), so deep recursion overflows it. Stack overflow is a *memory-layout* fact, not an algorithm bug.
 
-## Friction: Predict the Frame
+## Trace It
 
-Take the prediction we set up earlier — `main → outer(3) → inner(10)` running `int total = x + n`. The answer:
+Which region a value lives in decides its lifetime — and a name *assigned* inside a function defaults to that function's **stack frame**, not the **static** global of the same name. Here's a global counter incremented inside a function, without declaring `global`:
 
-- **Three frames are alive simultaneously**: `main`, `outer`, `inner` — bottom to top.
-- They disappear in **reverse order**: `inner` first (when `total` is computed and returned), then `outer` (when `outer` returns its result), then `main` (when the program exits).
-- This LIFO ordering is **exactly what makes recursion work** — each recursive call gets its own frame holding its own copy of every local variable, and the frames unwind in the reverse of the order they were pushed.
-
-That last sentence is the entire content of the Recursion lesson in one line. We'll see it from a different angle in the Nested Functions lesson first, then formally in the Recursion lesson.
-
----
-
-## Key Takeaway
-
-The stack is automatic — but automatic doesn't mean infinite. Each call adds a tier of scaffolding; deep recursion stacks tier on tier on tier. **What happens when the scaffolding can't go any higher?** That's the cliff edge the Nested Functions lesson walks you up to.
-
-***
-
-# Static — The Foundation
-
-The static region is the simplest of the four — and the easiest to ignore until it bites you. It's the foundation of the building site: poured on day one, present until demolition, never moved. Anything here exists for the *entire run of the program*.
-
----
-
-## What "Static" Memory Means
-
-Static memory is for values whose lifetime equals the program's lifetime. Globals. Compile-time constants. String literals. Singleton instances. Configuration loaded at startup. The bytes are reserved when the process starts and stay reserved until it exits. There's no allocation cost, no deallocation, no garbage collector ever scanning them.
-
-A typical static integer occupies 4 bytes on most systems, though this varies with type and architecture. The size of the static region is fixed at compile time — you can't grow it at runtime.
-
-There are two flavours of "static" data:
-
-1. **Globals** — variables declared outside any function, visible everywhere.
-2. **Static locals** — variables declared `static` inside a function (in C, C++, Java) that survive across calls.
-
----
-
-## Global Variables
-
-A global lives in the static region for the entire run of the program. Every function in your program can see it; modifying it from one function makes the change visible to every other function. There's exactly one copy.
-
-Globals are useful for genuinely global state — a process-wide counter, a logger handle, a cached configuration. They're also a notorious source of bugs: modifying a global from deep inside a function makes the program harder to reason about and harder to test.
-
+**Predict before you run:** does this print `1`, or something else?
 
 ```python run
-# Python's "global" lives in the module namespace, conceptually static.
-counter = 0
+counter = 0                      # lives in the static/global region
 
-def tick() -> int:
-    global counter        # Without `global`, Python would create a local
-    counter += 1          # named `counter` instead of mutating the global.
+def tick():
+    counter += 1                 # no `global counter`
     return counter
 
-print(tick())  # 1
-print(tick())  # 2
-print(tick())  # 3
+try:
+    print(tick())
+except UnboundLocalError as e:
+    print("UnboundLocalError:", e)
 ```
 
-```java run
-public class Main {
-    // Class-level static fields live in the JVM's "method area" /
-    // metaspace — Java's flavour of static memory.
-    static class Solution {
-        static int counter = 0;
+<details>
+<summary><strong>Reveal</strong></summary>
 
-        static int tick() {
-            counter += 1;     // Writes the single shared cell
-            return counter;
-        }
-    }
+It raises `UnboundLocalError: cannot access local variable 'counter' where it is not associated with a value`. Because `tick` *assigns* to `counter`, Python decides at compile time that `counter` is a **frame-local** — a fresh slot on `tick`'s stack frame — shadowing the global entirely. The `+= 1` then tries to *read* that local before it's been given a value, and fails. The fix is `global counter`, which tells Python to reach into the static region instead of allocating a stack-frame local. (Java has no identical trap, but the same principle holds: an unqualified local shadows a field; you write `this.counter` / the class name to reach the static one.) The bug is invisible until you know *which region* the name binds to.
 
-    public static void main(String[] args) {
-        System.out.println(Solution.tick());  // 1
-        System.out.println(Solution.tick());  // 2
-        System.out.println(Solution.tick());  // 3
-    }
-}
-```
+</details>
 
+## Your Turn
 
-```d2
-direction: right
-
-static: "Static region (lives forever)" {
-  grid-rows: 1
-  grid-columns: 2
-  grid-gap: 0
-  counter: "counter = 0\n→ 1 → 2 → 3" {style.fill: "#ede9fe"; style.stroke: "#7c3aed"}
-  config:  "config = 'prod'"
-}
-
-timeline: "Function-call timeline" {
-  grid-rows: 1
-  grid-columns: 4
-  grid-gap: 0
-  t1: "t1: main()"
-  t2: "t2: tick()"
-  t3: "t3: tick()"
-  t4: "t4: tick()"
-}
-
-timeline.t2 -> static.counter: "+= 1"
-timeline.t3 -> static.counter: "+= 1"
-timeline.t4 -> static.counter: "+= 1"
-```
-
-<p align="center"><strong>A global lives in static memory for the entire process lifetime. Every function — <code>main</code>, every call to <code>tick</code> — sees the same single cell.</strong></p>
-
----
-
-## Static Variables Inside Functions
-
-C, C++, Java, and a few others let you declare a variable `static` inside a function. The variable is **scoped to the function** (no other function can see it), but its **storage is in the static region** — so it survives across calls. The first time the function runs, the variable is initialised; every subsequent call sees the previous value.
-
-This is the cleanest way to give a function its own private memory without using a global.
-
+The flip side: state that must **survive across calls** can't live on the stack (frames vanish on return) — it belongs in the **static** region. Implement a call-counter whose value persists even though every call gets a brand-new frame.
 
 ```python run
-# Python has no `static` keyword. The idiomatic substitutes are either
-# a module-level global, or a function attribute (shown here).
-def counter() -> int:
-    # First call: getattr returns the default 0; we add 1 and store.
-    # Subsequent calls: getattr finds the previous value.
-    counter.n = getattr(counter, "n", 0) + 1
-    return counter.n
+def call_count():
+    # Python has no `static`; a function attribute lives with the function
+    # object (heap), which persists across calls — same effect as static.
+    call_count.n = getattr(call_count, "n", 0) + 1
+    return call_count.n
 
-print(counter())  # 1
-print(counter())  # 2
-print(counter())  # 3
+print(call_count(), call_count(), call_count())   # 1 2 3
 ```
 
 ```java run
 public class Main {
-    // Java has no per-function statics, but a class-level static field
-    // accessed only from one method is the idiomatic equivalent.
-    static class Solution {
-        static int n = 0;
-
-        static int counter() {
-            n += 1;
-            return n;
-        }
+    static class Counter {
+        static int n = 0;                 // class-level static field = static region
+        static int callCount() { return ++n; }
     }
-
     public static void main(String[] args) {
-        System.out.println(Solution.counter());  // 1
-        System.out.println(Solution.counter());  // 2
-        System.out.println(Solution.counter());  // 3
+        System.out.println(Counter.callCount() + " " + Counter.callCount() + " " + Counter.callCount());  // 1 2 3
     }
 }
 ```
 
+Both print `1 2 3`. Each call gets a fresh stack frame, but `n` lives in the static region (a function attribute in Python, a class static field in Java), so it accumulates. The contrast is the whole lesson: **stack = per-call and temporary; static = whole-program and persistent.**
 
-<div class="d2-slides" data-caption="`static` inside a function is the trick: a cell that lives in the static region but is only visible to one function. Surviving across calls is the whole point.">
+## Reflect & Connect
 
-```d2
-proc: "Process — first call to counter()" {
-  grid-rows: 4
-  grid-columns: 1
-  grid-gap: 0
-  code: "Code segment"
-  static: "Static — n = 1" {style.fill: "#ede9fe"; style.stroke: "#7c3aed"}
-  free: "↕ free ↕"
-  stack: "Stack" {
-    f: "counter() frame\n(executing now)" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
-  }
-}
-```
+- **Recursion is just the stack, used self-similarly.** `factorial(4)` stacks four frames, each with its own `n`, that unwind in reverse — there is no other machinery. The next lessons ([nested functions](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-nested-functions), then recursion proper) walk this stack up to its overflow cliff and back.
+- **Why `setrecursionlimit` can still segfault.** Python's limit guards its *own* frame counter, but the real ceiling is the OS thread's C stack (1–8 MB). Raise the Python limit past what the C stack can hold and you crash below your language, in C — no `try/except` can catch it.
+- **Converting recursion to iteration moves the stack to the heap.** An explicit stack (a heap-allocated list) replaces the call stack, trading the small fixed stack region for the large growable heap — the standard fix for "deep recursion overflows."
+- **The heap's failure is the opposite of the stack's.** The stack overflows from *too many frames*; the heap leaks from *forgetting to free* (or a GC that never reclaims a cycle). Same building site, opposite failure modes.
 
-```d2
-proc: "Process — between calls" {
-  grid-rows: 4
-  grid-columns: 1
-  grid-gap: 0
-  code: "Code segment"
-  static: "Static — n = 1\n(persists)" {style.fill: "#ede9fe"; style.stroke: "#7c3aed"}
-  free: "↕ free ↕"
-  stack: "Stack — counter() frame is gone\n(only main remains)" {
-    m: "main()" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
-  }
-}
-```
-
-```d2
-proc: "Process — second call to counter()" {
-  grid-rows: 4
-  grid-columns: 1
-  grid-gap: 0
-  code: "Code segment"
-  static: "Static — n = 2" {style.fill: "#ede9fe"; style.stroke: "#7c3aed"}
-  free: "↕ free ↕"
-  stack: "Stack" {
-    f: "counter() frame\n(new frame, but n is the same n)" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
-  }
-}
-```
-
-</div>
-
-The frame on the stack is brand new every call — but the cell holding `n` in the static region is the same cell every call. That's the exact mechanism behind `static int n = 0`.
-
----
-
-## Languages Without `static`
-
-Python, JavaScript, and Go don't have a per-function `static` keyword. The substitutes shown above are idiomatic but not identical:
-
-- **Python** — function attributes (`counter.n`) or a module-level global. Function attributes work because functions in Python are themselves objects, and you can attach arbitrary state to them.
-- **JavaScript / TypeScript** — IIFE-closures (an immediately-invoked function expression returning the inner function). The closure's local `n` is visible only to the inner function and survives every call.
-- **Go** — a package-level variable, accessed only from one function. Convention, not enforcement.
-- **Rust** — `static` exists but is far stricter than C's. Mutation requires either `unsafe` (rarely correct) or a synchronised type like `AtomicI32`, ensuring thread-safety at the type level.
-
-Pick the substitute that best matches your language's conventions; the *behaviour* — survives across calls, scoped to one function — is what matters.
-
----
-
-## Key Takeaway
-
-Globals and statics are the bones of the building — but bones are not the part of the building that does any work. The last region holds the actual work itself: every line of compiled or interpreted code your program runs.
-
-***
-
-# Code Segment — The Blueprint
-
-The code segment — also called the **text segment** or simply *text* — is the region that holds the executable instructions of your program. The four other regions hold *data*. This one holds *code*. It's the blueprint that the other crews work from.
-
----
-
-## What Lives in the Code Segment
-
-When the operating system loads your program, it maps the program's instructions into the code segment. From that point on, every CPU instruction your process executes is fetched from this region. The code segment is typically placed at a fixed location (often near the bottom of the address space, below the heap and stack) so that growing data regions can't accidentally overwrite it.
-
-Two properties make the code segment unusual:
-
-1. **It's read-only.** The OS marks the pages as non-writable. Trying to modify them raises a segmentation fault. This protects the program from corrupting its own instructions and shuts down a whole category of attacks.
-2. **It's sharable between processes.** If you run the same program twice, the kernel can map the same physical code-segment pages into both processes. The instructions don't change, so there's no reason to duplicate them. This saves memory in systems running many copies of the same binary (think `bash`, `nginx`, `python3`).
-
-What *exactly* sits in the code segment depends on the language family.
-
----
-
-## Compiled vs Interpreted vs JVM
-
-This is the contrast the lesson hinges on. There are three common execution models, and each one stores something different in the code segment.
-
-| Language family | What lives in the code segment | Who executes it |
-|---|---|---|
-| **C, C++, Rust, Go** (compiled, native) | Native machine code (x86-64, ARM, etc.) emitted by the compiler at build time. | The CPU directly. |
-| **Java, Kotlin, Scala** (JVM) | The JVM's own native machine code (HotSpot binary). The JVM then loads `.class` bytecode files into the heap and executes them. JIT-compiled methods may end up back in an executable code-segment region. | The JVM (and the CPU executes the JVM). |
-| **Python** (CPython interpreter) | The CPython interpreter's native machine code. Python source is compiled to bytecode (`.pyc`), held in the heap, and the interpreter loop walks through it. | The CPython interpreter (and the CPU executes that). |
-| **JavaScript** (V8 / browser) | V8's native machine code. Hot functions are JIT-compiled and the resulting native code lives in V8-managed executable pages; cold paths run as bytecode. | V8 (and the CPU executes that). |
-| **TypeScript** | Compiles to JavaScript first, then same as JS. | V8 / Node / browser. |
-
-```d2
-direction: down
-
-src: "Your source code\n(.c / .java / .py / .js / ...)"
-
-compiled: "Compile to native\n(C, C++, Rust, Go)" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
-jvm:      "Compile to bytecode\n(Java, Kotlin, Scala)" {style.fill: "#fef9c3"; style.stroke: "#ca8a04"}
-interp:   "Compile to bytecode at runtime\n(Python, JS / TS)" {style.fill: "#ede9fe"; style.stroke: "#7c3aed"}
-
-cpu_native:  "Code segment holds:\n— native machine code\nExecuted by: CPU directly"
-cpu_jvm:     "Code segment holds:\n— JVM's machine code\nExecuted by: JVM\n(JIT may write more native code)"
-cpu_interp:  "Code segment holds:\n— interpreter's machine code\nExecuted by: interpreter\nbytecode lives on heap"
-
-src -> compiled -> cpu_native
-src -> jvm -> cpu_jvm
-src -> interp -> cpu_interp
-```
-
-<p align="center"><strong>The code segment looks different per language family — native instructions, the JVM's binary, or the interpreter's binary — but the region's role is identical: hold the executable form, read-only, shared between processes.</strong></p>
-
----
-
-## Inspecting the Code Segment
-
-You can see the code segment in action with one tiny C program: a function pointer prints the *address* of a function, which is its location inside the code segment. This works because, to the CPU, a function name is just a label for an address inside the code region.
-
-This is why every language can implement function pointers, callbacks, and dynamic dispatch — there's a real address in memory you can take and pass around. It's also why JIT compilers exist: at runtime, V8 and HotSpot generate fresh machine code into newly-mapped executable pages, effectively *adding* to the code-segment region of a running process.
-
----
-
-## Why It's Read-Only and Shared
-
-Read-only protection is enforced at the page-table level by the OS. When you map the code segment, the kernel marks those pages with the read + execute bits but no write bit. Try to write — `*(int *)main = 42;` in C — and you get `SIGSEGV` immediately. This is the "segmentation fault" that crashes a C program when it tries to scribble on its own instructions.
-
-Sharing works through *demand paging* + *copy-on-write* in the kernel. Run `bash` twice; both processes share the same physical pages for `bash`'s code. Read everywhere, write nowhere — so there's never any reason to copy.
-
-Both properties — read-only, shared — fall out of one underlying decision: code is a constant. Instruction bytes don't change between runs of the same binary, so there's no reason to give each process a writable, private copy.
-
----
-
-## Key Takeaway
-
-Four regions, four roles, one process. Time to see them all working together on a real program — and tighten the model into something you'll never lose.
-
-***
-
-# Putting It All Together
-
-You now have the four regions. Let's run a small program through them to lock in the model.
-
----
-
-## A Single Program, Four Regions Lit Up
-
-Consider this C program:
-
-Where does each piece live?
-
-| Item | Region | Why |
-|---|---|---|
-| `int request_count = 0;` | **Static** | Declared at file scope; lifetime = whole program. |
-| `int retries = 0;` (static local) | **Static** | `static` keyword overrides the default stack storage; lives across calls. |
-| `int id` (parameter) | **Stack** | Bound on the call frame for `handle`. Disappears when `handle` returns. |
-| `int local_id` (local) | **Stack** | Same as above. |
-| `int *buffer` (the pointer itself) | **Stack** | Local variable inside `handle`. |
-| The 1024 bytes pointed to by `buffer` | **Heap** | Allocated via `malloc`; lives until `free` is called. |
-| The compiled bytes of `handle()` and `main()` | **Code segment** | Loaded read-only at program startup. |
-| The `printf` library code | **Code segment** | Lives in libc's mapped pages, shared with every other process using libc. |
-
-Eight items, four regions. That's the entire model.
-
----
-
-## The Recap Table
-
-| Region | Lifetime | Allocation | Deallocation | Failure mode |
-|---|---|---|---|---|
-| **Heap** | Until freed (manually or by GC) | `malloc` / `new` / `make` / list-creation | `free` / `delete` / GC sweep / `Drop` | Memory leak / OOM |
-| **Stack** | Until function returns | Stack-pointer subtraction (one CPU instr) | Stack-pointer addition (one CPU instr) | **Stack overflow** (too many frames) |
-| **Static** | Whole program | Reserved at process startup | Released at process exit | Fixed at compile time — can't grow |
-| **Code segment** | Whole program | Mapped at process load | Unmapped at process exit | Read-only — `SIGSEGV` if you write |
-
----
-
-## Friction: Where Does It Live?
-
-> *Final check before the recap. For each of the eight items below, write down the region of memory it lives in: heap, stack, static, or code. Don't peek.*
->
-> 1. The literal string `"hello, world"` inside `printf("hello, world\n");`
-> 2. A global counter declared `int requests = 0;`
-> 3. A local int `int sum = 0;` inside `main()`
-> 4. The bytes of the compiled `main()` function itself
-> 5. A vector returned from `std::vector<int>{1,2,3}` and used inside `main()`
-> 6. A `static int retries = 0;` inside a function
-> 7. A `new MyClass()` whose pointer is held by a local variable
-> 8. The function pointer `void (*fn)() = &main;` itself
+## Recall
 
 <details>
-<summary><strong>Answers — open after you've predicted</strong></summary>
+<summary><strong>Q:</strong> Name the four memory regions and one job of each.</summary>
 
-| # | Item | Region | Reasoning |
-|---|---|---|---|
-| 1 | `"hello, world"` literal | **Static (.rodata)** | String literals are interned at compile time and placed in a read-only data section. |
-| 2 | global `int requests = 0;` | **Static (.bss / .data)** | File-scope variable. Allocated at process load, persists until exit. |
-| 3 | local `int sum = 0;` | **Stack** | Bound on the calling frame. Vanishes when the function returns. |
-| 4 | bytes of `main()` | **Code segment (.text)** | The compiled instructions of every function live here, read-only. |
-| 5 | the `std::vector<int>{1,2,3}` payload | **Heap** | The vector's *control* fields (size, capacity, pointer) are on the local frame, but the underlying array of ints is heap-allocated. |
-| 6 | `static int retries = 0;` | **Static** | The `static` keyword forces static storage even though the variable is declared inside a function. |
-| 7 | the `MyClass` object via `new` | **Heap** | `new` always allocates from the heap; the *pointer* is on the stack but the object is not. |
-| 8 | the function pointer variable `fn` | **Stack** (the variable holds a code-segment address as its value) | The pointer-sized variable lives on the calling frame; the *address* it holds points into the code segment. |
+**A:** Heap (arbitrary-sized dynamic allocation), stack (one frame per function call, LIFO), static (globals/constants living the whole program), code segment (read-only instructions).
 
-If you got 6+ correct, the model has clicked.
 </details>
-
----
-
-## Final Takeaway
-
-Every running program is a building under construction with four crews: the heap stockpiles materials, the stack erects scaffolding for the floor under work, the foundation and blueprint stay fixed for the entire build. Once you can name the region a piece of data lives in, you stop guessing about lifetimes, scope, and "where did my variable go?" — you can *see* it.
-
-You came in thinking memory was a flat wall of bytes. You're leaving with four regions, four roles, and one analogy you'll keep for every recursion lesson after this.
-
-**Transfer challenge — try before the Nested Functions lesson:** Sketch what the stack looks like for the function below at the moment the deepest call runs. How many frames? What does each one hold? What's the LIFO order they disappear in?
-
 <details>
-<summary><strong>Answer — open after you've sketched it</strong></summary>
+<summary><strong>Q:</strong> What does a stack frame hold, and when is it freed?</summary>
 
-Four frames live simultaneously at the deepest point: `factorial(4)`, `factorial(3)`, `factorial(2)`, `factorial(1)`. They unwind in reverse — `factorial(1)` returns first, `factorial(4)` last. Each frame holds its own local `n` and its own return address. **You just predicted the structure of the Nested Functions lesson.**
+**A:** The call's parameters, local variables, and a return address. It's freed the instant the function returns — one stack-pointer move, no `free` or GC.
 
-```
-top of stack →   factorial(1)    n = 1   ← base case, returns first
-                 factorial(2)    n = 2
-                 factorial(3)    n = 3
-                 factorial(4)    n = 4
-                 main()                    ← bottom of stack
-```
+</details>
+<details>
+<summary><strong>Q:</strong> Why does deep recursion overflow the stack?</summary>
 
-Each frame is independent — its own copy of `n`, its own return address. When `factorial(1)` returns `1`, its frame is popped and `factorial(2)` resumes with `n = 2`, computes `2 * 1 = 2`, returns. Then `factorial(3)` resumes, computes `3 * 2 = 6`, returns. Then `factorial(4)` returns `4 * 6 = 24` to `main`.
+**A:** Each call pushes a frame, and the stack is small (typically 1–8 MB per thread). Enough frames — a deep or unbounded recursion — exhaust it, ending the *process*, not just the function.
 
-That's the entire mechanism. Recursion is *just* the stack, used self-similarly.
+</details>
+<details>
+<summary><strong>Q:</strong> In Python, why does assigning to a global inside a function without <code>global</code> raise <code>UnboundLocalError</code>?</summary>
+
+**A:** The assignment makes the name a frame-local (stack), shadowing the global; the `+=` then reads that local before it has a value. `global` redirects the name to the static region.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Where must state that survives across calls live, and where must per-call temporaries live?</summary>
+
+**A:** Persistent state → static region (globals, statics, function attributes). Per-call temporaries → stack frame, which is reclaimed on return.
 
 </details>
 
-Next time someone tells you recursion "uses the stack," you won't nod — you'll see the scaffolding.
+## Sources & Verify
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: The Hook — missing, needs to be written -->
-<!--       Guidance: real-world story opening before any definition -->
-
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
-
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
-
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
-
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
-
-<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
-<!--       Guidance: bulleted list of gotchas -->
-
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
-
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
-
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
-
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
-
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
+- **Bryant & O'Hallaron**, *Computer Systems: A Programmer's Perspective*, 3rd ed., Ch. 3 (machine-level stack frames) and Ch. 9 (virtual memory / the four segments) — the authoritative treatment of process memory layout.
+- **Drepper, U.** (2007), "What Every Programmer Should Know About Memory" — the canonical deep dive on the memory hierarchy underneath these regions.
+- **CPython docs** — `sys.setrecursionlimit` and `sys.getrecursionlimit`: the interpreter's frame limit vs. the underlying C stack, and why raising it too far segfaults.
+- The `result: 6` trace, the `UnboundLocalError`, and the `1 2 3` counter above all come from the runnable blocks — re-run to verify.

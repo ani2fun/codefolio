@@ -1,1325 +1,255 @@
 ---
-title: "Converting Expressions Using Stack"
-summary: "<!-- TODO: summary -->"
+tier: spine
+title: "Converting Expressions Using a Stack"
+summary: "Rewrite arithmetic between infix, postfix, and prefix with one stack. The headline is infix→postfix — Dijkstra's shunting-yard: operands flow to the output, operators wait on a stack and are released by precedence, parentheses force grouping. O(N), and the missing front-end for the stack evaluator."
+prereqs:
+  - linear-structures-stack-what-is-a-stack
+  - linear-structures-stack-infix-postfix-and-prefix-notations
+  - linear-structures-stack-evaluating-expressions-using-stack
 ---
 
-# 6. Converting Expressions Using a Stack
+## Why It Exists
 
-## The Hook
+The [evaluator](/cortex/data-structures-and-algorithms/linear-structures-stack-evaluating-expressions-using-stack) turns *postfix* into a number in one clean pass — but humans don't write postfix, they write **infix** (`2 + 3 * 4`). Something has to bridge the gap: parse the infix, respecting precedence and parentheses, and emit the postfix the evaluator wants. That bridge is **Dijkstra's shunting-yard algorithm**, and it's the front-end of every calculator and the parsing core of many compilers.
 
-Three notations, six possible conversions. You might *expect* that converting between them is a six-different-algorithms ordeal. **It's not.** Once you see the pattern, all six conversions reduce to two ideas, each of which uses one stack:
+The trick is one operator stack plus an output list. Scan the infix left-to-right: an **operand** flows straight to the output; an **operator** waits on the stack, but before it goes on, any stack operators of *equal or higher precedence* are popped to the output first (that's how `*` gets emitted before a lower-precedence `+`); a `(` is pushed as a barrier and a `)` pops everything back to its matching `(`. Drain the stack at the end and the output *is* the postfix — `O(N)` time, `O(N)` space, no recursion. The deep idea is that the stack *defers* each operator until you know everything that should happen before it, which is exactly what precedence and parentheses encode. Pair this with the previous lesson's evaluator and you have a complete calculator: shunting-yard converts, the stack machine computes ([Your Turn](#your-turn)).
 
-1. **Postfix-or-prefix → anything else**: scan the source linearly (left-to-right for postfix, right-to-left for prefix), push operands onto a *string* stack, and on every operator pop two strings and glue them together with the operator between (or before, or after) them. The operator placement determines the output notation; the scanning direction determines whether you're reading postfix or prefix.
+## See It Work
 
-2. **Infix → postfix**: a slightly cleverer dance called the **Shunting-Yard algorithm** (Edsger Dijkstra, 1961), where operators wait on a stack until something with lower-or-equal precedence shows up to push them out into the output. Parentheses become temporary "fences" that block this eviction. Once you have infix→postfix, infix→prefix is one extra reverse-and-flip-brackets trick away.
+Shunting-yard converting `2 + 3 * 4` — watch it respect precedence, emitting `*` before the lower-precedence `+` even though `+` was read first:
 
-The same handful of moves — *push operand, pop-two-and-combine, peek-and-compare-precedence, flush-on-paren* — appears in every parser, every compiler, and every spreadsheet evaluator you'll ever read about. This lesson is the most code-dense in the entire stack section, but the patterns recur enough that by the third conversion you'll be writing the fourth from memory.
+```python run
+prec = {"+": 1, "-": 1, "*": 2, "/": 2}
+def infix_to_postfix(tokens):                       # Dijkstra's shunting-yard
+    out, ops = [], []
+    for t in tokens:
+        if t in prec:
+            while ops and ops[-1] != "(" and prec[ops[-1]] >= prec[t]:
+                out.append(ops.pop())               # release operators of >= precedence (left-associative)
+            ops.append(t)
+        elif t == "(":
+            ops.append(t)
+        elif t == ")":
+            while ops and ops[-1] != "(":
+                out.append(ops.pop())
+            ops.pop()                                # discard the matching "("
+        else:
+            out.append(t)                            # operand -> straight to output
+    while ops:
+        out.append(ops.pop())                        # drain remaining operators
+    return out
 
----
+print("infix:   2 + 3 * 4")
+print("postfix:", " ".join(infix_to_postfix("2 + 3 * 4".split())))
+```
 
-## Table of contents
+```java run
+import java.util.*;
+public class Main {
+    static Map<String,Integer> prec = Map.of("+", 1, "-", 1, "*", 2, "/", 2);
+    static List<String> infixToPostfix(String[] tokens) {              // shunting-yard
+        List<String> out = new ArrayList<>();
+        Deque<String> ops = new ArrayDeque<>();
+        for (String t : tokens) {
+            if (prec.containsKey(t)) {
+                while (!ops.isEmpty() && !ops.peek().equals("(") && prec.get(ops.peek()) >= prec.get(t))
+                    out.add(ops.pop());                                // release >= precedence
+                ops.push(t);
+            } else if (t.equals("(")) ops.push(t);
+            else if (t.equals(")")) {
+                while (!ops.isEmpty() && !ops.peek().equals("(")) out.add(ops.pop());
+                ops.pop();                                             // discard "("
+            } else out.add(t);
+        }
+        while (!ops.isEmpty()) out.add(ops.pop());
+        return out;
+    }
+    public static void main(String[] x) {
+        System.out.println("infix:   2 + 3 * 4");
+        System.out.println("postfix: " + String.join(" ", infixToPostfix("2 + 3 * 4".split(" "))));
+    }
+}
+```
 
-1. [Postfix → Prefix](#understanding-postfix-to-prefix-conversion)
-2. [Convert postfix to prefix](#convert-postfix-to-prefix)
-3. [Postfix → Infix](#understanding-postfix-to-infix-conversion)
-4. [Convert postfix to infix](#convert-postfix-to-infix)
-5. [Prefix → Postfix](#understanding-prefix-to-postfix-conversion)
-6. [Convert prefix to postfix](#convert-prefix-to-postfix)
-7. [Prefix → Infix](#understanding-prefix-to-infix-conversion)
-8. [Convert prefix to infix](#convert-prefix-to-infix)
-9. [Infix → Postfix](#understanding-infix-to-postfix-conversion)
-10. [Convert infix to postfix](#convert-infix-to-postfix)
-11. [Infix → Prefix](#understanding-infix-to-prefix-conversion)
-12. [Convert infix to prefix](#convert-infix-to-prefix)
+Both print `postfix: 2 3 4 * +`. Trace it: `2` goes to output; `+` waits on the stack; `3` goes to output; now `*` arrives — its precedence (2) is higher than the waiting `+` (1), so `+` is *not* released yet and `*` stacks on top; `4` goes to output; at end-of-input the stack drains top-first, emitting `*` then `+`. The result `2 3 4 * +` means `2 + (3*4)` — the multiplication bound tighter, exactly as arithmetic precedence demands. The `+` had to *wait* on the stack until everything higher-priority after it was done.
 
-***
+## How It Works
 
-# Understanding postfix to prefix conversion
-
-Postfix and prefix look like mirror images, but **simply reversing a postfix string does not produce the equivalent prefix string**. Reversing `2 3 1 * + 9 -` gives `9 - + * 1 3 2`, which isn't a valid prefix expression — the operands and operators are now in the wrong relative pairing. Operator–operand grouping must be preserved across the conversion, and a stack of *partial expressions* is the tool that does it.
+One operator stack, one output list, four token cases:
 
 ```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    R["read postfix token"] --> Q{"operand?"}
-    Q -->|"yes"| P["push as string"]
-    Q -->|"no (operator)"| O["pop b<br/>pop a<br/>push 'op + a + b'<br/>(operator BEFORE operands)"]
-    P --> R
-    O --> R
+flowchart TB
+  tok["scan next infix token"] --> q{"type?"}
+  q -->|operand| o["append to OUTPUT"]
+  q -->|operator| op["release ops of ≥ precedence to OUTPUT,<br/>then push this operator"]
+  q -->|"("| lp["push ( onto the OP-STACK"]
+  q -->|")"| rp["pop to OUTPUT until (, discard the ("]
+  o --> tok
+  op --> tok
+  lp --> tok
+  rp --> tok
+  tok -->|end of input| drain["drain OP-STACK to OUTPUT = postfix"]
+  style drain fill:#bbf7d0,stroke:#16a34a
 ```
 
-<p align="center"><strong>Postfix → prefix — same loop shape as the postfix evaluator, but the stack holds <em>strings</em> (sub-expressions in prefix form) rather than numbers, and an operator combines them with itself <em>at the front</em>.</strong></p>
+<p align="center"><strong>Shunting-yard: operands flow to the output immediately; operators wait on the stack and are released by precedence; parentheses force grouping. Drain at the end and the output is the postfix.</strong></p>
 
-## Walkthrough — `2 3 1 * + 9 -`
+- **The stack defers operators until their operands are settled.** An operand can be emitted at once — nothing changes its value. An operator can't: a higher-precedence operator might appear right after it. So it waits on the stack, and is only released when the next operator's precedence is *lower* (or input ends). This is why `+` in `2 + 3 * 4` waits while `*` does its work — the algorithm holds the `+` until it's sure nothing tighter-binding is still pending.
+- **Precedence comparison + associativity.** Before pushing an operator, pop all stacked operators with **≥** precedence (for left-associative `+ - * /`). Using `≥` (not `>`) makes `a - b - c` parse as `(a-b)-c`, the correct left-to-right grouping; right-associative operators (like exponent `^`) would use `>` instead. The `(` is a barrier with the lowest "precedence" — nothing pops past it until its `)` arrives.
+- **Parentheses override precedence by forcing a sub-conversion.** A `(` pushes a barrier; a `)` pops operators to the output until the matching `(`, then discards both brackets. That brackets off a sub-expression and emits it fully before the surrounding operators see it — which is how `( 2 + 3 ) * 4` makes the `+` happen first ([Trace It](#trace-it)). The whole scan is `O(N)`: each token is pushed and popped at most once. (The same machine does all six conversions — postfix/prefix→anything just pushes *operand strings* and glues two with the operator on each operator token; only infix→postfix needs the precedence logic.)
 
-| Step | Token | Action | Stack (top right) |
-|---:|:---:|---|---|
-| 1 | `2` | push `'2'` | `['2']` |
-| 2 | `3` | push `'3'` | `['2','3']` |
-| 3 | `1` | push `'1'` | `['2','3','1']` |
-| 4 | `*` | pop `'1'`, pop `'3'`, push `'*31'` | `['2','*31']` |
-| 5 | `+` | pop `'*31'`, pop `'2'`, push `'+2*31'` | `['+2*31']` |
-| 6 | `9` | push `'9'` | `['+2*31','9']` |
-| 7 | `-` | pop `'9'`, pop `'+2*31'`, push `'-+2*319'` | `['-+2*319']` |
-| — | end | result is the lone item | **`-+2*319`** |
+> **Key takeaway.** **Shunting-yard** converts infix to postfix with one operator stack + an output list: operands flow to the output; an operator first **releases stacked operators of ≥ precedence**, then waits on the stack; `(` is a barrier and `)` pops back to it. Draining the stack yields the postfix, in `O(N)`. The stack's job is to **defer** each operator until precedence and parentheses say its turn has come — and combined with the [postfix evaluator](/cortex/data-structures-and-algorithms/linear-structures-stack-evaluating-expressions-using-stack), it's a complete calculator: convert, then compute.
 
-<p align="center"><strong>Postfix <code>231*+9-</code> → prefix <code>-+2*319</code>. The stack is a <em>string</em> stack — every operator combines two existing prefix sub-expressions into a larger one. Operand order: first pop is right; second pop is left.</strong></p>
+## Trace It
 
-## Algorithm
+Precedence handles the default grouping; parentheses exist to *override* it. The clearest way to see that is to convert the same operands and operators with and without brackets.
 
-> -   **Step 1:** Initialise an empty string stack.
-> -   **Step 2:** For each character of the postfix string left to right:
->     -   If operand, push it (as a one-character string).
->     -   Else (operator): `b = pop()`, `a = pop()`, push `op + a + b`.
-> -   **Step 3:** Return the lone string on the stack.
-
-***
-
-# Convert postfix to prefix
-
-## Problem Statement
-
-Given a postfix expression `postfix`, return the equivalent prefix expression. Operands are single-character (digit or letter); operators are `+`, `-`, `*`, `/`, `^`.
-
-### Example
-> -   **Input:** `postfix = "231*+9-"` → **Output:** `"-+2*319"`
-
-<details>
-<summary><h2>Solution</h2></summary>
-
-
+**Predict before you run:** `2 + 3 * 4` converts to `2 3 4 * +` (multiplication binds tighter). What does `( 2 + 3 ) * 4` convert to — the same postfix, or something different?
 
 ```python run
-from typing import List
+prec = {"+": 1, "-": 1, "*": 2, "/": 2}
+def infix_to_postfix(tokens):
+    out, ops = [], []
+    for t in tokens:
+        if t in prec:
+            while ops and ops[-1] != "(" and prec[ops[-1]] >= prec[t]: out.append(ops.pop())
+            ops.append(t)
+        elif t == "(": ops.append(t)
+        elif t == ")":
+            while ops and ops[-1] != "(": out.append(ops.pop())
+            ops.pop()
+        else: out.append(t)
+    while ops: out.append(ops.pop())
+    return out
 
-class Solution:
+print("'2 + 3 * 4'     ->", " ".join(infix_to_postfix("2 + 3 * 4".split())))
+print("'( 2 + 3 ) * 4' ->", " ".join(infix_to_postfix("( 2 + 3 ) * 4".split())))
+```
 
-    # Function to check if a character is an operator
-    def is_operator(self, ch: str) -> bool:
-        return not ch.isalpha() and not ch.isdigit()
+<details>
+<summary><strong>Reveal</strong></summary>
 
-    def convert_postfix_to_prefix(self, postfix: str) -> str:
-        stack: List[str] = []
-        length: int = len(postfix)
+`2 + 3 * 4` → `2 3 4 * +`, but `( 2 + 3 ) * 4` → `2 3 + 4 *` — a *different* postfix, with the `+` emitted before the `*`. The parentheses changed everything. Without them, when `*` arrives the `+` is left waiting (lower precedence), so `*` and its operands resolve first. *With* them, the `(` pushes a barrier; when `)` arrives it forces the `+` out to the output immediately — `2 3 +` — *before* the `*` is ever read. So the postfix puts the addition first, and evaluating it gives `(2+3)*4 = 20` instead of `2+(3*4) = 14`. This is exactly the job parentheses do in arithmetic, now visible as a mechanical operation on the stack: a `(` says "defer the outside operators, finish what's in here first," and the matching `)` cashes that in. The postfix output is the unambiguous record of the grouping the parentheses (and precedence) dictated — which is why the [evaluator](/cortex/data-structures-and-algorithms/linear-structures-stack-evaluating-expressions-using-stack) downstream never needs to see a parenthesis at all.
 
-        for i in range(length):
+</details>
 
-            # If the character is an operator, pop the top two
-            # elements from the stack
-            if self.is_operator(postfix[i]):
+## Your Turn
 
-                # Pop the top element from the stack as the second
-                # operand
-                operand2 = stack.pop()
+Convert plus evaluate is a complete calculator: shunting-yard parses the human-friendly infix into postfix, then the [previous lesson's](/cortex/data-structures-and-algorithms/linear-structures-stack-evaluating-expressions-using-stack) stack machine computes the number. Compose them.
 
-                # Pop the top element from the stack as the first
-                # operand
-                operand1 = stack.pop()
+**Predict:** running both `2 + 3 * 4` and `( 2 + 3 ) * 4` through *convert-then-evaluate*, what two values come out?
 
-                # Construct the prefix expression by placing the operator
-                # before the operands
-                expr = postfix[i] + operand1 + operand2
-                stack.append(expr)
+```python run
+prec = {"+": 1, "-": 1, "*": 2, "/": 2}
+def infix_to_postfix(tokens):
+    out, ops = [], []
+    for t in tokens:
+        if t in prec:
+            while ops and ops[-1] != "(" and prec[ops[-1]] >= prec[t]: out.append(ops.pop())
+            ops.append(t)
+        elif t == "(": ops.append(t)
+        elif t == ")":
+            while ops and ops[-1] != "(": out.append(ops.pop())
+            ops.pop()
+        else: out.append(t)
+    while ops: out.append(ops.pop())
+    return out
 
-            # If the character is not an operator, push it to the
-            # stack as a single-character string
-            else:
-                stack.append(postfix[i])
+def eval_postfix(tokens):                            # the stack evaluator from the previous lesson
+    st = []
+    for t in tokens:
+        if t in "+-*/":
+            b, a = st.pop(), st.pop()
+            st.append({"+": a+b, "-": a-b, "*": a*b, "/": int(a/b)}[t])
+        else: st.append(int(t))
+    return st[-1]
 
-        # The final element in the stack will be the prefix expression
-        return stack.pop()
-
-
-# Example from the problem statement
-print(Solution().convert_postfix_to_prefix("783/-52/6-*"))   # *-7/83-/526
-
-# Edge cases
-print(Solution().convert_postfix_to_prefix("ab+"))           # +ab — single operation
-print(Solution().convert_postfix_to_prefix("abc**"))         # *a*bc — right-associative chain
-print(Solution().convert_postfix_to_prefix("ab+c-"))         # -+abc — two operators
-print(Solution().convert_postfix_to_prefix("ab-cd+*"))       # *-ab+cd
-print(Solution().convert_postfix_to_prefix("abcd-+*"))       # *a+-bcd
-print(Solution().convert_postfix_to_prefix("ab+cd+*"))       # *+ab+cd
+for infix in ["2 + 3 * 4", "( 2 + 3 ) * 4"]:
+    post = infix_to_postfix(infix.split())
+    print(f"{infix:>15}  ->  {' '.join(post):>9}  =  {eval_postfix(post)}")
 ```
 
 ```java run
 import java.util.*;
-
 public class Main {
-    static class Solution {
-
-        // Function to check if a character is an operator
-        private boolean isOperator(char ch) {
-            return (!Character.isLetter(ch) && !Character.isDigit(ch));
+    static Map<String,Integer> prec = Map.of("+", 1, "-", 1, "*", 2, "/", 2);
+    static List<String> infixToPostfix(String[] tokens) {
+        List<String> out = new ArrayList<>(); Deque<String> ops = new ArrayDeque<>();
+        for (String t : tokens) {
+            if (prec.containsKey(t)) {
+                while (!ops.isEmpty() && !ops.peek().equals("(") && prec.get(ops.peek()) >= prec.get(t)) out.add(ops.pop());
+                ops.push(t);
+            } else if (t.equals("(")) ops.push(t);
+            else if (t.equals(")")) { while (!ops.isEmpty() && !ops.peek().equals("(")) out.add(ops.pop()); ops.pop(); }
+            else out.add(t);
         }
-
-        public String convertPostfixToPrefix(String postfix) {
-            Stack<String> stack = new Stack<>();
-            int length = postfix.length();
-
-            for (int i = 0; i < length; i++) {
-
-                // If the character is an operator, pop the top two
-                // elements from the stack
-                if (isOperator(postfix.charAt(i))) {
-
-                    // Pop the top element from the stack as the second
-                    // operand
-                    String operand2 = stack.pop();
-
-                    // Pop the top element from the stack as the first
-                    // operand
-                    String operand1 = stack.pop();
-
-                    // Construct the prefix expression by placing the
-                    // operator before the operands
-                    String expr = postfix.charAt(i) + operand1 + operand2;
-                    stack.push(expr);
-                }
-
-                // If the character is not an operator, push it to the
-                // stack as a single-character string
-                else {
-                    stack.push(String.valueOf(postfix.charAt(i)));
-                }
-            }
-
-            // The final element in the stack will be the prefix expression
-            return stack.pop();
-        }
+        while (!ops.isEmpty()) out.add(ops.pop());
+        return out;
     }
-
-    public static void main(String[] args) {
-        // Example from the problem statement
-        System.out.println(new Solution().convertPostfixToPrefix("783/-52/6-*"));  // *-7/83-/526
-
-        // Edge cases
-        System.out.println(new Solution().convertPostfixToPrefix("ab+"));          // +ab
-        System.out.println(new Solution().convertPostfixToPrefix("abc**"));        // *a*bc
-        System.out.println(new Solution().convertPostfixToPrefix("ab+c-"));        // -+abc
-        System.out.println(new Solution().convertPostfixToPrefix("ab-cd+*"));      // *-ab+cd
-        System.out.println(new Solution().convertPostfixToPrefix("abcd-+*"));      // *a+-bcd
-        System.out.println(new Solution().convertPostfixToPrefix("ab+cd+*"));      // *+ab+cd
+    static int evalPostfix(List<String> tokens) {    // the stack evaluator from the previous lesson
+        Deque<Integer> st = new ArrayDeque<>();
+        for (String t : tokens) {
+            if (t.length() == 1 && "+-*/".contains(t)) {
+                int b = st.pop(), a = st.pop();
+                st.push(switch (t) { case "+" -> a + b; case "-" -> a - b; case "*" -> a * b; default -> (int) ((double) a / b); });
+            } else st.push(Integer.parseInt(t));
+        }
+        return st.peek();
+    }
+    public static void main(String[] x) {
+        for (String infix : new String[]{"2 + 3 * 4", "( 2 + 3 ) * 4"}) {
+            List<String> post = infixToPostfix(infix.split(" "));
+            System.out.printf("%15s  ->  %9s  =  %d%n", infix, String.join(" ", post), evalPostfix(post));
+        }
     }
 }
 ```
 
+Both print `2 + 3 * 4 → 2 3 4 * + = 14` and `( 2 + 3 ) * 4 → 2 3 + 4 * = 20`. Two `O(N)` passes — shunting-yard to convert, the stack machine to evaluate — and you've built the core of a four-function calculator. The first expression honours precedence (multiply first → 14); the second honours the parentheses the user typed (add first → 20). The conversion is where all the precedence and parenthesis logic lives; the evaluator stays blissfully simple because postfix has already encoded every decision. Real calculators and language interpreters split the work exactly this way: a parser produces an unambiguous intermediate form (postfix, or an [expression tree](/cortex/data-structures-and-algorithms/linear-structures-stack-infix-postfix-and-prefix-notations)), and a separate, trivial evaluator runs it.
 
-> **All cases** — Time: **O(N²)** worst-case (string concatenation), Space: **O(N²)** worst-case. With efficient string-builders this drops to **O(N)** time and **O(N)** space.
+## Reflect & Connect
 
-</details>
+- **Shunting-yard defers operators.** Operands emit immediately; operators wait on a stack until precedence or a closing paren says their turn has come. Releasing ops of ≥ precedence before pushing is what makes `*` beat `+`.
+- **`≥` vs `>` encodes associativity.** Popping equal-precedence operators (`≥`) gives left-to-right grouping (`a - b - c = (a-b)-c`); right-associative operators (exponent) use `>`. A `(` is a barrier nothing pops past until its `)`.
+- **Parentheses are a forced sub-conversion.** `(` defers the surrounding operators; `)` flushes the bracketed sub-expression to the output first. That's how `( 2 + 3 ) * 4` reorders to `2 3 + 4 *` and evaluates to 20 instead of 14.
+- **It's the front-end the evaluator was missing.** Convert (this lesson) + evaluate (the [previous one](/cortex/data-structures-and-algorithms/linear-structures-stack-evaluating-expressions-using-stack)) = a complete calculator, two `O(N)` passes. All the hard logic lives in the conversion; postfix evaluation stays trivial.
+- **Six conversions, two ideas, one stack.** Postfix/prefix → anything just glues operand-strings with the operator (no precedence needed); only infix→postfix (and →prefix, by reverse-and-flip) needs shunting-yard. This closes the stack-expression arc — the [linear-evaluation pattern](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-linear-evaluation) generalizes the "stack holds deferred work" idea to many problems.
 
-***
-
-# Understanding postfix to infix conversion
-
-Same algorithm — only the combine step changes. Where prefix wrote `op + a + b`, **infix wraps the operator in parentheses around the two operands**: `( a + op + b )`. The parentheses are necessary because we don't track precedence inside the stack — they ensure the produced expression evaluates the same way regardless of where it gets nested.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    R["read postfix token"] --> Q{"operand?"}
-    Q -->|"yes"| P["push as string"]
-    Q -->|"no (operator)"| O["pop b<br/>pop a<br/>push '(' + a + op + b + ')'<br/>(operator BETWEEN operands, parenthesised)"]
-    P --> R
-    O --> R
-```
-
-<p align="center"><strong>Postfix → infix — operand pops as before, but the combine step wraps the result in parentheses to preserve precedence. The output may have <em>more</em> parentheses than strictly needed, but it's always correct.</strong></p>
-
-## Algorithm
-
-> -   **Step 1:** Initialise an empty string stack.
-> -   **Step 2:** For each character of the postfix string left to right:
->     -   If operand, push it.
->     -   Else: `b = pop()`, `a = pop()`, push `(a + op + b)`.
-> -   **Step 3:** Return the lone string on the stack.
-
-***
-
-# Convert postfix to infix
+## Recall
 
 <details>
-<summary><h2>Example</h2></summary>
+<summary><strong>Q:</strong> What does the shunting-yard algorithm do, and with what data structures?</summary>
 
-
-> -   **Input:** `postfix = "231*+9-"` → **Output:** `"((2+(3*1))-9)"`
+**A:** It converts infix to postfix using one operator stack plus an output list. Operands go straight to the output; operators wait on the stack and are released by precedence; parentheses force grouping. Draining the stack at the end yields the postfix — `O(N)` time and space.
 
 </details>
 <details>
-<summary><h2>Solution</h2></summary>
+<summary><strong>Q:</strong> When an operator arrives, what happens before it's pushed onto the stack?</summary>
 
-
-
-```python run
-from typing import List
-
-class Solution:
-
-    # Function to check if a character is an operator
-    def is_operator(self, ch: str) -> bool:
-        return not ch.isalpha() and not ch.isdigit()
-
-    def convert_postfix_to_infix(self, postfix: str) -> str:
-        stack: List[str] = []
-        length: int = len(postfix)
-
-        for i in range(length):
-
-            # If the character is an operator, pop the top two elements
-            # from the stack and construct the infix expression by
-            # placing the operands and operator within parentheses
-            if self.is_operator(postfix[i]):
-
-                # Pop the top element from the stack as the second
-                # operand
-                operand2 = stack.pop()
-
-                # Pop the top element from the stack as the first operand
-                operand1 = stack.pop()
-
-                # Construct the infix expression by placing the operands
-                # and operator within parentheses
-                expr: str = "(" + operand1 + postfix[i] + operand2 + ")"
-                stack.append(expr)
-
-            # If the character is not an operator, push it to the
-            # stack as a single-character string
-            else:
-                stack.append(postfix[i])
-
-        # The final element in the stack will be the infix expression
-        return stack.pop()
-
-
-# Example from the problem statement
-print(Solution().convert_postfix_to_infix("5647^9-326*+^*+2-"))   # ((5+(6*(((4^7)-9)^(3+(2*6)))))-2)
-
-# Edge cases
-print(Solution().convert_postfix_to_infix("ab+"))                  # (a+b)
-print(Solution().convert_postfix_to_infix("abc**"))                # (a*(b*c))
-print(Solution().convert_postfix_to_infix("ab+c-"))                # ((a+b)-c)
-print(Solution().convert_postfix_to_infix("ab-cd+*"))              # ((a-b)*(c+d))
-print(Solution().convert_postfix_to_infix("ab+cd+*"))              # ((a+b)*(c+d))
-print(Solution().convert_postfix_to_infix("abcd-+*"))              # (a*(b+(c-d)))
-```
-
-```java run
-import java.util.*;
-
-public class Main {
-    static class Solution {
-
-        // Function to check if a character is an operator
-        private boolean isOperator(char ch) {
-            return (!Character.isLetter(ch) && !Character.isDigit(ch));
-        }
-
-        public String convertPostfixToInfix(String postfix) {
-            Stack<String> stack = new Stack<>();
-            int length = postfix.length();
-
-            for (int i = 0; i < length; i++) {
-
-                // If the character is an operator, pop the top two elements
-                // from the stack and construct the infix expression by
-                // placing the operands and operator within parentheses
-                if (isOperator(postfix.charAt(i))) {
-
-                    // Pop the top element from the stack as the second
-                    // operand
-                    String operand2 = stack.pop();
-
-                    // Pop the top element from the stack as the first
-                    // operand
-                    String operand1 = stack.pop();
-
-                    // Construct the infix expression by placing the operands
-                    // and operator within parentheses
-                    String expr =
-                        "(" + operand1 + postfix.charAt(i) + operand2 + ")";
-                    stack.push(expr);
-                }
-
-                // If the character is not an operator, push it to the
-                // stack as a single-character string
-                else {
-                    stack.push(String.valueOf(postfix.charAt(i)));
-                }
-            }
-
-            // The final element in the stack will be the infix expression
-            return stack.pop();
-        }
-    }
-
-    public static void main(String[] args) {
-        // Example from the problem statement
-        System.out.println(new Solution().convertPostfixToInfix("5647^9-326*+^*+2-"));
-        // ((5+(6*(((4^7)-9)^(3+(2*6)))))-2)
-
-        // Edge cases
-        System.out.println(new Solution().convertPostfixToInfix("ab+"));          // (a+b)
-        System.out.println(new Solution().convertPostfixToInfix("abc**"));        // (a*(b*c))
-        System.out.println(new Solution().convertPostfixToInfix("ab+c-"));        // ((a+b)-c)
-        System.out.println(new Solution().convertPostfixToInfix("ab-cd+*"));      // ((a-b)*(c+d))
-        System.out.println(new Solution().convertPostfixToInfix("ab+cd+*"));      // ((a+b)*(c+d))
-        System.out.println(new Solution().convertPostfixToInfix("abcd-+*"));      // (a*(b+(c-d)))
-    }
-}
-```
-
-
-> **Complexity** — Time: **O(N²)** with naïve string concat, **O(N)** with builders; Space: **O(N²)** / **O(N)** respectively.
-
-</details>
-
-***
-
-# Understanding prefix to postfix conversion
-
-Mirror image of postfix → prefix. Same idea, but **scan the input right-to-left** (because in prefix the operator appears *before* its operands, so we encounter the operands first when scanning backwards), and the combine step puts the operator **after** the operands.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    R["read prefix token<br/>(scan right→left)"] --> Q{"operand?"}
-    Q -->|"yes"| P["push as string"]
-    Q -->|"no (operator)"| O["pop a (left)<br/>pop b (right)<br/>push 'a + b + op'<br/>(operator AFTER operands)"]
-    P --> R
-    O --> R
-```
-
-<p align="center"><strong>Prefix → postfix — right-to-left scan; first pop is the LEFT operand; combine step appends the operator at the end.</strong></p>
-
-## Algorithm
-
-> -   **Step 1:** Initialise an empty string stack.
-> -   **Step 2:** For each character of the prefix string **right to left**:
->     -   If operand, push it.
->     -   Else: `a = pop()` (LEFT), `b = pop()` (RIGHT), push `a + b + op`.
-> -   **Step 3:** Return the lone string on the stack.
-
-***
-
-# Convert prefix to postfix
-
-<details>
-<summary><h2>Example</h2></summary>
-
-
-> -   **Input:** `prefix = "-+2*319"` → **Output:** `"231*+9-"`
+**A:** All operators currently on top of the stack with precedence ≥ the incoming operator's are popped to the output first (for left-associative operators), then the new operator is pushed. That's what makes a `*` emit before a waiting lower-precedence `+`.
 
 </details>
 <details>
-<summary><h2>Solution</h2></summary>
+<summary><strong>Q:</strong> How do parentheses work in shunting-yard?</summary>
 
-
-
-```python run
-from typing import List
-
-class Solution:
-
-    # Function to check if a character is an operator
-    def is_operator(self, ch: str) -> bool:
-        return not ch.isalpha() and not ch.isdigit()
-
-    def convert_prefix_to_postfix(self, prefix: str) -> str:
-        stack: List[str] = []
-        length: int = len(prefix)
-
-        for i in range(length - 1, -1, -1):
-
-            # If the character is an operator, pop the top two
-            # elements from the stack
-            if self.is_operator(prefix[i]):
-
-                # Pop the top element from the stack as the first
-                # operand
-                operand1: str = stack.pop()
-
-                # Pop the top element from the stack as the second
-                # operand
-                operand2: str = stack.pop()
-
-                # Construct the postfix expression by placing the
-                # operands followed by the operator
-                expr: str = operand1 + operand2 + prefix[i]
-                stack.append(expr)
-
-            # If the character is not an operator, push it to the
-            # stack as a single-character string
-            else:
-                stack.append(prefix[i])
-
-        # The final element in the stack will be the postfix expression
-        return stack.pop()
-
-
-# Example from the problem statement
-print(Solution().convert_prefix_to_postfix("*-7/83-/526"))   # 783/-52/6-*
-
-# Edge cases
-print(Solution().convert_prefix_to_postfix("+ab"))           # ab+ — single operation
-print(Solution().convert_prefix_to_postfix("*a*bc"))         # abc** — right chain
-print(Solution().convert_prefix_to_postfix("-+abc"))         # ab+c-
-print(Solution().convert_prefix_to_postfix("*-ab+cd"))       # ab-cd+*
-print(Solution().convert_prefix_to_postfix("*+ab+cd"))       # ab+cd+*
-print(Solution().convert_prefix_to_postfix("*a+-bcd"))       # abcd-+*
-```
-
-```java run
-import java.util.*;
-
-public class Main {
-    static class Solution {
-
-        // Function to check if a character is an operator
-        private boolean isOperator(char ch) {
-            return !Character.isLetter(ch) && !Character.isDigit(ch);
-        }
-
-        public String convertPrefixToPostfix(String prefix) {
-            Stack<String> stack = new Stack<>();
-            int length = prefix.length();
-
-            for (int i = length - 1; i >= 0; i--) {
-
-                // If the character is an operator, pop the top two
-                // elements from the stack
-                if (isOperator(prefix.charAt(i))) {
-
-                    // Pop the top element from the stack as the first
-                    // operand
-                    String operand1 = stack.pop();
-
-                    // Pop the top element from the stack as the second
-                    // operand
-                    String operand2 = stack.pop();
-
-                    // Construct the postfix expression by placing the
-                    // operands followed by the operator
-                    String expr = operand1 + operand2 + prefix.charAt(i);
-                    stack.push(expr);
-                }
-
-                // If the character is not an operator, push it to the
-                // stack as a single-character string
-                else {
-                    stack.push(String.valueOf(prefix.charAt(i)));
-                }
-            }
-
-            // The final element in the stack will be the postfix expression
-            return stack.pop();
-        }
-    }
-
-    public static void main(String[] args) {
-        // Example from the problem statement
-        System.out.println(new Solution().convertPrefixToPostfix("*-7/83-/526"));  // 783/-52/6-*
-
-        // Edge cases
-        System.out.println(new Solution().convertPrefixToPostfix("+ab"));          // ab+
-        System.out.println(new Solution().convertPrefixToPostfix("*a*bc"));        // abc**
-        System.out.println(new Solution().convertPrefixToPostfix("-+abc"));        // ab+c-
-        System.out.println(new Solution().convertPrefixToPostfix("*-ab+cd"));      // ab-cd+*
-        System.out.println(new Solution().convertPrefixToPostfix("*+ab+cd"));      // ab+cd+*
-        System.out.println(new Solution().convertPrefixToPostfix("*a+-bcd"));      // abcd-+*
-    }
-}
-```
-
-</details>
-
-
-***
-
-# Understanding prefix to infix conversion
-
-Right-to-left scan, infix combine step `(a op b)`.
-
-## Algorithm
-
-> -   **Step 1:** Initialise an empty string stack.
-> -   **Step 2:** For each character of the prefix string **right to left**:
->     -   If operand, push it.
->     -   Else: `a = pop()` (LEFT), `b = pop()` (RIGHT), push `(a + op + b)`.
-> -   **Step 3:** Return the lone string on the stack.
-
-***
-
-# Convert prefix to infix
-
-<details>
-<summary><h2>Example</h2></summary>
-
-
-> -   **Input:** `prefix = "-+2*319"` → **Output:** `"((2+(3*1))-9)"`
+**A:** `(` is pushed as a barrier that nothing pops past. `)` pops operators to the output until the matching `(`, then discards both brackets. This flushes the bracketed sub-expression to the output before any surrounding operator, overriding precedence.
 
 </details>
 <details>
-<summary><h2>Solution</h2></summary>
+<summary><strong>Q:</strong> Why does `≥` (not `>`) precedence comparison matter?</summary>
 
-
-
-```python run
-from typing import List
-
-class Solution:
-
-    # Function to check if a character is an operator
-    def is_operator(self, ch: str) -> bool:
-        return not ch.isalpha() and not ch.isdigit()
-
-    def convert_prefix_to_infix(self, prefix: str) -> str:
-        stack: List[str] = []
-        length: int = len(prefix)
-
-        for i in range(length - 1, -1, -1):
-
-            # If the character is an operator, pop the top two
-            # elements from the stack and construct the infix expression
-            # by placing the operator in between the operands
-            if self.is_operator(prefix[i]):
-
-                # Pop the top element from the stack as the first
-                # operand
-                operand1 = stack.pop()
-
-                # Pop the top element from the stack as the second
-                # operand
-                operand2 = stack.pop()
-
-                # Construct the infix expression by placing the operator
-                # in between the operands
-                expr = "(" + operand1 + prefix[i] + operand2 + ")"
-                stack.append(expr)
-
-            # If the character is not an operator, push it to the
-            # stack as a single-character string
-            else:
-                stack.append(prefix[i])
-
-        # The final element in the stack will be the infix expression
-        return stack.pop()
-
-
-# Example from the problem statement
-print(Solution().convert_prefix_to_infix("*-7/83-/526"))   # ((7-(8/3))*((5/2)-6))
-
-# Edge cases
-print(Solution().convert_prefix_to_infix("+ab"))           # (a+b)
-print(Solution().convert_prefix_to_infix("*a*bc"))         # (a*(b*c))
-print(Solution().convert_prefix_to_infix("-+abc"))         # ((a+b)-c)
-print(Solution().convert_prefix_to_infix("*-ab+cd"))       # ((a-b)*(c+d))
-print(Solution().convert_prefix_to_infix("*+ab+cd"))       # ((a+b)*(c+d))
-print(Solution().convert_prefix_to_infix("*a+-bcd"))       # (a*(b+(c-d)))
-```
-
-```java run
-import java.util.*;
-
-public class Main {
-    static class Solution {
-
-        // Function to check if a character is an operator
-        private boolean isOperator(char ch) {
-            return !Character.isLetter(ch) && !Character.isDigit(ch);
-        }
-
-        public String convertPrefixToInfix(String prefix) {
-            Stack<String> stack = new Stack<>();
-            int length = prefix.length();
-
-            for (int i = length - 1; i >= 0; i--) {
-
-                // If the character is an operator, pop the top two
-                // elements from the stack and construct the infix expression
-                // by placing the operator in between the operands
-                if (isOperator(prefix.charAt(i))) {
-
-                    // Pop the top element from the stack as the first
-                    // operand
-                    String operand1 = stack.pop();
-
-                    // Pop the top element from the stack as the second
-                    // operand
-                    String operand2 = stack.pop();
-
-                    // Construct the infix expression by placing the operator
-                    // in between the operands
-                    String expr =
-                        "(" + operand1 + prefix.charAt(i) + operand2 + ")";
-                    stack.push(expr);
-                }
-
-                // If the character is not an operator, push it to the
-                // stack as a single-character string
-                else {
-                    stack.push(String.valueOf(prefix.charAt(i)));
-                }
-            }
-
-            // The final element in the stack will be the infix expression
-            return stack.pop();
-        }
-    }
-
-    public static void main(String[] args) {
-        // Example from the problem statement
-        System.out.println(new Solution().convertPrefixToInfix("*-7/83-/526"));
-        // ((7-(8/3))*((5/2)-6))
-
-        // Edge cases
-        System.out.println(new Solution().convertPrefixToInfix("+ab"));          // (a+b)
-        System.out.println(new Solution().convertPrefixToInfix("*a*bc"));        // (a*(b*c))
-        System.out.println(new Solution().convertPrefixToInfix("-+abc"));        // ((a+b)-c)
-        System.out.println(new Solution().convertPrefixToInfix("*-ab+cd"));      // ((a-b)*(c+d))
-        System.out.println(new Solution().convertPrefixToInfix("*+ab+cd"));      // ((a+b)*(c+d))
-        System.out.println(new Solution().convertPrefixToInfix("*a+-bcd"));      // (a*(b+(c-d)))
-    }
-}
-```
-
-</details>
-
-
-***
-
-# Understanding infix to postfix conversion
-
-The big one. **Infix → postfix** is the famous **Shunting-Yard algorithm** (Edsger Dijkstra, 1961). The trick: maintain a stack of *operators waiting to be emitted*, and an output buffer. As we scan the infix expression left-to-right:
-
-- **Operands** go directly to the output (they don't need to wait — they're already in the right relative order).
-- **Operators** push onto the operator stack — but *before* pushing, **flush** any operator on top of the stack whose precedence is `≥` the incoming operator's. This guarantees that higher-precedence operators emerge from the stack first, exactly matching their evaluation order.
-- **`(`** pushes onto the operator stack as a *fence* that prevents lower-precedence operators from being flushed past it.
-- **`)`** pops everything off until the matching `(`, then discards the `(`.
-- **End of input** flushes whatever's left on the operator stack.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    R["read infix token"] --> Q{"type?"}
-    Q -->|"operand"| P["append to output"]
-    Q -->|"("| L["push to op stack"]
-    Q -->|")"| R1["pop ops to output<br/>until '('<br/>discard '('"]
-    Q -->|"operator op"| F["while top is op AND<br/>prec(top) >= prec(op):<br/>pop top to output<br/>then push op"]
-    P --> R; L --> R; R1 --> R; F --> R
-    R -->|"end of input"| FL["flush remaining ops to output"]
-```
-
-<p align="center"><strong>Shunting-Yard infix → postfix — operands flow straight through; operators wait on the stack until something with lower-or-equal precedence pushes them out. Parentheses act as fences. The algorithm is one pass, two structures (op stack + output buffer), no backtracking.</strong></p>
-
-## Why does this work?
-
-The key invariant: **at any point during the scan, the operator stack contains operators in strictly increasing precedence from bottom to top.** Each new operator either fits this invariant (push it) or violates it (flush down until it fits, then push).
-
-> **Note on `^` (power):** `^` is right-associative — `2^3^2` means `2^(3^2)`, not `(2^3)^2`. To handle this, change the precedence comparison from `>=` to strictly `>` for the right-associative operator: when an `^` is incoming and `^` is on top, *don't* flush — push the new `^` on top so it'll be evaluated first. The implementations below use a generalised `is_right_assoc` helper for clarity.
-
-## Walkthrough — `(2 + 3) * 4`
-
-| Step | Token | Action | Op stack | Output |
-|---:|:---:|---|---|---|
-| 1 | `(` | push `(` | `['(']` | `''` |
-| 2 | `2` | append to output | `['(']` | `'2'` |
-| 3 | `+` | push (top is `(`, no flush) | `['(', '+']` | `'2'` |
-| 4 | `3` | append to output | `['(', '+']` | `'23'` |
-| 5 | `)` | flush `+` to output, discard `(` | `[]` | `'23+'` |
-| 6 | `*` | push | `['*']` | `'23+'` |
-| 7 | `4` | append to output | `['*']` | `'23+4'` |
-| — | EOF | flush remaining ops | `[]` | **`'23+4*'`** |
-
-<p align="center"><strong>Shunting-Yard on <code>(2+3)*4</code> — the parenthesis fences off <code>+</code> until <code>)</code> is seen; then <code>+</code> flushes. <code>*</code> waits on the stack until end-of-input. Result: <code>23+4*</code>.</strong></p>
-
-## Algorithm
-
-> -   **Step 1:** Initialise an empty operator stack and an empty output buffer.
-> -   **Step 2:** For each character of the infix string left to right:
->     -   **Operand** → append to output.
->     -   **`(`** → push to op stack.
->     -   **`)`** → pop ops to output until `(`; discard `(`.
->     -   **operator** → while top of op stack is an operator with `prec(top) >= prec(op)` (strict `>` for right-associative): pop top to output. Then push op.
-> -   **Step 3:** Flush remaining op stack to output.
-
-***
-
-# Convert infix to postfix
-
-<details>
-<summary><h2>Example</h2></summary>
-
-
-> -   **Input:** `infix = "(2+3)*4"` → **Output:** `"23+4*"`
+**A:** Popping equal-precedence operators gives left-associative grouping: `a - b - c` becomes `(a-b)-c`, the correct arithmetic reading. Right-associative operators (like exponentiation) use `>` so they group right-to-left instead.
 
 </details>
 <details>
-<summary><h2>Solution</h2></summary>
+<summary><strong>Q:</strong> How do you build a full calculator from this lesson and the previous one?</summary>
 
-
-
-```python run
-from typing import List
-
-class Solution:
-
-    # Function to check if the character is an operator
-    def is_operator(self, ch: str) -> bool:
-        return not ch.isalpha() and not ch.isdigit()
-
-    # Function to get the priority of operators
-    def get_precedence(self, operator: str) -> int:
-
-        # Assign precedence values to different operators
-        if operator == "^":
-            return 3
-        elif operator in ["*", "/"]:
-            return 2
-        elif operator in ["+", "-"]:
-            return 1
-
-        # Default value for unknown operators
-        return -1
-
-    def convert_infix_to_postfix(self, infix: str) -> str:
-
-        # Stack to hold operators and parentheses
-        stack: List[str] = []
-
-        # Final postfix expression
-        postfix: str = ""
-
-        for ch in infix:
-
-            # If the character is not an operator or parentheses, add
-            # it to the postfix string
-            if not self.is_operator(ch) and ch != "(" and ch != ")":
-                postfix += ch
-
-            # If the character is an opening parentheses, push it
-            # onto the stack
-            elif ch == "(":
-                stack.append(ch)
-
-            # If the character is a closing parentheses, pop operators
-            # from the stack and add them to the postfix string until an
-            # opening parentheses is encountered
-            elif ch == ")":
-                while stack and stack[-1] != "(":
-                    postfix += stack.pop()
-
-                # Remove the opening parentheses from the stack
-                if stack and stack[-1] == "(":
-                    stack.pop()
-
-            # If the character is an operator, compare its precedence
-            # with the top of the stack and add higher or equal
-            # precedence operators to the postfix string
-            else:
-                while stack and self.get_precedence(
-                    ch
-                ) <= self.get_precedence(stack[-1]):
-                    if stack[-1] != "(":
-                        postfix += stack.pop()
-
-                # Push the current operator onto the stack
-                stack.append(ch)
-
-        # Pop any remaining operators from the stack and add them to the
-        # postfix string
-        while stack:
-            postfix += stack.pop()
-
-        return postfix
-
-
-# Example from the problem statement
-print(Solution().convert_infix_to_postfix("5+6*(4^7-9)^(3+2*6)-2"))   # 5647^9-326*+^*+2-
-
-# Edge cases
-print(Solution().convert_infix_to_postfix("a+b"))                      # ab+
-print(Solution().convert_infix_to_postfix("a+b*c"))                    # abc*+
-print(Solution().convert_infix_to_postfix("(a+b)*c"))                  # ab+c*
-print(Solution().convert_infix_to_postfix("a+b+c"))                    # ab+c+
-print(Solution().convert_infix_to_postfix("(a+b)*(c-d)"))              # ab+cd-*
-print(Solution().convert_infix_to_postfix("a^b^c"))                    # ab^c^ (right-assoc handled)
-```
-
-```java run
-import java.util.*;
-
-public class Main {
-    static class Solution {
-
-        // Function to check if the character is an operator
-        private boolean isOperator(char ch) {
-            return (!Character.isLetter(ch) && !Character.isDigit(ch));
-        }
-
-        // Function to get the priority of operators
-        private int getPrecedence(char operator) {
-
-            // Assign precedence values to different operators
-            if (operator == '^') {
-                return 3;
-            } else if (operator == '*' || operator == '/') {
-                return 2;
-            } else if (operator == '+' || operator == '-') {
-                return 1;
-            }
-
-            // Default value for unknown operators
-            return -1;
-        }
-
-        public String convertInfixToPostfix(String infix) {
-
-            // Stack to hold operators and parentheses
-            Stack<Character> stack = new Stack<>();
-
-            // Final postfix expression
-            StringBuilder postfix = new StringBuilder();
-
-            for (char ch : infix.toCharArray()) {
-
-                // If the character is not an operator or parentheses,
-                // add it to the postfix string
-                if (!isOperator(ch) && ch != '(' && ch != ')') {
-                    postfix.append(ch);
-                }
-
-                // If the character is an opening parentheses, push it
-                // onto the stack
-                else if (ch == '(') {
-                    stack.push(ch);
-                }
-
-                // If the character is a closing parentheses, pop
-                // operators from the stack and add them to the postfix
-                // string until an opening parentheses is encountered
-                else if (ch == ')') {
-                    while (!stack.empty() && stack.peek() != '(') {
-                        postfix.append(stack.peek());
-                        stack.pop();
-                    }
-
-                    // Remove the opening parentheses from the stack
-                    if (!stack.empty() && stack.peek() == '(') {
-                        stack.pop();
-                    }
-                }
-
-                // If the character is an operator, compare its
-                // precedence with the top of the stack and add higher or
-                // equal precedence operators to the postfix string
-                else {
-                    while (
-                        !stack.empty() &&
-                        getPrecedence(ch) <= getPrecedence(stack.peek())
-                    ) {
-                        if (stack.peek() != '(') {
-                            postfix.append(stack.peek());
-                        }
-                        stack.pop();
-                    }
-
-                    // Push the current operator onto the stack
-                    stack.push(ch);
-                }
-            }
-
-            // Pop any remaining operators from the stack and add them to the
-            // postfix string
-            while (!stack.empty()) {
-                postfix.append(stack.peek());
-                stack.pop();
-            }
-
-            return postfix.toString();
-        }
-    }
-
-    public static void main(String[] args) {
-        // Example from the problem statement
-        System.out.println(new Solution().convertInfixToPostfix("5+6*(4^7-9)^(3+2*6)-2"));
-        // 5647^9-326*+^*+2-
-
-        // Edge cases
-        System.out.println(new Solution().convertInfixToPostfix("a+b"));           // ab+
-        System.out.println(new Solution().convertInfixToPostfix("a+b*c"));         // abc*+
-        System.out.println(new Solution().convertInfixToPostfix("(a+b)*c"));       // ab+c*
-        System.out.println(new Solution().convertInfixToPostfix("a+b+c"));         // ab+c+
-        System.out.println(new Solution().convertInfixToPostfix("(a+b)*(c-d)"));   // ab+cd-*
-        System.out.println(new Solution().convertInfixToPostfix("a^b^c"));         // ab^c^
-    }
-}
-```
-
-
-> **Complexity** — Time: **O(N)** | Space: **O(N)** for the operator stack and output buffer.
+**A:** Two `O(N)` passes: shunting-yard converts the user's infix to postfix (handling precedence and parentheses), then the stack evaluator computes the postfix. The conversion holds all the parsing logic; the evaluator stays trivial because postfix is unambiguous.
 
 </details>
 
-***
-
-# Understanding infix to prefix conversion
-
-The cleverest of the bunch — and a one-line reduction:
-
-1. **Reverse** the infix string.
-2. **Swap** every `(` with `)` and vice versa (because the bracket directions invert under reversal).
-3. Run the **infix-to-postfix** converter on this reversed/flipped string, but with one rule change: **`^` is now left-associative** for this step (because the reversal flipped its associativity).
-4. **Reverse** the resulting postfix to get the prefix.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    I["infix:<br/>(2+3)*4"] -->|"reverse, flip brackets"| R1["4*(3+2)"]
-    R1 -->|"infix → postfix<br/>(^ left-assoc here)"| P["432+*"]
-    P -->|"reverse"| R2["*+234"]
-    R2 --> OUT["prefix: *+234"]
-    style OUT fill:#dcfce7,stroke:#22c55e
-```
-
-<p align="center"><strong>Infix → prefix as a four-step reduction — reverse, flip brackets, run Shunting-Yard with right-associativity flipped, reverse the result. Builds on infix→postfix without a separate algorithm.</strong></p>
-
-***
-
-# Convert infix to prefix
-
-<details>
-<summary><h2>Example</h2></summary>
-
-
-> -   **Input:** `infix = "(2+3)*4"` → **Output:** `"*+234"`
-
-</details>
-<details>
-<summary><h2>Solution</h2></summary>
-
-
-
-```python run
-from typing import List
-
-class Solution:
-
-    # Function to check if the character is an operator
-    def is_operator(self, ch: str) -> bool:
-        return not ch.isalpha() and not ch.isdigit()
-
-    # Function to get the priority of operators
-    def get_precedence(self, operator: str) -> int:
-
-        # Assign precedence values to different operators
-        if operator == "^":
-            return 3
-        elif operator in ["*", "/"]:
-            return 2
-        elif operator in ["+", "-"]:
-            return 1
-
-        # Default value for unknown operators
-        return -1
-
-    def convert_infix_to_prefix(self, infix: str) -> str:
-
-        # Stack to hold operators and parentheses
-        stack: List[str] = []
-
-        # Final prefix expression
-        prefix: str = ""
-
-        # Reverse the infix string for easier processing
-        reversed_infix: str = infix[::-1]
-
-        for ch in reversed_infix:
-
-            # If the character is not an operator or parentheses, add
-            # it to the prefix string
-            if not self.is_operator(ch) and ch != ")" and ch != "(":
-                prefix += ch
-
-            # If the character is a closing parentheses, push it onto
-            # the stack
-            elif ch == ")":
-                stack.append(ch)
-
-            # If the character is an opening parentheses, pop operators
-            # from the stack and add them to the prefix string until a
-            # closing parentheses is encountered
-            elif ch == "(":
-                while stack and stack[-1] != ")":
-                    prefix += stack.pop()
-
-                # Remove the closing parentheses from the stack
-                if stack and stack[-1] == ")":
-                    stack.pop()
-
-            # If the character is an operator, compare its precedence
-            # with the top of the stack and add higher precedence
-            # operators to the prefix string
-            else:
-                while (
-                    stack
-                    and self.get_precedence(ch)
-                    < self.get_precedence(stack[-1])
-                    and stack[-1] != ")"
-                ):
-                    prefix += stack.pop()
-
-                # Push the current operator onto the stack
-                stack.append(ch)
-
-        # Pop any remaining operators from the stack and add them to the
-        # prefix string
-        while stack:
-            prefix += stack.pop()
-
-        # Reverse the prefix string to get the final result
-        return prefix[::-1]
-
-
-# Example from the problem statement
-print(Solution().convert_infix_to_prefix("(7-8/3)*(5/2-6)"))   # *-7/83-/526
-
-# Edge cases
-print(Solution().convert_infix_to_prefix("a+b"))                # +ab
-print(Solution().convert_infix_to_prefix("a+b*c"))              # +a*bc
-print(Solution().convert_infix_to_prefix("(a+b)*c"))            # *+abc
-print(Solution().convert_infix_to_prefix("a+b+c"))              # ++abc
-print(Solution().convert_infix_to_prefix("(a+b)*(c-d)"))        # *+ab-cd
-print(Solution().convert_infix_to_prefix("a*(b+c)"))            # *a+bc
-```
-
-```java run
-import java.util.*;
-
-public class Main {
-    static class Solution {
-
-        // Function to check if the character is an operator
-        private boolean isOperator(char ch) {
-            return (!Character.isLetter(ch) && !Character.isDigit(ch));
-        }
-
-        // Function to get the priority of operators
-        private int getPrecedence(char operator) {
-
-            // Assign precedence values to different operators
-            if (operator == '^') {
-                return 3;
-            } else if (operator == '*' || operator == '/') {
-                return 2;
-            } else if (operator == '+' || operator == '-') {
-                return 1;
-            }
-
-            // Default value for unknown operators
-            return -1;
-        }
-
-        public String convertInfixToPrefix(String infix) {
-
-            // Stack to hold operators and parentheses
-            Stack<Character> stack = new Stack<>();
-
-            // Final prefix expression
-            StringBuilder prefix = new StringBuilder();
-            String reversedInfix = new StringBuilder(infix)
-                .reverse()
-                .toString();
-
-            // Reverse the infix string for easier processing
-
-            for (char ch : reversedInfix.toCharArray()) {
-
-                // If the character is not an operator or parentheses,
-                // add it to the prefix string
-                if (!isOperator(ch) && ch != ')' && ch != '(') {
-                    prefix.append(ch);
-                }
-
-                // If the character is a closing parentheses, push it
-                // onto the stack
-                else if (ch == ')') {
-                    stack.push(ch);
-                }
-
-                // If the character is an opening parentheses, pop
-                // operators from the stack and add them to the prefix
-                // string until a closing parentheses is encountered
-                else if (ch == '(') {
-                    while (!stack.empty() && stack.peek() != ')') {
-                        prefix.append(stack.peek());
-                        stack.pop();
-                    }
-
-                    // Remove the closing parentheses from the stack
-                    if (!stack.empty() && stack.peek() == ')') {
-                        stack.pop();
-                    }
-                }
-
-                // If the character is an operator, compare its
-                // precedence with the top of the stack and add higher
-                // precedence operators to the prefix string
-                else {
-                    while (
-                        !stack.empty() &&
-                        getPrecedence(ch) < getPrecedence(stack.peek()) &&
-                        stack.peek() != ')'
-                    ) {
-                        prefix.append(stack.peek());
-                        stack.pop();
-                    }
-
-                    // Push the current operator onto the stack
-                    stack.push(ch);
-                }
-            }
-
-            // Pop any remaining operators from the stack and add them to the
-            // prefix string
-            while (!stack.empty()) {
-                prefix.append(stack.peek());
-                stack.pop();
-            }
-
-            // Reverse the prefix string to get the final result
-            return prefix.reverse().toString();
-        }
-    }
-
-    public static void main(String[] args) {
-        // Example from the problem statement
-        System.out.println(new Solution().convertInfixToPrefix("(7-8/3)*(5/2-6)"));
-        // *-7/83-/526
-
-        // Edge cases
-        System.out.println(new Solution().convertInfixToPrefix("a+b"));          // +ab
-        System.out.println(new Solution().convertInfixToPrefix("a+b*c"));        // +a*bc
-        System.out.println(new Solution().convertInfixToPrefix("(a+b)*c"));      // *+abc
-        System.out.println(new Solution().convertInfixToPrefix("a+b+c"));        // ++abc
-        System.out.println(new Solution().convertInfixToPrefix("(a+b)*(c-d)")); // *+ab-cd
-        System.out.println(new Solution().convertInfixToPrefix("a*(b+c)"));      // *a+bc
-    }
-}
-```
-
-
-> **Complexity** — Time: **O(N)** | Space: **O(N)**. The reverse + flip is O(N), the Shunting-Yard is O(N), the final reverse is O(N).
-
-</details>
-<details>
-<summary><h2>Final Takeaway</h2></summary>
-
-
-Six conversions, two algorithms (one for postfix/prefix scans, one Shunting-Yard for infix), one stack each. The matrix:
-
-| From → To | Strategy |
-|---|---|
-| **Postfix → Prefix** | scan L→R, combine `op + a + b` |
-| **Postfix → Infix**  | scan L→R, combine `(a + op + b)` |
-| **Prefix → Postfix** | scan R→L, combine `a + b + op` |
-| **Prefix → Infix**   | scan R→L, combine `(a + op + b)` |
-| **Infix → Postfix**  | Shunting-Yard (one operator stack + output buffer) |
-| **Infix → Prefix**   | reverse + flip brackets, infix→postfix, reverse |
-
-Three lessons:
-
-1. **Operand order is the trap.** Postfix scans L→R: first pop = right operand. Prefix scans R→L: first pop = left operand. Get this wrong and `+`/`*` appear correct while `-`/`/` silently produce wrong answers. Triple-check the order in every implementation.
-2. **Right-associativity is `^`'s special.** Standard Shunting-Yard uses `>=` for the precedence comparison (left-associative). For right-associative operators, switch to strict `>` so an incoming `^` doesn't flush the `^` already on the stack — that's what makes `2^3^2` parse as `2^(3^2)`.
-3. **Reverse + flip is a free conversion.** Going infix → prefix without writing a new algorithm is one of the most elegant tricks in compiler design. Reversing the string changes the scan direction; flipping brackets re-aligns parenthesisation; running infix→postfix on the reversed string and reversing the result lands you in prefix.
-
-> *Coming up — we leave expression parsing and shift to **stack as a problem-solving pattern**. Lessons 7–11 cover five recurring shapes that appear in interview questions and production code: reversal, previous/next closest occurrence, sequence validation, and linear evaluation. Each one uses a stack as the *thinking tool* — a way to remember "the most recent thing not yet resolved" — and once you internalise the pattern, the solutions write themselves.*
-
-</details>
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
-
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
-
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
-
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
-
-<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
-<!--       Guidance: bulleted list of gotchas -->
-
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
-
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
-
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
-
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
-
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
-
-<!-- TODO: Final Takeaway — missing, needs to be written -->
-<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->
+## Sources & Verify
+
+- **Edsger Dijkstra** — the shunting-yard algorithm (1961); **Sedgewick & Wayne**, *Algorithms* §1.3 — Dijkstra's two-stack expression evaluation and infix-to-postfix conversion.
+- **Aho, Lam, Sethi & Ullman**, *Compilers* — operator-precedence parsing, of which shunting-yard is the classic stack form.
+- The conversion (`2 + 3 * 4` → `2 3 4 * +`), the parenthesis effect (`( 2 + 3 ) * 4` → `2 3 + 4 *`), and the full convert-then-evaluate pipeline (→ 14 and 20) all come from the runnable blocks above (deterministic) — re-run to verify.

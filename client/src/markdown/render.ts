@@ -476,6 +476,11 @@ interface RunnableTabNode {
   viz?: string;
   vizRoot?: string;
   vizCase?: string;
+  // ADR-0024 — `viz-kind=<name>` is the bespoke-renderer dispatch axis: it picks
+  // *which* chrome wraps the diagram (`stack`, `queue`, `heap`, `trie`, …) on top
+  // of whatever layout `viz=` selected. When omitted, HeapToGraph infers from the
+  // root object's shape + locals; explicit hints win.
+  vizKind?: string;
 }
 
 // True when a code fence should join a tab group. Runnable languages still
@@ -513,15 +518,20 @@ const remarkGroupRunnable: Plugin<[], Root> = () => (tree) => {
           const lang = resolveLanguage(sibling.lang ?? null)!;
           const sLang = sibling.lang ?? "";
           const sMeta = typeof sibling.meta === "string" ? sibling.meta : "";
-          const isPy = /^python/i.test(sLang);
+          // `viz=` is honoured on Python AND Java fences — both have a working tracer
+          // (PythonTracer.wrap / JvmTracer.wrap). Kotlin / Scala fences still parse the
+          // attribute but the modal's `wrapForTrace` routes them through the Java
+          // harness; chapters wanting that need an explicit decision.
+          const canViz = /^(python|java)/i.test(sLang);
           tabs.push({
             language: sLang,
             languageLabel: lang.label,
             source: sibling.value,
             runnable: lang.runnable,
-            viz: isPy ? (parseMetaKv(sMeta, "viz") ?? undefined) : undefined,
-            vizRoot: isPy ? (parseMetaKv(sMeta, "viz-root") ?? undefined) : undefined,
-            vizCase: isPy ? (parseMetaKv(sMeta, "viz-case") ?? undefined) : undefined,
+            viz: canViz ? (parseMetaKv(sMeta, "viz") ?? undefined) : undefined,
+            vizRoot: canViz ? (parseMetaKv(sMeta, "viz-root") ?? undefined) : undefined,
+            vizCase: canViz ? (parseMetaKv(sMeta, "viz-case") ?? undefined) : undefined,
+            vizKind: canViz ? (parseMetaKv(sMeta, "viz-kind") ?? undefined) : undefined,
           });
           j++;
         }
@@ -532,6 +542,80 @@ const remarkGroupRunnable: Plugin<[], Root> = () => (tree) => {
           first.data = { ...(first.data ?? {}), runnableTabs: tabs };
           out.push(first);
           i = j;
+          continue;
+        }
+      }
+      out.push(parent.children[i]);
+      i++;
+    }
+    parent.children = out;
+    for (const child of parent.children) {
+      if (
+        child &&
+        typeof child === "object" &&
+        "children" in (child as object)
+      ) {
+        walk(child as { children?: unknown[] });
+      }
+    }
+  };
+  walk(tree as { children?: unknown[] });
+};
+
+// ---- Trace-group merge --------------------------------------------------
+//
+// Adjacent ```kotlin trace / ```scala trace fences that immediately follow a
+// ```java trace fence are absorbed into the java node as `traceCompanions`
+// and removed from the tree. The codeHandler then encodes the companions into
+// `data-companions` on the `traced-code-block` placeholder so `TracedCodeBlock`
+// can render language-switching tabs with a `LanguageLockBanner` for the
+// source-only languages (Kotlin, Scala).
+
+interface TraceCompanionNode {
+  language: string;
+  source: string;
+}
+
+const isJavaTrace = (node: {
+  type: string;
+  lang?: string | null;
+  meta?: string | null;
+}) =>
+  node.type === "code" &&
+  /^java$/i.test(node.lang ?? "") &&
+  /\btrace\b/.test(typeof node.meta === "string" ? node.meta : "");
+
+const isCompanionTrace = (node: {
+  type: string;
+  lang?: string | null;
+  meta?: string | null;
+}) =>
+  node.type === "code" &&
+  (/^kotlin$/i.test(node.lang ?? "") || /^scala$/i.test(node.lang ?? "")) &&
+  /\btrace\b/.test(typeof node.meta === "string" ? node.meta : "");
+
+const remarkGroupTrace: Plugin<[], Root> = () => (tree) => {
+  const walk = (parent: { children?: unknown[] } | null) => {
+    if (!parent || !Array.isArray(parent.children)) return;
+    const out: unknown[] = [];
+    let i = 0;
+    while (i < parent.children.length) {
+      const node = parent.children[i] as Code & {
+        data?: Record<string, unknown>;
+      };
+      if (isJavaTrace(node)) {
+        const companions: TraceCompanionNode[] = [];
+        let j = i + 1;
+        while (j < parent.children.length) {
+          const sibling = parent.children[j] as Code;
+          if (!isCompanionTrace(sibling)) break;
+          companions.push({ language: sibling.lang ?? "", source: sibling.value });
+          j++;
+        }
+        if (companions.length > 0) {
+          node.data = { ...(node.data ?? {}), traceCompanions: companions };
+          out.push(node);
+          i = j; // skip the absorbed companion nodes
           continue;
         }
       }
@@ -710,22 +794,36 @@ const codeHandler = (state: State, node: Code): Element | undefined => {
   const runRequested = /\brun\b/.test(meta);
   const traceRequested = /\btrace\b/.test(meta);
 
-  // ```python trace  → step-through visualisation placeholder.
+  // ```python trace  / ```java trace  → step-through visualisation placeholder.
   // Server-side runs the code unchanged via /api/run; the client wraps it in a
-  // sys.settrace harness and parses the trace from stdout. Python only in v1.
+  // language-specific tracer harness (PythonTracer / JvmTracer) and parses the
+  // marker-delimited trace from stdout. Slice 3: Python + Java both supported.
+  //
+  // Slice 7: adjacent ```kotlin trace / ```scala trace fences absorbed by
+  // remarkGroupTrace are encoded as `data-companions` on the java placeholder —
+  // `TracedCodeBlock` renders them as source-only language-switching tabs.
   if (traceRequested && node.lang) {
     const lang = resolveLanguage(node.lang);
-    if (lang && /^python/i.test(node.lang)) {
+    const isTracedLang = /^python/i.test(node.lang) || /^java$/i.test(node.lang);
+    if (lang && isTracedLang) {
+      const companions =
+        (node.data?.traceCompanions as TraceCompanionNode[] | undefined) ?? [];
+      const properties: Record<string, string | string[]> = {
+        className: ["traced-code-block"],
+        "data-lang": node.lang,
+        "data-source": encodeURIComponent(node.value),
+      };
+      if (companions.length > 0) {
+        properties["data-companions"] = encodeURIComponent(
+          JSON.stringify(companions),
+        );
+      }
       return {
         type: "element",
         tagName: "div",
         // `traced-code-block` is the placeholder (mirrors `mermaid-block`); the mounted Scala.js
         // component renders its own `traced-code` root inside so CSS rules don't apply twice.
-        properties: {
-          className: ["traced-code-block"],
-          "data-lang": node.lang,
-          "data-source": encodeURIComponent(node.value),
-        },
+        properties,
         children: [],
       };
     }
@@ -746,12 +844,14 @@ const codeHandler = (state: State, node: Code): Element | undefined => {
   if (runRequested && node.lang) {
     const lang = resolveLanguage(node.lang);
     if (lang && lang.runnable) {
-      // `viz=` / `viz-root=` opt a lone Python runnable fence into the Visualise
-      // button (ADR-0018). Grouped fences carry these per-tab via runnableTabs.
-      const isPy = /^python/i.test(node.lang);
-      const viz = isPy ? parseMetaKv(meta, "viz") : null;
-      const vizRoot = isPy ? parseMetaKv(meta, "viz-root") : null;
-      const vizCase = isPy ? parseMetaKv(meta, "viz-case") : null;
+      // `viz=` / `viz-root=` opt a lone Python OR Java runnable fence into the
+      // Visualise button (ADR-0018 / ADR-0021). Grouped fences carry these per-tab
+      // via runnableTabs. Kotlin / Scala fall back to source-only display.
+      const canViz = /^(python|java)/i.test(node.lang);
+      const viz = canViz ? parseMetaKv(meta, "viz") : null;
+      const vizRoot = canViz ? parseMetaKv(meta, "viz-root") : null;
+      const vizCase = canViz ? parseMetaKv(meta, "viz-case") : null;
+      const vizKind = canViz ? parseMetaKv(meta, "viz-kind") : null;
       const properties: Record<string, string | string[]> = {
         className: ["runnable-code"],
         "data-lang": node.lang,
@@ -761,6 +861,7 @@ const codeHandler = (state: State, node: Code): Element | undefined => {
       if (viz) properties["data-viz"] = viz;
       if (vizRoot) properties["data-viz-root"] = vizRoot;
       if (vizCase) properties["data-viz-case"] = vizCase;
+      if (vizKind) properties["data-viz-kind"] = vizKind;
       return {
         type: "element",
         tagName: "div",
@@ -840,6 +941,7 @@ export async function renderChapter(source: string): Promise<RenderResult> {
     .use(remarkRenderD2)
     .use(remarkGroupD2Slides)
     .use(remarkGroupRunnable)
+    .use(remarkGroupTrace)
     .use(remarkUnwrapImages)
     .use(remarkRewriteLikeC4Iframes)
     .use(remarkRehype, {

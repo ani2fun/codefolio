@@ -74,7 +74,6 @@ Place `start = 0` and step it by `2k` until `start >= n`. At each landing point,
 
 A direct port of the rules would split into three cases — full `2k` block, trailing `k..2k` chunk, trailing `<k` chunk — each with its own reversal call. The stride-plus-clamp version collapses all three into one loop. The cost stays `O(n)` time and `O(n)` extra space for the mutable character array; the win is structural, not asymptotic — fewer code paths means fewer places for off-by-one bugs.
 
-> 🖼 Diagram — Reversing the first k of every 2k block in abcdefghij — the highlighted cells are the windows that get reversed; the gaps (cd, gh) are stepped over entirely.
 ```d2
 direction: down
 
@@ -210,7 +209,7 @@ print(Solution().reverse_segments("abcdef", 6))       # fedcba — k >= len reve
 print(Solution().reverse_segments("abcdef", 1))       # abcdef — k=1, each group of 1 reversed = unchanged
 ```
 
-```java run
+```java run viz=array viz-root=arr
 public class Main {
     static class Solution {
         private void reverseSegment(char[] arr, int left, int right) {
