@@ -68,7 +68,6 @@ Three Sum extends Two Sum with one extra element fixed. If we pick one element `
 
 That's exactly Duplicate Aware Two Sum, solvable in `O(n)` with two pointers on a sorted array.
 
-> 🖼 Diagram — Three Sum — outer loop fixes one element; inner two-pointer finds all valid pairs summing to the negative of that element.
 ```mermaid
 ---
 config:
@@ -378,7 +377,6 @@ No triplets for i=0.
 
 **i=1, arr[i]=-1, target=1, left=2, right=5:**
 
-> ▶ Interactive Diagram — Three Sum inner trace for `i = 1` (`arr[i] = -1`, inner target = 1) — converging pointers find both triplets in two stops.
 ```d3 widget=array-1d
 {
   "steps": [
@@ -625,6 +623,8 @@ No triplets for i=0.
   "title": "Three Sum inner trace — i = 1 (arr[i] = -1), target for inner = 1"
 }
 ```
+
+<p align="center"><strong>Three Sum inner trace for <code>i = 1</code> (<code>arr[i] = -1</code>, inner target = 1) — converging pointers find both triplets in two stops.</strong></p>
 
 | left | right | arr[l]+arr[r] | Action |
 |---|---|---|---|

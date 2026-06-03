@@ -6,8 +6,7 @@ Use this page as the chapter map for heap. The guides are ordered from fundament
 
 ## Start Here — the learning path
 
-- [Introduction to Heaps](/cortex/data-structures-and-algorithms/trees-heap-introduction-to-heaps)
-- [Array Implementation Of Heaps](/cortex/data-structures-and-algorithms/trees-heap-array-implementation-of-heaps)
+- [Heaps](/cortex/data-structures-and-algorithms/trees-heap-what-is-a-heap)
 - [Pattern: Top K Elements](/cortex/data-structures-and-algorithms/trees-heap-pattern-top-k-elements-pattern)
 - [Pattern: Comparator](/cortex/data-structures-and-algorithms/trees-heap-pattern-comparator-pattern)
 
@@ -32,8 +31,4 @@ Do these after the matching pattern in Start Here.
 
 Quick-recall and design material. Skim, don't study top to bottom.
 
-- [Memorize: Heap](/cortex/data-structures-and-algorithms/trees-heap-memorize)
-- [Memorize: Top K Elements](/cortex/data-structures-and-algorithms/trees-heap-pattern-top-k-elements-memorize)
-- [Memorize: Comparator](/cortex/data-structures-and-algorithms/trees-heap-pattern-comparator-memorize)
 - [Design a Heap](/cortex/data-structures-and-algorithms/trees-heap-design-a-heap-design-a-heap)
-- [Pattern Synthesis: Heap](/cortex/data-structures-and-algorithms/trees-heap-pattern-synthesis)

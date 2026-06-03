@@ -65,7 +65,6 @@ Same reversal pattern, **but the unit is a word, not a character**. Tokenise on 
 3. **Trim the trailing space.** The append-with-space loop leaves one extra space at the end; strip it.
 4. **Return the result string** — the words now appear in reversed order, each with its letters intact.
 
-> 🖼 Diagram — Reverse word order — push whole words, not characters; the stack reverses their order, while each word's internal letters are untouched. The unit of reversal is whatever you push.
 ```mermaid
 ---
 config:
@@ -273,7 +272,7 @@ Each word is pushed whole, so the stack reverses word order while every word's l
 
 </details>
 <details>
-<summary><h2>Final Takeaway</h2></summary>
+<summary><h2>Key Takeaway</h2></summary>
 
 
 Three lessons:

@@ -91,7 +91,6 @@ Pre-count `p`, then slide a window of size `len(p)` over `s`, recording every st
 
 Rather than comparing two frequency maps each step, this solution keeps a single running counter, `count`, of how many characters from `p` are still *needed* in the current window. It starts at `len(p)`. When the right pointer brings in a character that the window still needs (`frequency[char] > 0`), `count` drops by one; the character's required count in `frequency` is then decremented (and may go negative, recording a surplus). When the left pointer drops a character that was genuinely part of `p`'s demand (`frequency[char] >= 0` after restoring it), `count` goes back up. Whenever `count` hits `0`, every character of `p` is accounted for inside the window — `start` is a valid anagram index.
 
-> 🖼 Diagram — Anagram finder — slide a window of size len(p) across s, recording start indices wherever the window's frequency map matches p's. Same skeleton as Contains variation, just append-don't-return.
 ```mermaid
 ---
 config:
@@ -341,7 +340,7 @@ The `count` counter is what keeps this strictly `O(N)`: it replaces the `O(K)` m
 | No anagram | `s = "abcdef", p = "gh"` | `[]` | No length-`2` window matches `{g:1, h:1}`. |
 
 <details>
-<summary><h2>Final Takeaway</h2></summary>
+<summary><h2>Key Takeaway</h2></summary>
 
 
 The fixed-sized sliding window is the **moving** version of the counting pattern. The hash map keeps a running summary of the window's contents; the window's size never changes, so the map's overall workload is O(1) per shift. Three lessons worth memorising:

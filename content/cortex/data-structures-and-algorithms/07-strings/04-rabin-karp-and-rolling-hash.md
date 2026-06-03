@@ -1,331 +1,231 @@
 ---
 title: Rabin-Karp and Rolling Hash
-summary: Hash the pattern; slide a window over the text and hash each position. With the rolling-hash trick, each window-shift is O(1). Probabilistic O(n + m) average; the trick behind plagiarism detection and substring caching.
+summary: "Compare hashes, not characters. Hash the pattern once, roll a polynomial hash over each text window in O(1), and verify char-by-char only when hashes match. Expected O(n + m); the all-windows superpower behind plagiarism detection and duplicate-substring search."
 prereqs:
   - strings-string-matching-naive
-  - linear-structures-hash-table-introduction-to-hash-tables
+  - linear-structures-hash-table-what-is-a-hash-table
 ---
 
-# 4. Rabin-Karp and Rolling Hash
+## Why It Exists
 
-## The Hook
+[Naive](/cortex/data-structures-and-algorithms/strings-string-matching-naive), [KMP](/cortex/data-structures-and-algorithms/strings-kmp), and [Z](/cortex/data-structures-and-algorithms/strings-z-algorithm) all compare *characters*. Rabin-Karp compares *numbers*: hash the pattern to a single integer, then slide a window over the text and compare each window's hash to the pattern's. A hash match is a *candidate* — you confirm it with a quick character check, because different strings can hash alike.
 
-The naive substring comparison is `O(m)` per text position — you compare every character. The trick of Rabin-Karp: don't compare characters, **compare hashes**. Hash the pattern once. As you slide a window of length `m` over the text, maintain a rolling hash of the window. At each position, compare the window's hash against the pattern's. If equal, *verify* with a character-by-character comparison (because hash collisions exist). If unequal, the substring is definitely not a match — skip in `O(1)`.
+The catch that makes it practical is the **rolling hash**: when the window slides one position, you don't re-hash all `m` characters — you update the hash in `O(1)` by removing the departing character and folding in the arriving one. That gives expected `O(n + m)`. And because matching is now "does this number appear in my set of hashes?", Rabin-Karp does something KMP and Z can't do cheaply: search for **many patterns at once**, or find **any repeated substring** — just hash every window and look for collisions. That's the engine behind plagiarism detection and duplicate-block finding.
 
-The win is the **rolling hash**: updating the window's hash from position `i` to position `i + 1` doesn't require rehashing all `m` characters. With a polynomial hash function, you remove the contribution of the leaving character and add the contribution of the entering character — both `O(1)`.
+## See It Work
 
-For random text, average time is `O(n + m)`. Worst case (adversarial collisions) is `O(nm)`, same as naive. In practice, with a good hash and a large prime modulus, the probability of any false match is around `m / p` (where `p` is the modulus, often `10⁹+`) — vanishingly small.
+Hash the pattern and the first window with a polynomial hash `Σ c · BASE^k mod P`. Then roll: subtract the leaving character's contribution, multiply by `BASE`, add the entering character — all mod a large prime. On a hash match, verify.
 
-This chapter covers the rolling hash, the algorithm, and where Rabin-Karp shines (multiple-pattern matching, plagiarism detection, fingerprinting).
-
----
-
-## Table of contents
-
-1. [Polynomial hashing](#polynomial-hashing)
-2. [The rolling-hash trick](#the-rolling-hash-trick)
-3. [The Rabin-Karp algorithm](#the-rabin-karp-algorithm)
-4. [Implementation](#implementation)
-5. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
-6. [Production reality](#production-reality)
-7. [Practice ladder](#practice-ladder)
-8. [Cross-links](#cross-links)
-9. [Final takeaway](#final-takeaway)
-
-***
-
-# Polynomial Hashing
-
-A **polynomial hash** of a string `S = s_0 s_1 … s_{m-1}` is:
-
-```
-h(S) = (s_0 · b^(m-1) + s_1 · b^(m-2) + … + s_{m-1} · b^0)  mod p
-```
-
-where `b` is a base (often 31, 53, or 257) and `p` is a large prime (often `10⁹+7` or `2⁶¹ − 1`).
-
-Two practical considerations:
-
-- **Base.** Pick `b` larger than the alphabet so different characters hash to different values. For ASCII (256 chars), `b ≥ 257`. For lowercase only (26 chars), `b ≥ 27`.
-- **Modulus.** Pick a prime large enough that collisions are rare. `10⁹ + 7` is the competitive-programming default. For higher security, use `2⁶¹ − 1` (a Mersenne prime) or *two* hashes with different primes (drastically reduces collision chance).
-
-***
-
-# The rolling-hash trick
-
-Window from position `i` to `i + m - 1` hashes to:
-
-```
-h_i = s_i · b^(m-1) + s_{i+1} · b^(m-2) + … + s_{i+m-1} · b^0
-```
-
-Window from position `i + 1` to `i + m`:
-
-```
-h_{i+1} = s_{i+1} · b^(m-1) + s_{i+2} · b^(m-2) + … + s_{i+m} · b^0
-       = (h_i − s_i · b^(m-1)) · b + s_{i+m}
-```
-
-Subtract the leaving character (multiplied by `b^(m-1)` to align), shift left by `b`, add the new character. `O(1)` arithmetic operations (with modular reduction).
-
-***
-
-# The Rabin-Karp algorithm
-
-**Average cost.** `O(n + m)`. **Worst case.** `O(nm)` (every hash collides; verify always runs). In practice with a 10⁹ prime, false collisions are vanishingly rare.
-
-***
-
-# Implementation
-
-```python run viz=array viz-root=matches
-def rabin_karp(T, P):
-    n, m = len(T), len(P)
-    if m > n: return []
-    if m == 0: return list(range(n + 1))
-
-    b = 257
-    p = 10**9 + 7
-
-    p_hash = 0; t_hash = 0; bm = 1
-    for i in range(m):
-        p_hash = (p_hash * b + ord(P[i])) % p
-        t_hash = (t_hash * b + ord(T[i])) % p
-        if i < m - 1:
-            bm = (bm * b) % p
-
-    matches = []
+```python run
+BASE, MOD = 256, 1_000_000_007
+def rabin_karp(text, pattern):
+    n, m = len(text), len(pattern)
+    if m > n:
+        return []
+    high = pow(BASE, m - 1, MOD)                      # BASE^(m-1): weight of the leaving char
+    hp = ht = 0
+    for i in range(m):                                # hash the pattern and the first window
+        hp = (hp * BASE + ord(pattern[i])) % MOD
+        ht = (ht * BASE + ord(text[i])) % MOD
+    hits = []
     for i in range(n - m + 1):
-        if p_hash == t_hash and T[i:i + m] == P:               # verify
-            matches.append(i)
-        if i < n - m:
-            t_hash = ((t_hash - ord(T[i]) * bm) * b + ord(T[i + m])) % p
-            if t_hash < 0:
-                t_hash += p
-    return matches
+        if hp == ht and text[i:i + m] == pattern:     # hash match -> VERIFY (collisions happen)
+            hits.append(i)
+        if i < n - m:                                 # roll the window in O(1)
+            ht = ((ht - ord(text[i]) * high) * BASE + ord(text[i + m])) % MOD
+    return hits
 
-
-if __name__ == "__main__":
-    print(f"matches: {rabin_karp('ababcababcabcabc', 'abc')}")
-    print(f"matches: {rabin_karp('AABAACAADAABAABA', 'AABA')}")
-    # Stress test against naive
-    import random
-    random.seed(7)
-    for _ in range(100):
-        T = ''.join(random.choices('abc', k=200))
-        P = ''.join(random.choices('abc', k=5))
-        rk = rabin_karp(T, P)
-        # naive reference
-        naive = [i for i in range(len(T) - len(P) + 1) if T[i:i + len(P)] == P]
-        assert rk == naive, f"mismatch on T={T!r}, P={P!r}: rk={rk}, naive={naive}"
-    print("100 random tests pass")
+print(rabin_karp("abxabcabcaby", "abcaby"))           # [6]
 ```
 
-```java run viz=array viz-root=matches
+```java run
 import java.util.*;
-
 public class Main {
-    static List<Integer> rabinKarp(String T, String P) {
-        int n = T.length(), m = P.length();
-        List<Integer> matches = new ArrayList<>();
-        if (m > n) return matches;
-
-        long b = 257, mod = 1_000_000_007L;
-        long pHash = 0, tHash = 0, bm = 1;
+    static final long BASE = 256, MOD = 1_000_000_007L;
+    static List<Integer> rabinKarp(String text, String pattern) {
+        int n = text.length(), m = pattern.length();
+        List<Integer> hits = new ArrayList<>();
+        if (m > n) return hits;
+        long high = 1;
+        for (int i = 0; i < m - 1; i++) high = high * BASE % MOD;
+        long hp = 0, ht = 0;
         for (int i = 0; i < m; i++) {
-            pHash = (pHash * b + P.charAt(i)) % mod;
-            tHash = (tHash * b + T.charAt(i)) % mod;
-            if (i < m - 1) bm = (bm * b) % mod;
+            hp = (hp * BASE + pattern.charAt(i)) % MOD;
+            ht = (ht * BASE + text.charAt(i)) % MOD;
         }
-
         for (int i = 0; i <= n - m; i++) {
-            if (pHash == tHash && T.regionMatches(i, P, 0, m)) matches.add(i);
-            if (i < n - m) {
-                tHash = ((tHash - T.charAt(i) * bm) * b + T.charAt(i + m)) % mod;
-                if (tHash < 0) tHash += mod;
-            }
+            if (hp == ht && text.substring(i, i + m).equals(pattern)) hits.add(i);
+            if (i < n - m)
+                ht = (((ht - text.charAt(i) * high) % MOD + MOD) % MOD * BASE + text.charAt(i + m)) % MOD;
         }
-        return matches;
+        return hits;
     }
-
     public static void main(String[] args) {
-        System.out.println(rabinKarp("ababcababcabcabc", "abc"));
+        System.out.println(rabinKarp("abxabcabcaby", "abcaby"));   // [6]
     }
 }
 ```
 
-***
+Both print `[6]`. The pattern's hash is computed once; each of the `n - m + 1` windows costs `O(1)` to roll and compare, with a full character check only on a hash match. (Java subtracts the leaving term with an extra `+ MOD` before `% MOD` because Java's `%` can go negative — Python's stays non-negative.)
 
-# Edge cases and pitfalls
+## How It Works
 
-- **Negative modular arithmetic.** Subtracting can produce negative values. Add `mod` after the subtraction to renormalise; otherwise the hash drift is wrong.
-- **Modular overflow.** `tHash * b` can overflow 64-bit if not careful with the modulus. Use `__int128` in C++ for very-large primes, or split the modulus.
-- **Single hash is collision-prone for adversarial input.** A determined attacker can find collisions for any single fixed prime. Use *double hashing* (two distinct `(b, p)` pairs) for adversarial settings — collision probability becomes `(m / p)²`.
-- **Empty pattern.** Conventionally matches every position. Handle as a separate case to avoid divide-by-zero or empty-loop weirdness.
-- **The `bm` precompute.** `bm = b^(m-1) mod p`. Off-by-one: if you use `bm = b^m`, the rolling-hash subtraction is wrong.
-- **Choice of `p` and `b`.** Standard combinations: `(b=31, p=10⁹+9)`, `(b=53, p=998244353)`, `(b=257, p=10⁹+7)`. For two-hash setups, use two of these.
+A polynomial hash treats the window as a base-`BASE` number mod `P`. Sliding the window is arithmetic, not re-reading:
 
-***
-
-# Production reality
-
-- **Plagiarism detection.** MOSS (the academic plagiarism checker), TurnItIn, and similar tools fingerprint documents using rolling hashes. Each document's fingerprint is the set of "winning" hashes from rolling windows. Two documents with overlapping fingerprints are flagged for further inspection.
-- **Git's content-defined chunking** uses rolling hashes (FastCDC) to split files into variable-sized chunks. The same chunk recurring across files (e.g., a header in many source files) hashes the same way, allowing deduplication.
-- **rsync.** The `rsync` algorithm uses rolling hashes (the Adler-32 checksum) to identify which blocks of a file have changed and need transmission, avoiding sending the whole file.
-- **Substring caching.** A web framework cacheing fragments of HTML can use rolling hashes to identify "the user just edited the second of seven sections; the other six are unchanged". Saves recompilation work.
-- **Bioinformatics.** Sliding window analysis of DNA sequences (counting GC content, finding tandem repeats) uses rolling hashes to summarise window contents.
-- **`std::hash` is not a rolling hash** — the C++ STL's hash is for whole strings, not for window-sliding. Implementations of Rabin-Karp ship their own hash function.
-
-***
-
-# Practice ladder
-
-1. **Implement Rabin-Karp.** Stress-test against naive on random inputs.
-   > *Hint:* the chapter's algorithm. Pay attention to the rolling-update arithmetic.
-
-2. **Repeated DNA Sequences** ([LeetCode 187](https://leetcode.com/problems/repeated-dna-sequences/)) — find all 10-character substrings of a DNA string that occur more than once.
-   > *Hint:* rolling hash over windows of size 10. Use a hash map to track which hashes have been seen.
-
-3. **Longest Duplicate Substring** ([LeetCode 1044](https://leetcode.com/problems/longest-duplicate-substring/)) — find the longest substring of `s` that appears at least twice.
-   > *Hint:* binary search on the length `L`. For each `L`, use rolling-hash to find any duplicate substring of length `L` in `O(n)`. Total `O(n log n)`.
-
-4. **Distinct Substrings.** Count the number of distinct substrings of a string in `O(n²)`.
-   > *Hint:* for each starting position, generate all rolling hashes; insert into a hash set. (Suffix arrays/automata give `O(n)` solutions; rolling-hash is the simpler `O(n²)` baseline.)
-
-5. **Find First Repeated Substring of Length K.** Given `s` and `k`, find any substring of length `k` that appears twice.
-   > *Hint:* exactly the rolling-hash + hash-set pattern from LeetCode 187, generalised.
-
-***
-
-# Memorize
-
-The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Rolling hash is the trick that makes "many substring queries" tractable — it shows up everywhere from plagiarism detection to Git's chunking.
-
-## Quick recall
-
-Click any question to reveal the answer.
-
-<details>
-<summary><strong>Q:</strong> Time complexity of Rabin-Karp on average / worst case?</summary>
-
-**A:** Average `O(n + m)` for random text. Worst case `O(nm)` (every hash collides), same as naive — but exponentially unlikely with a large prime.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Rolling-hash recurrence for window shift?</summary>
-
-**A:** `h_{i+1} = (h_i − leave · b^(m-1)) · b + enter mod p`. `O(1)` per shift after initial setup.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Why do you still verify after a hash match?</summary>
-
-**A:** Hash collisions exist. A "candidate match" must be confirmed byte-by-byte to avoid false positives.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Standard prime and base for polynomial hashing?</summary>
-
-**A:** Prime: `10⁹ + 7` or `10⁹ + 9`. Base: `31`, `53`, or `257` (just larger than the alphabet). For adversarial security, use double hashing (two `(b, p)` pairs).
-
-</details>
-<details>
-<summary><strong>Q:</strong> Why is single hashing insecure for adversarial input?</summary>
-
-**A:** With a known fixed prime, an attacker can engineer collisions. Mitigation: random seed (HashDoS defence) or double hashing (collision probability `(m/p)²` instead of `m/p`).
-
-</details>
-<details>
-<summary><strong>Q:</strong> Modular subtraction gotcha?</summary>
-
-**A:** `(h - x * b_pow) mod p` can go negative. Add `p` after the subtraction to renormalise into `[0, p)`.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Where does rolling hash beat KMP / Z?</summary>
-
-**A:** **Multiple patterns at once** (compute candidate hashes, check against a hash set). **Document fingerprinting** (set of rolling hashes is the document's signature).
-
-</details>
-<details>
-<summary><strong>Q:</strong> Production application — Git's content-defined chunking?</summary>
-
-**A:** Variable-sized file chunks split at rolling-hash boundaries. Identical chunks across files dedupe automatically. FastCDC is the algorithm.
-
-</details>
-
-## Code template
-
-```python
-def rabin_karp(T, P):
-    n, m = len(T), len(P)
-    if m > n: return []
-    b, p = 257, 10**9 + 7
-    p_hash = t_hash = 0
-    bm = 1                                            # b^(m-1) mod p
-    for i in range(m):
-        p_hash = (p_hash * b + ord(P[i])) % p
-        t_hash = (t_hash * b + ord(T[i])) % p
-        if i < m - 1: bm = (bm * b) % p
-
-    matches = []
-    for i in range(n - m + 1):
-        if p_hash == t_hash and T[i:i + m] == P:      # verify on hash hit
-            matches.append(i)
-        if i < n - m:
-            t_hash = ((t_hash - ord(T[i]) * bm) * b + ord(T[i + m])) % p
-            if t_hash < 0: t_hash += p                # renormalise after subtraction
-    return matches
+```d2
+direction: right
+window: "current window hash ht (mod P)\ne.g. hash of text[i..i+m-1]" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
+roll: "ROLL to next window in O(1):\n1. subtract leaving char: ht - text[i]*BASE^(m-1)\n2. shift left: * BASE\n3. add entering char: + text[i+m]\n(all mod P)" {style.fill: "#fde68a"; style.stroke: "#d97706"}
+cmp: "compare ht to pattern hash hp" {style.fill: "#f3e8ff"; style.stroke: "#9333ea"}
+verify: "hp == ht?  VERIFY char-by-char\n(hashes can collide -> false candidate)" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
+window -> roll
+roll -> cmp
+cmp -> verify
 ```
 
-## Pattern triggers
+<p align="center"><strong>The rolling update turns an O(m) re-hash into O(1) arithmetic: drop the leaving character's weighted contribution, shift, add the new character. A hash match is only a candidate — verify, because collisions are possible.</strong></p>
 
-- **"Find one pattern in one text"** → KMP / Z / `str.find` is simpler
-- **"Find any of K patterns in a text"** → Rabin-Karp with K hashes (or Aho-Corasick)
-- **"Find duplicate substrings of fixed length"** → rolling hash + hash set
-- **"Longest duplicate substring"** → binary search + rolling hash, `O(n log n)`
-- **"Document fingerprinting / plagiarism detection"** → rolling-hash signatures
-- **"Content-defined chunking" (deduplication, rsync, Git)** → rolling hash boundary detection
-- **"DNA tandem-repeat / windowed analysis"** → rolling hash over the genome
-- **Adversarial-input system** → double hashing or cryptographic hash
-- **Modular arithmetic going negative** → add `p` after every subtraction
+Three load-bearing facts:
 
-***
+- **Verification is non-negotiable for correctness.** Equal hashes do *not* guarantee equal strings — the hash maps many strings to each value. So a hash match triggers an `O(m)` character check. Skip it and you have a **Monte Carlo** algorithm (fast, but may report false matches); keep it and you have a **Las Vegas** algorithm (always correct, expected-fast) — the exact distinction from [randomized algorithms](/cortex/data-structures-and-algorithms/algorithms-by-strategy-randomized-algorithms-introduction-to-randomized-algorithms).
+- **Expected `O(n + m)`, worst `O(n · m)`.** With a good hash, collisions are rare, so verification fires `O(1)` times overall and the scan is linear. But a pathological input (or an adversary who crafts colliding strings) can make every window collide, forcing a verify at each — back to naive's quadratic. A large prime modulus and a random base make that astronomically unlikely.
+- **The superpower is many-at-once.** Hash every length-`m` window into a set, and membership tests answer "does *any* of these patterns occur?" or "does any substring repeat?" in one pass — something KMP/Z would need a separate run per pattern for. This is why plagiarism detectors and `rsync`-style block matchers use rolling hashes.
 
-# Cross-links
+> **Key takeaway.** Rabin-Karp compares hashes: hash the pattern, roll a polynomial hash over each window in `O(1)` (subtract leaving · `BASE^{m-1}`, ×`BASE`, add entering, mod a large prime), and **verify char-by-char on a hash match**. Expected `O(n + m)`, worst `O(n·m)`. Verify → Las Vegas (correct); skip → Monte Carlo (may false-match). Its edge over KMP/Z is hashing *all* windows for multi-pattern and repeated-substring search.
 
-- **Prerequisites:** [Naive String Matching](/cortex/data-structures-and-algorithms/strings-string-matching-naive), [Hash Table](/cortex/data-structures-and-algorithms/linear-structures-hash-table-introduction-to-hash-tables).
-- **Sibling:** [KMP](/cortex/data-structures-and-algorithms/strings-kmp), [Z-Algorithm](/cortex/data-structures-and-algorithms/strings-z-algorithm).
-- **Production deep-dive:** [Git's Merkle DAG](/cortex/data-structures-and-algorithms/dsa-in-real-systems-git-merkle-dag) — *stub* — Git's chunking uses rolling hash.
+## Trace It
 
-***
+The verification step looks like a paranoid afterthought — surely if two strings hash to the same value, they're equal? They are not, and a weak hash makes that failure easy to see.
 
-# Final takeaway
+**Predict before you run:** use a deliberately weak hash — the *sum* of character codes. Search `"bcad"` for `"ad"` and report every window whose hash equals the pattern's, **without** the character check. Does it find only the real `"ad"` at index 2, or something extra?
 
-Rabin-Karp reduces string matching to *hash comparison*. Three patterns to internalise:
+```python run
+def sum_hash_search(text, pattern, verify):
+    m = len(pattern)
+    target = sum(ord(c) for c in pattern)             # weak hash: sum of char codes
+    hits = []
+    for i in range(len(text) - m + 1):
+        window = text[i:i + m]
+        if sum(ord(c) for c in window) == target:     # hash match
+            if not verify or window == pattern:        # only confirm if verify=True
+                hits.append(i)
+    return hits
 
-1. **Hash compare, then verify.** A hash match is a *candidate* match, not a confirmed one. Always verify byte-by-byte after a hash hit.
-2. **Rolling hash makes the slide O(1).** The polynomial-hash recurrence `h_{i+1} = (h_i − leave) · b + enter` is the entire optimisation.
-3. **Best for multiple patterns and fingerprinting.** Pure single-pattern matching is usually faster with KMP. Rabin-Karp wins when you're computing many hashes (multiple patterns, document fingerprints, deduplication chunks).
+print("hash('ad') =", ord('a') + ord('d'), " hash('bc') =", ord('b') + ord('c'))
+print("no verify :", sum_hash_search("bcad", "ad", verify=False))
+print("verify    :", sum_hash_search("bcad", "ad", verify=True))
+```
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+<details>
+<summary><strong>Reveal</strong></summary>
 
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
+Without verification you get `[0, 2]` — a **false match at index 0**, where the window is `"bc"`. The reason is a collision: `"ad"` hashes to `97 + 100 = 197`, and `"bc"` hashes to `98 + 99 = 197` — identical sums, different strings. A sum-of-codes hash is *permutation-blind* (any anagram collides) and has a tiny range, so collisions are everywhere. With the `verify` check, the index-0 candidate is rejected (`"bc" != "ad"`) and you correctly get `[2]`. This is exactly why real Rabin-Karp verifies: the hash is a *filter* that cheaply rules out most positions, not a proof of equality. A good polynomial hash with a large prime modulus makes collisions astronomically rare (so verification almost never fires), but "rare" is not "never" — drop the check and you've silently switched to a Monte Carlo algorithm that can lie. The hash narrows the search; the character comparison closes it.
 
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
+</details>
 
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
+## Your Turn
 
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
+**Find repeated substrings of length `k`** — the multi-window strength of rolling hashes (the basis of [Repeated DNA Sequences](https://leetcode.com/problems/repeated-dna-sequences/), LeetCode 187). Roll a hash across every length-`k` window, bucket by hash, and report substrings that recur (verifying within a bucket to dodge collisions).
 
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+```python run
+BASE, MOD = 256, 1_000_000_007
+def find_repeated(s, k):
+    n = len(s)
+    if k > n:
+        return []
+    high = pow(BASE, k - 1, MOD)
+    h = 0
+    for i in range(k):
+        h = (h * BASE + ord(s[i])) % MOD
+    seen, repeated = {}, set()
+    for i in range(n - k + 1):
+        w = s[i:i + k]
+        if h in seen and any(s[j:j + k] == w for j in seen[h]):   # verify within the bucket
+            repeated.add(w)
+        seen.setdefault(h, []).append(i)
+        if i < n - k:
+            h = ((h - ord(s[i]) * high) * BASE + ord(s[i + k])) % MOD
+    return sorted(repeated)
 
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+print(find_repeated("banana", 3))        # ['ana']
+print(find_repeated("abcabcabc", 3))     # ['abc', 'bca', 'cab']
+```
+
+```java run
+import java.util.*;
+public class Main {
+    static final long BASE = 256, MOD = 1_000_000_007L;
+    static List<String> findRepeated(String s, int k) {
+        int n = s.length();
+        TreeSet<String> repeated = new TreeSet<>();
+        if (k > n) return new ArrayList<>(repeated);
+        long high = 1;
+        for (int i = 0; i < k - 1; i++) high = high * BASE % MOD;
+        long h = 0;
+        for (int i = 0; i < k; i++) h = (h * BASE + s.charAt(i)) % MOD;
+        Map<Long, List<Integer>> seen = new HashMap<>();
+        for (int i = 0; i <= n - k; i++) {
+            String w = s.substring(i, i + k);
+            if (seen.containsKey(h))
+                for (int j : seen.get(h)) if (s.substring(j, j + k).equals(w)) { repeated.add(w); break; }
+            seen.computeIfAbsent(h, x -> new ArrayList<>()).add(i);
+            if (i < n - k)
+                h = (((h - s.charAt(i) * high) % MOD + MOD) % MOD * BASE + s.charAt(i + k)) % MOD;
+        }
+        return new ArrayList<>(repeated);
+    }
+    public static void main(String[] args) {
+        System.out.println(findRepeated("banana", 3));        // [ana]
+        System.out.println(findRepeated("abcabcabc", 3));     // [abc, bca, cab]
+    }
+}
+```
+
+Both print `['ana']` then `['abc', 'bca', 'cab']`. In `"banana"`, only `"ana"` recurs (indices 1 and 3); in `"abcabcabc"`, all three length-3 windows repeat. This is the move KMP and Z can't make in one pass — *every* window's fingerprint is available at once, so "what repeats?" is a hashmap lookup, not a fresh search per candidate.
+
+## Reflect & Connect
+
+- **Compare numbers, then confirm.** The hash is a cheap filter that rejects almost every position; the character check confirms the survivors. Equal hashes never *prove* equality — verification does.
+- **Rolling makes it linear.** Updating the hash in `O(1)` per shift (drop the weighted leaving char, shift, add the entering char) is the whole reason it beats re-hashing. Expected `O(n + m)`.
+- **Las Vegas vs Monte Carlo, concretely.** Verify on a hash match → always correct, expected-fast (Las Vegas). Trust the hash blindly → fast but occasionally wrong (Monte Carlo). Same code, one `if`.
+- **The all-windows superpower.** Hash every window into a set and you get multi-pattern search, duplicate-substring detection, and 2-D pattern matching essentially for free — the use cases [KMP](/cortex/data-structures-and-algorithms/strings-kmp)/[Z](/cortex/data-structures-and-algorithms/strings-z-algorithm) handle poorly.
+- **Pick the modulus and base well.** A large prime modulus and a *random* base make adversarial collisions astronomically unlikely — the same "randomize to defeat worst-case inputs" idea as randomized [hash tables](/cortex/data-structures-and-algorithms/linear-structures-hash-table-what-is-a-hash-table) resisting HashDoS. A tiny or fixed hash is exploitable.
+
+## Recall
+
+<details>
+<summary><strong>Q:</strong> What does Rabin-Karp compare, and why must it verify?</summary>
+
+**A:** It compares hashes of the pattern and each text window. Equal hashes are only a *candidate* — many strings share a hash (collisions) — so it confirms with an `O(m)` character check. Skipping verification makes it Monte Carlo (may report false matches).
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does the rolling hash update in O(1)?</summary>
+
+**A:** Subtract the leaving character's weighted contribution (`text[i] · BASE^{m-1}`), multiply by `BASE` (shift), add the entering character (`text[i+m]`), all mod a large prime. No re-reading of the window.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What are Rabin-Karp's expected and worst-case times?</summary>
+
+**A:** Expected `O(n + m)` (collisions rare, so verification fires `O(1)` times overall); worst `O(n·m)` when every window collides (pathological or adversarial input), forcing a verify at each position.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is a sum-of-character-codes hash a poor choice?</summary>
+
+**A:** It's permutation-blind (every anagram collides, e.g. `"ad"` and `"bc"` both sum to 197) and has a tiny range, so collisions are rampant. A polynomial hash with a large prime modulus is position-sensitive and collision-resistant.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What can Rabin-Karp do that KMP and Z cannot do cheaply?</summary>
+
+**A:** Search for *many* patterns at once, or find *any* repeated substring, in a single pass — by hashing every window into a set and testing membership. KMP/Z need a separate run per pattern.
+
+</details>
+
+## Sources & Verify
+
+- **CLRS** (Cormen, Leiserson, Rivest, Stein), *Introduction to Algorithms*, 3rd ed., §32.2 — the Rabin-Karp algorithm, the rolling polynomial hash, and its expected-time analysis.
+- **Karp & Rabin** (1987), "Efficient randomized pattern-matching algorithms", *IBM J. Res. Dev.* — the original, including the Monte Carlo / Las Vegas framing.
+- **LeetCode** 187 (Repeated DNA Sequences), 1044 (Longest Duplicate Substring), and 28 (substring search) are the canonical drills; the `[6]` match, the sum-hash collision `[0,2]`-vs-`[2]`, and the `['ana']` / `['abc','bca','cab']` repeats above come from the runnable blocks — re-run to verify.

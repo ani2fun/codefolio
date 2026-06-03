@@ -6,9 +6,7 @@ Use this page as the chapter map for queue. The guides are ordered from fundamen
 
 ## Start Here — the learning path
 
-- [Introduction To Queues](/cortex/data-structures-and-algorithms/linear-structures-queue-introduction-to-queues)
-- [Array Implementation Of Queues](/cortex/data-structures-and-algorithms/linear-structures-queue-array-implementation-of-queues)
-- [Linked List Implementation Of Queues](/cortex/data-structures-and-algorithms/linear-structures-queue-linked-list-implementation-of-queues)
+- [Queues](/cortex/data-structures-and-algorithms/linear-structures-queue-what-is-a-queue)
 
 ## Reference
 

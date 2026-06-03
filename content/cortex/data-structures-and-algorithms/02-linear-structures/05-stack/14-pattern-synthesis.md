@@ -48,8 +48,6 @@ To make this concrete, run the tree on one statement per pattern and confirm the
 
 So the key idea is: the *payload* narrows to one of three families — raw items, monotone values, or bracket-keyed context. Then the *pop trigger* — drain-all, value comparison, or closer token — plus the direction-or-action picks the exact pattern.
 
-> 🖼 Diagram — TODO: decision tree routing to the 5 stack patterns
-
 ---
 
 ## Pattern Comparison Table

@@ -1,273 +1,237 @@
 ---
 title: RCU and Hazard Pointers
-summary: How lock-free code reclaims memory safely. RCU defers freeing until every grace period passes; hazard pointers track per-thread "I'm reading this" markers. Both used in the Linux kernel and in user-space lock-free libraries.
+summary: "How lock-free code frees memory safely — the unsolved problem from the lock-free queue. Hazard pointers publish a per-thread 'I'm using this' marker so a node is freed only when no marker references it; RCU defers freeing until a grace period (all pre-existing readers finish). Both run the Linux kernel."
 prereqs:
   - concurrency-and-systems-cas-and-atomics
   - concurrency-and-systems-lock-free-queue
 ---
 
-# 4. RCU and Hazard Pointers
+## Why It Exists
 
-## The Hook
+The [lock-free queue](/cortex/data-structures-and-algorithms/concurrency-and-systems-lock-free-queue) left a loose end: after you dequeue a node, *when can you free it?* Another thread may have read that node's pointer a microsecond before you unlinked it, and it's about to dereference it. Free too early and that thread reads freed — possibly *reallocated* — memory: a **use-after-free**, and the root cause of the [ABA problem](/cortex/data-structures-and-algorithms/concurrency-and-systems-cas-and-atomics) (a freed node's address gets reused, fooling a CAS).
 
-You've built a lock-free queue with CAS. Enqueue and dequeue work correctly. But there's a problem: when do you `free` an old node?
+In a garbage-collected language this is the GC's job — it won't reclaim an object anyone can still reach. But in C, C++, or the kernel, *you* must reclaim manually *and* safely, without a stop-the-world GC. Two schemes dominate. **Hazard pointers**: each thread publishes the pointer it's currently dereferencing into a shared slot; before freeing a node, you scan every thread's slots and free only if no one is using it. **RCU (Read-Copy-Update)**: readers mark a lightweight "read-side critical section"; an updater unlinks the old node and then waits for a **grace period** — until every reader that *started before the unlink* has finished — after which no one can hold the old pointer, so freeing is safe. Both are everywhere in the Linux kernel and in lock-free libraries.
 
-If you free immediately upon dequeue, another thread might still be reading the node — *use after free*, undefined behaviour. If you never free, you have a memory leak. The lock-free programming community has two standard answers: **RCU** (Read-Copy-Update) and **hazard pointers**.
+## See It Work
 
-Both solve the same problem — *safe memory reclamation in lock-free contexts* — with different trade-offs:
+Hazard pointers in miniature: a reader publishes the node it holds; `retire` frees a node only if it isn't hazarded, else defers it for a later `scan`. (Single-threaded simulation for determinism; real implementations run this across threads with atomic slots.)
 
-- **RCU.** Defer freeing until every reader has passed a "quiescent point" (e.g., context-switched, or run another iteration of its main loop). Cheap reads (no per-node tracking), more expensive writes.
-- **Hazard pointers.** Each reader publishes a per-thread "I'm currently reading this pointer" marker. Writers scan all readers' markers before freeing; if a node's address appears, defer the free. More expensive reads, simpler reasoning.
+```python run
+class Node:
+    def __init__(self, value): self.value = value; self.freed = False
 
-The Linux kernel uses RCU pervasively. User-space lock-free libraries lean toward hazard pointers. Both are *the* answer to "how do you free memory in a lock-free environment".
+class Reclaimer:
+    def __init__(self):
+        self.hazards = set()                               # addresses threads have published
+        self.retired = []                                  # nodes waiting to be freed
+    def publish(self, node): self.hazards.add(id(node))    # a reader: "I'm using this node"
+    def clear(self, node): self.hazards.discard(id(node))  # ...done with it
+    def _free(self, node): node.freed = True; node.value = "<REUSED>"   # simulate free + reuse
+    def retire(self, node):                                # want to free node now
+        if id(node) in self.hazards:
+            self.retired.append(node); return "deferred"   # someone's using it -> wait
+        self._free(node); return "freed"
+    def scan(self):                                        # retry the deferred frees
+        keep = []
+        for n in self.retired:
+            if id(n) in self.hazards: keep.append(n)
+            else: self._free(n)
+        self.retired = keep
 
----
-
-## Table of contents
-
-1. [Why GC isn't the answer in C/C++](#why-gc-isnt-the-answer-in-c-c)
-2. [RCU](#rcu)
-3. [Hazard pointers](#hazard-pointers)
-4. [Comparison](#comparison)
-5. [Implementation sketch](#implementation-sketch)
-6. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
-7. [Production reality](#production-reality)
-8. [Cross-links](#cross-links)
-9. [Final takeaway](#final-takeaway)
-
-***
-
-# Why GC isn't the answer in C/C++
-
-A garbage-collected language solves this trivially: while any thread holds a reference, the GC won't free the node. Java's `ConcurrentLinkedQueue` works without explicit reclamation — the GC handles it.
-
-C, C++, and Rust don't have built-in tracing GC for shared structures. They rely on either:
-
-- Reference counting (`shared_ptr` in C++, `Arc` in Rust). Read overhead: every dereference touches the count. *Bad for lock-free hot paths.*
-- Manual reclamation strategies: RCU, hazard pointers, epoch-based reclamation.
-
-For lock-free *throughput-critical* code, manual is the default.
-
-***
-
-# RCU
-
-RCU (Read-Copy-Update) is the Linux kernel's preferred reclamation strategy for read-mostly data structures. The model:
-
-1. **Readers** access data without any explicit synchronisation. They might see slightly stale data — that's OK as long as they're internally consistent.
-2. **Writers** copy the data structure (or at least the affected portion), modify the copy, then atomically swap the pointer. The old version is *not freed immediately* — it's queued for reclamation.
-3. **Grace period.** A grace period elapses when *every* reader has passed a quiescent point. The kernel can detect this efficiently (preempt-disabled regions are RCU read-side critical sections; a context switch ends them). Once a grace period passes, the old version can safely be freed.
-
-The result: readers pay essentially nothing. Writers pay a "wait for grace period" cost (often milliseconds). Best for read-mostly: routing tables, configuration, kernel data structures with rare writes.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
----
-flowchart LR
-  R["Read (no lock, no atomic)"]
-  W["Writer: copy → modify → swap pointer"]
-  GP["Wait for grace period"]
-  F["Free old version"]
-  W --> GP --> F
-  style R fill:#bbf7d0,stroke:#16a34a
-  style F fill:#fef9c3,stroke:#f59e0b
+r = Reclaimer()
+x = Node(42)
+r.publish(x)                                               # a reader is holding x
+print(r.retire(x), x.freed)                                # deferred False  (can't free a hazarded node)
+r.clear(x)                                                 # reader finishes
+r.scan()
+print(x.freed)                                             # True  (now safe to free)
 ```
 
-<p align="center"><strong>RCU lifecycle: writers can't free old data immediately because readers might still hold references. They wait for a grace period — a window during which every existing reader has finished — before reclaiming.</strong></p>
+```java run
+import java.util.*;
+public class Main {
+    static class Node { Object value; boolean freed = false; Node(Object v) { value = v; } }
+    static class Reclaimer {
+        Set<Node> hazards = Collections.newSetFromMap(new IdentityHashMap<>());
+        List<Node> retired = new ArrayList<>();
+        void publish(Node n) { hazards.add(n); }           // "I'm using this"
+        void clear(Node n) { hazards.remove(n); }
+        void free(Node n) { n.freed = true; n.value = "<REUSED>"; }
+        String retire(Node n) { if (hazards.contains(n)) { retired.add(n); return "deferred"; } free(n); return "freed"; }
+        void scan() {
+            List<Node> keep = new ArrayList<>();
+            for (Node n : retired) { if (hazards.contains(n)) keep.add(n); else free(n); }
+            retired = keep;
+        }
+    }
+    public static void main(String[] args) {
+        Reclaimer r = new Reclaimer();
+        Node x = new Node(42);
+        r.publish(x);
+        System.out.println(r.retire(x) + " " + x.freed);   // deferred false
+        r.clear(x); r.scan();
+        System.out.println(x.freed);                       // true
+    }
+}
+```
 
-***
+Both print `deferred False`/`deferred false` then `True`/`true`. While a reader's hazard pointer references `x`, `retire` *refuses* to free it and queues it; once the reader clears its hazard and a later `scan` runs, the node is finally reclaimed. The node never gets freed out from under a live reader.
 
-# Hazard pointers
+## How It Works
 
-A hazard pointer is a per-thread *publication* of "the address I'm currently reading". Each reader has a slot in a global table; before dereferencing a pointer, the reader writes the pointer's address to its slot.
+Both schemes answer "is anyone still using this node?" — one by *publishing usage*, the other by *waiting out the readers*:
 
-When a writer wants to free a node, it scans the hazard-pointer table. If any thread's slot equals the node's address, the writer can't free yet — instead, it queues the node for delayed reclamation. Periodically, threads scan the queue and free nodes whose addresses are no longer hazardous.
+```d2
+direction: down
+problem: "RECLAMATION PROBLEM: a thread unlinks node X,\nbut another may still hold X's pointer.\nFree too early -> use-after-free / ABA." {style.fill: "#fecaca"; style.stroke: "#dc2626"}
+hp: "HAZARD POINTERS\nreader: publish(X) before dereferencing\nreclaimer: free X only if X is in NO thread's slot\n-> per-access cost, but BOUNDED retired memory" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
+rcu: "RCU (Read-Copy-Update)\nreader: cheap read-side critical section (no per-node marker)\nupdater: unlink X, then wait a GRACE PERIOD\n(all readers active at unlink time exit) -> free X\n-> readers nearly free, reclamation DEFERRED/batched" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
+problem -> hp
+problem -> rcu
+```
 
-***
+<p align="center"><strong>Hazard pointers make readers <em>announce</em> what they hold, so the reclaimer frees only unreferenced nodes (bounded memory, per-access cost). RCU makes readers cheap and instead <em>waits out</em> a grace period — until every reader that could have seen the old node has finished — then frees in a batch.</strong></p>
 
-# Comparison
+Three load-bearing facts:
 
-| | RCU | Hazard Pointers |
-|---|---|---|
-| Read cost | Zero (no atomic op) | One atomic write per pointer dereference |
-| Write cost | Wait for grace period (milliseconds) | Lower (no global wait, but scan hazard table) |
-| Best for | Read-mostly | Mixed read/write |
-| Memory bound | Bounded queue per CPU | Bounded by number of threads |
-| Implementation | Requires runtime support (Linux kernel) | Self-contained in user-space |
-| Standard library? | Linux kernel | C++26 `std::atomic_hazard_pointer` (proposed) |
+- **The grace period is "all pre-existing readers are gone."** In RCU, an updater unlinks the node so *new* readers can't reach it, then calls `synchronize_rcu()` which blocks until every reader that was *already inside a read-side critical section at unlink time* has exited. Once that snapshot of readers has drained, no one can possibly hold the old pointer, so freeing is safe. Crucially, a reader that *enters after* the unlink doesn't extend the wait — it never saw the old node ([Your Turn](#your-turn)).
+- **Hazard pointers publish, then the reclaimer scans.** Before dereferencing a node, a thread writes its address into a per-thread hazard slot (and re-checks the node is still linked). To free, the reclaimer collects all threads' hazard slots and frees only addresses absent from that set; the rest stay on a retire list and are retried later. This caps the number of un-freed nodes at roughly (threads × hazards-per-thread).
+- **They trade reader cost against memory.** RCU readers are almost free (often just a compiler barrier — no atomic writes per access), but reclamation is *deferred* and batched, so freed memory lags and a stalled reader can delay a grace period indefinitely. Hazard pointers pay an atomic store per protected access, but bound the retired memory tightly and free promptly. RCU suits read-mostly kernel data; hazard pointers suit user-space structures needing tight memory.
 
-The Linux kernel uses RCU because the cost of waiting for a grace period is amortised across many writes. User-space libraries usually use hazard pointers because grace-period detection without OS help is hard.
+> **Key takeaway.** Lock-free structures can't free a node while a concurrent reader may hold its pointer (use-after-free, the ABA root). **Hazard pointers** publish per-thread "in-use" markers; the reclaimer frees only un-referenced nodes (bounded memory, per-access cost). **RCU** keeps readers cheap and defers freeing until a **grace period** — all readers active at unlink time have exited. Both give safe manual reclamation without a GC; both run the Linux kernel.
 
-***
+## Trace It
 
-# Implementation sketch
+The danger is abstract until you watch a free land on a node someone's still reading.
 
-A hazard-pointer-protected lock-free stack pop in C-style pseudocode:
+**Predict before you run:** a lock-free pop returns node `x` (value `42`) and the popper frees it *immediately*. A concurrent reader grabbed `x`'s pointer a moment earlier and is about to read `x.value`. With **no** reclamation scheme, what does that reader see — `42`, or something else?
 
-The crucial step is the *re-check* after publishing the hazard pointer. Without it, the writer might have freed the node between our `top` read and our hp write.
+```python run
+class Node:
+    def __init__(self, value): self.value = value; self.freed = False
+class Reclaimer:
+    def __init__(self): self.hazards = set(); self.retired = []
+    def publish(self, node): self.hazards.add(id(node))
+    def clear(self, node): self.hazards.discard(id(node))
+    def _free(self, node): node.freed = True; node.value = "<REUSED>"   # the allocator reuses the slot
+    def retire(self, node):
+        if id(node) in self.hazards:
+            self.retired.append(node); return "deferred"
+        self._free(node); return "freed"
 
-For full implementation, see Folly's `HazPtr` (`folly/synchronization/HazPtr.h`) or the standard hazard-pointer library in your platform.
+# UNPROTECTED: free immediately while a reader still holds the pointer
+x = Node(42)
+reader_ref = x                                             # a concurrent reader grabbed the pointer
+Reclaimer().retire(x)                                      # popper frees right away (no hazard published)
+print("unprotected reader sees:", reader_ref.value)
 
-***
+# PROTECTED: the reader publishes a hazard pointer BEFORE the free
+x = Node(42)
+reader_ref = x
+r = Reclaimer(); r.publish(x)                              # reader announces it holds x
+print("retire result:", r.retire(x))                       # deferred
+print("protected reader sees:", reader_ref.value)
+```
 
-# Edge cases and pitfalls
+<details>
+<summary><strong>Reveal</strong></summary>
 
-- **Hazard-pointer count.** Each thread typically has 2–4 hazard pointer slots. Operations that need to read more pointers concurrently (e.g., walking a linked list) must rotate through hazard pointers. Get this wrong and you'll free a node mid-traversal.
-- **Reclamation queue growth.** If writers free much faster than threads pass quiescent points / clear hazards, the reclamation queue grows unboundedly. Bound it by triggering scans more aggressively, or apply backpressure.
-- **RCU and traditional locks don't mix freely.** RCU read-side critical sections cannot block on a sleeping lock; the kernel disables preemption during them. User-space RCU (URCU library) has different rules.
-- **ABA still matters.** Hazard pointers and RCU don't eliminate the ABA problem; they prevent *use after free*. If your lock-free structure has logical ABA bugs, you still need tagged pointers or version counters.
-- **Performance isn't free.** Hazard pointers add an atomic write per pointer dereference. For deeply nested data structures (tree traversal), this overhead adds up. RCU has no read overhead but writers pay grace-period costs.
-- **Don't overuse RCU.** RCU shines for read-mostly. For balanced read-write, fine-grained locks or lock-free with hazard pointers usually beat it.
+The **unprotected** reader sees `<REUSED>`, not `42` — a textbook **use-after-free**. The popper freed `x` the instant it dequeued it, the allocator handed that memory slot to something else (here simulated by overwriting the value), and the concurrent reader — still holding the old pointer — dereferenced reallocated memory and read garbage. In real C this is undefined behaviour: a crash, a silent data corruption, or worse, the exact mechanism behind the [ABA problem](/cortex/data-structures-and-algorithms/concurrency-and-systems-cas-and-atomics) (the reused address fools a later CAS into "succeeding"). The **protected** reader sees `42`, correctly, because it published a hazard pointer *before* dereferencing; `retire` saw the hazard, returned `deferred`, and left `x` intact until the reader finishes and clears its marker. That's the entire job of these schemes: bridge the gap between "logically removed from the structure" and "physically safe to free." A node can be unlinked (no new reader can find it) yet still be *held* by an old reader — and you must not free it until that gap closes, which hazard pointers detect explicitly and RCU waits out via the grace period.
 
-***
+</details>
 
-# Production reality
+## Your Turn
 
-- **The Linux kernel** uses RCU pervasively: routing tables (`net/ipv4/route.c`), the file-descriptor table, dcache, namespace lookups, lockdep traces, and dozens more. The `Documentation/RCU/` directory in the kernel source is a master class.
-- **liburcu** (User-space RCU) is the Linux RCU model exported as a user-space library. Used by Userspace TPM, lttng-ust, some database engines.
-- **Folly's `HazPtr`** is the canonical C++ hazard-pointer library. Used by RocksDB and other Facebook OSS projects.
-- **The Boost Lockfree library** uses tagged pointers (a separate ABA mitigation strategy — pair pointer with a version counter that increments on every modification).
-- **Crossbeam's `epoch`** crate (Rust) is an epoch-based reclamation library — a third strategy distinct from RCU and hazard pointers but solving the same problem.
-- **Java**: doesn't need any of this; the GC handles reclamation. This is one of the JVM's biggest concurrency advantages over C++.
+**RCU grace period.** A reader enters a read-side critical section; an updater unlinks a node and must wait until every reader *active at that moment* exits before freeing. Show that a reader entering *after* the unlink doesn't delay the free — it can't have seen the old node.
 
-***
+```python run
+class RCU:
+    def __init__(self): self.active = {}; self.next_id = 0
+    def read_lock(self):
+        rid = self.next_id; self.next_id += 1; self.active[rid] = True; return rid
+    def read_unlock(self, rid): self.active.pop(rid, None)
+    def synchronize(self):                                 # grace period: snapshot the readers we must wait for
+        return set(self.active)
 
-# Memorize
+rcu = RCU()
+a = rcu.read_lock()                                        # reader A enters (might hold the old node)
+grace = rcu.synchronize()                                  # updater unlinks, then waits for {A} to exit
+b = rcu.read_lock()                                        # reader B enters AFTER the unlink -> can't see old node
 
-The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Memory reclamation is the hardest part of lock-free programming in C/C++/Rust; recognising which strategy fits which workload saves you from use-after-free bugs.
+def can_free():
+    return grace.isdisjoint(rcu.active)                    # safe once every snapshot-reader has exited
 
-## Quick recall
+print("A in, B in:", can_free())                           # False  (A from the snapshot is still active)
+rcu.read_unlock(a)                                         # A exits -> grace period complete
+print("A out, B in:", can_free())                          # True   (B was not in the snapshot, so it's irrelevant)
+```
 
-Click any question to reveal the answer.
+```java run
+import java.util.*;
+public class Main {
+    static class RCU {
+        Set<Integer> active = new HashSet<>(); int nextId = 0;
+        int readLock() { int id = nextId++; active.add(id); return id; }
+        void readUnlock(int id) { active.remove(id); }
+        Set<Integer> synchronize() { return new HashSet<>(active); }   // grace-period snapshot
+    }
+    public static void main(String[] args) {
+        RCU rcu = new RCU();
+        int a = rcu.readLock();                            // reader A enters
+        Set<Integer> grace = rcu.synchronize();            // wait for {A}
+        int b = rcu.readLock();                            // reader B enters AFTER unlink
+        System.out.println("A in, B in: " + Collections.disjoint(grace, rcu.active));   // false
+        rcu.readUnlock(a);                                 // A exits
+        System.out.println("A out, B in: " + Collections.disjoint(grace, rcu.active));  // true
+    }
+}
+```
+
+Both print `False`/`false` then `True`/`true`. While reader `A` (captured in the grace-period snapshot) is active, the free must wait. The moment `A` exits, the grace period is complete and freeing is safe — *even though reader `B` is still running*, because `B` entered after the unlink and so could never have obtained the old node's pointer. That's the elegance of RCU: readers pay almost nothing, and the updater only ever waits for the bounded set of readers that were already in flight.
+
+## Reflect & Connect
+
+- **The reclamation gap.** A node can be *unlinked* (no new reader finds it) yet still *held* by an old reader. Freeing in that gap is use-after-free — the ABA root. Safe reclamation closes the gap.
+- **Hazard pointers: publish then scan.** Readers announce the pointer they hold; the reclaimer frees only addresses no one published. Per-access atomic cost, but tightly bounded retired memory.
+- **RCU: cheap readers, grace-period free.** Readers mark a critical section almost for free; the updater unlinks, then waits until all readers active at unlink time exit, then frees in a batch. A late-arriving reader never delays it.
+- **The trade-off.** RCU minimises reader cost but defers/batches reclamation (a stalled reader stalls a grace period); hazard pointers bound memory and free promptly but pay per protected access. Read-mostly kernel data → RCU; user-space with tight memory → hazard pointers.
+- **It completes Part 10.** [CAS](/cortex/data-structures-and-algorithms/concurrency-and-systems-cas-and-atomics) builds the [lock-free queue](/cortex/data-structures-and-algorithms/concurrency-and-systems-lock-free-queue) and [concurrent map](/cortex/data-structures-and-algorithms/concurrency-and-systems-concurrent-hash-map); RCU/hazard pointers make freeing their nodes *safe*. Without them, every lock-free structure leaks or crashes — which is why GC languages, where this is automatic, can ignore the whole problem.
+
+## Recall
 
 <details>
 <summary><strong>Q:</strong> What problem do RCU and hazard pointers solve?</summary>
 
-**A:** Safe memory reclamation in lock-free contexts. When a writer wants to free a node, *some reader might still be reading it*. Both strategies defer the free.
+**A:** Safe memory reclamation in lock-free code: when can you free a node that a concurrent reader might still hold a pointer to? Freeing too early is a use-after-free (and the root of the ABA problem). They defer/guard the free until no reader holds the node.
 
 </details>
 <details>
-<summary><strong>Q:</strong> One-sentence definition of RCU?</summary>
+<summary><strong>Q:</strong> How do hazard pointers work?</summary>
 
-**A:** Defer freeing until every reader has passed a *quiescent point* (e.g., context-switched). The wait window is called a *grace period*.
-
-</details>
-<details>
-<summary><strong>Q:</strong> One-sentence definition of hazard pointers?</summary>
-
-**A:** Each reader publishes "I'm reading this address" in a per-thread slot. Writers scan all slots before freeing; if the address appears, defer.
+**A:** Before dereferencing a node, a thread publishes its address into a per-thread hazard slot. To free a node, the reclaimer scans all threads' hazard slots and frees only nodes that appear in none; the rest are retired and retried later. Memory un-freed is bounded by (threads × hazards each).
 
 </details>
 <details>
-<summary><strong>Q:</strong> RCU vs hazard pointers — read cost?</summary>
+<summary><strong>Q:</strong> What is an RCU grace period?</summary>
 
-**A:** **RCU**: zero (no atomic op per read). **Hazard pointers**: one atomic write per pointer dereference.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Best workload shape for RCU?</summary>
-
-**A:** **Read-mostly** with rare writes. Readers are essentially free; writers pay the grace-period wait.
+**A:** After an updater unlinks a node, the interval until every reader that was *active at unlink time* has exited its read-side critical section. Once that snapshot of readers drains, no one can hold the old pointer, so freeing is safe. Readers entering after the unlink don't extend it.
 
 </details>
 <details>
-<summary><strong>Q:</strong> Why doesn't Java need RCU or hazard pointers?</summary>
+<summary><strong>Q:</strong> Why doesn't a reader that enters after the unlink delay an RCU free?</summary>
 
-**A:** The garbage collector won't free a node while any thread holds a reference. Lock-free reclamation comes "for free" with the JVM.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Where does Linux use RCU?</summary>
-
-**A:** Routing tables (`net/ipv4/route.c`), file-descriptor tables, dcache, namespace lookups, lockdep. The `Documentation/RCU/` directory in the kernel source is a master class.
+**A:** Because the node was already unlinked, a reader entering afterward can't reach it — it never obtains the old pointer. Only readers active *before* the unlink could be holding it, so only they (the grace-period snapshot) must finish.
 
 </details>
 <details>
-<summary><strong>Q:</strong> Third major reclamation strategy in user-space?</summary>
+<summary><strong>Q:</strong> What's the main trade-off between RCU and hazard pointers?</summary>
 
-**A:** **Epoch-based reclamation** (Crossbeam's `epoch` crate in Rust). Each thread joins a global epoch; old epochs are reclaimed once no thread references them.
+**A:** RCU makes reads nearly free (no per-access atomic) but defers and batches reclamation (a stalled reader can hold up a grace period and memory). Hazard pointers pay an atomic store per protected access but bound retired memory and free promptly. Read-mostly → RCU; tight memory → hazard pointers.
 
 </details>
 
-## Code template
+## Sources & Verify
 
-```python
-# Conceptual hazard-pointer-protected lock-free pop:
-#
-# def pop(stack, hp_slot):
-#     while True:
-#         old_top = stack.top
-#         if old_top is None: return None
-#         hp_slot.write(old_top)                    # publish hazard
-#         if old_top is not stack.top:              # invalidated; retry
-#             continue
-#         if CAS(&stack.top, old_top, old_top.next):
-#             hp_slot.clear()
-#             queue_for_reclamation(old_top)        # don't free yet
-#             return old_top.data
-#
-# def reclaim_periodically():
-#     for node in reclamation_queue:
-#         if node.address not in any hp_slot:
-#             free(node); remove from queue
-```
-
-## Pattern triggers
-
-- **"Read-mostly shared structure" in a kernel/system context** → RCU
-- **"Lock-free read-write structure" in user-space C/C++** → hazard pointers
-- **"Lock-free in Rust without `unsafe`"** → Crossbeam's `epoch` crate
-- **"Lock-free in Java"** → just use it; the GC handles reclamation
-- **"Use-after-free in my lock-free implementation"** → missing reclamation strategy
-- **"`shared_ptr` is too slow on the hot path"** → switch to hazard pointers
-- **"How does the kernel achieve millions of routing-table lookups/sec?"** → RCU on the routing trie
-- **"Real-time / hard latency requirement"** → hazard pointers (RCU's grace period is unbounded)
-
-***
-
-# Cross-links
-
-- **Prerequisites:** [CAS and Atomics](/cortex/data-structures-and-algorithms/concurrency-and-systems-cas-and-atomics), [Lock-Free Queue](/cortex/data-structures-and-algorithms/concurrency-and-systems-lock-free-queue).
-- **Production deep-dive:** Linux kernel's RCU implementation; the [Linux Red-Black Tree chapter](/cortex/data-structures-and-algorithms/dsa-in-real-systems-linux-red-black-tree-in-the-cfs-scheduler) — *stub* — uses RCU for some lock-free traversals.
-
-***
-
-# Final takeaway
-
-Memory reclamation in lock-free code requires deliberate strategies. Three patterns to internalise:
-
-1. **GC solves this trivially in Java/Go; C/C++/Rust need explicit strategies.** Pick RCU for read-mostly, hazard pointers for mixed workloads.
-2. **The "free immediately" mistake is a use-after-free.** Lock-free structures *defer* freeing; the only question is by how long and via what mechanism.
-3. **The Linux kernel is the textbook example.** RCU is one of the kernel's most distinctive features. Reading its docs and source teaches you concurrent programming the way nothing else does.
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
-
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
-
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
-
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
-
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
-
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
-
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+- **McKenney et al.**, "Read-Copy Update" (and the Linux kernel RCU documentation) — grace periods, quiescent states, and `synchronize_rcu`.
+- **Michael** (2004), "Hazard Pointers: Safe Memory Reclamation for Lock-Free Objects", *IEEE TPDS* — the original hazard-pointer scheme and its bounded-memory guarantee.
+- **Herlihy & Shavit**, *The Art of Multiprocessor Programming* (2nd ed.) — memory reclamation in lock-free structures; **folly**/`std::hazard_pointer` (C++26) and **liburcu** are production implementations. The `deferred`/`True` hazard demo, the use-after-free `<REUSED>` vs protected `42`, and the RCU `False`/`True` grace-period checks above come from the runnable blocks (single-threaded *simulations* of inherently concurrent mechanisms) — re-run to verify.

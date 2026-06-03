@@ -2,7 +2,7 @@
 
 Searching is the silent foundation under most algorithms in this course — and binary search is the silent foundation under searching. Eleven lessons cover binary search and its variants: lower bound, upper bound, 2D matrix searches, sorted-rotated arrays, plus five **pattern lessons** that generalise the algorithm to predicate-based searches over numeric ranges.
 
-> How to read this chapter: follow **Start Here** top to bottom — that is the teaching path. Drill it in **Practice** once it clicks. Use **Reference** (recall cards, synthesis, design) for review, not first reading.
+> How to read this chapter: follow **Start Here** top to bottom — that is the teaching path. Drill it in **Practice** once it clicks.
 
 ## Start Here — the learning path
 
@@ -42,7 +42,7 @@ Do these after the matching pattern in Start Here.
 
 ### Minimum Predicate Search
 - [Punctual Arrival Speed](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search-problems-punctual-arrival-speed)
-- [Penalty With Balls](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search-problems-penalty-with-balls)
+- [Penalty with Balls](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search-problems-penalty-with-balls)
 - [Minimum Shipping Capacity](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search-problems-minimum-shipping-capacity)
 - [Trip Completion Frenzy](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search-problems-trip-completion-frenzy)
 
@@ -51,15 +51,3 @@ Do these after the matching pattern in Start Here.
 - [Build Staircase](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-maximum-predicate-search-problems-build-staircase)
 - [K Ribbons](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-maximum-predicate-search-problems-k-ribbons)
 - [Equalise Water](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-maximum-predicate-search-problems-equalise-water)
-
-## Reference
-
-Quick-recall and design material. Skim, don't study top to bottom.
-
-- [Memorize: Searching](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-memorize)
-- [Memorize: Binary Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-binary-search-memorize)
-- [Memorize: Lower Bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-lower-bound-memorize)
-- [Memorize: Upper Bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-upper-bound-memorize)
-- [Memorize: Minimum Predicate Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search-memorize)
-- [Memorize: Maximum Predicate Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-maximum-predicate-search-memorize)
-- [Pattern Synthesis: Searching](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-synthesis)

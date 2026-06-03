@@ -71,7 +71,6 @@ The naive approach — try every pair of overlapping jobs and sum their resource
 
 Instead of counting **how many** intervals are active (each contributing +1 to the counter), we sum **how much** they contribute — each job adds its own `resources` at its start and removes the same amount at its end. The sweep is identical; the delta is weighted. We also remember the **interval coordinates** of the first peak.
 
-> 🖼 Diagram — Each event is a ±resources delta instead of ±1. The peak value of the running sum is the third output; the surrounding event coordinates are the first two.
 ```d2
 direction: right
 
@@ -187,7 +186,6 @@ sweep -> ans
 <summary><h2>The Sweep Strategy (Visualised)</h2></summary>
 
 
-> 🖼 Diagram — Same four-step skeleton as Busiest Interval — but each event carries a resources contribution, and the collapse rule uses the largest single-job resources as the no-overlap sentinel.
 ```mermaid
 ---
 config:

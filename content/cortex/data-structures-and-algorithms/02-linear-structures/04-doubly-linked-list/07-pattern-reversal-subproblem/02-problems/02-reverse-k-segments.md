@@ -76,7 +76,6 @@ What **breaks if you reach for value-copying**? Reading all values into an array
 
 Same template, generalised window. Where pairwise pinned `k = 2`, here `k` is a parameter; the only addition is the `getNodeAtPosition(start, k)` walk to find each segment's `end`, and the integer-division formula `groups = length / k` that drops the short tail.
 
-> 🖼 Diagram — Reverse K-segments — fixed window of size k repeats until fewer than k nodes remain.
 ```mermaid
 ---
 config:
@@ -137,7 +136,6 @@ What breaks if you skip the head-promotion check `end.prev == null`: after the f
 <summary><h2>The K-Segment Strategy (Visualised)</h2></summary>
 
 
-> 🖼 Diagram — The K-Segment Strategy — three reusable building blocks: window-pick, reverse, head-track.
 ```mermaid
 ---
 config:

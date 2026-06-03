@@ -94,7 +94,6 @@ Push letters and `[`; on `]`, pop-while-appending to reverse the inner substring
 
 Push characters and `[` onto a stack. On `]`, pop characters until you hit `[` — but **append them as you pop**, which builds the reversed substring naturally. Pop the `[`, push the reversed substring back as a single string token. Final answer = concatenate the stack bottom-to-top.
 
-> 🖼 Diagram — Bracketed reversal — popping while appending naturally builds the reversed substring (the topmost char comes out first and goes to the front of the result).
 ```mermaid
 ---
 config:

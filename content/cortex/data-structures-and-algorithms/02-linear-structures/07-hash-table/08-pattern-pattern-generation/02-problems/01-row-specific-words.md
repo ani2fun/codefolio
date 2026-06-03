@@ -84,7 +84,6 @@ The naive idea — special-casing every word shape or hand-checking pairs of let
 
 The "key" here is the **row id** (1, 2, or 3). Each character maps to one of three rows; a word is single-row iff every character maps to the same row. So: look up every character's row, ensure they're all equal.
 
-> 🖼 Diagram — Row-specific words — the key per character is its keyboard row. A word survives the filter only if all its characters share the same key.
 ```mermaid
 ---
 config:

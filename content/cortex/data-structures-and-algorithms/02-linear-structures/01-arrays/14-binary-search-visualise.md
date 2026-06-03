@@ -2,7 +2,7 @@
 title: "Binary Search — full trace"
 summary: "End-to-end demo of the unified Visualise pipeline — runnable Python and Java code blocks paired with an inline array-1d diagram, all driven by the same VizGraph contract."
 prereqs:
-  - 02-linear-structures/01-arrays/01-introduction
+  - 02-linear-structures/01-arrays/01-what-is-an-array
 ---
 
 # Binary Search — full trace
@@ -61,7 +61,6 @@ same JSON contract the modal uses. It exists as documentation of what the
 initial state looks like; the modal's animation supersedes it for any reader
 who clicks Visualise.
 
-> ▶ Interactive Diagram — Binary search step 1: lo at 0, hi at 9, mid at 4. `arr[mid] = 9 > 7`, so the next iteration sets `hi = mid - 1` and the window collapses to the left half.
 ```d3 widget=array-1d
 {
   "steps": [
@@ -187,6 +186,8 @@ who clicks Visualise.
   ]
 }
 ```
+
+<p align="center"><strong>Binary search step 1: lo at 0, hi at 9, mid at 4. <code>arr[mid] = 9 > 7</code>, so the next iteration sets <code>hi = mid - 1</code> and the window collapses to the left half.</strong></p>
 
 ## Java
 
@@ -231,7 +232,6 @@ crosses `Integer.MAX_VALUE / 2`. The visualisation is identical to the
 Python version's: each iteration moves `lo` and `hi` one window-halving
 step closer.
 
-> ▶ Interactive Diagram — Same step 1 as the Python diagram, included here so each language pane reads on its own.
 ```d3 widget=array-1d
 {
   "steps": [
@@ -357,6 +357,8 @@ step closer.
   ]
 }
 ```
+
+<p align="center"><strong>Same step 1 as the Python diagram, included here so each language pane reads on its own.</strong></p>
 
 ## Why two diagrams when the modal shows the full trace?
 

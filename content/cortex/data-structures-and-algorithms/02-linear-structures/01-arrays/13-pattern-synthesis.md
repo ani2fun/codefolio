@@ -64,8 +64,6 @@ Run the tree on a one-line problem for each of the eight patterns to confirm the
 
 So the key idea is: input shape narrows to one or two patterns; the answer shape picks between them.
 
-> 🖼 Diagram — TODO: decision-tree visualisation — input shape on the root, output shape on the second level, the eight pattern names as leaves.
-
 ---
 
 ## Pattern Comparison Table

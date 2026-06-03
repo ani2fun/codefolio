@@ -58,7 +58,6 @@ The structural property is *multiset intersection* — the answer counts every s
 
 The naive approach is a frequency-count map — count occurrences in `arr1`, count in `arr2`, then emit `min(count1[v], count2[v])` copies of every shared value `v`. It costs `O(N + M)` time but `O(N + M)` space for the maps and only works when values fit in a hashable type. The simultaneous walk uses `O(1)` working space (beyond the output) and is the textbook in-place version of multiset intersection — provided you can sort the inputs.
 
-> 🖼 Diagram — Repeated Intersections — identical to Unique Intersections but every match is recorded unconditionally. The min(p, q) rule emerges naturally from both pointers advancing on each match.
 ```mermaid
 ---
 config:

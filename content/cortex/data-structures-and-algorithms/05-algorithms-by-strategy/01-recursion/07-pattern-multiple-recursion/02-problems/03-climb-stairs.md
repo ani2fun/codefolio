@@ -74,7 +74,6 @@ Different first-step choices produce disjoint sets of climbing sequences (they d
 
 For `n = 3, steps = [1, 2, 3]`, the recursion tree:
 
-> 🖼 Diagram — Tree for climb(3, [1, 2, 3]). Branching factor = 3 (one per step). Leaves are climb(0) = 1 (valid path) or climb(negative) = 0 (overshot path). Sum of leaves = 4 ✓.
 ```mermaid
 ---
 config:
@@ -247,33 +246,9 @@ For `steps = [1, 2]` (the simplest case), this collapses to Fibonacci's `O(2^n)`
 
 </details>
 <details>
-<summary><h2>Final Takeaway</h2></summary>
+<summary><h2>Key Takeaway</h2></summary>
 
 
 Climb-stairs is multiple recursion with input-dependent branching factor. The pattern naturally extends Fibonacci to arbitrary step sets. Memoisation makes it `O(n × k)` instead of `O(k^n)` — another preview of dynamic programming. The next problem widens the recurrence further: every call to `C(n)` spawns *n* recursive calls, and the combine multiplies pairs.
 
 </details>
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
-
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
-
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
-
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
-
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
-
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->

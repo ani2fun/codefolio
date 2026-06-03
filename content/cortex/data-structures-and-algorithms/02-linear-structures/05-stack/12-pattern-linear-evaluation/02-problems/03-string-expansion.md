@@ -94,7 +94,6 @@ Push counts, letters, and `[`; on `]`, repeat the inner substring by the count b
 
 Same shape as bracketed reversal but the closer triggers a *repeat*, not a reverse. Push numbers (as strings), letters, and `[`. On `]`, pop the inner substring, pop the `[`, pop the repeat count (which is just before `[`), expand, push back.
 
-> 🖼 Diagram — String expansion — closer fires the substring×k folding. Multi-digit numbers (e.g. 12[ab]) are handled by reading consecutive digits before pushing the count as one string.
 ```mermaid
 ---
 config:

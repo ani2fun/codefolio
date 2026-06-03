@@ -2,7 +2,7 @@
 
 Backtracking is brute force in tree form. Every problem with the shape "list every X" or "find one X that satisfies the constraints" can be cast as a depth-first walk over a state space tree, and the algorithm becomes a recursive function with a `for` loop, a base case for leaves, and an undo step in the loop body. Three patterns cover almost every backtracking problem you'll meet: enumerate without filtering (the Unconditional Enumeration lesson), enumerate with pruning (the Conditional Enumeration lesson), or search a configuration of the world for one that satisfies all constraints (the Backtracking Search lesson).
 
-> How to read this chapter: follow **Start Here** top to bottom — that is the teaching path. Drill it in **Practice** once it clicks. Use **Reference** (recall cards, synthesis, design) for review, not first reading.
+> How to read this chapter: follow **Start Here** top to bottom — that is the teaching path. Drill it in **Practice** once it clicks.
 
 ## Start Here — the learning path
 
@@ -32,13 +32,3 @@ Do these after the matching pattern in Start Here.
 - [Word Quest](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-backtracking-search-problems-word-quest)
 - [Solve N Queens](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-backtracking-search-problems-solve-n-queens)
 - [Solve Sudoku](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-backtracking-search-problems-solve-sudoku)
-
-## Reference
-
-Quick-recall and design material. Skim, don't study top to bottom.
-
-- [Memorize: Backtracking](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-memorize)
-- [Memorize: Unconditional Enumeration](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-unconditional-enumeration-memorize)
-- [Memorize: Conditional Enumeration](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-conditional-enumeration-memorize)
-- [Memorize: Backtracking Search](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-backtracking-search-memorize)
-- [Pattern Synthesis: Backtracking](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-synthesis)

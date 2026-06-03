@@ -29,8 +29,6 @@ Picture a coat-check counter at a theatre. You hand over your coat and get a num
 
 ## Visual Summary
 
-> 🖼 Diagram — TODO: 3 frames — empty buckets / one key hashed in / collision resolved (chain or probe)
-
 ---
 
 ## Key Operations

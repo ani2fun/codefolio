@@ -51,8 +51,6 @@ To make this concrete, run the tree on one statement per pattern and confirm the
 
 So the key idea is: the map's *payload* narrows to one of four families — tally, canonical key, window summary, or past-sum record. Then the *query* — read counts, group keys, slide-and-process, or look up a difference — picks the exact pattern.
 
-> 🖼 Diagram — TODO: decision tree routing to the 5 hash-table patterns, branching on what the map holds (tally / key / window summary / past sums).
-
 ---
 
 ## Pattern Comparison Table

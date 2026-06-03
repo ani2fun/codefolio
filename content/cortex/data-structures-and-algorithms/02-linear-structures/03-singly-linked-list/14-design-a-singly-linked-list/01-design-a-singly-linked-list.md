@@ -2,8 +2,8 @@
 title: "Design a Singly Linked List"
 summary: "Implement a SinglyLinkedList class that exposes prepend, append, insert, remove, search, size, and empty as a single self-contained object."
 prereqs:
-  - 02-linear-structures/03-singly-linked-list/03-insertion-in-singly-linked-lists
-  - 02-linear-structures/03-singly-linked-list/04-deletion-in-singly-linked-lists
+  - 02-linear-structures/03-singly-linked-list/01-what-is-a-linked-list
+  - 02-linear-structures/03-singly-linked-list/01-what-is-a-linked-list
 difficulty: hard
 ---
 
@@ -70,7 +70,6 @@ Two design decisions shape every linked-list class you'll ever write:
    *Cached `tail`* — `append` becomes O(1). But every operation that might change the tail (head deletion that empties the list, removal of the last node, insert at position = size) must update it.  
    *No `tail`* — `append` is O(n) but there's one less invariant to maintain.
 
-> ▶ Interactive Diagram — The SinglyLinkedList object owns three pieces of state — head (always), currentSize (usually cached), and tail (sometimes cached). The trade-offs are the whole design.
 ```d3 widget=list-single
 {
   "steps": [
@@ -208,7 +207,6 @@ For this lesson we take the **cached-size, no-tail** design. It matches the refe
 <summary><h2>The Operation Map (Visualised)</h2></summary>
 
 
-> 🖼 Diagram — The cost map. Three operations are O(1) because they touch only head and currentSize. The other four require traversal. Caching a tail pointer would move append into the fast column.
 ```d2
 direction: right
 
@@ -618,7 +616,7 @@ The "**all O(n)**" row is the cost of the **no-tail** design. Caching a `tail` p
 
 </details>
 <details>
-<summary><h2>Final Takeaway</h2></summary>
+<summary><h2>Key Takeaway</h2></summary>
 
 
 You just built the linked list. Every operation from lessons 1–4 is here, wired together into a single class with a cohesive API. Two lessons are worth taking away:

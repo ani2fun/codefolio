@@ -38,7 +38,6 @@ Explanation: factorial(0) = 1 by convention.
 
 Read the definition `n! = n × (n-1)!` and the recursion writes itself: the answer for `n` is `n` times the answer for `n-1`. The base case is the one that needs care: `0! = 1`, not `0`.
 
-> 🖼 Diagram — The recursive relation for factorial. fact(0) = 1 is the multiplicative identity — picking 0 instead of 1 as the base would silently produce wrong answers.
 ```mermaid
 ---
 config:
@@ -91,7 +90,6 @@ Multiplication doesn't help us compute `fact(n)` until we know `fact(n-1)`. We c
 <summary><h2>The Multiply-on-the-Way-Back Strategy (Visualised)</h2></summary>
 
 
-> 🖼 Diagram — The descent walks down to fact(0); the ascent multiplies each frame's n by the smaller answer. The product accumulates from the bottom up.
 ```mermaid
 ---
 config:
@@ -223,33 +221,9 @@ For very large `n` the *integer overflow* matters more than the recursion depth.
 
 </details>
 <details>
-<summary><h2>Final Takeaway</h2></summary>
+<summary><h2>Key Takeaway</h2></summary>
 
 
 Factorial is the head-recursion template with `g = multiply` and a base case that has to be the multiplicative identity. Different combine, different base case, same scaffolding-unwind shape. The next problem replaces the combine with addition — but adds a twist: the input doesn't shrink by one each time. It shrinks by *a digit*.
 
 </details>
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
-
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
-
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
-
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
-
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
-
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->

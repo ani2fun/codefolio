@@ -34,7 +34,6 @@ Each frame's job is to append its `n`, then recurse on `n-1`. The append happens
 
 Compare with the head-recursive Forward Sequence: the list was built *during unwinding*, with each ascending frame appending its number. Here, the list is built *during the descent*, with each descending frame appending its number. **The direction of work matches the direction of output.**
 
-> 🖼 Diagram — Each descending frame appends and recurses. The list is fully built by the time the base case fires.
 ```mermaid
 ---
 config:
@@ -83,42 +82,36 @@ After appending, the recursive call is the function's last action. The return is
 
 <div class="d2-slides" data-caption="Each descending frame appends and recurses. The list is fully built when the base case fires.">
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "Initial — start at n=5" {
   list: "result = []"
 }
 ```
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "n=5 — append, recurse(4)" {
   list: "result = [5]" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
 }
 ```
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "n=4 — append, recurse(3)" {
   list: "result = [5, 4]" {style.fill: "#fde68a"; style.stroke: "#d97706"}
 }
 ```
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "n=3 — append, recurse(2)" {
   list: "result = [5, 4, 3]" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
 }
 ```
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "n=1 — append, recurse(0)" {
   list: "result = [5, 4, 3, 2, 1]" {style.fill: "#ede9fe"; style.stroke: "#7c3aed"}
 }
 ```
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "n=0 — base case fires, return" {
   list: "result = [5, 4, 3, 2, 1] (final)" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
@@ -262,33 +255,9 @@ The list is fully built during descent. The ascent is silent — every frame jus
 
 </details>
 <details>
-<summary><h2>Final Takeaway</h2></summary>
+<summary><h2>Key Takeaway</h2></summary>
 
 
 Reverse Sequence is the tail-recursion mirror of Forward Sequence: same recursion shape, same depth, but the work happens on the way *down* rather than the way back. The next problem applies the same template to *search* — where the accumulator's job is to track "we haven't found it yet" rather than to build output.
 
 </details>
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
-
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
-
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
-
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
-
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
-
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->

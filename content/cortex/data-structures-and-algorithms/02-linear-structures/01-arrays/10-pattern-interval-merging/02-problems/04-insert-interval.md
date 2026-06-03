@@ -112,7 +112,6 @@ The single linear pass partitions the existing intervals into **three groups** r
 2. **Overlap with** `newInterval` — absorb them into `newInterval` by stretching its `start` and `end`.
 3. **Strictly after** `newInterval` — keep them as-is.
 
-> 🖼 Diagram — Three contiguous groups: copy-as-is, absorb, copy-as-is. The middle group collapses into a single grown newInterval before being appended.
 ```d2
 direction: right
 

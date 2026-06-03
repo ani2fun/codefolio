@@ -2,7 +2,7 @@
 title: "Memorize: Reversal (Subproblem)"
 summary: "Pattern recognition triggers, template code, common mistakes, and quick recall."
 prereqs:
-  - 08-pattern-reversal-subproblem/02-problems
+  - 07-pattern-reversal-subproblem/01-pattern
 ---
 
 # Memorize: Reversal (Subproblem)
@@ -30,8 +30,6 @@ Picture a row of two-way train cars connected by both a forward coupling and a b
 ---
 
 ## Visual Summary
-
-> 🖼 Diagram — TODO: 3 frames showing (1) the outer driver locating `start` and `end` of the next chunk with `leftBound = start.prev` and `rightBound = end.next` cached implicitly by the helper, (2) the inner reversal swapping `prev`/`next` on each node inside `[start, end]`, (3) the four boundary links bidirectionally stitched (`leftBound.next = end`, `end.prev = leftBound`, `start.next = rightBound`, `rightBound.prev = start`) and `start` advanced to `start.next` ready for the next chunk.
 
 ---
 

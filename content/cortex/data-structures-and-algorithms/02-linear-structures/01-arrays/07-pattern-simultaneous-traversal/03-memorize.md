@@ -2,7 +2,7 @@
 title: "Memorize: Simultaneous Traversal"
 summary: "Pattern recognition triggers, template code, common mistakes, and quick recall."
 prereqs:
-  - 07-pattern-simultaneous-traversal/02-problems
+  - 07-pattern-simultaneous-traversal/01-pattern
 ---
 
 # Memorize: Simultaneous Traversal
@@ -30,8 +30,6 @@ Picture two cashier lines at a grocery store, each holding sorted receipts by cu
 ---
 
 ## Visual Summary
-
-> 🖼 Diagram — TODO: 3 frames — (1) both index variables at position 0 with the comparison condition between them, (2) mid-sweep showing one index ahead after several conditional advances, (3) one array exhausted with the cleanup loop draining the other into the result.
 
 ---
 

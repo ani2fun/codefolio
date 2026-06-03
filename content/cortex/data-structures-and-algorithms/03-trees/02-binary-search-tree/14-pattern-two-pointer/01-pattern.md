@@ -1,141 +1,225 @@
 ---
-title: "Pattern: Two Pointer"
-summary: "Two BST iterators — one in-order, one reverse-order — meet in the middle for two-sum, median, and pair-sum queries."
+title: "Pattern: Two-Pointer on a BST"
+summary: "Run two BST iterators at once — one ascending from the smallest, one descending from the largest — and converge them like the array two-pointer. Solves BST two-sum in O(n) time and O(h) space, without flattening the tree to a sorted array."
 prereqs:
-  - 03-trees/02-binary-search-tree/01-introduction-to-binary-search-trees
+  - 03-trees/02-binary-search-tree/09-iterators-in-binary-search-trees
 ---
 
-# Understanding the two pointer pattern
+# Pattern: Two-Pointer on a BST
 
-A BST stores values in a structure that *implicitly* sorts them. The forward iterator emits ascending order, the reverse iterator descending. Run them simultaneously, and you have a working pair `(leftNode, rightNode)` that always satisfies `leftNode.val < rightNode.val` until they cross — i.e. you're holding the smallest unseen value and the largest unseen value at the same time.
+## Why It Exists
 
-> 🖼 Diagram — Two pointers walking the implicit sorted sequence of a BST. Forward iterator advances from the small end; reverse iterator advances from the large end. They meet in the middle.
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    A["Sorted (in-order):<br/>1, 2, 4, 6, 7"] --> B["leftNode → 1"]
-    A --> C["rightNode → 7"]
-    B --> D["advance toward middle..."]
-    C --> D
-    D --> E["meet/cross → done"]
+"Is there a pair of keys summing to `k`?" On a sorted *array* this is the classic [converging two-pointer](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-pattern): a left pointer at the smallest, a right at the largest, move inward by comparing the sum to the target. A BST's in-order is sorted, so the *same* logic applies — but a BST isn't an array; you can't index "left" and "right" ends directly.
+
+The trick is to run **two [BST iterators](/cortex/data-structures-and-algorithms/trees-binary-search-tree-iterators-in-binary-search-trees) at once**: an **ascending** one (smallest key first, walking the left spine) and a **descending** one (largest key first, walking the right spine). They play the roles of the array's `lo` and `hi` pointers. Converge them — too small a sum, advance the ascending iterator; too big, advance the descending one. `O(n)` time, `O(h)` space — and crucially, you never flatten the tree into an `O(n)` array.
+
+## See It Work
+
+Is there a pair in the BST summing to `9`? (`1 + 8` or `4 + 5`.) Two iterators converge from both ends. Run it.
+
+```python run viz=binary-tree viz-root=root
+class TreeNode:
+    def __init__(self, val):
+        self.val = val
+        self.left = None
+        self.right = None
+
+def insert(root, val):
+    if root is None: return TreeNode(val)
+    if val < root.val: root.left = insert(root.left, val)
+    elif val > root.val: root.right = insert(root.right, val)
+    return root
+
+def find_target(root, k):
+    asc, desc = [], []
+    n = root
+    while n: asc.append(n); n = n.left        # ascending iterator: seed left spine
+    n = root
+    while n: desc.append(n); n = n.right       # descending iterator: seed right spine
+    def next_asc():                            # smallest unvisited
+        node = asc.pop(); x = node.right
+        while x: asc.append(x); x = x.left
+        return node.val
+    def next_desc():                           # largest unvisited
+        node = desc.pop(); x = node.left
+        while x: desc.append(x); x = x.right
+        return node.val
+    lo, hi = next_asc(), next_desc()
+    while lo < hi:                             # converge from both ends
+        s = lo + hi
+        if s == k: return True
+        elif s < k: lo = next_asc()            # too small → bigger low end
+        else: hi = next_desc()                 # too big → smaller high end
+    return False
+
+root = None
+for v in [5, 3, 8, 1, 4, 7, 9]:
+    root = insert(root, v)
+print(find_target(root, 9))    # True  (4 + 5, or 1 + 8)
+print(find_target(root, 28))   # False
 ```
 
-<p align="center"><strong>Two pointers walking the implicit sorted sequence of a BST. Forward iterator advances from the small end; reverse iterator advances from the large end. They meet in the middle.</strong></p>
+## How It Works
 
-## The technique
+Two iterators, each an explicit-stack BST walk (from the [iterators lesson](/cortex/data-structures-and-algorithms/trees-binary-search-tree-iterators-in-binary-search-trees)):
 
-The same logic as two-pointer on a sorted array — drive a decision at each step using both pointers, and advance whichever one the decision tells you to:
+- **Ascending** — stack seeded with the left spine; `next_asc()` pops the smallest and pushes the left spine of its right child.
+- **Descending** — the mirror: stack seeded with the right spine; `next_desc()` pops the largest and pushes the right spine of its left child.
 
-> **Algorithm**
->
-> - **Step 1:** Build a forward iterator `left` over the BST.
-> - **Step 2:** Build a reverse iterator `right` over the BST.
-> - **Step 3:** Initialise `leftNode = left.next()`, `rightNode = right.next()`.
-> - **Step 4:** While `leftNode.val < rightNode.val` (i.e. they haven't crossed):
->   - **Step 4.1:** Process the pair `(leftNode, rightNode)`.
->   - **Step 4.2:** Decide whether to advance the left or right pointer (or both).
+Then the array two-pointer logic, unchanged: with `lo` from the ascending iterator and `hi` from the descending one,
 
-The terminating condition `leftNode.val < rightNode.val` is the BST analogue of `i < j` in the array version. Once they cross, every pair has been considered.
+- `lo + hi == k` → found.
+- `lo + hi < k` → the sum is too small; advance the **ascending** iterator for a larger `lo`.
+- `lo + hi > k` → too big; advance the **descending** iterator for a smaller `hi`.
 
-## Complexity
+Stop when `lo ≥ hi` (the iterators have crossed).
 
-| Operation | Time | Space |
-|---|---|---|
-| Initialising both iterators | O(h) | O(h) |
-| Loop body per step | O(1) (amortised by the iterator) | — |
-| Whole walk | O(n) | O(h) |
-
-Each iterator visits every node at most once. Because both iterators never overlap (one walks ascending, the other descending), every node is visited at most twice across both iterators. Total time **O(n)**.
-
-# Identifying the two pointer pattern
-
-Use this pattern when:
-
-- The problem reduces to **finding/checking pairs** of values from the BST that satisfy some relation (sum equals target, ratio is a multiple, distance ≤ d, etc.).
-- The relation has a **monotone** property — increasing one operand makes the relation move in one direction, increasing the other moves it in the opposite direction. (Sum is the cleanest example: increase either operand, the sum goes up.)
-- A naive O(n²) solution would compare every pair, but the BST's hidden sortedness lets us prune.
-- The problem might involve **two BSTs** at once — one source for the left pointer, another for the right.
-
-If you find yourself reaching for an in-memory hash set or a sorted array conversion to solve a "pair" problem on a BST, two-pointer iterators are usually the better answer: same time, much less memory.
-
-## Worked example — two-sum on a BST
-
-> **Problem:** Given a BST and a target, return `true` iff there exist two distinct nodes whose values sum to `target`.
-
-The decision rule is exactly the array two-sum:
-
-- If `leftNode.val + rightNode.val == target`, return `true`.
-- If the sum is **too small**, the only way to grow it is to **move the left pointer** rightward (forward iterator → next, larger).
-- If the sum is **too big**, the only way to shrink it is to **move the right pointer** leftward (reverse iterator → next, smaller).
-
-Loop until the iterators cross.
-
-> 🖼 Diagram — Tree [4, 2, 6, 1, null, null, 7], target 9. Two pointers find the pair (2, 7) after one step.
 ```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    A["leftNode = 1, rightNode = 7<br/>sum = 8 &lt; 9"] --> B["advance left"]
-    B --> C["leftNode = 2, rightNode = 7<br/>sum = 9 ✓"]
-    style C fill:#bbf7d0,stroke:#16a34a
+flowchart TB
+  S["lo = ascending.next(); hi = descending.next()"] --> Q{"lo + hi vs k"}
+  Q -->|"== k"| F(["found"])
+  Q -->|"&lt; k"| A["lo = ascending.next() (bigger)"]
+  Q -->|"&gt; k"| D["hi = descending.next() (smaller)"]
+  A --> Z{"lo &lt; hi?"}
+  D --> Z
+  Z -->|"yes"| Q
+  Z -->|"no"| N(["no pair"])
 ```
 
-<p align="center"><strong>Tree <code>[4, 2, 6, 1, null, null, 7]</code>, target <code>9</code>. Two pointers find the pair <code>(2, 7)</code> after one step.</strong></p>
+<p align="center"><strong>two iterators play the array's lo/hi pointers; compare the sum to the target and advance the appropriate one until they meet.</strong></p>
 
-The fit with the template:
+Each key is produced by the iterators at most once, so the converge is **`O(n)` time**; the two stacks hold at most a root-to-leaf path each, so **`O(h)` space**. The alternative — in-order traverse into a sorted list, then array two-pointer — is also `O(n)` time but `O(n)` space; the dual-iterator version keeps it to `O(h)` by generating keys on demand from both ends.
 
-- **f** = "compare sum to target → which way to step".
-- **state** = the running pair.
+### Key Takeaway
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+BST two-sum = the array two-pointer driven by two BST iterators (one ascending, one descending). Compare the sum to `k` and advance the ascending iterator (too small) or descending one (too big) until they cross. `O(n)` time, `O(h)` space — no `O(n)` flattening.
 
-<!-- TODO: Why Naive Isn't Enough — missing, needs to be written -->
-<!--       Guidance: motivation for why the obvious approach fails -->
+## Trace It
 
-<!-- TODO: The Core Idea — missing, needs to be written -->
-<!--       Guidance: one paragraph: the central trick -->
+`find_target(root, 9)` — ascending starts at `1`, descending at `9`:
 
-<!-- TODO: How the Pointers/Window Move — missing, needs to be written -->
-<!--       Guidance: mechanics of the moving parts -->
+| `lo` | `hi` | `lo + hi` | vs 9 | advance |
+|---|---|---|---|---|
+| `1` | `9` | 10 | `>` | descending → `hi = 8` |
+| `1` | `8` | 9 | `=` | **found** |
 
-<!-- TODO: The Generic Algorithm — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
+Before you read on: this reuses the *array* two-pointer's exact decision logic (sum too small → move low up; too big → move high down) on a *tree*. The array version relies on `O(1)` indexed access to both ends and moving a pointer inward. A BST has neither indices nor a "move inward" operation. What lets the same algorithm work unchanged here — and what does the iterator abstraction buy you?
 
-<!-- TODO: Generic Implementation — missing, needs to be written -->
-<!--       Guidance: Python block + Java block of the skeleton -->
+The iterators **abstract away the structure**: an ascending BST iterator delivers keys in the same order an array's left pointer would (smallest, next-smallest, …), and a descending one matches the right pointer (largest, next-largest, …). The two-pointer algorithm never cared *how* "next smaller/larger" was produced — only that it could get the next value from each end and that each advance is cheap. The array supplies that via indexing; the BST supplies it via two iterators whose `next()` is `O(1)` amortized. So the *algorithm* is identical; only the *iteration mechanism* differs. That's the power of an iterator: it lets a sequential algorithm run over any ordered structure — array, BST, even a merge of several — as long as the structure can yield "next in order." Recognizing that two-pointer needs only "next from each end," not random access, is what ports it from arrays to trees (at `O(h)` space instead of `O(n)`).
 
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table -->
+## Your Turn
 
-<!-- TODO: Variants / Taxonomy — missing, needs to be written -->
-<!--       Guidance: enumerate sub-shapes of this pattern -->
+The reusable BST two-sum:
 
-<!-- TODO: Recognition Checklist — missing, needs to be written -->
-<!--       Guidance: 4-question diagnostic — the source of the Problem-section Diagnostic Questions -->
+```python run
+class TreeNode:
+    def __init__(self, val):
+        self.val = val; self.left = None; self.right = None
 
-<!-- TODO: Canonical Example — missing, needs to be written -->
-<!--       Guidance: fully worked example: brute force → optimised → template fit -->
+def insert(root, val):
+    if root is None: return TreeNode(val)
+    if val < root.val: root.left = insert(root.left, val)
+    elif val > root.val: root.right = insert(root.right, val)
+    return root
 
-<!-- TODO: Problems in This Category — missing, needs to be written -->
-<!--       Guidance: table with links to the 02-problems/ files -->
+def find_target(root, k):
+    asc, desc = [], []
+    n = root
+    while n: asc.append(n); n = n.left
+    n = root
+    while n: desc.append(n); n = n.right
+    def nxt(stack, left):
+        node = stack.pop()
+        x = node.right if left else node.left
+        while x:
+            stack.append(x)
+            x = x.left if left else x.right
+        return node.val
+    lo, hi = nxt(asc, True), nxt(desc, False)
+    while lo < hi:
+        s = lo + hi
+        if s == k: return True
+        elif s < k: lo = nxt(asc, True)
+        else: hi = nxt(desc, False)
+    return False
+
+root = None
+for v in [5, 3, 8, 1, 4, 7, 9]:
+    root = insert(root, v)
+print(find_target(root, 12), find_target(root, 100))   # True False
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+  static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } }
+  static TreeNode insert(TreeNode r, int v) {
+    if (r == null) return new TreeNode(v);
+    if (v < r.val) r.left = insert(r.left, v);
+    else if (v > r.val) r.right = insert(r.right, v);
+    return r;
+  }
+  static void seed(Deque<TreeNode> s, TreeNode n, boolean left) {
+    while (n != null) { s.push(n); n = left ? n.left : n.right; }
+  }
+  static int next(Deque<TreeNode> s, boolean left) {
+    TreeNode node = s.pop();
+    seed(s, left ? node.right : node.left, left);
+    return node.val;
+  }
+  static boolean findTarget(TreeNode root, int k) {
+    Deque<TreeNode> asc = new ArrayDeque<>(), desc = new ArrayDeque<>();
+    seed(asc, root, true); seed(desc, root, false);
+    int lo = next(asc, true), hi = next(desc, false);
+    while (lo < hi) {
+      int s = lo + hi;
+      if (s == k) return true;
+      else if (s < k) lo = next(asc, true);
+      else hi = next(desc, false);
+    }
+    return false;
+  }
+  public static void main(String[] args) {
+    TreeNode root = null;
+    for (int v : new int[]{5, 3, 8, 1, 4, 7, 9}) root = insert(root, v);
+    System.out.println(findTarget(root, 9) + " " + findTarget(root, 28));   // true false
+  }
+}
+```
+
+Drill the family in **Practice** — [Two Sum on BST](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-two-pointer-problems-two-sum-on-bst), [Multiple Tree](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-two-pointer-problems-multiple-tree), [Median in BST](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-two-pointer-problems-median-in-bst), and [BST Pair Sum](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-two-pointer-problems-bst-pair-sum).
+
+## Reflect & Connect
+
+Two-pointer-on-a-BST is a clean example of composing patterns:
+
+- **It's array two-pointer + BST iterators** — the [converging two-pointer](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-pattern) supplies the logic; two [iterators](/cortex/data-structures-and-algorithms/trees-binary-search-tree-iterators-in-binary-search-trees) (ascending + descending) supply the "next from each end." Two patterns you already know combine into a new one.
+- **`O(h)` space is the payoff** — flattening to a sorted array and two-pointering it is `O(n)` space; generating keys on demand from both ends keeps it to the iterator stacks' `O(h)`. Choose this when the tree is large and you can't afford the array.
+- **The family extends** — three-sum on a BST (fix one key, two-pointer the rest), pair-with-given-difference, and "closest pair to a target." All are the array two-pointer ported to a BST via iterators. This **completes the BST pattern layer** — sorted/reversed traversal, range pruning, and now dual-iterator queries.
+
+**Prerequisites:** [Iterators in BSTs](/cortex/data-structures-and-algorithms/trees-binary-search-tree-iterators-in-binary-search-trees).
+**What's next:** the binary-tree pattern layer — traversal templates that carry no state — starting with [Preorder Traversal (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-pattern).
+
+## Recall
+
+> **Mnemonic:** *Two iterators — ascending (left end) + descending (right end). Sum too small → next ascending; too big → next descending; equal → found. `O(n)` time, `O(h)` space, no flattening.*
+
+| | |
+|---|---|
+| `lo` source | ascending iterator (smallest-first, left spine) |
+| `hi` source | descending iterator (largest-first, right spine) |
+| Sum `< k` | advance ascending (bigger `lo`) |
+| Sum `> k` | advance descending (smaller `hi`) |
+| Cost | `O(n)` time, `O(h)` space (vs `O(n)` for flatten + array two-pointer) |
+
+- **Q:** How is BST two-sum solved with two pointers? **A:** Run an ascending and a descending iterator as `lo`/`hi`; compare their sum to `k` and advance the appropriate one until they cross.
+- **Q:** Why does the array two-pointer algorithm work unchanged on a BST? **A:** It only needs "next from each end," which two BST iterators provide — no random access required.
+- **Q:** What's the space advantage over flattening? **A:** Generating keys on demand keeps it to the iterators' `O(h)` stacks, versus `O(n)` for a materialized sorted array.
+- **Q:** Which two patterns does this compose? **A:** The array converging two-pointer and BST iterators (one ascending, one descending).
+
+## Sources & Verify
+
+- **CLRS**, *Introduction to Algorithms*, 4th ed., §12.2 — in-order successor/predecessor (the iterator mechanics).
+- **Sedgewick & Wayne**, *Algorithms*, 4th ed., §3.2 — ordered iteration; the two-pointer idea on ordered data.
+- BST two-sum via dual iterators (LeetCode "Two Sum IV — Input is a BST") is standard; both runnable blocks are verified by running (`find_target ⇒ 9:True, 12:True, 28:False, 100:False`).

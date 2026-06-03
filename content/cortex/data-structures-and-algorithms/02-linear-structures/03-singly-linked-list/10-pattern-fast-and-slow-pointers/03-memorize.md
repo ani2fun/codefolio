@@ -2,7 +2,7 @@
 title: "Memorize: Fast and Slow Pointers"
 summary: "Pattern recognition triggers, template code, common mistakes, and quick recall."
 prereqs:
-  - 10-pattern-fast-and-slow-pointers/02-problems
+  - 10-pattern-fast-and-slow-pointers/01-pattern
 ---
 
 # Memorize: Fast and Slow Pointers
@@ -30,8 +30,6 @@ Picture two runners on a one-way track without distance markers. The slow runner
 ---
 
 ## Visual Summary
-
-> 🖼 Diagram — TODO: 3 frames — (1) initial state with `slow = fast = head` on a 5-node list `[1, 2, 3, 4, 5]`; (2) mid-walk after tick 1 with `slow` at node 2 and `fast` at node 3 showing the 2:1 gap opening; (3) terminal state after tick 2 with `fast` at node 5 (the tail) and `slow` parked at node 3 highlighted as the middle.
 
 ---
 

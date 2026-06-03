@@ -2,7 +2,7 @@
 title: "Memorize: Next Closest Occurrence"
 summary: "Pattern recognition triggers, template code, common mistakes, and quick recall."
 prereqs:
-  - 10-pattern-next-closest-occurrence/02-problems
+  - 10-pattern-next-closest-occurrence/01-pattern
 ---
 
 # Memorize: Next Closest Occurrence
@@ -30,8 +30,6 @@ Picture people queuing and each wanting to know the nearest *taller* person who 
 ---
 
 ## Visual Summary
-
-> 🖼 Diagram — TODO: 3 frames — empty stack at the start, mid-sweep with a decreasing stack of indices and one resolve run filling several answers at once, final state with the result array filled and `-1` for elements that never found a greater successor.
 
 ---
 

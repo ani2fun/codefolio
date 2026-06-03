@@ -368,7 +368,7 @@ Exactly `k` output entries. The first `extraNodes = n % k` parts have `partSize 
 
 </details>
 <details>
-<summary><strong>Final Takeaway</strong></summary>
+<summary><strong>Key Takeaway</strong></summary>
 
 The split pattern is a single template with a swappable classifier:
 

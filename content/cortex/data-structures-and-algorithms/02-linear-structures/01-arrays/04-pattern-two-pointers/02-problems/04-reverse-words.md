@@ -65,7 +65,6 @@ The algorithm splits cleanly in two. An outer linear scan walks the array left t
 
 A single global two-pointer pass breaks here. Whole-array `left/right` pointers can't tell where one word ends and the next begins; they'd swap characters across word boundaries and destroy word identity. Storing word slices into a list and reversing each in a second pass works but costs `O(n)` extra space for the slice copies. The outer-scan-plus-inner-reversal structure does the same work in place: `O(n)` time, with extra space only for the mutable character array the language forces (immutable strings in Python or Java).
 
-> ▶ Interactive Diagram — Reverse Words on "the sky" — the outer scan finds each word's boundaries (highlighted band); two pointers then reverse the characters inside that range.
 ```d3 widget=array-1d
 {
   "steps": [

@@ -54,7 +54,6 @@ Two pointers map directly onto that mirror structure. Place `left` at index `0` 
 
 A single-pointer traversal breaks here. If you walk forward and overwrite `arr[i]` with `arr[n − 1 − i]`, the original `arr[i]` is gone before you can place it at index `n − 1 − i`. You'd need an `O(n)` temporary buffer to remember evicted values — exactly the brute-force cost the two-pointer template avoids by swapping atomically.
 
-> ▶ Interactive Diagram — Flipping [a, e, i, o, u] in place — two swaps reverse the array; the middle element at index 2 is its own mirror.
 ```d3 widget=array-1d
 {
   "steps": [

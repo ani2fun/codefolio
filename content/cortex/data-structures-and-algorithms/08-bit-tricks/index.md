@@ -2,10 +2,11 @@
 
 Below the level of "integer", "boolean", or "character", there are just bits — and a small handful of operations on them (`AND`, `OR`, `XOR`, `NOT`, shift) that let you do things with breathtaking efficiency: pack a set into a single 64-bit word, swap two integers without a temp, count the number of 1s in a register in 4 instructions, build a hash that fits in a CPU pipeline. This module collects the moves competitive programmers and systems engineers reach for before falling back to a higher-level structure.
 
-> How to read this chapter: follow **Start Here** top to bottom — that is the teaching path. Drill it in **Practice** once it clicks. Use **Reference** (recall cards, synthesis, design) for review, not first reading.
+> How to read this chapter: follow **Start Here** top to bottom — that is the teaching path. Drill it in **Practice** once it clicks.
 
 ## Start Here — the learning path
 
+- [Bit Manipulation](/cortex/data-structures-and-algorithms/bit-tricks-bit-manipulation)
 - [Pattern: Kth-Bit Operations](/cortex/data-structures-and-algorithms/bit-tricks-pattern-kth-bit-pattern)
 - [Pattern: Set-Bit Finder](/cortex/data-structures-and-algorithms/bit-tricks-pattern-set-bit-finder-pattern)
 - [Pattern: Bit Restructuring](/cortex/data-structures-and-algorithms/bit-tricks-pattern-restructuring-pattern)
@@ -49,14 +50,3 @@ Do these after the matching pattern in Start Here.
 - [Power of 2](/cortex/data-structures-and-algorithms/bit-tricks-pattern-applications-problems-power-of-2)
 - [Parity Checker II — Set-Bit Parity](/cortex/data-structures-and-algorithms/bit-tricks-pattern-applications-problems-parity-checker-ii-set-bit-parity)
 - [Power Function — Fast Exponentiation](/cortex/data-structures-and-algorithms/bit-tricks-pattern-applications-problems-power-function-fast-exponentiation)
-
-## Reference
-
-Quick-recall and design material. Skim, don't study top to bottom.
-
-- [Memorize: Kth-Bit Operations](/cortex/data-structures-and-algorithms/bit-tricks-pattern-kth-bit-memorize)
-- [Memorize: Set-Bit Finder](/cortex/data-structures-and-algorithms/bit-tricks-pattern-set-bit-finder-memorize)
-- [Memorize: Bit Restructuring](/cortex/data-structures-and-algorithms/bit-tricks-pattern-restructuring-memorize)
-- [Memorize: XOR](/cortex/data-structures-and-algorithms/bit-tricks-pattern-xor-memorize)
-- [Memorize: Bitmasking](/cortex/data-structures-and-algorithms/bit-tricks-pattern-bitmasking-memorize)
-- [Memorize: Bit-Manipulation Applications](/cortex/data-structures-and-algorithms/bit-tricks-pattern-applications-memorize)

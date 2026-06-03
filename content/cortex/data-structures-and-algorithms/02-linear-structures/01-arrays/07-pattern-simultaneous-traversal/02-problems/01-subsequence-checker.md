@@ -71,7 +71,6 @@ The fix is to collapse the two nested loops into a single while loop where `inde
 4. Whether or not there was a match, advance `index2` to the next character in `t`. (`t`'s pointer is the engine; `s`'s pointer is the progress meter.)
 5. When the loop exits, return `True` if `index1 == len(s)` — every character of `s` was matched in order. Otherwise return `False` — `t` exhausted before `s` did, so the order constraint was violated.
 
-> 🖼 Diagram — Simultaneous traversal — index2 advances every step; index1 only advances when a match is found. The loop exits when either string is exhausted.
 ```mermaid
 ---
 config:

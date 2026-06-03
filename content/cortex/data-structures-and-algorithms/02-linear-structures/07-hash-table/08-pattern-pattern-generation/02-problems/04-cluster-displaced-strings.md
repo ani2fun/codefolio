@@ -85,7 +85,6 @@ The key per string is the **gap-sequence**, with negative gaps wrapped to `+ 26`
 
 Single-character strings have an empty gap sequence `""`, so they all share one key and cluster together — in Example 1, `b` and `c` form the single bucket `[b, c]`. Two-character strings cluster by their one gap, three-character strings by their two-gap sequence, and so on. So the key idea is: strings cluster by *gap-sequence length and contents*, which is why same-length displaced strings group while different-length strings never can.
 
-> 🖼 Diagram — Cluster displaced strings — the key is the sequence of consecutive-character gaps (modulo 26 to handle wrap). Strings with identical gap sequences belong to the same displacing class and collide into the same hash-map bucket.
 ```d2
 direction: right
 
@@ -321,7 +320,7 @@ Keying a string is linear in its length, and bucketing is one `O(1)` map operati
 The new idea here is a **relational key** — the mod-26 sequence of gaps between consecutive characters — which is invariant under shifting every character by a constant, so displaced strings collapse to one bucket.
 
 <details>
-<summary><h2>Final Takeaway</h2></summary>
+<summary><h2>Key Takeaway</h2></summary>
 
 
 The key-generation pattern is the rosetta stone of hash-table problem solving. *Anywhere you can define what makes two inputs "the same"*, you can encode that sameness as a key, throw the keys at a hash map, and let the structure do the grouping for you.

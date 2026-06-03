@@ -2,7 +2,7 @@
 title: "Memorize: Variable-Sized Sliding Window"
 summary: "Pattern recognition triggers, template code, common mistakes, and quick recall."
 prereqs:
-  - 10-pattern-variable-sized-sliding-window/02-problems
+  - 10-pattern-variable-sized-sliding-window/01-pattern
 ---
 
 # Memorize: Variable-Sized Sliding Window
@@ -30,8 +30,6 @@ Picture reading a sentence through a cardboard slot that you can widen or narrow
 ---
 
 ## Visual Summary
-
-> 🖼 Diagram — TODO: 3 frames — zero-width window at index 0 with an empty map / mid-sweep window `arr[start..end]` satisfying the rule with its map populated / a contraction step shrinking `start` and evicting a key after the rule breaks.
 
 ---
 

@@ -6,15 +6,12 @@ Use this page as the chapter map for singly linked list. The guides are ordered 
 
 ## Start Here — the learning path
 
-- [Introduction to Singly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-introduction-to-singly-linked-lists)
-- [Traversal In Singly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-traversal-in-singly-linked-lists)
-- [Insertion In Singly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-insertion-in-singly-linked-lists)
-- [Deletion In Singly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-deletion-in-singly-linked-lists)
-- [Detecting Cycle In Singly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-detecting-cycle-in-singly-linked-lists)
+- [Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-what-is-a-linked-list)
+- [Detecting a Cycle in a Singly Linked List](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-detecting-cycle-in-singly-linked-lists)
 - [Pattern: Reversal](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reversal-pattern)
-- [Pattern: Reversal (Subproblem)](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reversal-subproblem-pattern)
-- [Pattern: Sliding Window Traversal](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-sliding-window-traversal-pattern)
-- [Pattern: Fast and Slow Pointers](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-fast-and-slow-pointers-pattern)
+- [Pattern: Reversal as a Subproblem](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reversal-subproblem-pattern)
+- [Pattern: Sliding-Window Traversal](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-sliding-window-traversal-pattern)
+- [Pattern: Fast & Slow Pointers](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-fast-and-slow-pointers-pattern)
 - [Pattern: Split](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-split-pattern)
 - [Pattern: Merge](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-merge-pattern)
 - [Pattern: Reorder](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reorder-pattern)

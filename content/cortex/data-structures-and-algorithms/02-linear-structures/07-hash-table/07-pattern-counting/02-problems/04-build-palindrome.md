@@ -87,7 +87,6 @@ A palindrome reads the same forward and backward. Every character used in pairs 
 2. For each frequency: if **even**, add it all; if **odd**, add `count − 1` (the largest even part) and remember we saw an odd.
 3. If any odd count was seen, add 1 (one character can sit in the middle).
 
-> 🖼 Diagram — Build palindrome — every even-frequency character contributes fully; odd-frequency characters contribute (count − 1); a single bonus +1 for the optional middle character.
 ```mermaid
 ---
 config:

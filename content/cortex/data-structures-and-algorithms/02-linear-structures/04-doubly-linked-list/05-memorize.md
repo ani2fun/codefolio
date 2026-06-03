@@ -2,7 +2,7 @@
 title: "Memorize: Doubly Linked List"
 summary: "Mnemonics, analogies, key operations, and quick recall for doubly linked list."
 prereqs:
-  - 02-linear-structures/04-doubly-linked-list/04-deletion-in-doubly-linked-lists
+  - 02-linear-structures/04-doubly-linked-list/01-doubly-linked-lists
 ---
 
 # Memorize: Doubly Linked List
@@ -30,8 +30,6 @@ Picture a conga line where every dancer keeps one hand on the shoulder of the pe
 ---
 
 ## Visual Summary
-
-> 🖼 Diagram — TODO: 3 frames — an empty list (`head = null`, `tail = null`); a single-node list whose lone node has `prev = null` and `next = null`, with both `head` and `tail` pointing at it; a four-node list with paired arrows running forward (`next`) and backward (`prev`) between every adjacent pair, `head.prev = null` on the left and `tail.next = null` on the right.
 
 ---
 

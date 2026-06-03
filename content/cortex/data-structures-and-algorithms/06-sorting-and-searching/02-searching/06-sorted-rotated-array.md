@@ -1,530 +1,171 @@
 ---
 title: "Sorted Rotated Array"
-summary: "<!-- TODO: summary -->"
+summary: "A sorted array rotated at some pivot isn't globally sorted — but at any midpoint, one half is. Decide which half is sorted, test whether the target falls in its range, and recurse there. O(log n) search without un-rotating the array."
+prereqs:
+  - 06-sorting-and-searching/02-searching/01-binary-search
 ---
 
-# 6. Sorted Rotated Array
+# Sorted Rotated Array
 
-A sorted array is rotated by some unknown amount: `[1, 2, 3, 4, 5, 6, 7]` becomes `[4, 5, 6, 7, 1, 2, 3]`. Plain binary search doesn't work — the array isn't sorted globally. But it's *almost* sorted: it consists of two sorted segments, with the second's values smaller than the first's. Can we still binary-search it in `O(log n)`?
+## Why It Exists
 
-Yes — and this lesson covers two related problems:
-1. **Find the minimum** — locate the rotation point (the start of the smaller segment).
-2. **Search for a target** — find a specific value in the rotated array.
+A *sorted rotated array* is a sorted array that's been cut at some pivot and the two pieces swapped — `[0,1,2,4,5,6,7]` rotated becomes `[4,5,6,7,0,1,2]`. It's no longer globally sorted, so plain binary search fails. You *could* find the pivot and un-rotate, but there's a slicker way that searches directly in `O(log n)`.
 
-Both run in `O(log n)`. The trick: at any midpoint, *one of the two halves is guaranteed sorted*. Determining which half by comparing `arr[mid]` with `arr[low]` (or `arr[high]`) lets us decide which half could possibly contain the target — same divide-and-conquer logic as binary search, with one extra comparison per iteration.
+The key observation: split at the midpoint and **at least one half is always fully sorted**. (The rotation point lies in one half; the other half is a clean ascending run.) So at each step, figure out which half is sorted, check whether the target lies within that sorted half's value range, and discard the half that can't contain it — the same "throw away half" discipline as binary search, just with one extra decision.
 
-By the end of this lesson you'll know both algorithms, the "one half is always sorted" insight that makes them work, and the precise per-iteration decision tree.
+## See It Work
 
-## Table of contents
+Find `0` in the rotated array `[4, 5, 6, 7, 0, 1, 2]`. Run it.
 
-1. [The rotated array structure](#the-rotated-array-structure)
-2. [Finding the minimum](#finding-the-minimum)
-3. [Searching for a target](#searching-for-a-target)
-4. [Complexity analysis](#complexity-analysis)
-5. [Rotated array minimum problem](#rotated-array-minimum-problem)
-6. [Rotated array search problem](#rotated-array-search-problem)
-
-***
-
-# The Rotated Array Structure
-
-A sorted array `[a₀, a₁, ..., a_{n-1}]` rotated at pivot `k` becomes:
-
-```
-[a_k, a_{k+1}, ..., a_{n-1}, a_0, a_1, ..., a_{k-1}]
-```
-
-Three properties hold:
-1. The first `n - k` elements form a sorted segment (the original suffix).
-2. The last `k` elements form another sorted segment (the original prefix).
-3. **All elements in the first segment are larger than all elements in the second segment.**
-
-Visually:
-
-```d2
-direction: right
-
-input: "Original sorted: [1, 2, 3, 4, 5, 6, 7]" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
-rotated: "After rotating at k=4:\n[5, 6, 7, 1, 2, 3, 4]\n  ↑       ↑\n  segment 1 (sorted, larger values)\n          segment 2 (sorted, smaller values)" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-
-input -> rotated: rotate left by k=4 (or right by n-k=3)
-```
-
-<p align="center"><strong>A sorted-rotated array is two sorted segments stitched together, with all elements of the first larger than all elements of the second.</strong></p>
-
-The minimum of the array is at the start of segment 2 — the rotation point.
-
----
-
-## The Key Property
-
-For any midpoint `mid` in a sorted-rotated array, *at least one of the two halves `[low, mid]` and `[mid, high]` is fully sorted*. Why?
-
-- If `arr[low] ≤ arr[mid]`, then `low..mid` lies entirely within one segment → that half is sorted.
-- Otherwise, `arr[mid] < arr[low]`, meaning `mid` is in segment 2 while `low` is in segment 1 → the right half `mid..high` lies entirely within segment 2 → that half is sorted.
-
-Either way, exactly one half is sorted. We can apply standard binary-search reasoning to that half (compare target with its endpoints), then either find the target there or restrict the search to the other half.
-
-This is the entire algorithmic insight. Now we apply it.
-
----
-
-## Key Takeaway
-
-A rotated sorted array has two sorted segments with all-bigger followed by all-smaller. At any midpoint, one half is fully sorted. Use that half to decide which half to discard. Now the two algorithms.
-
-***
-
-# Finding the Minimum
-
-The minimum is at the start of segment 2 — the only place where `arr[i-1] > arr[i]` (the unique "discontinuity"). Find that index.
-
-<details>
-<summary><h2>Algorithm</h2></summary>
-
-
-Compare `arr[mid]` with `arr[high]`:
-- If `arr[mid] > arr[high]`: the discontinuity is in the right half — the minimum is somewhere in `(mid, high]`. Set `low = mid + 1`.
-- Otherwise: the right half is sorted from `mid` onward — the minimum is in `[low, mid]`. Set `high = mid` (keeping `mid` as a candidate).
-
-Loop until `low == high`. Return `low`.
-
-```
-arr = [4, 5, 6, 1, 2, 3]
-
-low=0, high=5, mid=2, arr[mid]=6, arr[high]=3. 6 > 3 → low = 3
-low=3, high=5, mid=4, arr[mid]=2, arr[high]=3. 2 ≤ 3 → high = 4
-low=3, high=4, mid=3, arr[mid]=1, arr[high]=2. 1 ≤ 2 → high = 3
-low=3, high=3 → loop exits
-return 3 (arr[3] = 1, the minimum). ✓
-```
-
-</details>
-<details>
-<summary><h2>Why Compare with `arr[high]` (Not `arr[low]`)?</h2></summary>
-
-
-Comparing with `arr[high]` is unambiguous. If `arr[mid] > arr[high]`, the second segment must be in `(mid, high]` (because `arr[high]` is in segment 2 and `arr[mid]` is in segment 1, so the boundary is between them). Comparing with `arr[low]` works for distinct elements but breaks if duplicates are allowed (e.g., `arr[mid] == arr[low]` doesn't tell us which segment `mid` is in).
-
-</details>
-<details>
-<summary><h2>Implementation</h2></summary>
-
-
-
-```python run viz=array viz-root=arr
-from typing import List
-
-class Solution:
-    def rotated_array_minimum(self, arr: List[int]) -> int:
-        low: int = 0
-        high: int = len(arr) - 1
-
-        # Perform binary search until low becomes equal to high
-        while low < high:
-            mid: int = low + (high - low) // 2
-
-            # If the middle element is greater than the element at high
-            # index, it means the minimum element lies in the right part
-            # of the array.
-            if arr[mid] > arr[high]:
-                low = mid + 1
-
-            # Otherwise, the minimum element lies in the left part of the
-            # array.
+```python run
+def search(arr, target):
+    lo, hi = 0, len(arr) - 1
+    while lo <= hi:
+        mid = lo + (hi - lo) // 2
+        if arr[mid] == target:
+            return mid
+        if arr[lo] <= arr[mid]:                  # LEFT half [lo..mid] is sorted
+            if arr[lo] <= target < arr[mid]:
+                hi = mid - 1                     # target is inside the sorted left
             else:
-                high = mid
+                lo = mid + 1                     # else it's in the right
+        else:                                     # RIGHT half [mid..hi] is sorted
+            if arr[mid] < target <= arr[hi]:
+                lo = mid + 1                     # target is inside the sorted right
+            else:
+                hi = mid - 1
+    return -1
 
-        # Return the index of the minimum element
-        return low
-
-
-# Examples from the problem statement
-print(Solution().rotated_array_minimum([4, 5, 6, 1, 2, 3]))  # 3
-print(Solution().rotated_array_minimum([5, 6, 1, 2, 3, 4]))  # 2
-print(Solution().rotated_array_minimum([6, 7, 2, 3, 4, 5]))  # 2
-
-# Edge cases
-print(Solution().rotated_array_minimum([1]))                  # 0 — single element
-print(Solution().rotated_array_minimum([2, 1]))               # 1 — two elements, rotated by 1
-print(Solution().rotated_array_minimum([1, 2]))               # 0 — two elements, no rotation
-print(Solution().rotated_array_minimum([1, 2, 3, 4, 5]))     # 0 — no rotation (pivot = 0)
-print(Solution().rotated_array_minimum([2, 3, 4, 5, 1]))     # 4 — rotated by N-1
+print(search([4, 5, 6, 7, 0, 1, 2], 0))   # 4
+print(search([4, 5, 6, 7, 0, 1, 2], 3))   # -1
 ```
 
-```java run viz=array viz-root=arr
-import java.util.*;
+## How It Works
 
+Standard binary-search frame (`lo`, `hi`, `mid`), with the comparison replaced by a two-level decision. After checking `arr[mid] == target`:
+
+1. **Which half is sorted?** If `arr[lo] ≤ arr[mid]`, the **left** half `[lo, mid]` is a clean ascending run; otherwise the **right** half `[mid, hi]` is.
+2. **Is the target in the sorted half's range?** 
+   - Left sorted: if `arr[lo] ≤ target < arr[mid]`, the target must be in the left → `hi = mid − 1`; else go right.
+   - Right sorted: if `arr[mid] < target ≤ arr[hi]`, the target must be in the right → `lo = mid + 1`; else go left.
+
+Because you always know one half's exact range, you can definitively say whether the target is in it — and discard the other half.
+
+```mermaid
+flowchart TB
+  M["mid; arr[mid] == target? → done"] --> S{"arr[lo] <= arr[mid]?"}
+  S -->|"yes: left sorted"| L{"target in [arr[lo], arr[mid])?"}
+  S -->|"no: right sorted"| R{"target in (arr[mid], arr[hi]]?"}
+  L -->|"yes"| LL["search left"]
+  L -->|"no"| LR["search right"]
+  R -->|"yes"| RR["search right"]
+  R -->|"no"| RL["search left"]
+```
+
+<p align="center"><strong>identify the sorted half, check if the target lies in its range; if so search it, otherwise search the other (which holds the rotation point).</strong></p>
+
+Each step halves the range, so it's **`O(log n)` time, `O(1)` space** — same as binary search. One caveat: with **duplicate** values, `arr[lo] == arr[mid]` becomes ambiguous (you can't tell which half is sorted), and the worst case degrades to `O(n)` — you must scan past the duplicates.
+
+### Key Takeaway
+
+In a rotated sorted array, one half is always sorted. Decide which (`arr[lo] ≤ arr[mid]` → left), test if the target lies in that half's known range, and discard the other half. `O(log n)` without un-rotating — though duplicates can force `O(n)`.
+
+## Trace It
+
+Searching `0` in `[4, 5, 6, 7, 0, 1, 2]` (indices 0–6):
+
+| `lo` | `hi` | `mid` | `arr[mid]` | sorted half | target `0` there? | action |
+|---|---|---|---|---|---|---|
+| 0 | 6 | 3 | `7` | left `[4..7]` | `0` in `[4,7)`? no | `lo = 4` |
+| 4 | 6 | 5 | `1` | left `[0..1]` | `0` in `[0,1)`? yes | `hi = 4` |
+| 4 | 4 | 4 | `0` | — | `arr[mid]==0` | **return 4** |
+
+Before you read on: the algorithm's first move is to ask "is `arr[lo] ≤ arr[mid]`?" to decide which half is sorted. Why is it *guaranteed* that at least one half is sorted — and why does identifying the sorted half let you make a definitive discard, when the array as a whole isn't sorted?
+
+The rotation introduces exactly *one* "drop" point (where the larger pre-rotation tail meets the smaller head — e.g. `7→0`). That single discontinuity falls into *one* of the two halves around `mid`; the *other* half has no drop, so it's a clean ascending run — hence at least one half is always sorted. And a *sorted* half is exactly where binary search's logic works: you know its endpoints, so `arr[lo] ≤ target < arr[mid]` decides membership with certainty. The unsorted half is the one hiding the rotation — but you never need to reason about its internal order; you only need to know the target *isn't* in the sorted half, which forces it into the other. Reducing a non-sorted problem to "find the one sorted half and use it as the oracle" is the whole trick — and the broader lesson that binary search applies whenever you can *decide which half to discard*, even without global order.
+
+## Your Turn
+
+The reusable rotated-array search:
+
+```python run
+def search(arr, target):
+    lo, hi = 0, len(arr) - 1
+    while lo <= hi:
+        mid = lo + (hi - lo) // 2
+        if arr[mid] == target:
+            return mid
+        if arr[lo] <= arr[mid]:
+            if arr[lo] <= target < arr[mid]:
+                hi = mid - 1
+            else:
+                lo = mid + 1
+        else:
+            if arr[mid] < target <= arr[hi]:
+                lo = mid + 1
+            else:
+                hi = mid - 1
+    return -1
+
+a = [4, 5, 6, 7, 0, 1, 2]
+print(search(a, 4), search(a, 2), search(a, 8))   # 0 6 -1
+```
+
+```java run
 public class Main {
-    static class Solution {
-        public int rotatedArrayMinimum(int[] arr) {
-            int low = 0;
-            int high = arr.length - 1;
-
-            // Perform binary search until low becomes equal to high
-            while (low < high) {
-                int mid = low + (high - low) / 2;
-
-                // If the middle element is greater than the element at high
-                // index, it means the minimum element lies in the right part
-                // of the array.
-                if (arr[mid] > arr[high]) {
-                    low = mid + 1;
-                }
-
-                // Otherwise, the minimum element lies in the left part of
-                // the array.
-                else {
-                    high = mid;
-                }
-            }
-
-            // Return the index of the minimum element
-            return low;
-        }
+  static int search(int[] arr, int target) {
+    int lo = 0, hi = arr.length - 1;
+    while (lo <= hi) {
+      int mid = lo + (hi - lo) / 2;
+      if (arr[mid] == target) return mid;
+      if (arr[lo] <= arr[mid]) {                                   // left sorted
+        if (arr[lo] <= target && target < arr[mid]) hi = mid - 1;
+        else lo = mid + 1;
+      } else {                                                      // right sorted
+        if (arr[mid] < target && target <= arr[hi]) lo = mid + 1;
+        else hi = mid - 1;
+      }
     }
-
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().rotatedArrayMinimum(new int[]{4, 5, 6, 1, 2, 3}));  // 3
-        System.out.println(new Solution().rotatedArrayMinimum(new int[]{5, 6, 1, 2, 3, 4}));  // 2
-        System.out.println(new Solution().rotatedArrayMinimum(new int[]{6, 7, 2, 3, 4, 5}));  // 2
-
-        // Edge cases
-        System.out.println(new Solution().rotatedArrayMinimum(new int[]{1}));                  // 0 — single element
-        System.out.println(new Solution().rotatedArrayMinimum(new int[]{2, 1}));               // 1 — two elements, rotated by 1
-        System.out.println(new Solution().rotatedArrayMinimum(new int[]{1, 2}));               // 0 — two elements, no rotation
-        System.out.println(new Solution().rotatedArrayMinimum(new int[]{1, 2, 3, 4, 5}));     // 0 — no rotation (pivot = 0)
-        System.out.println(new Solution().rotatedArrayMinimum(new int[]{2, 3, 4, 5, 1}));     // 4 — rotated by N-1
-    }
+    return -1;
+  }
+  public static void main(String[] args) {
+    int[] a = {4, 5, 6, 7, 0, 1, 2};
+    System.out.println(search(a, 0) + " " + search(a, 3));   // 4 -1
+  }
 }
 ```
 
-</details>
+This is a structural lesson — drill searching in the pattern sets.
 
+## Reflect & Connect
 
-***
+Rotated-array search shows binary search applies beyond strictly sorted data:
 
-# Searching for a Target
+- **The family** — search a rotated array (this lesson), find the **rotation point / minimum** (binary-search for the one place `arr[mid] > arr[hi]`), find how many times it was rotated (= the min's index), and the bitonic/peak-finding searches.
+- **Duplicates are the gotcha** — `arr[lo] == arr[mid]` makes "which half is sorted" ambiguous, so you fall back to shrinking `lo`/`hi` past the duplicate, degrading to `O(n)` worst case. Always ask whether the input can contain duplicates.
+- **The deep idea: binary search needs a decision, not sortedness** — any structure where you can rule out half the search space with one `O(1)` test admits a `O(log n)` search. Rotated arrays, bitonic arrays, and "find a peak" all qualify, as does the general [predicate search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search) — binary search on the *answer* rather than the data.
 
-Standard binary search structure plus one extra check: identify the sorted half and decide whether the target is in it.
+**Prerequisites:** [Binary Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-binary-search).
 
-<details>
-<summary><h2>Algorithm</h2></summary>
+## Recall
 
+> **Mnemonic:** *Rotated = one half always sorted. `arr[lo] ≤ arr[mid]`? left sorted, else right. If target in the sorted half's range, search it; else the other. `O(log n)` (O(n) with dups).*
 
-```
-while low <= high:
-    mid = (low + high) / 2
-    if arr[mid] == target: return mid
+| | |
+|---|---|
+| Which half sorted | `arr[lo] <= arr[mid]` → left, else right |
+| Left sorted | target in `[arr[lo], arr[mid])` → go left, else right |
+| Right sorted | target in `(arr[mid], arr[hi]]` → go right, else left |
+| Cost | `O(log n)`; `O(n)` worst case with duplicates |
+| Related | find the minimum / rotation count via the same frame |
 
-    if arr[mid] >= arr[low]:               # left half [low, mid] is sorted
-        if arr[low] <= target < arr[mid]: high = mid - 1   # target in left half
-        else: low = mid + 1                                 # target in right half
-    else:                                  # right half [mid, high] is sorted
-        if arr[mid] < target <= arr[high]: low = mid + 1   # target in right half
-        else: high = mid - 1                                # target in left half
-```
+- **Q:** Why is at least one half always sorted in a rotated array? **A:** Rotation creates a single discontinuity, which falls into one half; the other half is a clean ascending run.
+- **Q:** How do you decide which way to recurse? **A:** Identify the sorted half, check if the target lies in its known value range; if yes search it, otherwise search the other half.
+- **Q:** What breaks the `O(log n)` bound? **A:** Duplicates make `arr[lo] == arr[mid]` ambiguous, forcing a linear scan past them — `O(n)` worst case.
+- **Q:** What's the general principle beyond rotated arrays? **A:** Binary search needs only a way to discard half the space with one test — not full sortedness — so it applies to rotated, bitonic, peak, and predicate searches.
 
-The decision tree at each iteration:
-1. Found target? Return.
-2. Otherwise, identify the sorted half by checking `arr[mid] >= arr[low]` (left sorted) or `arr[mid] < arr[low]` (right sorted).
-3. If target falls within the sorted half's value range → search there. Else → search the other half.
+## Sources & Verify
 
-</details>
-<details>
-<summary><h2>A Walkthrough</h2></summary>
-
-
-`arr = [4, 5, 6, 1, 2, 3]`, `target = 2`.
-
-```
-low=0, high=5, mid=2, arr[mid]=6.
-  6 != 2. arr[mid]=6 >= arr[low]=4 → left half [4,5,6] is sorted.
-  Is 4 <= 2 < 6? no → target not in left → low = 3.
-
-low=3, high=5, mid=4, arr[mid]=2.
-  2 == 2 → return 4.
-```
-
-Two iterations to find the target on a 6-element array.
-
-</details>
-<details>
-<summary><h2>Implementation</h2></summary>
-
-
-
-```python run viz=array viz-root=arr
-from typing import List
-
-class Solution:
-    def rotated_array_search(self, arr: List[int], target: int) -> int:
-        low = 0
-        high = len(arr) - 1
-
-        while low <= high:
-            mid = low + (high - low) // 2
-
-            # If the middle element is the target, return its index
-            if arr[mid] == target:
-                return mid
-
-            # If the left half is sorted
-            if arr[mid] >= arr[low]:
-
-                # If the target is within the range of the left half
-                # Update the high index to search in the left half
-                if arr[low] <= target and target < arr[mid]:
-                    high = mid - 1
-
-                # Otherwise, update the low index to search in the right
-                # half
-                else:
-                    low = mid + 1
-
-            # Otherwise, if the right half is sorted
-            else:
-
-                # If the target is within the range of the right half
-                # Update the low index to search in the right half
-                if arr[mid] < target and target <= arr[high]:
-                    low = mid + 1
-
-                # Otherwise, update the high index to search in the left
-                # half
-                else:
-                    high = mid - 1
-
-        # Target not found
-        return -1
-
-
-# Examples from the problem statement
-print(Solution().rotated_array_search([4, 5, 6, 1, 2, 3], 3))   # 5
-print(Solution().rotated_array_search([5, 6, 1, 2, 3, 4], 6))   # 1
-print(Solution().rotated_array_search([6, 1, 2, 3, 4, 5], 10))  # -1
-
-# Edge cases
-print(Solution().rotated_array_search([1], 1))                   # 0 — single element present
-print(Solution().rotated_array_search([1], 2))                   # -1 — single element absent
-print(Solution().rotated_array_search([1, 2, 3, 4, 5], 3))      # 2 — no rotation
-print(Solution().rotated_array_search([2, 3, 4, 5, 1], 1))      # 4 — target at last position
-print(Solution().rotated_array_search([4, 5, 6, 1, 2, 3], 4))   # 0 — target at first position
-```
-
-```java run viz=array viz-root=arr
-import java.util.*;
-
-public class Main {
-    static class Solution {
-        public int rotatedArraySearch(int[] arr, int target) {
-            int low = 0;
-            int high = arr.length - 1;
-
-            while (low <= high) {
-                int mid = low + (high - low) / 2;
-
-                // If the middle element is the target, return its index
-                if (arr[mid] == target) {
-                    return mid;
-                }
-
-                // If the left half is sorted
-                if (arr[mid] >= arr[low]) {
-
-                    // If the target is within the range of the left half
-                    // Update the high index to search in the left half
-                    if (arr[low] <= target && target < arr[mid]) {
-                        high = mid - 1;
-                    }
-
-                    // Otherwise, update the low index to search in the right
-                    // half
-                    else {
-                        low = mid + 1;
-                    }
-                }
-
-                // Otherwise, if the right half is sorted
-                else {
-
-                    // If the target is within the range of the right half
-                    // Update the low index to search in the right half
-                    if (arr[mid] < target && target <= arr[high]) {
-                        low = mid + 1;
-                    }
-
-                    // Otherwise, update the high index to search in the left
-                    // half
-                    else {
-                        high = mid - 1;
-                    }
-                }
-            }
-
-            // Target not found
-            return -1;
-        }
-    }
-
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().rotatedArraySearch(new int[]{4, 5, 6, 1, 2, 3}, 3));   // 5
-        System.out.println(new Solution().rotatedArraySearch(new int[]{5, 6, 1, 2, 3, 4}, 6));   // 1
-        System.out.println(new Solution().rotatedArraySearch(new int[]{6, 1, 2, 3, 4, 5}, 10));  // -1
-
-        // Edge cases
-        System.out.println(new Solution().rotatedArraySearch(new int[]{1}, 1));                   // 0 — single element present
-        System.out.println(new Solution().rotatedArraySearch(new int[]{1}, 2));                   // -1 — single element absent
-        System.out.println(new Solution().rotatedArraySearch(new int[]{1, 2, 3, 4, 5}, 3));      // 2 — no rotation
-        System.out.println(new Solution().rotatedArraySearch(new int[]{2, 3, 4, 5, 1}, 1));      // 4 — target at last position
-        System.out.println(new Solution().rotatedArraySearch(new int[]{4, 5, 6, 1, 2, 3}, 4));   // 0 — target at first position
-    }
-}
-```
-
-</details>
-
-
-***
-
-# Complexity Analysis
-
-| Algorithm | Time | Space |
-|---|---|---|
-| **Find minimum** | `O(log n)` | `O(1)` |
-| **Search target** | `O(log n)` | `O(1)` |
-
-Both algorithms halve the search range each iteration. The extra check ("which half is sorted?") is `O(1)` per iteration, so the total stays `O(log n)`.
-
-***
-
-# Rotated Array Minimum Problem
-
-Given a sorted-then-rotated array of *distinct* elements, return the index of the minimum.
-
-```
-Input:  arr = [4, 5, 6, 1, 2, 3]
-Output: 3
-
-Input:  arr = [5, 6, 1, 2, 3, 4]
-Output: 2
-
-Input:  arr = [6, 7, 2, 3, 4, 5]
-Output: 2
-```
-
-The implementation matches the version above. See [Finding the Minimum](#finding-the-minimum).
-
----
-
-## Edge Cases
-
-| Case | Example | Expected |
-|---|---|---|
-| Not actually rotated | `[1, 2, 3]` | `0` (minimum at start) |
-| Single element | `[5]` | `0` |
-| Two elements rotated | `[2, 1]` | `1` |
-| Two elements not rotated | `[1, 2]` | `0` |
-
-***
-
-# Rotated Array Search Problem
-
-Given a sorted-then-rotated array of *distinct* elements and a target, return the index of target, or `-1`.
-
-```
-Input:  arr = [4, 5, 6, 1, 2, 3], target = 3
-Output: 5
-
-Input:  arr = [5, 6, 1, 2, 3, 4], target = 6
-Output: 1
-
-Input:  arr = [6, 1, 2, 3, 4, 5], target = 10
-Output: -1
-```
-
-The implementation matches the version above. See [Searching for a Target](#searching-for-a-target).
-
----
-
-## Edge Cases
-
-| Case | Example | Expected |
-|---|---|---|
-| Empty array | `[], target = 5` | `-1` |
-| Not rotated, target present | `[1, 2, 3], target = 2` | `1` |
-| Single element match | `[5], target = 5` | `0` |
-| Target absent in rotated array | `[4, 5, 1, 2], target = 7` | `-1` |
-| Target at the rotation boundary | `[4, 5, 1, 2], target = 1` | `2` |
-
----
-
-## Final Takeaway
-
-Sorted-rotated arrays look broken but are amenable to binary search via one extra check per iteration: which half is sorted? Once you know, the standard binary-search logic applies to the sorted half. `O(log n)` for both finding the minimum and searching for a target.
-
-The next lesson shifts gears entirely — the Binary Search Pattern lesson begins the **pattern lessons** for searching. The five pattern lessons that follow cover four canonical patterns: **binary search pattern** (the Binary Search Pattern lesson), **lower-bound pattern** (the Lower Bound Pattern lesson), **upper-bound pattern** (the Upper Bound Pattern lesson), and the two **predicate-search patterns** (Minimum Predicate Search and Maximum Predicate Search). Each pattern lesson has 4 worked problems showing how to recognise and apply binary-search-style algorithms in scenarios that don't *look* like binary search at first glance.
-
-**Transfer challenge — try before the Binary Search Pattern lesson:** What if the rotated array contains *duplicates*? For example, `[2, 2, 2, 0, 1, 2, 2]`. Does the minimum-finding algorithm still work? Why or why not?
-
-<details>
-<summary><strong>Answer — open after you've thought about it</strong></summary>
-
-The algorithm partially breaks. When `arr[mid] == arr[high]`, we can't tell which segment they're in — both could be in segment 1 (so the right half could contain the minimum) or split across (so the right half is sorted from `mid` onward).
-
-Fix: when `arr[mid] == arr[high]`, conservatively decrement `high` by 1. This is the only safe move — we can't make a binary decision.
-
-```python run viz=array viz-root=arr
-class Solution:
-    def rotated_min_with_dups(self, arr):
-        low, high = 0, len(arr) - 1
-        while low < high:
-            mid = low + (high - low) // 2
-            if arr[mid] > arr[high]: low = mid + 1
-            elif arr[mid] < arr[high]: high = mid
-            else: high -= 1                             # conservative: skip the duplicate
-        return low
-
-
-print(Solution().rotated_min_with_dups([2, 2, 2, 0, 1, 2, 2]))   # 3
-```
-
-Time complexity degrades to `O(n)` in the worst case (all elements equal — we decrement `high` `n - 1` times). The average case is still `O(log n)` for typical inputs. **You just discovered why "rotated array with duplicates" is a separate, harder problem (LeetCode #154 vs #153).**
-
-</details>
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: The Hook — missing, needs to be written -->
-<!--       Guidance: real-world story opening before any definition -->
-
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
-
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
-
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
-
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
-
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
-
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
-
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
-
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
-
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
+- **Sedgewick / interview canon** — "Search in Rotated Sorted Array" is the standard problem; the "one half is sorted" invariant is the textbook approach.
+- **CLRS**, *Introduction to Algorithms*, 4th ed. — binary search and divide-and-conquer decision arguments.
+- The `O(log n)` rotated search and the duplicate `O(n)` caveat are standard; both runnable blocks are verified by running (`0 ⇒ 4`, `3 ⇒ -1`; `4,2,8 ⇒ 0, 6, -1`).

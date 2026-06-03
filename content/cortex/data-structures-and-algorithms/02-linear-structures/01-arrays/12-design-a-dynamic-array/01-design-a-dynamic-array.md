@@ -2,7 +2,7 @@
 title: "Design a Dynamic Array"
 summary: "Build a DynamicArray class from scratch with pushBack, get, and size each in amortised O(1) time using geometric capacity doubling."
 prereqs:
-  - linear-structures-arrays-introduction
+  - linear-structures-arrays-what-is-an-array
 difficulty: medium
 ---
 
@@ -13,8 +13,6 @@ difficulty: medium
 You reach for `list` in Python, `ArrayList` in Java, `vector` in C++, or `Array` in JavaScript and push a million values without a thought. The container always has room. Raw arrays do not — allocate `int arr[10]` and the eleventh element has nowhere to live. So what does the "dynamic" container do when the underlying block fills up? And how does `pushBack` still average **O(1)** when every growth step copies every existing element?
 
 The answer is **geometric doubling**: when the array runs out of room, allocate one *twice* the current size and copy across. The trick turns a sequence that looks like it should cost `O(N)` per push into one that averages `O(1)`. Every modern dynamic-array container — `std::vector`, Go slices, Python lists, Rust `Vec`, Java `ArrayList` — runs this same state machine under the hood.
-
-> 🖼 Diagram — A row of slots labelled `arr` filling up element by element, then a new larger row appearing alongside it as the old contents are copied across — the moment the dynamic array "outgrows" itself.
 
 </details>
 
@@ -63,7 +61,6 @@ Two phrasings get conflated and they are not the same:
 
 To make this concrete: out of the first 8 `pushBack` calls on an empty array, 4 trigger a resize and 4 do not. The cumulative work is `15` units, not `8 × 8 = 64`. The expensive calls are charged ahead by all the cheap calls that follow them. So the key idea is: amortised analysis lets us hide the cost of a rare expensive operation inside the cheap operations it pays back to.
 
-> 🖼 Diagram — Expensive resizes are rare. Each doubling event pays for itself against the cheap pushes that follow it — the average cost is constant.
 ```d2
 direction: right
 
@@ -183,7 +180,6 @@ So the tradeoff is: the larger the factor, the fewer resizes but the more memory
 <summary><h2>The Growth Strategy (Visualised)</h2></summary>
 
 
-> 🖼 Diagram — The pushBack fast path is two instructions. The slow path — resize + copy — runs rarely and only when the array is full.
 ```mermaid
 ---
 config:
@@ -212,7 +208,6 @@ flowchart TB
 
 The capacity sequence for one-at-a-time pushes into an empty array makes the doubling cadence visible:
 
-> 🖼 Diagram — Resizes happen at pushes 1, 2, 3, 5, 9, 17, 33, 65 … — every power of two plus one. Between those, pushes are O(1) with no work beyond a pointer bump.
 ```d2
 seq: "Capacity sequence as elements are pushed" {
   grid-columns: 8
@@ -445,7 +440,6 @@ Resize events fire at pushes 1, 2, 3, 5, 9, 17, 33, ... — exponentially rarer 
 
 </details>
 
-> ▶ Interactive Diagram — Eight pushes into an empty DynamicArray — the blue band tracks how much of the capacity is actually used; the wasted (_) slots are the cost of amortised O(1).
 ```d3 widget=array-1d
 {
   "steps": [
@@ -1088,7 +1082,7 @@ So the key idea is: the value of building a dynamic array by hand is not the cod
 
 </details>
 <details>
-<summary><h2>Final Takeaway</h2></summary>
+<summary><h2>Key Takeaway</h2></summary>
 
 
 A dynamic array is a fixed-size array plus two design choices:

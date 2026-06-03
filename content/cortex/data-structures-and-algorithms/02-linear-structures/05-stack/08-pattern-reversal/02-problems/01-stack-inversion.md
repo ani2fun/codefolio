@@ -64,7 +64,6 @@ Two stacks, one transfer loop. Pop everything from the input and push onto the o
 2. **While the input stack is not empty,** read its top element, pop it off the input, and push it onto the output stack.
 3. **Return the output stack.** The input's old top is now at the output's bottom and the input's old bottom is on the output's top — the stack is reversed.
 
-> 🖼 Diagram — Stack inversion — pop the input top, push to output. The first popped item lands at the bottom of the output, which is exactly where it started in the input. The whole stack flips.
 ```d2
 direction: right
 

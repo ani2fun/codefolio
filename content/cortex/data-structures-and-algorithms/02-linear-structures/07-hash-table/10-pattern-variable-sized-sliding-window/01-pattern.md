@@ -1,305 +1,157 @@
 ---
-title: "Pattern: Variable-Sized Sliding Window"
-summary: "Expand the right pointer freely; shrink from the left when a constraint is violated — hash table tracks the window's character/value counts."
+title: "Pattern: Variable-Size Sliding Window"
+summary: "Grow the window on the right, and shrink from the left whenever a count-based constraint breaks — a hash map holds the window's element counts. The array variable window with a frequency map as its validity state. O(n)."
 prereqs:
   - 02-linear-structures/07-hash-table/09-pattern-fixed-sized-sliding-window/01-pattern
 ---
 
-# Understanding the variable-sized sliding window pattern
+# Pattern: Variable-Size Sliding Window
 
-The window now has **no fixed size**. Two pointers, `start` and `end`, define its boundaries. The window's contents are summarised in a hash map (frequencies, sums, sets — whatever the problem needs). On each iteration:
+## Why It Exists
 
-1. **Expand** by one step on the right: add `arr[end]`'s contribution to the map, then advance `end`.
-2. **Contract** from the left **while the window violates the constraint**: subtract `arr[start]`'s contribution and advance `start`. Loop until the constraint is satisfied again.
-3. **Record** the window's stat (length, sum, count) — at this moment the window is the largest valid one ending at `end`.
+This is the array [variable sliding window](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-variable-sliding-window-pattern) raised to *composition* constraints. There, validity was a number (a sum ≤ target). Here it's about *which elements and how many*: "the longest substring with **no repeating** character," "the longest with **at most `k` distinct**," "the shortest window **containing all** of a target set." The window's validity depends on its element counts — so its state is a **hash map**.
 
-> 🖼 Diagram — The variable-window loop — expand on the right, then contract on the left as many times as needed to restore the rule. Notice contract is a while loop, not an if: a single expansion might violate the rule by multiple slots, so we keep contracting until it's fixed.
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    EXP["expand:<br/>add arr[end]"] --> CHK{"window<br/>violates rule?"}
-    CHK -->|"yes"| CONT["contract:<br/>drop arr[start]<br/>start++"]
-    CONT --> CHK
-    CHK -->|"no"| REC["record window<br/>stat (length, etc)"]
-    REC --> ADV["end++"]
-```
+Brute force re-examines every start/end pair — `O(n²)`. The fix is the same breathing window as before, with a count map as state: **grow** the right edge (add the entering element to the map), and whenever the constraint breaks, **shrink** the left edge (remove elements) until it holds again. Each pointer only ever moves forward, so the whole sweep is `O(n)` despite the inner shrink loop.
 
-<p align="center"><strong>The variable-window loop — expand on the right, then contract on the left as many times as needed to restore the rule. Notice <code>contract</code> is a <em>while</em> loop, not an <em>if</em>: a single expansion might violate the rule by multiple slots, so we keep contracting until it's fixed.</strong></p>
+## See It Work
 
-The performance argument is beautiful: `start` only moves forward, never backward, and never overtakes `end`. Each element is therefore "touched" at most twice — once when `end` passes it (admitting it to the window), once when `start` passes it (evicting it). Total work: **O(N)**.
+Find the length of the longest substring of `"abcabcbb"` with no repeating character (it's `"abc"`, length `3`). Run it, then **Visualise** the window grow and shrink.
 
-## Why Naive Isn't Enough
-
-The naive way to find the longest valid window is to try every window. Fix a left edge `start`, extend a right edge `end` rightward while the condition holds, record the length, then advance `start` and repeat. The answer is correct, but the cost is the problem.
-
-Trying every starting position pays a quadratic price. For each of the `N` starts you re-scan up to `N` characters, rebuilding the window's hash-map summary from scratch each time. That is `n + (n−1) + … + 1`, which is **O(N²)** time for **O(K)** space (K = alphabet size). The clock dominates the moment the input passes a few thousand items.
-
-To make this concrete: on `"abcbed"` looking for the longest distinct run, the naive scan builds the window for `start = 0` — `"abc"`, then hits the duplicate `'b'` — and discards all of it. It then rebuilds from `start = 1`, hits another duplicate, and discards that too. Every restart re-counts characters an earlier scan already counted.
-
-So the key idea is: re-scanning from each start throws away everything the previous scan learned, and a window that *remembers* its contents between starts replaces all those nested scans with one pass.
-
-## The Core Idea
-
-Keep one window and never rewind it. Walk `end` forward through the sequence one element at a time; whenever the window breaks the rule, walk `start` forward just far enough to fix it. Both pointers only ever move right, so the whole sequence is covered in a single sweep.
-
-A hash map makes the rule cheap to check. The map summarises the window's contents — a frequency count, a distinct-key count, a most-frequent-letter tally — in whatever form the rule needs. Adding `arr[end]` updates one entry in amortised `O(1)`; evicting `arr[start]` updates one entry in amortised `O(1)`. So the core insight is: the hash map turns "does this window satisfy the rule?" into a constant-time lookup, and because neither pointer ever moves backward the entire scan is `O(N)`.
-
-## How the Window Moves
-
-The window breathes — `end` stretches it right, `start` compresses it from the left — but the two pointers play asymmetric roles. Understanding that asymmetry is the whole pattern:
-
-- **`end` advances unconditionally.** Every iteration admits exactly one new element on the right. This is what drives the sweep forward.
-- **`start` advances only on violation.** When the window breaks the rule, `start` steps right — once, or several times — until the rule holds again. When the rule already holds, `start` stays put.
-- **Each element is touched at most twice.** Once when `end` passes it (admitting it), once when `start` passes it (evicting it). No element is ever revisited a third time.
-
-To make this concrete: scanning `"abcbed"` for distinct characters, `end` admits `a`, `b`, `c` (window `"abc"`), then admits the second `b` (window `"abcb"`, rule broken). Now `start` advances past the first `b` to restore distinctness (window `"cb"`), then `end` resumes. The contraction at the duplicate is the entire trick — it discards every window that still contains the first `b` in one move. The core insight is: expand greedily, contract conditionally, and the forward-only motion of both pointers is what buys the `O(N)` bound.
-
-## The Generic Algorithm
-
-The template is four operations wrapped in a single loop. Three knobs change per problem: what the hash map summarises, how the rule is phrased against that summary, and whether contraction is a single step or a loop.
-
-1. Initialise `start = 0`, `end = 0`, an empty hash map summarising the window, and a `result` accumulator (a max length, a count, or a boolean) seeded to the problem's neutral value.
-2. While `end < len(sequence)`, repeat the next four steps.
-3. **Expand** — add `sequence[end]`'s contribution to the hash map.
-4. **Contract** — while the window violates the rule, remove `sequence[start]`'s contribution from the map (deleting the key if its count hits zero) and advance `start`. Use a `while`, not an `if`: one new element can break the rule by several slots.
-5. **Process** — read the current window's stat into `result`. At this point the window is the largest valid one ending at `end`.
-6. **Advance** — increment `end`.
-7. When the loop ends, return `result`.
-
-The choice between `if` and `while` at step 4 is the single most error-prone decision. Default to `while`; downgrade to `if` only when you can prove one contraction always suffices.
-
-## Complexity Analysis
-
-The forward-only motion of both pointers is the entire argument. `start` and `end` each begin at `0`, and at least one advances every iteration. Neither ever moves backward, so together they take at most **2N** steps before `end` reaches the end of the sequence. Each step does amortised `O(1)` hash-map work — one insert on expansion, one delete on contraction.
-
-That gives **O(N)** time in every case, assuming the map's add and remove are `O(1)`. Space is bounded by the number of distinct keys the window holds at once — **O(K)**, where `K` is the alphabet size or distinct-value count. That is `O(1)` for a fixed alphabet and `O(N)` in the worst case.
-
-| | Time | Space |
-|---|---|---|
-| Best case | **O(N)** | **O(K)** |
-| Worst case | **O(N)** | **O(K)** |
-
-**Compared to brute force:** the naive nested-loop scan is **O(N²)** time. For `N = 10,000` that is roughly 50 million operations versus 10,000 — the difference between seconds and milliseconds.
-
-## Variants / Taxonomy
-
-The family splits along two independent axes — *what the window optimises* and *what the map tracks to check the rule*:
-
-- **Longest-window.** Expand greedily, contract only on violation, record the maximum length seen. The window is the answer — unique-character span, K-characters span, maximal character swap.
-- **Existence / fixed-width window.** The window is capped at a known width (`k+1`) and you only ask whether a property ever holds inside it — twin-in-proximity. No "longest" search; the map is a moving set of the last few elements.
-- **Frequency-map rule.** The map counts occurrences and the rule reads those counts — distinct-count `≤ k`, no-duplicates (`count ≤ 1`), `(width − maxFreq) ≤ k`. This is the default for character problems.
-- **Non-monotonic escape hatch.** When the rule is *not* monotonic (arrays with negatives, "sum exactly `k`"), the window trick breaks — contracting can make the sum go either way. These need a prefix-sum + hash map instead, previewed in subarray-sum-equals-k.
-
-Every monotonic variant runs the identical expand-contract-record skeleton. The longest/existence axis changes whether you search for a maximum or short-circuit on a hit; the map axis changes what you hash and how the rule reads it.
-
-# Identifying the variable-sized sliding window pattern
-
-This pattern fits problems that ask for the **longest** (or shortest) contiguous subsequence satisfying some condition that can be checked from a hash-map summary. The condition's truth-value should change *monotonically* as the window grows or shrinks — typically: extending the window *can only worsen* the condition, and contracting it *can only improve*.
-
-**Template:**
-> Given a sequence and a condition, slide a window whose right edge always advances; expand into the next element, then contract from the left until the condition holds; record the resulting window stat.
-
-If the condition is "no duplicates", "at most K distinct", "sum ≤ S", "max-frequency element covers ≥ window − K positions", this template fits.
-
-## Example — longest substring without repeating characters
-
-> **Problem:** Given a string `s`, return the length of the longest substring without any repeating characters.
-
-### Brute force
-
-For each `start`, scan forward with `end`, maintaining a frequency map; stop the moment a duplicate appears. Track the longest run. **O(N²)**.
-
-### Variable-window solution
-
-The same observation that makes brute force O(N²) is also the loophole that makes a single pass possible: **once you've found a duplicate, the start pointer never has to move backward**. Any window that previously contained the duplicate is now disqualified. So we expand `end` greedily, and *whenever* the new character causes a duplicate, we slide `start` forward until the duplicate is gone — never reset, never look back.
-
-> 🖼 Diagram — Walking through 'abcbed' — the window grows until 'b' duplicates, contracts past the first 'b', then continues growing. start only ever moves forward; end only ever moves forward. Each character is processed at most twice.
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    A["s = 'a b c b e d'"] --> S1["window 'a' → ok, len=1"]
-    S1 --> S2["expand 'ab' → ok, len=2"]
-    S2 --> S3["expand 'abc' → ok, len=3"]
-    S3 --> S4["expand 'abcb' → b dup!<br/>contract until 'cb' → ok, len=2"]
-    S4 --> S5["expand 'cbe' → ok, len=3"]
-    S5 --> S6["expand 'cbed' → ok, len=4"]
-    S6 --> R["maxLength = 4"]
-    style R fill:#dcfce7,stroke:#22c55e
-```
-
-<p align="center"><strong>Walking through 'abcbed' — the window grows until 'b' duplicates, contracts past the first 'b', then continues growing. <code>start</code> only ever moves forward; <code>end</code> only ever moves forward. Each character is processed at most twice.</strong></p>
-
-### Algorithm
-
-> **Algorithm**
->
-> -   **Step 1:** Initialise `start = 0`, `end = 0`, empty `frequency` map, `maxLength = 0`.
-> -   **Step 2:** While `end < len(s)`:
->     -   **Step 2.1:** Increment `frequency[s[end]]`.
->     -   **Step 2.2:** While `frequency[s[end]] > 1` (rule violated):
->         -   Decrement `frequency[s[start]]`; if zero, remove the key; advance `start`.
->     -   **Step 2.3:** `maxLength = max(maxLength, end − start + 1)`.
->     -   **Step 2.4:** Advance `end`.
-
-### Implementation
-
+> ▶ Run it, then click **Visualise** — `end` grows the window and adds to the count map; a repeat triggers `start` to shrink from the left until the window is valid again.
 
 ```python run viz=array viz-root=s
-def unique_character_span(s: str) -> int:
-    freq, max_len, start = {}, 0, 0
-    for end in range(len(s)):
-        freq[s[end]] = freq.get(s[end], 0) + 1
-        # Contract while the rule "no duplicates" is violated
-        while freq[s[end]] > 1:
-            freq[s[start]] -= 1
-            if freq[s[start]] == 0: del freq[s[start]]
-            start += 1
-        # Window [start..end] is the longest valid window ending at end
-        max_len = max(max_len, end - start + 1)
-    return max_len
-
-print(unique_character_span("abcbed"))     # 4
-print(unique_character_span("aaaaabc"))    # 3
-print(unique_character_span("abcdefgh"))   # 8
+s = "abcabcbb"
+count = {}                            # window state: char → count
+start = best = 0
+for end in range(len(s)):
+    ch = s[end]
+    count[ch] = count.get(ch, 0) + 1  # grow: fold in the entering char
+    while count[ch] > 1:              # invalid (a repeat) → shrink from the left
+        count[s[start]] -= 1
+        start += 1
+    best = max(best, end - start + 1) # longest valid window so far
+print(best)                           # 3
 ```
 
-```java run viz=array viz-root=s
+## How It Works
+
+Two pointers `start` and `end` bound the window; a count map tracks how many of each element it holds. The loop has a driver and a repair:
+
+- **Grow** — `end` advances every step, incrementing `count[s[end]]`.
+- **Shrink** — a `while` loop advances `start`, decrementing the leaving element's count, *until the window is valid again* (here, until no character appears twice).
+
+```mermaid
+flowchart LR
+  E["grow: end++, count[entering]++"] --> Q{"window valid?"}
+  Q -->|"no — constraint broken"| C["shrink: count[leaving]--, start++"]
+  Q -->|"yes"| M["record best = max(best, size)"]
+  C --> M
+  M --> E
+```
+
+<p align="center"><strong>grow on the right into the count map; when the constraint breaks, shrink from the left until valid; record the best valid window.</strong></p>
+
+The inner `while` *looks* quadratic but isn't: `start` only ever moves forward, crossing the string at most once total, so across the whole run `end` advances `n` times and `start` advances ≤ `n` times — **`O(n)` time, `O(σ)` space**. Swap the validity test to change the problem: `count[ch] > 1` → no repeats; `len(count) > k` → at most `k` distinct; "map covers a target multiset" → minimum window substring.
+
+### Key Takeaway
+
+Grow the window on the right into a count map, shrink from the left whenever the count-based constraint breaks, and track the best valid window. Both pointers move forward only → `O(n)`. The validity test is the single knob that selects the problem.
+
+## Trace It
+
+Longest-no-repeat over `"abcabcbb"`:
+
+| `end` | char | window `[start..end]` | action |
+|---|---|---|---|
+| 0–2 | `a,b,c` | `abc` | valid, **best = 3** |
+| 3 | `a` | `abca` → repeat `a` | shrink: drop `a` at 0 → `start=1`, window `bca` |
+| 4 | `b` | `bcab` → repeat `b` | shrink: drop `b` at 1 → `start=2`, window `cab` |
+| 5 | `c` | `cabc` → repeat `c` | shrink → `start=3`, window `abc` |
+| 6 | `b` | `abcb` → repeat `b` | shrink to `start=5`, window `cb` |
+
+Before you read on: at `end = 3` the window held `abca`, the shrink loop ran, and `start` advanced. Across the entire scan, `start` only ever increases. Why does that one fact guarantee the algorithm is `O(n)` and not `O(n²)`, even though there's a loop inside a loop?
+
+Because the total work of the inner loop is bounded by *how far `start` can travel*, and `start` goes from `0` to at most `n` — **once**. Each position is left by `start` exactly one time; it never backtracks. So summed over the whole run, the inner shrink executes at most `n` times total, not `n` times per outer step. Add the `n` steps of `end`, and the work is `≤ 2n` — linear. This amortized argument ("an inner loop isn't quadratic if the pointer it advances never resets") is the transferable idea, the same one behind the array variable window.
+
+## Your Turn
+
+The reusable longest-substring-without-repeats:
+
+```python run
+def longest_unique(s):
+    count = {}
+    start = best = 0
+    for end in range(len(s)):
+        ch = s[end]
+        count[ch] = count.get(ch, 0) + 1
+        while count[ch] > 1:              # shrink while invalid
+            count[s[start]] -= 1
+            start += 1
+        best = max(best, end - start + 1)
+    return best
+
+print(longest_unique("pwwkew"))           # 3  ("wke")
+print(longest_unique("bbbbb"))            # 1
+```
+
+```java run
 import java.util.*;
 
 public class Main {
-    static int uniqueCharacterSpan(String s) {
-        Map<Character, Integer> freq = new HashMap<>();
-        int start = 0, max = 0;
-        for (int end = 0; end < s.length(); end++) {
-            char c = s.charAt(end);
-            freq.merge(c, 1, Integer::sum);
-            while (freq.get(c) > 1) {
-                char sc = s.charAt(start);
-                freq.merge(sc, -1, Integer::sum);
-                if (freq.get(sc) == 0) freq.remove(sc);
-                start++;
-            }
-            max = Math.max(max, end - start + 1);
-        }
-        return max;
+  static int longestUnique(String s) {
+    Map<Character, Integer> count = new HashMap<>();
+    int start = 0, best = 0;
+    for (int end = 0; end < s.length(); end++) {
+      char ch = s.charAt(end);
+      count.merge(ch, 1, Integer::sum);
+      while (count.get(ch) > 1) {         // shrink while invalid
+        count.merge(s.charAt(start), -1, Integer::sum);
+        start++;
+      }
+      best = Math.max(best, end - start + 1);
     }
-    public static void main(String[] args) {
-        System.out.println(uniqueCharacterSpan("abcbed"));
-        System.out.println(uniqueCharacterSpan("aaaaabc"));
-        System.out.println(uniqueCharacterSpan("abcdefgh"));
-    }
+    return best;
+  }
+
+  public static void main(String[] args) {
+    System.out.println(longestUnique("pwwkew"));   // 3
+    System.out.println(longestUnique("bbbbb"));    // 1
+  }
 }
 ```
 
+Drill the family in **Practice** — [Unique Character Span](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-variable-sized-sliding-window-problems-unique-character-span), [K Characters Span](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-variable-sized-sliding-window-problems-k-characters-span), [Maximal Character Swap](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-variable-sized-sliding-window-problems-maximal-character-swap), [Subarray Sum Equals K](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-variable-sized-sliding-window-problems-subarray-sum-equals-k), and [Twin in Proximity](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-variable-sized-sliding-window-problems-twin-in-proximity).
 
-A single pass — **O(N)** time, **O(K)** space (K = alphabet size).
+## Reflect & Connect
 
-## Example problems
+This is among the most common interview patterns — "longest/shortest substring satisfying a count condition" is almost always a map-backed variable window:
 
-> -   Unique character span — longest substring without repeating characters
-> -   K characters span — longest substring with at most K distinct characters
-> -   Maximal character swap — longest run achievable with K character replacements
-> -   Subarray sum equals k — longest subarray summing to K (uses prefix-sum + hash)
-> -   Twin in proximity — any duplicate within distance K?
+- **The family, by validity test** — `count[ch] > 1` (no repeats), `len(count) > k` (at most `k` distinct), "map covers the target" (minimum window substring), or longest-with-at-most-`k`-of-some-value. The skeleton is fixed; the test selects the problem.
+- **It's [variable sliding window](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-variable-sliding-window-pattern) + [counting](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting-pattern)** — the array pattern's grow/shrink machinery with a frequency map as the validity state.
+- **Longest vs shortest flips the shrink rule** — for *longest valid*, shrink only while invalid and measure after; for *shortest valid*, shrink while still valid and measure inside the loop. Same window, opposite shrink condition.
 
-## Recognition Checklist
+**Prerequisites:** [Fixed-Size Sliding Window](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-fixed-sized-sliding-window-pattern).
+**What's next:** answer subarray-sum questions with a running total and a map of seen prefixes — [Prefix Sum](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-prefix-sum-pattern).
 
-Four questions confirm a problem fits the variable-sized sliding window. Every answer must be **yes** — a single **no** means a different technique applies, or the pattern is outright unsafe.
+## Recall
 
-1. **Is the answer the longest, shortest, or count of a *contiguous* subsequence?** The window is one contiguous range; "pick any subset" or "reorder" problems do not fit.
-2. **Can a hash map summarise the window so the rule is an `O(1)` check?** Frequency counts, distinct-key counts, and most-frequent tallies all qualify. A rule needing a sorted view or sliding max/min does not, without a heavier structure.
-3. **Can you add `arr[end]` and remove `arr[start]` from that summary in `O(1)`?** Counts can. Plain max/min cannot be undone in constant time once the extreme leaves the window.
-4. **Is the rule *monotonic* as the window grows?** Extending must only make the rule harder (or only easier) to satisfy. Without this, contracting on violation is guessing — and the proof of correctness collapses.
+> **Mnemonic:** *Grow right into a count map; shrink left while invalid; track the best. Both pointers forward-only ⇒ `O(n)`. The validity test picks the problem.*
 
-These four questions reappear as the **Diagnostic Questions** table in every problem write-up that follows.
-
-## Canonical Example
-
-The worked example above showed the mechanics. Here the same problem — the longest substring without repeating characters — runs end-to-end against the four recognition questions, adding the step trace and template-fit check the earlier pass left out.
-
-### Problem Statement
-
-> **Problem:** Given a string `s`, return the length of the longest substring without any repeating characters.
-
-Take `s = "abcbed"`. The expected answer is `4` — `"cbed"` is the longest run with all-distinct characters.
-
-### Brute Force
-
-For each starting index, scan forward with a fresh frequency map and stop the moment a character repeats; track the longest clean run. It works, but each start triggers a full forward scan, so the cost is **O(N²)** time for **O(K)** space — quadratic and unusable past a few thousand characters.
-
-### Key Insight
-
-The repeated scans all re-derive the same fact: where the next duplicate sits. Once `end` hits a character already in the window, *every* window that still contains the earlier copy is disqualified — so `start` never has to move backward. The core insight is: a frequency map detects the duplicate in `O(1)`, and sliding `start` forward past it discards a whole family of dead windows in one move, turning `N` separate scans into a single `O(N)` pass.
-
-### Optimized Solution
-
-The variable-window solution, mechanically:
-
-1. Keep a frequency map of the current window plus a `maxLength` accumulator.
-2. Advance `end`, incrementing `frequency[s[end]]`.
-3. While `frequency[s[end]] > 1` (a duplicate exists), evict from the left: decrement `frequency[s[start]]`, drop the key if it hits zero, advance `start`.
-4. Record `maxLength = max(maxLength, end − start + 1)`, then advance `end`.
-
-This is exactly the implementation shown earlier under the *Implementation* heading — `unique_character_span`. A single pass: **O(N)** time, **O(K)** space.
-
-### Trace
-
-Walk `s = "abcbed"`. The window is `s[start..end]`; the rule is "no duplicates":
-
-```
-end=0  add 'a'  freq={a:1}            window "a"     len 1  maxLength=1
-end=1  add 'b'  freq={a:1,b:1}        window "ab"    len 2  maxLength=2
-end=2  add 'c'  freq={a:1,b:1,c:1}    window "abc"   len 3  maxLength=3
-end=3  add 'b'  freq={a:1,b:2,c:1}    duplicate 'b'!
-       evict 'a' (start 0→1)  freq={b:2,c:1}  'b' still 2
-       evict 'b' (start 1→2)  freq={b:1,c:1}  window "cb"  len 2  maxLength=3
-end=4  add 'e'  freq={b:1,c:1,e:1}    window "cbe"   len 3  maxLength=3
-end=5  add 'd'  freq={b:1,c:1,e:1,d:1} window "cbed" len 4  maxLength=4
-
-return maxLength = 4
-```
-
-The result `4` matches the expected output — `"cbed"` is the longest substring with no repeats.
-
-### Fitting the Template
-
-| Check | Answer for Longest Substring Without Repeats |
+| | |
 |---|---|
-| **Q1.** Is the answer the longest/shortest/count of a contiguous subsequence? | **Yes** — the longest contiguous substring with distinct characters. |
-| **Q2.** Can a hash map summarise the window for an `O(1)` rule check? | **Yes** — a frequency map; the rule is "every count `≤ 1`". |
-| **Q3.** Can you add `s[end]` and remove `s[start]` in `O(1)`? | **Yes** — one increment on expand, one decrement on contract. |
-| **Q4.** Is the rule monotonic as the window grows? | **Yes** — adding a character can only create a duplicate; removing one can only clear it. |
+| State | `element → count` map over the current window |
+| Grow | `end++`, `count[entering]++` |
+| Shrink | `while invalid: count[leaving]--, start++` |
+| Validity test | `count[ch] > 1` (no repeats), `len(count) > k` (≤ `k` distinct), covers-target (min window) |
+| Cost | `O(n)` time, `O(σ)` space — `start` never resets |
 
-## Problems in This Category
+- **Q:** How does this differ from the fixed-size map window? **A:** The window size isn't fixed — it grows and shrinks based on whether the count-based constraint holds.
+- **Q:** Why is the inner shrink loop not `O(n²)`? **A:** `start` only moves forward, crossing the input once total, so total shrink work is `≤ n` — amortized `O(1)` per step.
+- **Q:** What single change switches problems (no-repeat vs ≤ `k` distinct)? **A:** The validity test — `count[ch] > 1` versus `len(count) > k`.
+- **Q:** Longest-valid vs shortest-valid — what flips? **A:** Longest: shrink only while invalid, measure after; shortest: shrink while still valid, measure inside.
 
-The five problems below each specialise the expand-contract-record skeleton — only the window's summary and the rule it checks change:
+## Sources & Verify
 
-| # | Problem | Variant | Twist on the skeleton |
-|---|---|---|---|
-| 1 | [Unique Character Span](02-problems/01-unique-character-span) | Longest-window, frequency map | Contract while any count `> 1` |
-| 2 | [K Characters Span](02-problems/02-k-characters-span) | Longest-window, frequency map | Contract while distinct-count (`len(map)`) `> k` |
-| 3 | [Maximal Character Swap](02-problems/03-maximal-character-swap) | Longest-window, frequency map | Contract while `(width − maxFreq) > k` |
-| 4 | [Subarray Sum Equals K](02-problems/04-subarray-sum-equals-k) | Prefix-sum + hash (preview) | Window fails on negatives — use prefix sums instead |
-| 5 | [Twin in Proximity](02-problems/05-twin-in-proximity) | Fixed-width existence | Cap the window at `k+1`; short-circuit on any repeat |
-
-Each is a small variation on the same skeleton — only the summary and the rule change.
+- **CLRS**, *Introduction to Algorithms*, 4th ed., §11 and §17 — hash tables and amortized analysis.
+- **Sedgewick & Wayne**, *Algorithms*, 4th ed., §1.4 / §3.4 — amortized cost and hash tables.
+- The map-backed variable window (longest-no-repeat, ≤ `k` distinct, minimum window) is standard; both runnable blocks are verified by running (`abcabcbb`/`pwwkew ⇒ 3`, `bbbbb ⇒ 1`).

@@ -69,7 +69,6 @@ You already know the pattern. Three Sum fixed one element and ran a Two Sum two-
 
 That inner two-pointer is exactly the same Two Sum we've been using — sorted array, converging pointers, duplicate skipping. The only addition is a second outer loop and a second level of duplicate skipping.
 
-> 🖼 Diagram — Four Sum — two nested fixed-element loops, each with duplicate skipping, plus an inner two-pointer Two Sum pass.
 ```mermaid
 ---
 config:
@@ -515,7 +514,6 @@ The pattern is recursive:
 
 Every level adds one outer loop with duplicate skipping. The innermost operation is always the same two-pointer Two Sum.
 
-> 🖼 Diagram — The k-Sum family — each level wraps the previous in one more outer loop with duplicate skipping. Two Sum is always the innermost operation.
 ```d2
 direction: right
 

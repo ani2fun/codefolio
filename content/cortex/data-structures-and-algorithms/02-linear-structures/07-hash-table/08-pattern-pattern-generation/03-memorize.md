@@ -2,7 +2,7 @@
 title: "Memorize: Key Generation"
 summary: "Pattern recognition triggers, template code, common mistakes, and quick recall."
 prereqs:
-  - 08-pattern-pattern-generation/02-problems
+  - 08-pattern-pattern-generation/01-pattern
 ---
 
 # Memorize: Key Generation
@@ -30,8 +30,6 @@ Picture sorting mail by postcode rather than by reading each address in full. Th
 ---
 
 ## Visual Summary
-
-> 🖼 Diagram — TODO: 3 frames — raw inputs with no structure / each input stamped with its key / buckets formed where equal keys collide.
 
 ---
 

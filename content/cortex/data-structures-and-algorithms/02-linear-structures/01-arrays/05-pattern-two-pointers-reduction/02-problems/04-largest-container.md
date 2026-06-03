@@ -57,7 +57,6 @@ Explanation: Only two walls — area = min(1,1) × 1 = 1
 <summary><h2>Visualising the Container</h2></summary>
 
 
-> 🖼 Diagram — The largest container uses walls at positions 1 and 6 — both height 4, width 5, area 20. All taller walls (h=5 at pos 4) have a narrower span.
 ```d2
 walls: "heights = [2, 4, 3, 3, 5, 2, 4, 3, 2]" {
   grid-columns: 9
@@ -257,7 +256,6 @@ Place `left = 0` and `right = n − 1` so that the starting container has the ma
 
 What breaks if you move the taller wall instead? You discard the wall that still has an upside while keeping the wall that has none. On `heights = [2, 4, 3, 3, 5, 2, 4, 3, 2]`, step 1 has `h[left] = h[right] = 2`; the correct rule moves `right` (the equal/shorter wall), eventually reaching the optimal pair `(1, 6)` with area `20`. Always-`left++` instead locks `right` at index 8 forever and returns `16`, missing the answer because the optimal right wall (index 6) is never visited.
 
-> 🖼 Diagram — Largest Container algorithm — compute area at each step, then move the shorter wall's pointer inward.
 ```mermaid
 ---
 config:
@@ -461,7 +459,6 @@ The pair `(1, 6)` — h=4, h=4, area=**20** — is never checked. `right` is stu
 
 **Divergence tree:**
 
-> 🖼 Diagram — Correct rule reaches pair (1, 6) in 4 steps. Wrong rule locks right at index 8 permanently — the optimal pair is never reachable.
 ```mermaid
 ---
 config:

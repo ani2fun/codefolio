@@ -1,784 +1,195 @@
 ---
 title: "Knapsack Applications"
-summary: "<!-- TODO: summary -->"
+summary: "Four famous problems that are knapsack in disguise — coin change (min), coin change II (count), rod cutting (max), subset sum (boolean). Same unbounded-knapsack table; the aggregator picks the problem. And in counting, the loop NESTING decides combinations vs permutations."
+prereqs:
+  - 05-algorithms-by-strategy/05-dynamic-programming/10-knapsack
 ---
 
-# 11. Knapsack Applications
+## Why It Exists
 
-The previous lesson built the knapsack family — three recurrence shapes that decide what to take from a list of items under a capacity budget. The astonishing thing isn't the family itself; it's how *many* ostensibly unrelated problems reduce to it. A vending machine making change with the fewest coins? Unbounded knapsack with a min-aggregator. Cutting a steel rod into pieces to maximise revenue? Unbounded knapsack where the "items" are cut lengths. Deciding whether a multiset of integers contains a subset summing to a target? 0/1 knapsack, boolean version. Counting how many distinct ways to make change with unlimited coins? Unbounded knapsack with a sum-aggregator.
+The [knapsack lesson](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-knapsack) gave you one recurrence: decide what to take from a list under a budget. The payoff is how *many* unrelated-looking problems are that recurrence wearing a costume. A vending machine making change with the fewest coins? Unbounded knapsack, **min** aggregator. Cutting a steel rod into pieces for maximum revenue? Unbounded knapsack where the "items" are cut lengths, **max** aggregator. Counting the distinct ways to make change? **Sum** aggregator. Does a multiset contain a subset hitting a target? 0/1 knapsack, **boolean** aggregator.
 
-By the end of this lesson you'll know how to recognise the knapsack shape in disguise, and you'll have written four canonical reductions: **subset sum** (boolean fits), **rod cutting** (max value with cut lengths), **coin change** (min count to hit an amount), and **coin change II** (count of distinct ways). Same DP table, four different aggregators — that pattern alone is the dirty secret behind half of medium-hard interview problems.
+The transferable skill isn't four algorithms — it's *recognising the shape* and *picking the aggregator*. Once you see "choose pieces under a budget, optimise/count some quantity," you already have the table; you only choose how to combine subproblems.
 
-## Table of contents
+## See It Work
 
-1. [Subset Sum — The Boolean 0/1 Knapsack](#subset-sum--the-boolean-01-knapsack)
-2. [Rod Cutting — Unbounded Knapsack in Disguise](#rod-cutting--unbounded-knapsack-in-disguise)
-3. [Coin Change — Minimum Coins to Hit an Amount](#coin-change--minimum-coins-to-hit-an-amount)
-4. [Coin Change II — Counting the Ways](#coin-change-ii--counting-the-ways)
-5. [Final Takeaway](#final-takeaway)
+**Coin Change** ([LeetCode 322](https://leetcode.com/problems/coin-change/)) — the minimum number of coins to make `amount`, with unlimited copies of each coin. Coins are reusable, so this is *unbounded* knapsack (the ascending capacity sweep from last lesson), and the aggregator is **min**: `dp[a] = 1 + min(dp[a - c])` over coins `c` that fit.
 
-***
+```python run
+def coin_change(coins, amount):
+    INF = float('inf')
+    dp = [0] + [INF] * amount                     # dp[a] = fewest coins to make a; dp[0] = 0
+    for a in range(1, amount + 1):
+        for c in coins:
+            if c <= a and dp[a - c] + 1 < dp[a]:
+                dp[a] = dp[a - c] + 1             # take one coin c, add to best for (a - c)
+    return dp[amount] if dp[amount] != INF else -1
 
-# Subset Sum — The Boolean 0/1 Knapsack
-
-Strip the *value* from 0/1 knapsack, drop the *capacity* in favour of an *exact* target, and ask "is it possible?" instead of "what's the maximum?". You're left with **subset sum**: given an array of integers and a target, does any subset sum exactly to the target?
-
-## The Problem
-
-Given an array `arr` of non-negative integers and a target `target`, return `true` if some subset of `arr` sums to `target`, else `false`.
-
-```
-Input:  arr = [1, 5, 3, 10], target = 15
-Output: true                          [5, 10] sums to 15
-
-Input:  arr = [1, 2, 3, 4, 5], target = 6
-Output: true                          [2, 4] sums to 6, also [1, 5] and [1, 2, 3]
-
-Input:  arr = [1, 2, 3, 4, 5], target = 40
-Output: false                         Total of all is 15 < 40 — impossible
+print(coin_change([1, 2, 5], 11))   # 3   (5 + 5 + 1)
+print(coin_change([2], 3))          # -1  (odd amount, only even coins)
 ```
 
-<details>
-<summary><h2>The Recurrence</h2></summary>
-
-
-`dp[i][s]` = whether some subset of the first `i` items sums to exactly `s`. Two cases:
-
-- **Skip item `i - 1`**: `dp[i][s] = dp[i - 1][s]`.
-- **Include item `i - 1` (if `arr[i - 1] ≤ s`)**: `dp[i][s] = dp[i - 1][s - arr[i - 1]]`.
-
-OR them together:
-```
-dp[i][s] = dp[i - 1][s] OR (arr[i - 1] ≤ s AND dp[i - 1][s - arr[i - 1]])
-```
-
-**Base cases.**
-- `dp[i][0] = true` for all `i` — the empty subset sums to 0.
-- `dp[0][s] = false` for `s > 0` — no items can hit any positive sum.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#777777"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-  STATE["dp[i][s]"]
-  STATE -->|"skip"| EXC["dp[i-1][s]"]
-  STATE -->|"include if fits"| INC["dp[i-1][s - arr[i-1]]"]
-  EXC --> OR["OR<br/>dp[i][s]"]
-  INC --> OR
-```
-
-<p align="center"><strong>Subset sum decomposes exactly like 0/1 knapsack — but the aggregator is OR instead of max, and we ask <em>existence</em> instead of <em>optimum</em>.</strong></p>
-
-> *Pause. Compare this to the 0/1-knapsack recurrence — what changed?*
-
-Two things only: **values disappeared** (we don't measure quality, only feasibility) and **aggregator flipped from max to OR** (we want any path, not the best one). Capacity becomes target; the structure is identical.
-
-</details>
-<details>
-<summary><h2>Solution &amp; Analysis</h2></summary>
-
-### The Solution
-
-```python run viz=array viz-root=dp
-from typing import List
-
-class Solution:
-    def subset_sum(self, arr: List[int], target: int) -> bool:
-        n: int = len(arr)
-        dp: List[List[bool]] = [
-            [False] * (target + 1) for _ in range(n + 1)
-        ]
-
-        # Initializing the base case: If the target is 0, then any subset
-        # can form it.
-        for i in range(n + 1):
-            dp[i][0] = True
-
-        # Building the bottom-up DP table
-        for i in range(1, n + 1):
-            for j in range(1, target + 1):
-
-                # If the current element is less than or equal to the
-                # current target
-                if arr[i - 1] <= j:
-
-                    # Two possibilities:
-                    # 1. Include the current element and check if the
-                    # remaining target can be formed
-                    # 2. Exclude the current element and check if the
-                    # target can be formed
-                    dp[i][j] = dp[i - 1][j - arr[i - 1]] or dp[i - 1][j]
-                else:
-
-                    # If the current element is greater than the target,
-                    # it cannot be included. So, the current target can
-                    # be formed only if the target without the current
-                    # element can be formed
-                    dp[i][j] = dp[i - 1][j]
-
-        # Return the result for the given target and all the elements
-        return dp[n][target]
-
-
-# Examples from the problem statement
-print(Solution().subset_sum([1, 5, 3, 10], 15))       # True
-print(Solution().subset_sum([1, 2, 3, 4, 5], 6))      # True
-print(Solution().subset_sum([1, 2, 3, 4, 5], 40))     # False
-
-# Edge cases
-print(Solution().subset_sum([], 0))                   # True
-print(Solution().subset_sum([5], 5))                  # True
-print(Solution().subset_sum([5], 3))                  # False
-print(Solution().subset_sum([1, 2, 3], 0))            # True
-print(Solution().subset_sum([3, 34, 4, 12, 5, 2], 9)) # True
-```
-
-```java run viz=array viz-root=dp
+```java run
+import java.util.*;
 public class Main {
-    static class Solution {
-        public boolean subsetSum(int[] arr, int target) {
-            int n = arr.length;
-            boolean[][] dp = new boolean[n + 1][target + 1];
-
-            // Initializing the base case: If the target is 0, then any
-            // subset can form it.
-            for (int i = 0; i <= n; i++) dp[i][0] = true;
-
-            // Building the bottom-up DP table
-            for (int i = 1; i <= n; i++) {
-                for (int j = 1; j <= target; j++) {
-
-                    // If the current element is less than or equal to the
-                    // current target
-                    if (arr[i - 1] <= j) {
-
-                        // Two possibilities:
-                        // 1. Include the current element and check if the
-                        // remaining target can be formed
-                        // 2. Exclude the current element and check if the
-                        // target can be formed
-                        dp[i][j] = dp[i - 1][j - arr[i - 1]] || dp[i - 1][j];
-                    } else {
-
-                        // If the current element is greater than the target,
-                        // it cannot be included So, the current target can
-                        // be formed only if the target without the current
-                        // element can be formed
-                        dp[i][j] = dp[i - 1][j];
-                    }
-                }
-            }
-
-            // Return the result for the given target and all the elements
-            return dp[n][target];
-        }
+    static int coinChange(int[] coins, int amount) {
+        int INF = Integer.MAX_VALUE;
+        int[] dp = new int[amount + 1];
+        Arrays.fill(dp, INF);
+        dp[0] = 0;
+        for (int a = 1; a <= amount; a++)
+            for (int c : coins)
+                if (c <= a && dp[a - c] != INF) dp[a] = Math.min(dp[a], dp[a - c] + 1);
+        return dp[amount] == INF ? -1 : dp[amount];
     }
-
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().subsetSum(new int[]{1, 5, 3, 10}, 15));       // true
-        System.out.println(new Solution().subsetSum(new int[]{1, 2, 3, 4, 5}, 6));      // true
-        System.out.println(new Solution().subsetSum(new int[]{1, 2, 3, 4, 5}, 40));     // false
-
-        // Edge cases
-        System.out.println(new Solution().subsetSum(new int[]{}, 0));                   // true
-        System.out.println(new Solution().subsetSum(new int[]{5}, 5));                  // true
-        System.out.println(new Solution().subsetSum(new int[]{5}, 3));                  // false
-        System.out.println(new Solution().subsetSum(new int[]{1, 2, 3}, 0));            // true
-        System.out.println(new Solution().subsetSum(new int[]{3, 34, 4, 12, 5, 2}, 9)); // true
+        System.out.println(coinChange(new int[]{1, 2, 5}, 11));   // 3
+        System.out.println(coinChange(new int[]{2}, 3));          // -1
     }
 }
 ```
 
-### Complexity
+Both print `3` then `-1`. Eleven is `5 + 5 + 1` (three coins, reusing the 5); three is unreachable with only 2-coins, so `-1`. Cost `O(amount · #coins)`.
 
-| Aspect | Cost |
-|---|---|
-| Time | `O(n × target)` |
-| Space | `O(n × target)` — reducible to `O(target)` with downward 1D iteration |
+## How It Works
 
-</details>
-
-***
-
-# Rod Cutting — Unbounded Knapsack in Disguise
-
-You have a steel rod of length `length` and a price list `prices` where `prices[i]` is the selling price for a piece of length `i + 1`. Cut the rod into integer-length pieces (any number of pieces, including just one — no cuts) and sell each piece individually. Maximise total revenue.
-
-This is **unbounded knapsack** with a twist: weight = piece length, capacity = total rod length, and the "items" are *every possible piece length from 1 to `length`*. You can cut multiple pieces of the same length, so reuse is unlimited — that's what makes it unbounded.
-
-## The Problem
-
-```
-Input:  prices = [1, 5, 8, 9], length = 4
-Output: 10                       Two pieces of length 2: 5 + 5 = 10
-
-Input:  prices = [1, 4, 8, 5], length = 4
-Output: 9                        Length 1 + length 3: 1 + 8 = 9 — beats no-cut value 5
-
-Input:  prices = [1, 2, 3, 6], length = 4
-Output: 6                        No cuts: sell whole rod for 6
-```
-
-> *Predict before reading on — for `prices = [1, 5, 8, 9, 10, 17]` and `length = 6`, what's the optimal revenue?*
-
-`17`. Length-6 piece sells for 17 outright. Length-1 + length-5 = 1 + 10 = 11. Length-2 + length-4 = 5 + 9 = 14. Length-3 + length-3 = 8 + 8 = 16. Length-2 + length-2 + length-2 = 15. The full rod wins.
-
-<details>
-<summary><h2>The Recurrence</h2></summary>
-
-
-Let `dp[i]` = max revenue from a rod of length `i`. Try every first cut at position `j` (1 to `i`); the cut piece sells for `prices[j - 1]` and the remainder of length `i - j` recursively gives `dp[i - j]`:
-```
-dp[i] = max over j ∈ [1, i] of (prices[j - 1] + dp[i - j])
-```
-
-This is a 1D unbounded knapsack: piece lengths are reusable, the "capacity" is the rod length.
+Every one of these is the same `dp[budget]` table over reusable items; only the aggregator and the seed change:
 
 ```d2
 direction: right
-cuts: "Length 4 rod, prices = [1, 5, 8, 9]" {
-  grid-rows: 1
-  grid-columns: 4
-  grid-gap: 0
-  c0: "[1]<br/>\$1"
-  c1: "[2]<br/>\$5"
-  c2: "[3]<br/>\$8"
-  c3: "[4]<br/>\$9"
-}
+skeleton: "UNBOUNDED knapsack skeleton\nfor budget b ascending:\n  for each item x (reusable):\n    combine dp[b] with f(dp[b - x])" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
+minA: "MIN  -> coin change\ndp[a] = min(dp[a], dp[a-c] + 1)\nseed dp[0]=0, else INF" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
+maxA: "MAX  -> rod cutting\ndp[L] = max(dp[L], price[cut] + dp[L-cut])\nseed dp[0]=0" {style.fill: "#fde68a"; style.stroke: "#d97706"}
+sumA: "SUM  -> coin change II (count)\ndp[a] += dp[a-c]\nseed dp[0]=1" {style.fill: "#fbcfe8"; style.stroke: "#db2777"}
+boolA: "OR   -> subset sum (0/1, descending)\ndp[c] = dp[c] or dp[c-x]\nseed dp[0]=True" {style.fill: "#f3e8ff"; style.stroke: "#9333ea"}
+skeleton -> minA
+skeleton -> maxA
+skeleton -> sumA
+skeleton -> boolA
 ```
 
-<p align="center"><strong>Five candidate splits for a length-4 rod: keep whole (price 9), 1+3 (1+8=9), 2+2 (5+5=10), 3+1 (8+1=9), 1+1+2 (1+1+5=7), and so on. <code>dp[4]</code> picks the winner — 10.</strong></p>
+<p align="center"><strong>One table, four aggregators. MIN counts the fewest pieces, MAX optimises value, SUM counts arrangements, OR tests feasibility. Reusable items sweep capacity ascending (unbounded); one-shot items sweep descending (0/1, subset sum).</strong></p>
+
+Two ideas carry the whole lesson:
+
+- **The aggregator is the problem.** Swap `min` for `max` and "fewest coins" becomes "most rod revenue." Swap it for `+=` and you *count* solutions instead of optimising one. Swap it for `or` and you ask "is it even possible?" The table-filling loop never changes — recognising that is the entire knowledge transfer.
+- **0/1 vs unbounded is still the loop direction.** Coin change, coin change II, and rod cutting allow unlimited copies → ascending capacity (an item's update can read a cell already updated with that item). Subset sum is 0/1 → descending. This is exactly the [knapsack](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-knapsack) loop-direction rule, reused.
+
+> **Key takeaway.** Coin change (min), rod cutting (max), coin change II (count), subset sum (boolean) are *one* DP — knapsack — distinguished only by the **aggregator** (`min` / `max` / `+=` / `or`) and the 0/1-vs-unbounded **loop direction**. The hard part is seeing the disguise; the code is a one-line change.
+
+## Trace It
+
+Counting introduces a trap that optimising doesn't. To *count the distinct ways* to make an amount, you iterate coins and amounts — but **which loop is outer** silently changes what you count.
+
+**Predict before you run:** with coins `{1, 2, 5}` and amount `5`, the standard "coins outer, amount inner" loop counts **4** ways. If you swap the nesting to "amount outer, coins inner" — same `dp[a] += dp[a-c]`, same arrays — does it still print `4`?
+
+```python run
+def count_combinations(coins, amount):            # coins OUTER -> unordered combinations
+    dp = [1] + [0] * amount
+    for c in coins:                               # fix coin c, then sweep amounts
+        for a in range(c, amount + 1):
+            dp[a] += dp[a - c]
+    return dp[amount]
+
+def count_permutations(coins, amount):            # amount OUTER -> ordered sequences
+    dp = [1] + [0] * amount
+    for a in range(1, amount + 1):                # fix amount a, then try every coin
+        for c in coins:
+            if c <= a:
+                dp[a] += dp[a - c]
+    return dp[amount]
+
+print("coins outer (combinations):", count_combinations([1, 2, 5], 5))
+print("amount outer (permutations):", count_permutations([1, 2, 5], 5))
+```
+
+<details>
+<summary><strong>Reveal</strong></summary>
+
+Coins-outer prints `4`; amount-outer prints `9`. The four *combinations* of `{1,2,5}` summing to 5 are `5`, `2+2+1`, `2+1+1+1`, `1+1+1+1+1`. The nine *permutations* additionally count orderings as distinct — `1+2+2`, `2+1+2`, `2+2+1` are three separate sequences, and so on.
+
+Why the loop order decides this: with **coins outer**, by the time you start using coin `c`, every amount already reflects all *smaller-indexed* coins — so coin 1 is fully "used up" before coin 2 is introduced, and a combination is only ever built in one canonical order (non-decreasing coin index). With **amount outer**, every coin is reconsidered fresh at every amount, so `2 then 1` and `1 then 2` are both counted — that's ordered sequences. This is the [coin change II](https://leetcode.com/problems/coin-change-ii/) (combinations, LeetCode 518) vs [combination sum IV](https://leetcode.com/problems/combination-sum-iv/) (permutations, LeetCode 377) distinction, and getting it backwards is the single most common counting-DP bug. (Note this is *orthogonal* to last lesson's ascending-vs-descending direction — that toggles 0/1 vs unbounded; this toggles combinations vs permutations.)
 
 </details>
-<details>
-<summary><h2>Solution &amp; Analysis</h2></summary>
 
-### The Solution
+## Your Turn
 
-```python run viz=array viz-root=dp
-from typing import List
+**Rod Cutting** (CLRS §15.1) — given prices for each length, cut a length-`n` rod to maximise total revenue. The "items" are cut-lengths, reusable (you can make many length-2 pieces), so it's unbounded knapsack with a **max** aggregator: `dp[L] = max(price[cut] + dp[L - cut])` over every first-cut length.
 
-class Solution:
-    def rod_cutting(self, prices: List[int], length: int) -> int:
+```python run
+def rod_cutting(prices, n):                       # prices[i] = price of a length-(i+1) piece
+    dp = [0] * (n + 1)                            # dp[L] = max revenue from a length-L rod
+    for L in range(1, n + 1):
+        for cut in range(1, L + 1):
+            dp[L] = max(dp[L], prices[cut - 1] + dp[L - cut])   # first piece = cut, rest optimal
+    return dp[n]
 
-        # Create a list to store the maximum profit for each length
-        dp: List[int] = [0] * (length + 1)
-
-        # Iterate through all possible lengths
-        for i in range(1, length + 1):
-
-            # Initialize the maximum profit with the price of the current
-            # length
-            max_profit: int = prices[i - 1]
-
-            # Iterate through all possible cuts within the current length
-            for j in range(1, i):
-
-                # Calculate the maximum profit by considering different
-                # cut positions prices[j - 1] represents the price of the
-                # cut at position j dp[i - j] represents the maximum
-                # profit for the remaining length (i - j)
-                max_profit = max(max_profit, prices[j - 1] + dp[i - j])
-
-            # Store the maximum profit for the current length in the dp
-            # list
-            dp[i] = max_profit
-
-        # Return the maximum profit for the given length
-        return dp[length]
-
-
-# Examples from the problem statement
-print(Solution().rod_cutting([1, 5, 8, 9], 4))   # 10
-print(Solution().rod_cutting([1, 4, 8, 5], 4))   # 9
-print(Solution().rod_cutting([1, 2, 3, 6], 4))   # 6
-
-# Edge cases
-print(Solution().rod_cutting([1], 1))             # 1
-print(Solution().rod_cutting([2], 1))             # 2
-print(Solution().rod_cutting([3, 5], 2))          # 6
-print(Solution().rod_cutting([1, 5, 8, 9, 10, 17, 17, 20], 8))  # 22
-print(Solution().rod_cutting([3, 5, 8, 9], 3))   # 8
+prices = [1, 5, 8, 9, 10, 17, 17, 20]             # length 1..8
+print(rod_cutting(prices, 8))   # 22   (cut 2 + 6 -> 5 + 17)
+print(rod_cutting(prices, 4))   # 10   (cut 2 + 2 -> 5 + 5)
 ```
 
-```java run viz=array viz-root=dp
+```java run
 public class Main {
-    static class Solution {
-        public int rodCutting(int[] prices, int length) {
-
-            // Create an array to store the maximum profit for each length
-            int[] dp = new int[length + 1];
-
-            // Iterate through all possible lengths
-            for (int i = 1; i <= length; i++) {
-
-                // Initialize the maximum profit with the price of the
-                // current length
-                int maxProfit = prices[i - 1];
-
-                // Iterate through all possible cuts within the current
-                // length
-                for (int j = 1; j < i; j++) {
-
-                    // Calculate the maximum profit by considering different
-                    // cut positions prices[j - 1] represents the price of
-                    // the cut at position j dp[i - j] represents the maximum
-                    // profit for the remaining length (i - j)
-                    maxProfit = Math.max(
-                        maxProfit,
-                        prices[j - 1] + dp[i - j]
-                    );
-                }
-
-                // Store the maximum profit for the current length in the dp
-                // array
-                dp[i] = maxProfit;
-            }
-
-            // Return the maximum profit for the given length
-            return dp[length];
-        }
+    static int rodCutting(int[] prices, int n) {
+        int[] dp = new int[n + 1];
+        for (int L = 1; L <= n; L++)
+            for (int cut = 1; cut <= L; cut++)
+                dp[L] = Math.max(dp[L], prices[cut - 1] + dp[L - cut]);
+        return dp[n];
     }
-
     public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().rodCutting(new int[]{1, 5, 8, 9}, 4));   // 10
-        System.out.println(new Solution().rodCutting(new int[]{1, 4, 8, 5}, 4));   // 9
-        System.out.println(new Solution().rodCutting(new int[]{1, 2, 3, 6}, 4));   // 6
-
-        // Edge cases
-        System.out.println(new Solution().rodCutting(new int[]{1}, 1));             // 1
-        System.out.println(new Solution().rodCutting(new int[]{2}, 1));             // 2
-        System.out.println(new Solution().rodCutting(new int[]{3, 5}, 2));          // 6
-        System.out.println(new Solution().rodCutting(new int[]{1, 5, 8, 9, 10, 17, 17, 20}, 8));  // 22
-        System.out.println(new Solution().rodCutting(new int[]{3, 5, 8, 9}, 3));   // 8
+        int[] prices = {1, 5, 8, 9, 10, 17, 17, 20};
+        System.out.println(rodCutting(prices, 8));   // 22
+        System.out.println(rodCutting(prices, 4));   // 10
     }
 }
 ```
 
-### Complexity
+Both print `22` then `10`. The length-8 rod earns most as a 2 + 6 split (`5 + 17`), beating selling it whole for `20`; length-4 is best as 2 + 2 (`5 + 5 = 10`), beating `9` whole. It's coin change's twin — `max` instead of `min`, "revenue" instead of "coin count" — which is exactly the point: you wrote it without learning a new algorithm.
 
-| Aspect | Cost |
-|---|---|
-| Time | `O(length²)` — outer loop over rod length, inner loop over cut positions |
-| Space | `O(length)` — single 1D array |
+## Reflect & Connect
 
-</details>
+- **The aggregator picks the problem.** `min` (coin change), `max` (rod cutting), `+=` (count ways), `or` (subset sum) — one knapsack table, four questions. Internalising this turns a dozen "new" problems into one you already know.
+- **Loop direction = 0/1 vs unbounded.** Reusable items (coins, rod cuts) sweep capacity ascending; one-shot items (subset sum, [partition](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-knapsack)) sweep descending. Straight from the knapsack lesson.
+- **Loop *nesting* = combinations vs permutations.** In counting DPs, coins-outer counts unordered combinations; amount-outer counts ordered sequences. Orthogonal to direction, and a notorious interview trap.
+- **`-1` / `INF` sentinels matter.** Coin change must distinguish "0 coins" (amount 0) from "impossible" (no combination) — seed unreachable cells to infinity and translate to `-1` at the end. Off-by-a-sentinel is a classic bug.
+- **Recognising the disguise is the meta-skill.** "Choose reusable/one-shot pieces under a budget, optimise or count a quantity" → knapsack. [Subset sum](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-subset-sum-pattern) gets its own pattern lesson; combination/permutation counting recurs throughout DP.
 
-***
-
-# Coin Change — Minimum Coins to Hit an Amount
-
-You have unlimited supply of coins in denominations `coins[i]`. What's the minimum number of coins that sum to `amount`? If impossible, return `-1`.
-
-This is **unbounded knapsack** with weight = denomination, value = 1 (one coin per unit), and the optimisation reversed from max to min.
-
-## The Problem
-
-```
-Input:  coins = [1, 5, 8, 9], amount = 4
-Output: 4                          Four 1-coins.  Other denominations don't fit.
-
-Input:  coins = [1, 4, 8, 9], amount = 13
-Output: 2                          One 4-coin + one 9-coin.
-
-Input:  coins = [2, 3, 4, 9], amount = 1
-Output: -1                         No way to hit 1 with these denominations.
-```
-
-> *Predict before reading on — what's the minimum-coin answer for `coins = [1, 5, 10, 25]`, `amount = 30`?*
-
-`2`. One 5-coin + one 25-coin. Greedy "biggest first" happens to work here (US-coin-style denominations have that property), but it doesn't work in general — for `coins = [1, 3, 4]`, `amount = 6`, greedy picks 4 + 1 + 1 = 3 coins, but the optimum is 3 + 3 = 2 coins.
+## Recall
 
 <details>
-<summary><h2>The Recurrence</h2></summary>
+<summary><strong>Q:</strong> What single DP underlies coin change, rod cutting, coin change II, and subset sum?</summary>
 
-
-`dp[i]` = minimum number of coins to make exactly amount `i`. For each denomination `c ≤ i`, the answer is `1 + dp[i - c]` (one coin of `c`, plus optimum for the remainder). Take the min:
-```
-dp[i] = min over c ∈ coins, c ≤ i of (1 + dp[i - c])
-```
-With `dp[0] = 0` (zero coins make zero amount) and `dp[i] = ∞` (or sentinel) for unreachable amounts.
-
-The unreachable case is the key new wrinkle. Carry an "infinity" sentinel (`sys.maxsize` / `Integer.MAX_VALUE`); a final `dp[amount]` still equal to that sentinel becomes a `-1` return.
+**A:** The knapsack table `dp[budget]` over items. They differ only in the **aggregator** — `min` (coin change), `max` (rod cutting), `+=` (coin change II count), `or` (subset sum) — and the 0/1-vs-unbounded loop direction.
 
 </details>
 <details>
-<summary><h2>Solution &amp; Analysis</h2></summary>
+<summary><strong>Q:</strong> What is the coin-change (min) recurrence?</summary>
 
-### The Solution
-
-```python run viz=array viz-root=dp
-from typing import List
-import sys
-
-class Solution:
-    def coin_change(self, coins: List[int], amount: int) -> int:
-
-        # Create a list to store the minimum number of coins needed for
-        # each amount from 0 to 'amount'
-        dp: List[int] = [sys.maxsize] * (amount + 1)
-
-        # For amount 0, no coins are needed, so the minimum number of
-        # coins is 0
-        dp[0] = 0
-
-        # Iterate over each amount from 1 to 'amount'
-        for i in range(1, amount + 1):
-
-            # Iterate over each coin in the 'coins' list
-            for coin in coins:
-
-                # Check if the current coin is smaller than or equal to
-                # the current amount
-                if coin <= i:
-
-                    # Calculate the remaining amount after using the
-                    # current coin
-                    subproblem: int = dp[i - coin]
-
-                    # Check if the subproblem has a valid solution (i.e.,
-                    # not sys.maxsize)
-                    if subproblem != sys.maxsize:
-
-                        # Update the minimum number of coins needed for
-                        # the current amount
-                        dp[i] = min(dp[i], subproblem + 1)
-
-        # Check if a valid solution exists for the given amount
-        # If so, return the minimum number of coins needed; otherwise,
-        # return -1
-        return dp[amount] if dp[amount] != sys.maxsize else -1
-
-
-# Examples from the problem statement
-print(Solution().coin_change([1, 5, 8, 9], 4))   # 4
-print(Solution().coin_change([1, 4, 8, 9], 13))  # 2
-print(Solution().coin_change([2, 3, 4, 9], 1))   # -1
-
-# Edge cases
-print(Solution().coin_change([1], 0))             # 0
-print(Solution().coin_change([1], 1))             # 1
-print(Solution().coin_change([2], 3))             # -1
-print(Solution().coin_change([1, 2, 5], 11))      # 3
-print(Solution().coin_change([2], 0))             # 0
-```
-
-```java run viz=array viz-root=dp
-import java.util.*;
-
-public class Main {
-    static class Solution {
-        public int coinChange(int[] coins, int amount) {
-
-            // Create an array to store the minimum number of coins needed
-            // for each amount from 0 to 'amount'
-            int[] dp = new int[amount + 1];
-            Arrays.fill(dp, Integer.MAX_VALUE);
-
-            // For amount 0, no coins are needed, so the minimum number of
-            // coins is 0
-            dp[0] = 0;
-
-            // Iterate over each amount from 1 to 'amount'
-            for (int i = 1; i <= amount; i++) {
-
-                // Iterate over each coin in the 'coins' array
-                for (int coin : coins) {
-
-                    // Check if the current coin is smaller than or equal to
-                    // the current amount
-                    if (coin <= i) {
-
-                        // Calculate the remaining amount after using the
-                        // current coin
-                        int subproblem = dp[i - coin];
-
-                        // Check if the subproblem has a valid solution
-                        // (i.e., not Integer.MAX_VALUE)
-                        if (subproblem != Integer.MAX_VALUE) {
-
-                            // Update the minimum number of coins needed for
-                            // the current amount
-                            dp[i] = Math.min(dp[i], subproblem + 1);
-                        }
-                    }
-                }
-            }
-
-            // Check if a valid solution exists for the given amount
-            // If so, return the minimum number of coins needed; otherwise,
-            // return -1
-            return dp[amount] != Integer.MAX_VALUE ? dp[amount] : -1;
-        }
-    }
-
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().coinChange(new int[]{1, 5, 8, 9}, 4));   // 4
-        System.out.println(new Solution().coinChange(new int[]{1, 4, 8, 9}, 13));  // 2
-        System.out.println(new Solution().coinChange(new int[]{2, 3, 4, 9}, 1));   // -1
-
-        // Edge cases
-        System.out.println(new Solution().coinChange(new int[]{1}, 0));             // 0
-        System.out.println(new Solution().coinChange(new int[]{1}, 1));             // 1
-        System.out.println(new Solution().coinChange(new int[]{2}, 3));             // -1
-        System.out.println(new Solution().coinChange(new int[]{1, 2, 5}, 11));      // 3
-        System.out.println(new Solution().coinChange(new int[]{2}, 0));             // 0
-    }
-}
-```
-
-### Complexity
-
-| Aspect | Cost |
-|---|---|
-| Time | `O(amount × n)` where `n` is the number of coin denominations |
-| Space | `O(amount)` |
-
-</details>
-
-***
-
-# Coin Change II — Counting the Ways
-
-Same setup — unlimited coins of each denomination — but now we ask **how many distinct ways** can the amount be made? Order doesn't matter; `[1, 2]` and `[2, 1]` count as the same way.
-
-## The Problem
-
-```
-Input:  coins = [1, 5, 8, 9], amount = 4
-Output: 1                          Only [1, 1, 1, 1] works
-
-Input:  coins = [3, 4, 8, 9], amount = 13
-Output: 2                          [3, 3, 3, 4]  and  [4, 9]
-
-Input:  coins = [3, 4, 5, 9], amount = 1
-Output: 0                          No combination hits 1
-```
-
-<details>
-<summary><h2>The Recurrence — Watch the Loop Order</h2></summary>
-
-
-`dp[a]` = number of distinct ways to make amount `a`. Naïvely you might think to iterate `a` outer, `coins` inner — but that double-counts orderings. To count *combinations* (order doesn't matter), iterate **coins outer, amount inner**:
-
-```
-for each coin c:
-    for a in c..amount:
-        dp[a] += dp[a - c]
-```
-
-This forces every way to use coin `c` to be considered together, before moving to the next denomination — which is exactly what eliminates double-counting.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#777777"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-  WRONG["Wrong loop order:<br/>for a:<br/>  for coin:<br/>    dp[a] += dp[a - coin]"]
-  WRONG --> COUNTPERM["counts permutations<br/>(orderings)"]
-  RIGHT["Right loop order:<br/>for coin:<br/>  for a:<br/>    dp[a] += dp[a - coin]"]
-  RIGHT --> COUNTCOMB["counts combinations<br/>(unordered ways)"]
-```
-
-<p align="center"><strong>Loop order isn't a stylistic choice. Coins-outer counts combinations; amount-outer counts permutations. Same arithmetic, different answers.</strong></p>
-
-> *Pause. Why does coins-outer work? Predict the reasoning.*
-
-When `coin = c1` is the only one in the inner loop, every count we accumulate uses *only* `c1`. When we add `coin = c2`, we extend each existing count by all the ways to add zero or more `c2`'s. By the time `coin = c3` arrives, every combination has its denominations in a fixed order (`c1`s, then `c2`s, then `c3`s). That fixed order is what kills duplicates: `[1, 2]` and `[2, 1]` both end up encoded as "one 1-coin and one 2-coin", counted exactly once.
-
-Base case: `dp[0] = 1` (the empty combination is one way to make 0).
+**A:** `dp[a] = 1 + min(dp[a - c])` over coins `c ≤ a`, with `dp[0] = 0` and unreachable amounts seeded to infinity (returned as `-1`). Coins are reusable → unbounded → ascending amount sweep.
 
 </details>
 <details>
-<summary><h2>Solution &amp; Analysis</h2></summary>
+<summary><strong>Q:</strong> In counting ways to make change, why does loop nesting matter?</summary>
 
-### The Solution
-
-```python run viz=array viz-root=dp
-from typing import List
-
-class Solution:
-    def coin_change_ii(self, coins: List[int], amount: int) -> int:
-
-        # Create a dynamic programming array with size (amount + 1) and
-        # initialize all elements to 0
-        dp: List[int] = [0] * (amount + 1)
-
-        # Set the base case: there is one way to make an amount of 0 (by
-        # not selecting any coin)
-        dp[0] = 1
-
-        # Iterate over each coin in the coins list
-        for coin in coins:
-
-            # Iterate from the value of the current coin up to the target
-            # amount and update the dp array with the number of ways to
-            # make each amount
-            for i in range(coin, amount + 1):
-
-                # Add the number of ways to make the current amount (i)
-                # using the current coin (coin) by adding the number of
-                # ways to make the remaining amount (i - coin) using any
-                # combination of coins
-                dp[i] += dp[i - coin]
-
-        # Return the number of ways to make the target amount
-        return dp[amount]
-
-
-# Examples from the problem statement
-print(Solution().coin_change_ii([1, 5, 8, 9], 4))   # 1
-print(Solution().coin_change_ii([3, 4, 8, 9], 13))  # 2
-print(Solution().coin_change_ii([3, 4, 5, 9], 1))   # 0
-
-# Edge cases
-print(Solution().coin_change_ii([1], 0))             # 1  — amount 0, always one way
-print(Solution().coin_change_ii([5], 5))             # 1  — single coin exact fit
-print(Solution().coin_change_ii([5], 3))             # 0  — coin larger than amount
-print(Solution().coin_change_ii([1, 2, 5], 5))       # 4  — multiple denominations
-print(Solution().coin_change_ii([2], 3))             # 0  — only even denomination, odd amount
-```
-
-```java run viz=array viz-root=dp
-import java.util.*;
-
-public class Main {
-    static class Solution {
-        public int coinChangeII(int[] coins, int amount) {
-
-            // Create a dynamic programming array with size (amount + 1) and
-            // initialize all elements to 0
-            int[] dp = new int[amount + 1];
-
-            // Set the base case: there is one way to make an amount of 0 (by
-            // not selecting any coin)
-            dp[0] = 1;
-
-            // Iterate over each coin in the coins array
-            for (int coin : coins) {
-
-                // Iterate from the value of the current coin up to the
-                // target amount and update the dp array with the number of
-                // ways to make each amount
-                for (int i = coin; i <= amount; i++) {
-
-                    // Add the number of ways to make the current amount (i)
-                    // using the current coin (coin) by adding the number of
-                    // ways to make the remaining amount (i - coin) using any
-                    // combination of coins
-                    dp[i] += dp[i - coin];
-                }
-            }
-
-            // Return the number of ways to make the target amount
-            return dp[amount];
-        }
-    }
-
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().coinChangeII(new int[]{1, 5, 8, 9}, 4));   // 1
-        System.out.println(new Solution().coinChangeII(new int[]{3, 4, 8, 9}, 13));  // 2
-        System.out.println(new Solution().coinChangeII(new int[]{3, 4, 5, 9}, 1));   // 0
-
-        // Edge cases
-        System.out.println(new Solution().coinChangeII(new int[]{1}, 0));             // 1  — amount 0
-        System.out.println(new Solution().coinChangeII(new int[]{5}, 5));             // 1  — exact fit
-        System.out.println(new Solution().coinChangeII(new int[]{5}, 3));             // 0  — coin > amount
-        System.out.println(new Solution().coinChangeII(new int[]{1, 2, 5}, 5));       // 4
-        System.out.println(new Solution().coinChangeII(new int[]{2}, 3));             // 0
-    }
-}
-```
-
-### Complexity
-
-| Aspect | Cost |
-|---|---|
-| Time | `O(amount × n)` |
-| Space | `O(amount)` |
+**A:** Coins outer (sweep amounts inside each coin) counts **combinations** — each multiset built in one canonical order. Amount outer (try every coin at each amount) counts **permutations** — orderings are distinct. Same `dp[a] += dp[a-c]`, different meaning.
 
 </details>
-
-***
-
-# Final Takeaway
-
-Four ostensibly different problems — boolean feasibility, max revenue cutting a rod, minimum coins, count of ways — all collapse to *one* recurrence shape with four different aggregators:
-
-| Problem | State | Aggregator | Item Reuse |
-|---|---|---|---|
-| Subset sum | `dp[i][s]` | OR | once each (0/1) |
-| Rod cutting | `dp[i]` | max | unlimited |
-| Coin change | `dp[i]` | min | unlimited |
-| Coin change II | `dp[a]` | sum | unlimited, count combinations |
-
-The pattern: pick a state-space dimension that captures "how much budget remains" (`s`, length, amount), iterate over the items, and choose the aggregator that matches the question (boolean → OR, optimum → max/min, count → sum). Loop order matters when counting combinations: **coins outer, amount inner** to avoid double-counting permutations as distinct ways.
-
-**You didn't just memorise four reductions. You learned that the entire knapsack family is a *template* — change the aggregator and you change the question; change the index decrement and you change the reuse policy. Every "fit a budget" DP problem you'll ever see will reduce to one of these four shapes.**
-
-> *Transfer challenge for the next lesson:* Two players take turns picking from either end of a row of coins. Each plays optimally, trying to maximise their own total. What's the maximum the first player can *guarantee*? Predict the recurrence shape — and notice it's *not* knapsack-shaped at all.
-
 <details>
-<summary><strong>Answer</strong></summary>
+<summary><strong>Q:</strong> How is rod cutting a knapsack?</summary>
 
-`dp[i][j]` = max value the player to move can guarantee from the slice `arr[i..j]`. The recurrence flips between maximising your gain and minimising the opponent's freedom: `dp[i][j] = max(arr[i] - dp[i+1][j], arr[j] - dp[i][j-1])`. The "− dp(...)" is what makes it adversarial — the opponent's optimum eats into your future. The next lesson formalises this as the **Optimal Strategy** problem (game-theoretic DP).
+**A:** The "items" are cut lengths with prices, reusable (many pieces of one length). It's unbounded knapsack with a `max` aggregator: `dp[L] = max(price[cut] + dp[L - cut])` over every first-cut length.
+
+</details>
+<details>
+<summary><strong>Q:</strong> When do you sweep capacity ascending vs descending in these reductions?</summary>
+
+**A:** Ascending for reusable items (coin change, rod cutting, coin change II — unbounded); descending for one-shot items (subset sum — 0/1). Direction controls whether an item can be reused within one pass.
 
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+## Sources & Verify
 
-<!-- TODO: The Hook — missing, needs to be written -->
-<!--       Guidance: real-world story opening before any definition -->
-
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
-
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
-
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
-
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
-
-<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
-<!--       Guidance: bulleted list of gotchas -->
-
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
-
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
-
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
-
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
-
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
+- **CLRS** (Cormen, Leiserson, Rivest, Stein), *Introduction to Algorithms*, 3rd ed., §15.1 — rod cutting, the textbook introduction to DP via an unbounded-knapsack reduction.
+- **LeetCode** 322 (Coin Change, min), 518 (Coin Change II, combinations), 377 (Combination Sum IV, permutations), 416 (Partition Equal Subset Sum) are the canonical drills; the `3`/`-1`, the combinations-vs-permutations `4`/`9`, and the rod-cutting `22`/`10` above all come from the runnable blocks — re-run to verify.

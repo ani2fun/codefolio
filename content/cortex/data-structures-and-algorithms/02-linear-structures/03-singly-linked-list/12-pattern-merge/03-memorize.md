@@ -2,7 +2,7 @@
 title: "Memorize: Merge"
 summary: "Pattern recognition triggers, template code, common mistakes, and quick recall."
 prereqs:
-  - 12-pattern-merge/02-problems
+  - 12-pattern-merge/01-pattern
 ---
 
 # Memorize: Merge
@@ -30,8 +30,6 @@ Picture a stapler at the head of a conveyor belt, with two feeder lines bringing
 ---
 
 ## Visual Summary
-
-> 🖼 Diagram — TODO: 3 frames — (1) initial state with `dummy`/`tail` wired in front of an empty output, `currentA` at the head of `A = [1, 3, 5]`, `currentB` at the head of `B = [2, 4]`; (2) mid-merge after three splices with merged prefix `1 → 2 → 3`, `currentA` at `5`, `currentB` at `4`; (3) terminal state with one input drained, the other's remaining suffix attached in a single splice, and `dummy.next` pointing at the real head of `1 → 2 → 3 → 4 → 5`.
 
 ---
 

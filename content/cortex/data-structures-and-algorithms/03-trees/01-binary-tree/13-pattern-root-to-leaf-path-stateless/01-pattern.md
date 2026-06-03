@@ -1,154 +1,157 @@
 ---
 title: "Pattern: Root-to-Leaf Path (Stateless)"
-summary: "Carry path state top-down and check or aggregate at leaves — sum check, binary path value, and parity queries."
+summary: "Carry an accumulated path value DOWN by argument (extend it at each node), produce a result at each LEAF, and aggregate those results UP through the return values. Top-down accumulation + bottom-up combine, no shared state — for sum-of-paths, path-sum checks, parity queries."
 prereqs:
   - 03-trees/01-binary-tree/09-pattern-preorder-traversal-stateless/01-pattern
 ---
 
-# The stateless root-to-leaf path pattern
+# Pattern: Root-to-Leaf Path (Stateless)
 
-```text
-recurse(node, accumulator):
-  if node is null: return identity            # propagate "no path here"
-  newAcc = update(accumulator, node)
-  if node is a leaf:                          # path is complete
-    return verdict(newAcc)
-  leftAnswer  = recurse(node.left,  newAcc)
-  rightAnswer = recurse(node.right, newAcc)
-  return combine(leftAnswer, rightAnswer)
-```
+## Why It Exists
 
-Three pieces to specialise:
+Many tree questions are about whole **root-to-leaf paths**: "sum all root-to-leaf *numbers* (the path `1→2→3` reads as 123)," "does any path sum to `k`?", "count the even-valued paths." A path is only *complete* at a leaf, so the work has two halves: build up the path value on the way **down**, and decide/aggregate once you **reach a leaf**.
 
-1. **`update`** — how the accumulator changes as we descend through the current node (preorder-style).
-2. **`verdict`** — at a leaf, what's the answer for *this* root-to-leaf path?
-3. **`combine`** — how to combine two children's answers into one parent answer (postorder-style). Common combinators: `OR` for "any path satisfies …", `+` for "count / sum across paths", `max` for "best path".
+The stateless approach threads the accumulated value **down as an argument** (extend it at each node — `acc*10 + val` for numbers, `acc + val` for sums) and combines the per-leaf results **up through the return values** (sum, OR, count). There's no shared mutable path: each call owns its accumulated value, and the returns fold the leaf answers together. It's [preorder-stateless](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-pattern)'s push-down *plus* a postorder-style aggregate-up — exactly the right shape when you want a *summary* of the paths, not the paths themselves.
 
-The *identity* in the base case is whatever value makes `combine` ignore the empty subtree — `false` for OR, `0` for sum, `-∞` for max.
+## See It Work
 
-> 🖼 Diagram — Stateless root-to-leaf path pattern — accumulator descends with updates from each node; leaves emit their per-path verdict; internal nodes combine their children's verdicts back up. It's preorder going down + postorder coming up, fused into one recursion.
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    R(("(1)<br/>acc=0"))
-    A(("(2)<br/>acc=1"))
-    B(("(3)<br/>acc=1"))
-    C(("(4)<br/>LEAF: verdict(acc=3)"))
-    D(("(7)<br/>LEAF: verdict(acc=4)"))
-    R --> A
-    R --> B
-    A --> C
-    B --> D
-    style R fill:#fef9c3,stroke:#f59e0b
-    style C fill:#dcfce7,stroke:#22c55e
-    style D fill:#dcfce7,stroke:#22c55e
-```
-
-<p align="center"><strong>Stateless root-to-leaf path pattern — accumulator <strong>descends</strong> with updates from each node; leaves <strong>emit</strong> their per-path verdict; internal nodes <strong>combine</strong> their children's verdicts back up. It's preorder going down + postorder coming up, fused into one recursion.</strong></p>
-
-> *Predict before reading on — what's the difference between this pattern and the stateless preorder pattern from lesson 8?*
->
-> Stateless preorder *processes every node* — the answer is whatever each node computes from its ancestor chain. Root-to-leaf-path *only emits an answer at leaves* — the answer for an internal node is combined from its descendants' leaf-emissions. They share the "accumulator down" mechanic but differ in *where* the answer is born and how it propagates back up.
-
-## Generic pattern
-
-We'll show "does any root-to-leaf path sum to target?" as the canonical generic example.
-
+Sum every root-to-leaf **number**. For `1 → 2` and `1 → 3` that's `12 + 13 = 25`. The number builds downward; leaf values sum upward. Run it.
 
 ```python run viz=binary-tree viz-root=root
-from typing import Optional
-
 class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
-        self.val, self.left, self.right = val, left, right
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
 
-def has_path_sum(root: Optional[TreeNode], target: int) -> bool:
-    def go(n, remaining):
-        if n is None: return False                     # identity for OR
-        remaining -= n.val
-        if n.left is None and n.right is None:         # leaf
-            return remaining == 0                      # verdict
-        return go(n.left, remaining) or go(n.right, remaining)
-    return go(root, target)
+def sum_numbers(node, cur=0):
+    if node is None:
+        return 0
+    cur = cur * 10 + node.val                  # extend the path number going DOWN
+    if node.left is None and node.right is None:
+        return cur                             # leaf: this path's complete number
+    return sum_numbers(node.left, cur) + sum_numbers(node.right, cur)   # aggregate UP
+
+root = TreeNode(1, TreeNode(2), TreeNode(3))
+print(sum_numbers(root))     # 25   (12 + 13)
 ```
 
-```java run viz=binary-tree viz-root=root
-public static boolean hasPathSum(TreeNode root, int target) {
-    if (root == null) return false;
-    target -= root.val;
-    if (root.left == null && root.right == null) return target == 0;
-    return hasPathSum(root.left, target) || hasPathSum(root.right, target);
+## How It Works
+
+`f(node, acc)` with three moves:
+
+1. **Extend** the accumulated value with the current node (`acc*10 + val` for a number, `acc + val` for a sum, `acc` toggled for parity).
+2. **At a leaf** (`no children`), the path is complete — return *this path's* value.
+3. **At an internal node**, return the **aggregate** of the children's results — `sum` for "total over all paths," `or` for "does any path…", `+` of counts for "how many paths…".
+
+```mermaid
+flowchart TB
+  R["f(node, acc): acc' = extend(acc, node)"] --> L["left: f(left, acc')"]
+  R --> RT["right: f(right, acc')"]
+  L --> LF["leaf → return path value"]
+  RT --> A["internal → return sum/or/count of children"]
+```
+
+<p align="center"><strong>the accumulator flows down as an argument; each leaf yields its path's value; internal nodes fold the children's returns upward.</strong></p>
+
+Two flows in one pass: the **accumulator descends** (argument, top-down) and the **answer ascends** (return value, bottom-up). It's stateless because the accumulator lives in the argument — no shared list to mutate or restore. The aggregator at internal nodes decides the query: `+` totals paths, `or` asks "any path?", counting tallies. Cost is `O(n)` (each node once), `O(h)` stack.
+
+### Key Takeaway
+
+Root-to-leaf-stateless carries the path value **down** by argument and folds the per-leaf results **up** by return: extend at each node, finalize at leaves, aggregate (sum / or / count) at internal nodes. No shared state. Use it for *summaries* of paths (totals, existence, counts) rather than the paths themselves.
+
+## Trace It
+
+`sum_numbers` on `1(2, 3)`:
+
+| node | incoming `cur` | `cur` after extend | leaf? | returns |
+|---|---|---|---|---|
+| `1` | `0` | `1` | no | `sum(left) + sum(right)` |
+| `2` | `1` | `12` | yes | `12` |
+| `3` | `1` | `13` | yes | `13` |
+| `1` | — | — | — | `12 + 13 = 25` |
+
+Before you read on: this *aggregates* the paths (sums them) but never builds the list `[12, 13]`. The [stateful variant](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateful-pattern) keeps a shared mutable path and backtracks. When is the stateless "carry-down-by-argument, aggregate-up-by-return" form the right choice, and when must you switch to the stateful one?
+
+Use **stateless** when you only need a *summary* of the paths — their sum, whether any satisfies a predicate, how many do. The accumulated value (a number, a running sum, a parity bit) is a small immutable thing you pass down, and a single number folds up via the returns; there's nothing to collect and nothing to clean up, so it's the simpler, less bug-prone choice. Switch to **stateful** when you need the *actual paths themselves* — "return the list of all root-to-leaf paths" — because you must build and snapshot each concrete path, which means a shared mutable list with append-on-enter / pop-on-exit backtracking. The dividing question is "do I need the *paths* or just a *number about* them?" A summary → stateless (carry a value, aggregate); the concrete paths → stateful (shared list, backtrack). Reaching for a shared mutable path when a passed-down value would do is over-engineering and invites the missing-pop bug.
+
+## Your Turn
+
+Sum-of-numbers plus a root-to-leaf sum check, both carrying state down:
+
+```python run
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val; self.left = left; self.right = right
+
+def sum_numbers(node, cur=0):
+    if node is None: return 0
+    cur = cur * 10 + node.val
+    if node.left is None and node.right is None:
+        return cur
+    return sum_numbers(node.left, cur) + sum_numbers(node.right, cur)
+
+def has_path_sum(node, target):
+    if node is None: return False
+    if node.left is None and node.right is None:
+        return node.val == target
+    rem = target - node.val
+    return has_path_sum(node.left, rem) or has_path_sum(node.right, rem)
+
+root = TreeNode(4, TreeNode(9, TreeNode(5), TreeNode(1)), TreeNode(0))
+print(sum_numbers(root))            # 1026  (495 + 491 + 40)
+print(has_path_sum(root, 18))       # True   (4 + 9 + 5)
+```
+
+```java run
+public class Main {
+  static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } TreeNode(int v, TreeNode l, TreeNode r){ val=v; left=l; right=r; } }
+
+  static int sumNumbers(TreeNode node, int cur) {
+    if (node == null) return 0;
+    cur = cur * 10 + node.val;
+    if (node.left == null && node.right == null) return cur;
+    return sumNumbers(node.left, cur) + sumNumbers(node.right, cur);
+  }
+  public static void main(String[] args) {
+    TreeNode root = new TreeNode(4, new TreeNode(9, new TreeNode(5), new TreeNode(1)), new TreeNode(0));
+    System.out.println(sumNumbers(root, 0));   // 1026
+  }
 }
 ```
 
+Drill the family in **Practice** — [Root-to-Leaf Path Sum Check](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateless-problems-root-to-leaf-path-sum-check), [Binary Summation of Tree](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateless-problems-binary-summation-of-tree), [Even Path](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateless-problems-even-path), and [Odd Count](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateless-problems-odd-count).
 
-## Complexity
+## Reflect & Connect
 
-> **Time:** O(N). **Space:** O(h) for recursion.
+Root-to-leaf-stateless is "summarize the paths without storing them":
 
-# How to recognise it
+- **The family** — sum of root-to-leaf numbers, "does any path sum to `k`?", binary-path value, even/odd path counts. The aggregator (`+`, `or`, count) picks the query; the descent is identical.
+- **Two flows, one pass** — accumulator down (argument), answer up (return). It fuses [preorder](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-pattern)'s push-down with a [postorder](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-pattern)-style aggregate-up — most real tree code is exactly this combination.
+- **Stateless vs stateful** — when you need a *number about* the paths, carry a value down and aggregate up (here). When you need the *paths themselves*, use a [shared mutable path with backtracking](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateful-pattern). Prefer the value-passing form unless you truly must collect concrete paths.
 
-The pattern fits when:
+**Prerequisites:** [Preorder Traversal (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-pattern).
+**What's next:** collect the actual paths with a shared, backtracked path list — [Root-to-Leaf Path (Stateful)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateful-pattern).
 
-- The unit of interest is a **complete root-to-leaf path** (not an arbitrary path inside the tree).
-- The check at each leaf depends on info accumulated *along the way down* (path sum, parity status, depth, concatenated value).
-- The whole-tree answer combines per-leaf verdicts via `OR` (does any path …), `AND` (do all paths …), `+` (count / sum), or `max` / `min` (best path).
+## Recall
 
-Concrete cues:
+> **Mnemonic:** *Extend the accumulator DOWN (argument), finalize at LEAVES, aggregate UP (return: sum/or/count). No shared path. Summary of paths → stateless; the paths themselves → stateful.*
 
-- *"Does any root-to-leaf path …"* → `OR` combiner.
-- *"Do all root-to-leaf paths …"* → `AND` combiner.
-- *"Count root-to-leaf paths where …"* → `+` combiner.
-- *"What's the max / min root-to-leaf path …"* → `max` / `min` combiner.
+| | |
+|---|---|
+| Down (argument) | extend the path value: `cur*10+val`, `cur+val`, parity toggle |
+| At a leaf | return this complete path's value |
+| At an internal node | return the aggregate of children (`+` / `or` / count) |
+| Why stateless | accumulator in the argument; nothing shared, nothing to undo |
+| Use when | you want a *summary* (total/exists/count), not the concrete paths |
 
-Anti-pattern: if the path can start or end *anywhere* (not just root and leaf), this isn't the right pattern — use the postorder stateful one (diameter, longest monotonic) instead. If the answer needs the *list of nodes* in each path (not just an aggregate), use the *stateful* root-to-leaf-path pattern (next lesson).
+- **Q:** How does the stateless form handle a root-to-leaf path? **A:** It carries the accumulated value down as an argument, finalizes at the leaf, and aggregates the leaf results up via return values.
+- **Q:** What decides the query (sum vs any vs count)? **A:** The aggregator at internal nodes — `+` totals, `or` checks existence, counting tallies.
+- **Q:** When use stateless vs stateful root-to-leaf? **A:** Stateless for a *summary* (a number about the paths); stateful when you need the *actual paths* (shared list + backtracking).
+- **Q:** Which two traversal flows does it combine? **A:** Preorder push-down (the accumulator argument) and postorder aggregate-up (the return values).
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+## Sources & Verify
 
-<!-- TODO: Understanding the Pattern — missing, needs to be written -->
-<!--       Guidance: umbrella H2 with the subsections below -->
-
-<!-- TODO: Why Naive Isn't Enough — missing, needs to be written -->
-<!--       Guidance: motivation for why the obvious approach fails -->
-
-<!-- TODO: The Core Idea — missing, needs to be written -->
-<!--       Guidance: one paragraph: the central trick -->
-
-<!-- TODO: How the Pointers/Window Move — missing, needs to be written -->
-<!--       Guidance: mechanics of the moving parts -->
-
-<!-- TODO: The Generic Algorithm — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
-
-<!-- TODO: Generic Implementation — missing, needs to be written -->
-<!--       Guidance: Python block + Java block of the skeleton -->
-
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table -->
-
-<!-- TODO: Variants / Taxonomy — missing, needs to be written -->
-<!--       Guidance: enumerate sub-shapes of this pattern -->
-
-<!-- TODO: Identifying — missing, needs to be written -->
-<!--       Guidance: per-variant: recognition checklist + canonical example -->
-
-<!-- TODO: Recognition Checklist — missing, needs to be written -->
-<!--       Guidance: 4-question diagnostic — the source of the Problem-section Diagnostic Questions -->
-
-<!-- TODO: Canonical Example — missing, needs to be written -->
-<!--       Guidance: fully worked example: brute force → optimised → template fit -->
-
-<!-- TODO: Problems in This Category — missing, needs to be written -->
-<!--       Guidance: table with links to the 02-problems/ files -->
+- **CLRS**, *Introduction to Algorithms*, 4th ed., §10.4 — tree traversal; path computations.
+- **Sedgewick & Wayne**, *Algorithms*, 4th ed., §3.2 — recursive path/aggregate processing.
+- Sum-of-root-to-leaf-numbers and path-sum check (LeetCode 129, 112) are standard; both runnable blocks are verified by running (`sum_numbers ⇒ 25`, `1026`; `has_path_sum 18 ⇒ True`).

@@ -60,7 +60,6 @@ After sorting, place `left` at index `0` and `right` at index `n − 1`. `arr[le
 
 What breaks if you skip the sort and try two pointers on the unsorted array? The decisive direction disappears. With `arr = [2, 8, 3, 6, 4]` and target `7`, `arr[0] + arr[4] = 6 < 7` — but moving `left` to `arr[1] = 8` overshoots immediately while the valid pair `(3, 4)` sits at non-adjacent indices `2` and `4`. Without sorted order, no single pointer move has a guaranteed effect on the sum, so the search collapses back to O(n²) nested-loop enumeration.
 
-> 🖼 Diagram — Two-pointer Two Sum — sort once, then converge from both ends in O(n).
 ```mermaid
 ---
 config:
@@ -343,7 +342,6 @@ def twoSum(arr: Array[Int], target: Int): Array[Int] =
 
 After sort: `[2, 3, 4, 6, 8]`
 
-> ▶ Interactive Diagram — TODO: add caption
 ```d3 widget=array-1d
 {
   "steps": [

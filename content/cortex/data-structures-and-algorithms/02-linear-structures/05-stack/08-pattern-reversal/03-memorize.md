@@ -2,7 +2,7 @@
 title: "Memorize: Reversal"
 summary: "Pattern recognition triggers, template code, common mistakes, and quick recall."
 prereqs:
-  - 08-pattern-reversal/02-problems
+  - 08-pattern-reversal/01-pattern
 ---
 
 # Memorize: Reversal
@@ -30,8 +30,6 @@ Picture a tall, narrow can of tennis balls. You drop them in one at a time — f
 ---
 
 ## Visual Summary
-
-> 🖼 Diagram — TODO: 3 frames — (1) input sequence `A B C D` about to be pushed left-to-right; (2) the loaded stack with `D` on top and `A` at the bottom, mid-unload; (3) the result `D C B A` fully popped out, with an arrow showing pop order equals reversed input order.
 
 ---
 

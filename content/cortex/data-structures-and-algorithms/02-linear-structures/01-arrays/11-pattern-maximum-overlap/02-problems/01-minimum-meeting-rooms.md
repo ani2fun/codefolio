@@ -65,7 +65,6 @@ The naive approach of pairing every meeting with every other to detect conflicts
 
 The minimum number of rooms is exactly the maximum number of meetings running at any single instant. Not "most meetings in a day" (that could be hundreds spread over time) — the **peak concurrency**. Think of rooms as a pool: a room is in use while its meeting runs and is returned the moment the meeting ends. The question is: during the busiest instant of the day, how deep does the pool have to be?
 
-> 🖼 Diagram — Only the simultaneous meetings matter. A room freed up can be handed to the next meeting — the peak concurrency is the bottleneck.
 ```d2
 direction: right
 
@@ -141,7 +140,6 @@ peak -> ans
 <summary><h2>The Sweep Strategy (Visualised)</h2></summary>
 
 
-> 🖼 Diagram — Four steps — split, sort, sweep, return. Textbook maximum-overlap application.
 ```mermaid
 ---
 config:

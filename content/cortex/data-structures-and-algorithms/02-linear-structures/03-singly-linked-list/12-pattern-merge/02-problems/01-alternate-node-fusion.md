@@ -80,7 +80,6 @@ Run the dummy-head splice loop with a boolean selector that flips each iteration
 
 ### Solution
 
-> ▶ Interactive Diagram — Alternate node fusion in-place — list A on row 0, list B on row 1. Each iteration splices one node into the tail, alternating between A and B; when one list runs out the remainder of the other gets attached whole.
 ```d3 widget=list-single
 {
   "steps": [

@@ -109,7 +109,6 @@ Split on `/`. Each non-empty token is one of three things:
 
 Final path = `/` + `'/'.join(stack)` (or just `/` if empty).
 
-> 🖼 Diagram — Canonicalise path — each token decides its action: push, pop, or skip. The final stack is the path's directory list, joined with slashes.
 ```mermaid
 ---
 config:

@@ -31,8 +31,6 @@ Picture a treasure hunt where each clue points to the location of the next clue.
 
 ## Visual Summary
 
-> 🖼 Diagram — TODO: 3 frames — empty list (`head = null`); a single-node list where `head` points at one node whose `next` is `null`; a four-node list with arrows from `head` through every node ending at `null`.
-
 ---
 
 ## Key Operations

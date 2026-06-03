@@ -67,7 +67,6 @@ This is the prefix-sum trick generalised to **prefix products**. Build two array
 
 Then `product[i] = prefix[i] * suffix[i]`. Two passes (one left-to-right, one right-to-left), no division, O(N) time and O(N) space (which can be optimised to O(1) extra by computing one direction in-place).
 
-> 🖼 Diagram — Self-excluded product — prefix product holds "everything before me", suffix product holds "everything after me", and their pointwise product is the answer. The technique is prefix-sum's multiplicative cousin.
 ```d2
 direction: right
 

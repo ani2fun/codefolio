@@ -114,7 +114,6 @@ Outer loop is O(N), inner two-pointer is O(N) — total **O(N²)**. That's the c
 <summary><h2>The Outer-Inner Strategy (Visualised)</h2></summary>
 
 
-> 🖼 Diagram — Approximate 3-Sum — outer loop fixes one node, inner two-pointer searches the rest. The "closest" tracker survives across iterations.
 ```mermaid
 ---
 config:
@@ -446,7 +445,7 @@ Same skeleton, four flavours. Once the converging-walkers mental model clicks, y
 
 </details>
 <details>
-<summary><h2>Final Takeaway</h2></summary>
+<summary><h2>Key Takeaway</h2></summary>
 
 
 The two-pointer pattern on a doubly linked list is the moment a "fancy linked list" stops feeling like a textbook curiosity and starts feeling like an *array with insertions*. Because every node knows its predecessor, you can run the entire sorted-array two-pointer playbook — convergence, skip-duplicates, fix-one-and-reduce — without ever leaving linked-list land. Linear time, constant extra space, single pass.

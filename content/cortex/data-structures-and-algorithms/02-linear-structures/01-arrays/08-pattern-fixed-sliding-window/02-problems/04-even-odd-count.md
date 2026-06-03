@@ -70,7 +70,6 @@ The two pointers are `start` and `end`, with the aggregate split across two inte
 
 What breaks if you use the naive nested-loop approach is the familiar O(N × k) cost: every window re-classifies all `k` elements, even though `k − 1` of them are shared with the previous window. The sliding window keeps the running pair of counters and updates them in O(1) per step, giving an O(N) sweep with O(N − k + 1) result space.
 
-> 🖼 Diagram — Even Odd Count — two counters slide together; the full-size window appends [evenCount, oddCount] to the result.
 ```mermaid
 ---
 config:

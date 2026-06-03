@@ -2,7 +2,7 @@
 title: "Memorize: Previous Closest Occurrence"
 summary: "Pattern recognition triggers, template code, common mistakes, and quick recall."
 prereqs:
-  - 09-pattern-previous-closest-occurrence/02-problems
+  - 09-pattern-previous-closest-occurrence/01-pattern
 ---
 
 # Memorize: Previous Closest Occurrence
@@ -30,8 +30,6 @@ Picture queuing to see a parade and wanting to know the nearest *taller* person 
 ---
 
 ## Visual Summary
-
-> 🖼 Diagram — TODO: 3 frames — empty stack at the start, mid-sweep with a decreasing stack and one pop run in progress, final state with the result array filled and `-1` for elements that had no qualifying predecessor.
 
 ---
 

@@ -2,11 +2,11 @@
 
 A "strategy" is a way of *thinking* about problems — a question you ask before you write a single line of code. Recursion asks "can I solve a smaller version and stitch the answer back together?". Greedy asks "can I make a locally-best choice that's also globally optimal?". DP asks "are subproblems shared across the recursion tree?". The strategies in this module are the menu you flip through when you read a new problem statement.
 
-> How to read this chapter: follow **Start Here** top to bottom — that is the teaching path. Drill it in **Practice** once it clicks. Use **Reference** (recall cards, synthesis, design) for review, not first reading.
+> How to read this chapter: follow **Start Here** top to bottom — that is the teaching path. Drill it in **Practice** once it clicks.
 
 ## Start Here — the learning path
 
-- [Introduction To Memory Model](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-introduction-to-memory-model)
+- [Introduction to the Memory Model](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-introduction-to-memory-model)
 - [Nested Functions](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-nested-functions)
 - [Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-recursion)
 - [Pattern: Head Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-head-recursion-pattern)
@@ -30,7 +30,7 @@ A "strategy" is a way of *thinking* about problems — a question you ask before
 - [Word Break](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-word-break)
 - [The Knapsack Family](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-knapsack)
 - [Knapsack Applications](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-knapsack-applications)
-- [Optimal Stratergy](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-optimal-stratergy)
+- [Optimal Game Strategy](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-optimal-stratergy)
 - [Boolean Parenthesization](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-boolean-parenthesization)
 - [Matrix Chain Multiplication](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-matrix-chain-multiplication)
 - [Pattern: Edit Distance](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-edit-distance-pattern)
@@ -92,7 +92,7 @@ Do these after the matching pattern in Start Here.
 
 ### Subset Sum
 - [Partition with Equal Sum](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-subset-sum-problems-partition-with-equal-sum)
-- [Sets With Smallest Discrepancy](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-subset-sum-problems-sets-with-smallest-discrepancy)
+- [Sets with Smallest Discrepancy](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-subset-sum-problems-sets-with-smallest-discrepancy)
 
 ### 2D Grid
 - [Longest Ascending Route](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-2d-grid-problems-longest-ascending-route)
@@ -104,28 +104,3 @@ Do these after the matching pattern in Start Here.
 - [K-Limited Submatrix Sum](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-prefix-sum-problems-k-limited-submatrix-sum)
 - [Maximum Submatrix Sum](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-prefix-sum-problems-maximum-submatrix-sum)
 - [Range Sum Finder](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-prefix-sum-problems-range-sum-finder)
-
-## Reference
-
-Quick-recall and design material. Skim, don't study top to bottom.
-
-- [Memorize: Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-memorize)
-- [Memorize: Head Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-head-recursion-memorize)
-- [Memorize: Tail Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-tail-recursion-memorize)
-- [Memorize: Multiple Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multiple-recursion-memorize)
-- [Memorize: Multidimensional Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multidimensional-recursion-memorize)
-- [Pattern Synthesis: Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-synthesis)
-- [Memorize: Divide And Conquer](/cortex/data-structures-and-algorithms/algorithms-by-strategy-divide-and-conquer-memorize)
-- [Memorize: Greedy](/cortex/data-structures-and-algorithms/algorithms-by-strategy-greedy-memorize)
-- [Memorize: Backtracking](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-memorize)
-- [Memorize: Unconditional Enumeration](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-unconditional-enumeration-memorize)
-- [Memorize: Conditional Enumeration](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-conditional-enumeration-memorize)
-- [Memorize: Backtracking Search](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-backtracking-search-memorize)
-- [Pattern Synthesis: Backtracking](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-synthesis)
-- [Memorize: Dynamic Programming](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-memorize)
-- [Memorize: Edit Distance](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-edit-distance-memorize)
-- [Memorize: Subset Sum](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-subset-sum-memorize)
-- [Memorize: 2D Grid](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-2d-grid-memorize)
-- [Memorize: Prefix Sum (2D)](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-prefix-sum-memorize)
-- [Pattern Synthesis: Dynamic Programming](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-synthesis)
-- [Memorize: Randomized Algorithms](/cortex/data-structures-and-algorithms/algorithms-by-strategy-randomized-algorithms-memorize)

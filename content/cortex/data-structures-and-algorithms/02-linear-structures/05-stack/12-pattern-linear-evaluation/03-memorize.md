@@ -2,7 +2,7 @@
 title: "Memorize: Linear Evaluation"
 summary: "Pattern recognition triggers, template code, common mistakes, and quick recall."
 prereqs:
-  - 12-pattern-linear-evaluation/02-problems
+  - 12-pattern-linear-evaluation/01-pattern
 ---
 
 # Memorize: Linear Evaluation
@@ -30,8 +30,6 @@ Picture assembling a flat-pack bookshelf from a numbered instruction sheet, with
 ---
 
 ## Visual Summary
-
-> 🖼 Diagram — TODO: 3 frames — (1) input `2 [ a [ b ] ]` with the cursor at the first closer `]` and the stack holding `2 [ a [ b`; (2) mid-scan after the inner fold, the stack holding `2 [ a b` with the combined token highlighted; (3) end-of-input with a single combined token on the stack and a green "result" badge, beside a degenerate frame showing a trigger-free input that pushes every token and never folds.
 
 ---
 

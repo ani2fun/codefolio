@@ -2,31 +2,15 @@
 title: "Design a Min Stack"
 summary: "Design a stack that supports push, pop, top, and getMin all in O(1) — the challenge is tracking the minimum as elements are pushed and popped."
 prereqs:
-  - 02-linear-structures/05-stack/02-array-implementation-of-stacks
-  - 02-linear-structures/05-stack/03-linked-list-implementation-of-stacks
+  - 02-linear-structures/05-stack/01-what-is-a-stack
 difficulty: hard
 ---
 
-## The Hook
+A normal stack does push, pop, and top in O(1). Can you add **`getMin()`** — the smallest value currently in the stack — *also* in O(1), with no scanning, using only **one** internal stack? The trick is to **encode the previous minimum directly into the storage stack**: when a new minimum is pushed, push the *old* minimum onto the stack first, then the new value on top. The only moment you need the old min is when you pop the current min — and it's sitting right underneath, ready to restore. This lesson designs **Min Stack** and its mirror **Max Stack** from that one idea: a single auxiliary integer plus one stack adds a whole new O(1) query without breaking any existing guarantee.
 
-A normal stack does push, pop, and peek in O(1). What if you also wanted **`getMin()`** in O(1) — the smallest value currently in the stack, every time, no scanning? Walking the stack from top to bottom would be O(N), and a bag of cleverness ("just store the running min on a separate stack") feels too easy. The actual interview question is sharper: **using only one stack, can you give me push, pop, top, AND getMin all in O(1)?**
+## Design a Min Stack
 
-Yes. The trick is to **encode the previous minimum directly into the storage stack** — when you push a new minimum, you push the *old* minimum onto the stack first, then push the new value on top. The new value becomes the visible top; the saved old min sits one below, ready to resurface when this new-minimum value is eventually popped. The math works out because the only time we need the *old* min is exactly when we pop the *current* min — at that moment, the next thing under the popped value is the saved old min, and we restore it as the new current min.
-
-This lesson is two problems — **Min Stack** and its mirror **Max Stack**. Both demonstrate the same composition idea: an O(1) auxiliary slot (a single integer) plus a single stack adds an entirely new query (`getMin`/`getMax`) without breaking any existing O(1) guarantee. It's the same architectural move we saw in the hash-table design lesson — *compose the data structure with one auxiliary piece to add a new operation* — applied to stacks.
-
----
-
-## Table of contents
-
-1. [Design a Min Stack](#design-a-min-stack)
-2. [Design a Max Stack](#design-a-max-stack)
-
-***
-
-# Design a Min Stack
-
-## Problem Statement
+### Problem Statement
 
 Implement a `MinStack` class with the following operations, all amortised **O(1)**:
 
@@ -63,7 +47,6 @@ The clever invariant: maintain a running `min` field; when a *new* minimum arriv
 
 Now the stack contains, just below every "minimum so far" record, the previous minimum. When we eventually pop the current min, we know to also pop the saved previous min — and that saved value becomes the new current min.
 
-> 🖼 Diagram — Min Stack — when a new min lands, the previous min is buried just below it. When the current min is popped, restore from the buried record. Push of a non-min value is just a regular push.
 ```mermaid
 ---
 config:
@@ -249,9 +232,9 @@ public class Main {
 
 ***
 
-# Design a Max Stack
+## Design a Max Stack
 
-## Problem Statement
+### Problem Statement
 
 Identical to Min Stack, but track the **maximum** instead of the minimum.
 
@@ -436,33 +419,8 @@ public class Main {
 ```
 
 </details>
-<details>
-<summary><h2>Final Takeaway</h2></summary>
+## Key Takeaway
 
-
-Three lessons:
-
-1. **One auxiliary integer + one stack = O(1) min/max.** No second stack required. The trick is to *bury* the previous extremum value just below every new-extremum value in the same stack.
-2. **The trigger for "restore" is `top == current_min`.** When you pop and the popped value equals the current min, you know there's a saved record one slot below — pop it and restore. If the popped value isn't the current min, no extra work needed.
-3. **The two-stack approach exists too.** A parallel stack of "running mins" works and is more obvious. We chose the single-stack version because the constraint demanded it, and because it teaches the deeper compositional move: encoding metadata *into* the existing structure rather than alongside it.
-
-> **The complete arc — twelve lessons, one section, one data structure:**
->
-> | Lesson | What you got | Why it mattered |
-> |---|---|---|
-> | 1 — Introduction | LIFO, push/pop semantics, real-world examples | Foundation |
-> | 2 — Array implementation | O(1) per op via index = top tracking | Cache-friendly default |
-> | 3 — Linked-list implementation | O(1) per op via head insertion | Unbounded growth |
-> | 4 — Notations | Infix vs. postfix vs. prefix | Parser foundations |
-> | 5 — Evaluating | Postfix evaluator, prefix evaluator, infix wrapper | The calculator |
-> | 6 — Converting | Six conversions, Shunting-Yard | The compiler front-end |
-> | 7 — Reversal | The simplest stack pattern | Gateway |
-> | 8 — Previous closest | Monotonic stack | Stock span, histogram, ... |
-> | 9 — Next closest | Same machinery, retroactive resolution | Daily temperatures, rainwater, histogram |
-> | 10 — Sequence validation | Stack as matching memory | Brackets, palindromes, balance |
-> | 11 — Linear evaluation | Push-pop-fold composition | Path simplification, decoding, parsing |
-> | 12 — Design | Compose stack with auxiliary state | Min/Max stack |
->
-> You started knowing a stack was a "list with restricted operations". You leave knowing it's the universal tool for *deferred work* — anywhere recency matters, anywhere most-recent-first is the right priority, anywhere parsers nest, anywhere "remember this until I find its match" comes up. Carry the toolkit. Every interview, every parser, every undo-redo system, every CPU you'll ever read assembly for — they all live or die by stacks.
-
-</details>
+1. **One auxiliary integer + one stack = O(1) min/max.** No second stack required — *bury* the previous extremum just below every new-extremum value in the same stack.
+2. **The trigger to restore is `top == current min`.** When the popped value equals the current min, a saved record sits one slot below — pop it and restore. Otherwise, no extra work.
+3. **A two-stack version also works** (a parallel stack of running minima) and is more obvious; the single-stack version is the one that teaches the deeper move — encoding metadata *into* the structure rather than alongside it.

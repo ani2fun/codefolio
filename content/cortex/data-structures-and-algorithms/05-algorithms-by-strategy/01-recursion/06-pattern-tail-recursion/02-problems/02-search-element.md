@@ -35,7 +35,6 @@ Output: -1
 
 The "answer being built" is the *current index*. We start at 0 and advance until either we find the target or we run off the end of the array. At each step we check the current element, return immediately on match, or recurse with the next index.
 
-> 🖼 Diagram — Each call checks one element and either returns or tail-calls with i + 1.
 ```mermaid
 ---
 config:
@@ -84,7 +83,6 @@ The function either returns `index` (match found), `-1` (off the end), or `helpe
 
 <div class="d2-slides" data-caption="The index advances; the array is read-only. The accumulator IS the answer.">
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "Step 0 — i = 0" {
   arr: "arr = [2, 8, 3, 6, 4],  target = 3" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
@@ -92,7 +90,6 @@ state: "Step 0 — i = 0" {
 }
 ```
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "Step 1 — i = 1" {
   arr: "arr = [2, 8, 3, 6, 4]"
@@ -100,7 +97,6 @@ state: "Step 1 — i = 1" {
 }
 ```
 
-> 🖼 Diagram — TODO: add caption
 ```d2
 state: "Step 2 — i = 2 — MATCH" {
   arr: "arr = [2, 8, 3, 6, 4]"
@@ -225,33 +221,9 @@ When the match is found, every paused frame returns the same `index` value direc
 
 </details>
 <details>
-<summary><h2>Final Takeaway</h2></summary>
+<summary><h2>Key Takeaway</h2></summary>
 
 
 Search Element shows tail recursion in its simplest "scanner" form: an index accumulator advances until a condition fires. Same template you'll use for "find first negative number," "find first repeated character," and dozens of single-pass tests. The next problem also uses the index-advance template, but with two indices that converge from opposite ends.
 
 </details>
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
-
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
-
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
-
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
-
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
-
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->

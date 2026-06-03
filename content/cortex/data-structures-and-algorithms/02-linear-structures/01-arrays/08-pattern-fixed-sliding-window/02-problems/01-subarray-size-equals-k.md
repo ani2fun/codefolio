@@ -68,7 +68,6 @@ The two pointers are `start` (the left edge of the current window) and `end` (th
 
 What breaks if you use the naive nested-loop approach is the shared work: adjacent windows of size `k` overlap in `k − 1` elements, but the brute force re-adds those shared elements for every window. The cost balloons to O(N × k) — for `n = 10⁶, k = 1000`, that's a billion additions instead of a million.
 
-> 🖼 Diagram — Subarray Size Equals K — expand the window, contract if oversized, then update min_sum whenever the window reaches exactly size k.
 ```mermaid
 ---
 config:
@@ -329,7 +328,6 @@ public class Main {
 
 `arr = [4, 4, 5, 6, 4]`, `k = 3`
 
-> ▶ Interactive Diagram — Fixed sliding window of size `k = 3` on `[4, 4, 5, 6, 4]` — three valid windows produce sums 13, 15, 15; `min_sum = 13` after the first full window.
 ```d3 widget=array-1d
 {
   "steps": [
@@ -757,6 +755,8 @@ public class Main {
   "title": "Fixed sliding window k = 3 on [4, 4, 5, 6, 4] — finding min sum"
 }
 ```
+
+<p align="center"><strong>Fixed sliding window of size <code>k = 3</code> on <code>[4, 4, 5, 6, 4]</code> — three valid windows produce sums 13, 15, 15; <code>min_sum = 13</code> after the first full window.</strong></p>
 
 <details>
 <summary><strong>Trace — arr = [4, 4, 5, 6, 4],  k = 3</strong></summary>

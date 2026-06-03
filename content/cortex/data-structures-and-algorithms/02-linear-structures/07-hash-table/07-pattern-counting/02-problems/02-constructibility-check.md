@@ -80,7 +80,6 @@ The naive approach breaks the time budget. For each character of `s1` it scans `
 
 Build the frequency map of `s2`. Then walk `s1`; for each character, *consume* one from the map by decrementing it. If any character's count drops to zero (or below) while we still need it, `s2` doesn't have enough letters — return `false`.
 
-> 🖼 Diagram — Constructibility — the s2 frequency map is the "available letters" pool. Walking s1 consumes from the pool. If you ever try to consume a letter that's exhausted, the build fails.
 ```mermaid
 ---
 config:

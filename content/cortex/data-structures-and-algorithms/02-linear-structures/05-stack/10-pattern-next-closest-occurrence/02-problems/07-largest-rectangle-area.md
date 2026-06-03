@@ -79,7 +79,6 @@ For each bar, the largest rectangle whose *height equals this bar's height* exte
 
 After the main loop, **flush** the stack as if a "0" bar appeared at index `n` — those bars extend all the way to the end.
 
-> 🖼 Diagram — When the increasing-stack invariant is broken, every popped bar represents a rectangle whose height is the popped value and whose horizontal extent runs from one past the new top to one before the current bar. Each pop is one candidate rectangle; the global max wins.
 ```mermaid
 ---
 config:
@@ -243,7 +242,7 @@ public class Main {
 
 </details>
 <details>
-<summary><h2>Final Takeaway</h2></summary>
+<summary><h2>Key Takeaway</h2></summary>
 
 
 Three lessons:

@@ -2,7 +2,7 @@
 title: "Memorize: Counting"
 summary: "Pattern recognition triggers, template code, common mistakes, and quick recall."
 prereqs:
-  - 07-pattern-counting/02-problems
+  - 07-pattern-counting/01-pattern
 ---
 
 # Memorize: Counting
@@ -30,8 +30,6 @@ Picture sorting a bag of mixed coins by tipping them into labelled trays — one
 ---
 
 ## Visual Summary
-
-> 🖼 Diagram — TODO: 3 frames — empty frequency map, mid-sweep with two distinct keys counted and one being incremented, final state with the complete map and the answer read off it.
 
 ---
 

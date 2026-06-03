@@ -66,7 +66,6 @@ Place `left` at index `0` and `right` at index `n − 1`. At each iteration the 
 
 A single-pointer approach would scan once to collect every vowel's index, then walk a second pass to swap mirrored vowels using that list. That costs `O(n)` time but also `O(v)` extra space for the index list (where `v` is the vowel count). The two-pointer version drops the auxiliary list entirely — `left` and `right` implicitly track "the leftmost unswapped vowel" and "the rightmost unswapped vowel," so the pairing happens in place.
 
-> ▶ Interactive Diagram — Vowel exchange on "afegijoku" — each pointer scans past consonants until it finds a vowel; matched vowel pairs swap; pointers meet at the middle 'i'.
 ```d3 widget=array-1d
 {
   "steps": [

@@ -107,7 +107,6 @@ When we find a pair, naively moving each pointer one step risks finding the *sam
 <summary><h2>The Skip-Duplicates Strategy (Visualised)</h2></summary>
 
 
-> 🖼 Diagram — Duplicate-aware Two Sum — after each match, both pointers walk past every node sharing their value before resuming.
 ```mermaid
 ---
 config:

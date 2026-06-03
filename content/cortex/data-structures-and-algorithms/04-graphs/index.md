@@ -2,20 +2,20 @@
 
 The most general data structure in this book. Every linked list is a graph. Every tree is a graph. Every state machine, every dependency, every road network, every social connection, every Git commit history — all graphs. Once you can traverse one cleanly and know which algorithm to reach for, a vast class of problems collapses into a few well-named patterns.
 
-> How to read this chapter: follow **Start Here** top to bottom — that is the teaching path. Drill it in **Practice** once it clicks. Use **Reference** (recall cards, synthesis, design) for review, not first reading.
+> How to read this chapter: follow **Start Here** top to bottom — that is the teaching path. Drill it in **Practice** once it clicks.
 
 ## Start Here — the learning path
 
-- [Introduction To Graphs](/cortex/data-structures-and-algorithms/graphs-introduction-to-graphs)
+- [Introduction to Graphs](/cortex/data-structures-and-algorithms/graphs-introduction-to-graphs)
 - [Adjacency Matrix Representation](/cortex/data-structures-and-algorithms/graphs-adjacency-matrix-representation)
 - [Adjacency List Representation](/cortex/data-structures-and-algorithms/graphs-adjacency-list-representation)
-- [Traversing A Graph](/cortex/data-structures-and-algorithms/graphs-traversing-a-graph)
-- [Traversing A Grid](/cortex/data-structures-and-algorithms/graphs-traversing-a-grid)
+- [Traversing a Graph](/cortex/data-structures-and-algorithms/graphs-traversing-a-graph)
+- [Traversing a Grid](/cortex/data-structures-and-algorithms/graphs-traversing-a-grid)
 - [Cycle Detection](/cortex/data-structures-and-algorithms/graphs-cycle-detection)
 - [Topological Sort](/cortex/data-structures-and-algorithms/graphs-topological-sort)
-- [Single Source Shortest Path](/cortex/data-structures-and-algorithms/graphs-single-source-shortest-path)
-- [All Pairs Shortest Path](/cortex/data-structures-and-algorithms/graphs-all-pairs-shortest-path)
-- [Max Flow Min Cut Theorem](/cortex/data-structures-and-algorithms/graphs-max-flow-min-cut-theorem)
+- [Single-Source Shortest Path](/cortex/data-structures-and-algorithms/graphs-single-source-shortest-path)
+- [All-Pairs Shortest Path](/cortex/data-structures-and-algorithms/graphs-all-pairs-shortest-path)
+- [Max-Flow / Min-Cut Theorem](/cortex/data-structures-and-algorithms/graphs-max-flow-min-cut-theorem)
 - [Maximum Bipartite Matching](/cortex/data-structures-and-algorithms/graphs-maximum-bipartite-matching)
 - [Pattern: Depth-First Search](/cortex/data-structures-and-algorithms/graphs-pattern-depth-first-search-pattern)
 - [Pattern: Connected Components](/cortex/data-structures-and-algorithms/graphs-pattern-connected-components-pattern)
@@ -33,7 +33,7 @@ Do these after the matching pattern in Start Here.
 
 ### Depth-First Search
 - [Source to Target Paths](/cortex/data-structures-and-algorithms/graphs-pattern-depth-first-search-problems-source-to-target-paths)
-- [Target Paths With Given Weight](/cortex/data-structures-and-algorithms/graphs-pattern-depth-first-search-problems-target-paths-with-given-weight)
+- [Target Paths with Given Weight](/cortex/data-structures-and-algorithms/graphs-pattern-depth-first-search-problems-target-paths-with-given-weight)
 - [Hamiltonian Paths](/cortex/data-structures-and-algorithms/graphs-pattern-depth-first-search-problems-hamiltonian-paths)
 - [Simple Cycles](/cortex/data-structures-and-algorithms/graphs-pattern-depth-first-search-problems-simple-cycles)
 
@@ -57,18 +57,6 @@ Do these after the matching pattern in Start Here.
 
 ### Shortest Path (Dijkstra)
 - [Minimum Cost Path](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-dijkstra-problems-minimum-cost-path)
-- [Cheapest Flights With K Stops](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-dijkstra-problems-cheapest-flights-with-k-stops)
+- [Cheapest Flights with K Stops](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-dijkstra-problems-cheapest-flights-with-k-stops)
 - [Minimum Travel Time](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-dijkstra-problems-minimum-travel-time)
 - [Teleporter Grid](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-dijkstra-problems-teleporter-grid)
-
-## Reference
-
-Quick-recall and design material. Skim, don't study top to bottom.
-
-- [Memorize: Graphs](/cortex/data-structures-and-algorithms/graphs-memorize)
-- [Memorize: Depth-First Search](/cortex/data-structures-and-algorithms/graphs-pattern-depth-first-search-memorize)
-- [Memorize: Connected Components](/cortex/data-structures-and-algorithms/graphs-pattern-connected-components-memorize)
-- [Memorize: Two Colouring](/cortex/data-structures-and-algorithms/graphs-pattern-two-colouring-memorize)
-- [Memorize: Shortest Path (BFS)](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-breadth-first-search-memorize)
-- [Memorize: Shortest Path (Dijkstra)](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-dijkstra-memorize)
-- [Pattern Synthesis: Graphs](/cortex/data-structures-and-algorithms/graphs-pattern-synthesis)

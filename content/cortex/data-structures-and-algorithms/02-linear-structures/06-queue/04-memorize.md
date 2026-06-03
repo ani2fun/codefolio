@@ -2,7 +2,7 @@
 title: "Memorize: Queue"
 summary: "Mnemonics, analogies, key operations, and quick recall for queue."
 prereqs:
-  - 02-linear-structures/06-queue/03-linked-list-implementation-of-queues
+  - 02-linear-structures/06-queue/01-what-is-a-queue
 ---
 
 # Memorize: Queue
@@ -28,8 +28,6 @@ Picture the checkout line at a supermarket. A new customer joins at the back of 
 ---
 
 ## Visual Summary
-
-> 🖼 Diagram — TODO: 3 frames — empty queue / one element / full ring (wrap-around)
 
 ---
 

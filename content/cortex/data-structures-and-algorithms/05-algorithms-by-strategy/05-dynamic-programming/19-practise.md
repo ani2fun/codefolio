@@ -1,3 +1,10 @@
+---
+title: "Practice — Mixed DP Problems"
+summary: "Seven dynamic-programming problems, one from each family the section covered — the meta-skill is naming the pattern before deriving the recurrence. Full Python and Java implementations for each."
+prereqs:
+  - 05-algorithms-by-strategy/05-dynamic-programming/01-linear-dp
+---
+
 # 19. Practice — Mixed DP Problems
 
 You've seen 18 lessons covering an array of DP shapes — linear DP, longest-subsequence variants, palindrome problems, partition problems, the knapsack family, game-theoretic adversarial DP, split-point interval DP, and three meta-patterns (edit-distance, subset-sum, 2D-grid, prefix-sum). The patterns reappear in disguise across hundreds of competitive-programming and interview problems. The goal of this final lesson is mileage: seven problems, each from a different family, with full implementations.
@@ -13,7 +20,7 @@ Each problem in this set was chosen to test pattern recognition. Before reading 
 5. [Pattern as Subsequence](#pattern-as-subsequence)
 6. [Shortest Common Supersequence](#shortest-common-supersequence)
 7. [Longest Repeated Subsequence](#longest-repeated-subsequence)
-8. [Final Takeaway](#final-takeaway)
+8. [Key Takeaway](#key-takeaway)
 
 ***
 
@@ -1238,7 +1245,7 @@ public class Main {
 
 ***
 
-# Final Takeaway
+## Key Takeaway
 
 These seven problems map onto the patterns the entire section built:
 

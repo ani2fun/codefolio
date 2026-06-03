@@ -2,11 +2,11 @@
 
 Recursive code crashes for reasons that look like dark magic — until you can name the four regions of memory every running program already lives in. This section builds that mental model, then turns it into a complete map of recursion: every running program is a building under construction, every function call is a tier of scaffolding, and every recursion pattern is just a different way of using that scaffold to build an answer.
 
-> How to read this chapter: follow **Start Here** top to bottom — that is the teaching path. Drill it in **Practice** once it clicks. Use **Reference** (recall cards, synthesis, design) for review, not first reading.
+> How to read this chapter: follow **Start Here** top to bottom — that is the teaching path. Drill it in **Practice** once it clicks.
 
 ## Start Here — the learning path
 
-- [Introduction To Memory Model](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-introduction-to-memory-model)
+- [Introduction to the Memory Model](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-introduction-to-memory-model)
 - [Nested Functions](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-nested-functions)
 - [Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-recursion)
 - [Pattern: Head Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-head-recursion-pattern)
@@ -41,14 +41,3 @@ Do these after the matching pattern in Start Here.
 - [Lattice Paths](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multidimensional-recursion-problems-lattice-paths)
 - [Ackermann Function](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multidimensional-recursion-problems-ackermann-function)
 - [Egg Dropping](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multidimensional-recursion-problems-egg-dropping)
-
-## Reference
-
-Quick-recall and design material. Skim, don't study top to bottom.
-
-- [Memorize: Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-memorize)
-- [Memorize: Head Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-head-recursion-memorize)
-- [Memorize: Tail Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-tail-recursion-memorize)
-- [Memorize: Multiple Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multiple-recursion-memorize)
-- [Memorize: Multidimensional Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multidimensional-recursion-memorize)
-- [Pattern Synthesis: Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-synthesis)

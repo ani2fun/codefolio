@@ -114,7 +114,6 @@ So if `sum < target`, the only hope is to grow the sum, and the only way to grow
 <summary><h2>The Converging Walkers Strategy (Visualised)</h2></summary>
 
 
-> 🖼 Diagram — Two Sum on a sorted DLL — pointers converge, sum drives every decision, no node is ever revisited.
 ```mermaid
 ---
 config:

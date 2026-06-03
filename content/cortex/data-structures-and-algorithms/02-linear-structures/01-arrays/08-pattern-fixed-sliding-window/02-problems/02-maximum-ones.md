@@ -69,7 +69,6 @@ The two pointers are still `start` and `end`, but the aggregate is a single inte
 
 What breaks if you use the naive nested-loop approach is the same shared-work problem as before: adjacent windows share `k − 1` elements, but the brute force re-scans every element on every window for the `== 1` check. The cost is O(N × k); for `n = 10⁶, k = 1000`, that's a thousand-fold slowdown over the O(N) sliding-window solution.
 
-> 🖼 Diagram — Sliding the window right: remove the outgoing element's contribution to the ones count, add the incoming element's contribution. The max ones count is tracked across all windows.
 ```d2
 direction: right
 

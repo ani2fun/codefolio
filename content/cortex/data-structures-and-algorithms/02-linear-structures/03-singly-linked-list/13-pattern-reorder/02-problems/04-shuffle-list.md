@@ -457,7 +457,7 @@ The output contains exactly `n` nodes — every input node appears in the output
 
 </details>
 <details>
-<summary><strong>Final Takeaway</strong></summary>
+<summary><strong>Key Takeaway</strong></summary>
 
 Reorder is the composition of two patterns you already know:
 

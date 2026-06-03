@@ -2,7 +2,7 @@
 title: "Memorize: Sequence Validation"
 summary: "Pattern recognition triggers, template code, common mistakes, and quick recall."
 prereqs:
-  - 11-pattern-sequence-validation/02-problems
+  - 11-pattern-sequence-validation/01-pattern
 ---
 
 # Memorize: Sequence Validation
@@ -30,8 +30,6 @@ Picture a stack of unpaid restaurant bills on a spike. Each time a table opens a
 ---
 
 ## Visual Summary
-
-> 🖼 Diagram — TODO: 3 frames — (1) input `( ( { } ) )` with the cursor at the first closer `}`; (2) the stack mid-scan holding `( (` after the matched `{` pops; (3) end-of-input with an empty stack and a green "valid" badge, beside a failing case where a leftover `(` stays on the stack and the badge is red "invalid".
 
 ---
 

@@ -1,414 +1,158 @@
 ---
 title: "2D Binary Search"
-summary: "<!-- TODO: summary -->"
+summary: "A fully-sorted matrix (each row sorted, and every row's first element greater than the previous row's last) is a 1D sorted sequence folded into a grid — so binary-search the index space and map each index to a cell with i//cols, i%cols. O(log(m·n)), no data copied."
+prereqs:
+  - 06-sorting-and-searching/02-searching/01-binary-search
 ---
 
-# 4. 2D Binary Search
+# 2D Binary Search
 
-A spreadsheet of student scores: rows for students (sorted by ID), columns for assignments. The grader wants to find score `X`. Linear scan: `O(rows × cols)`. We just spent three lessons learning that for sorted *1D* arrays, binary search drops the cost to `O(log n)`. Can we apply binary search to a *2D* matrix and get `O(log(rows × cols))`?
+## Why It Exists
 
-Yes — when the matrix has the right structure. **Row-wise sorted** plus **the first element of each row is greater than the last element of the previous row** = the matrix is conceptually a single sorted list, just laid out in a grid. We can binary-search it as if it were 1D, with one tweak: convert each "1D index" to its `(row, col)` pair using divmod arithmetic.
+Binary search needs a 1D sorted sequence. A matrix where **each row is sorted *and* every row's first element exceeds the previous row's last** is, conceptually, exactly that — a single sorted list that happens to be wrapped into rows for storage. Reading it left-to-right, top-to-bottom gives a fully ascending sequence.
 
-By the end of this lesson you'll know the index-flattening trick, why it produces a single coherent sorted sequence, and `O(log(N·M))` complexity. The next lesson (the Staircase Search lesson, **staircase search**) tackles the looser case where rows are sorted and columns are sorted *but the row-end-row-start property doesn't hold* — which requires a different algorithm.
+So you don't need a 2D algorithm at all: binary-search the matrix as if it were that flat array. The trick is purely in the **indexing** — treat a flat index `i` from `0` to `m·n − 1` as the cell `(i // cols, i % cols)`. No flattening of the *data* (that would cost `O(m·n)` space); just arithmetic on the index. The result is `O(log(m·n))` — and since `log(m·n) = log m + log n`, that's better than searching one dimension then the other.
 
-## Table of contents
+## See It Work
 
-1. [Understanding 2D binary search](#understanding-2d-binary-search)
-2. [The index-flattening trick](#the-index-flattening-trick)
-3. [Implementation](#implementation)
-4. [Complexity analysis](#complexity-analysis)
-5. [2D binary search problem](#2d-binary-search-problem)
+Search a 3×3 fully-sorted matrix for `9`. Run it — note the matrix is never copied; only the index is mapped to a cell.
 
-***
-
-# Understanding 2D Binary Search
-
-The matrix structure required:
-
-1. **Each row is sorted** in non-decreasing order.
-2. **The first element of each row is greater than the last element of the previous row.**
-
-Together, these mean the matrix is one sorted sequence broken into rows. Reading the matrix row-by-row, left-to-right, you get a single sorted list.
-
-```
-matrix = [[1,  2,  2,  4],
-          [5,  5,  5,  5],
-          [9, 10, 11, 12]]
-
-flattened = [1, 2, 2, 4, 5, 5, 5, 5, 9, 10, 11, 12]
-```
-
-The flattened version is sorted. Binary search would find any target in `O(log(N·M))`. The 2D version does the same — without actually flattening — by treating the matrix as if it were the flattened array and computing the `(row, col)` for any "flattened index" on demand.
-
----
-
-## A Walkthrough
-
-`matrix = [[1, 2, 2, 4], [5, 5, 5, 5], [9, 10, 11, 12]]`, `target = 11`. Total cells = 12.
-
-```
-low = 0, high = 11
-
-Iter 1: mid = 5, (row, col) = (1, 1). matrix[1][1] = 5. 5 < 11 → low = 6
-Iter 2: mid = 8, (row, col) = (2, 0). matrix[2][0] = 9. 9 < 11 → low = 9
-Iter 3: mid = 10, (row, col) = (2, 2). matrix[2][2] = 11. 11 == 11 → return true
-```
-
-Three iterations on a 12-cell matrix (`log₂(12) ≈ 3.6`). Same logarithmic behaviour as 1D binary search.
-
----
-
-## Strengths and Limitations
-
-| Strength | Detail |
-|---|---|
-| **`O(log(N·M))`** | Logarithmic in the *total* cell count. |
-| **`O(1)` space** | Only a few index variables. |
-| **Reuses 1D binary search** | The algorithm is identical to the Binary Search lesson's; only the index-to-coordinate mapping is added. |
-
-| Limitation | Detail |
-|---|---|
-| **Strict input requirements** | Both row-sortedness *and* row-end-row-start property are required. |
-| **Doesn't apply to "row sorted + col sorted" matrices** | That looser case is handled by staircase search (the Staircase Search lesson). |
-
----
-
-## Key Takeaway
-
-A matrix that's "globally sorted by row order" can be binary-searched in `O(log(N·M))` by treating it as a flattened sorted array. Now we'll see the index-flattening trick.
-
-***
-
-# The Index-Flattening Trick
-
-The core insight: in a row-major matrix of `N` rows and `M` columns, **the cell at `(row, col)` is at flattened-index `row * M + col`**, and conversely, **the flattened-index `i` maps to `(row, col) = (i / M, i % M)`**.
-
-```d2
-direction: down
-
-matrix: "matrix[3][4]" {
-  grid-rows: 3
-  grid-columns: 4
-  grid-gap: 0
-  c00: "0,0\n[1]"
-  c01: "0,1\n[2]"
-  c02: "0,2\n[2]"
-  c03: "0,3\n[4]"
-  c10: "1,0\n[5]"
-  c11: "1,1\n[5]"
-  c12: "1,2\n[5]"
-  c13: "1,3\n[5]"
-  c20: "2,0\n[9]"
-  c21: "2,1\n[10]"
-  c22: "2,2\n[11]"
-  c23: "2,3\n[12]"
-}
-
-flattened: "Flattened indices 0..11" {
-  grid-rows: 1
-  grid-columns: 12
-  grid-gap: 0
-  i0: "0"
-  i1: "1"
-  i2: "2"
-  i3: "3"
-  i4: "4"
-  i5: "5"
-  i6: "6"
-  i7: "7"
-  i8: "8"
-  i9: "9"
-  i10: "10"
-  i11: "11"
-}
-```
-
-<p align="center"><strong>Index <code>i</code> maps to <code>(i / 4, i % 4)</code>: index 5 → (1, 1), index 8 → (2, 0), index 11 → (2, 3). The arithmetic uses the column count <code>M = 4</code>.</strong></p>
-
----
-
-## The Algorithm
-
-Binary-search the *flattened* index range `[0, N·M - 1]`. Each iteration:
-1. Compute `mid` as a flattened index.
-2. Convert: `row = mid / cols`, `col = mid % cols`.
-3. Compare `matrix[row][col]` with target.
-4. Adjust `low` or `high` as in 1D binary search.
-
-The whole algorithm differs from 1D binary search only in step 2 — the divmod conversion.
-
----
-
-## Why the Strict Input Requirement?
-
-For the algorithm to work, the flattened sequence must be sorted. Both conditions are needed:
-- **Row sorted**: ensures each row is internally sorted.
-- **First-of-next > last-of-prev**: ensures consecutive rows fit together end-to-start.
-
-Without the second condition, the flattened sequence might not be sorted. For example, `[[1, 5], [3, 7]]` has both rows sorted but flattens to `[1, 5, 3, 7]` — not sorted. Binary search would give wrong answers. That looser structure (row-sorted + column-sorted, but no end-to-start guarantee) is what staircase search (the Staircase Search lesson) handles.
-
----
-
-## Key Takeaway
-
-The flattened-index trick: `mid → (mid / M, mid % M)`. Binary search the index range `[0, N·M - 1]`; convert on each iteration. `O(log(N·M))`. Now the implementation.
-
-***
-
-# Implementation
-
-
-```python run viz=array viz-root=matrix
-from typing import List
-
-class Solution:
-    def binary_search_2d(
-        self, matrix: List[List[int]], target: int
-    ) -> bool:
-
-        # Get the number of rows in the matrix
-        rows: int = len(matrix)
-
-        # Get the number of columns in the matrix
-        cols: int = len(matrix[0])
-
-        # Initialize the low index
-        low: int = 0
-
-        # Initialize the high index
-        high: int = rows * cols - 1
-
-        # Perform binary search until low index crosses the high index
-        while low <= high:
-
-            # Calculate the middle index
-            mid: int = low + (high - low) // 2
-
-            # Map the middle index to 2D coordinates
-            row, col = mid // cols, mid % cols
-
-            # If the middle value is equal to the target, return
-            # true
-            if matrix[row][col] == target:
-                return True
-
-            # Else if the middle value is less than the target, update
-            # the low index
-            elif matrix[row][col] < target:
-                low = mid + 1
-
-            # Else if the middle value is greater than the target,
-            # update the high index
-            else:
-                high = mid - 1
-
-        # Return False if the target is not found
+```python run
+def search_matrix(matrix, target):
+    if not matrix or not matrix[0]:
         return False
+    rows, cols = len(matrix), len(matrix[0])
+    lo, hi = 0, rows * cols - 1               # binary-search the VIRTUAL flat array
+    while lo <= hi:
+        mid = lo + (hi - lo) // 2
+        val = matrix[mid // cols][mid % cols]  # map flat index → (row, col)
+        if val == target:
+            return True
+        elif val < target:
+            lo = mid + 1
+        else:
+            hi = mid - 1
+    return False
 
-
-# Examples from the problem statement
-m = [[1, 2, 2, 4], [5, 5, 5, 5], [9, 10, 11, 12]]
-print(Solution().binary_search_2d(m, 12))   # True
-print(Solution().binary_search_2d(m, 5))    # True
-print(Solution().binary_search_2d(m, 13))   # False
-
-# Edge cases
-print(Solution().binary_search_2d([[7]], 7))                   # True  — 1x1, present
-print(Solution().binary_search_2d([[7]], 3))                   # False — 1x1, absent
-print(Solution().binary_search_2d([[1, 2, 3, 4, 5]], 3))      # True  — 1xN row, present
-print(Solution().binary_search_2d([[1, 2, 3, 4, 5]], 6))      # False — 1xN row, absent
-print(Solution().binary_search_2d([[1, 2, 2, 4], [5, 5, 5, 5], [9, 10, 11, 12]], 1))  # True — first element
+m = [[1, 3, 5], [7, 9, 11], [13, 15, 17]]
+print(search_matrix(m, 9))    # True
+print(search_matrix(m, 8))    # False
 ```
 
-```java run viz=array viz-root=matrix
-import java.util.*;
+## How It Works
 
+The matrix has `rows × cols` cells, numbered `0 … rows·cols − 1` in row-major (left-to-right, top-to-bottom) order. Because the matrix is fully sorted, those numbered cells form an ascending sequence — so run an ordinary binary search over the **index range** `[0, rows·cols − 1]`. The only new step is converting a flat index `mid` to a cell:
+
+- **row** = `mid // cols` (how many full rows fit before `mid`)
+- **column** = `mid % cols` (the offset within that row)
+
+```mermaid
+flowchart LR
+  G["m×n sorted matrix"] -->|"index i = 0 … mn-1<br/>row-major"| A["virtual sorted array"]
+  A -->|"binary search index"| P["probe i → (i // cols, i % cols)"]
+  P --> R["O(log(m·n))"]
+```
+
+<p align="center"><strong>number the cells row-major; the sorted matrix is a sorted 1D array in disguise, so binary-search the index and decode each probe to (row, col).</strong></p>
+
+Every step is `O(1)` index arithmetic plus one comparison, and the range halves each step, so it's **`O(log(m·n))` time, `O(1)` space**. The crucial precondition is that the matrix is *fully* sorted (row-major ascending). If instead the matrix is only **row-sorted and column-sorted** — where a row's first element is *not* guaranteed larger than the previous row's last — this flattening breaks, and you need the [staircase search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-staircase-search) instead.
+
+### Key Takeaway
+
+A fully row-major-sorted matrix is a 1D sorted array in disguise: binary-search the flat index range `[0, m·n−1]` and decode each index with `(i // cols, i % cols)`. `O(log(m·n))`, `O(1)` space — no data copied. Only valid when each row's start exceeds the previous row's end.
+
+## Trace It
+
+Searching `9` in `[[1,3,5],[7,9,11],[13,15,17]]` (`cols = 3`, indices `0–8`):
+
+| `lo` | `hi` | `mid` | cell `(mid//3, mid%3)` | value | vs 9 |
+|---|---|---|---|---|---|
+| 0 | 8 | 4 | `(1, 1)` | `9` | `==` → **True** |
+
+One probe found it: index `4` maps to row `4//3 = 1`, column `4%3 = 1` — the center cell `9`.
+
+Before you read on: this treats `log(m·n)` as the cost. But you could *also* binary-search to find the right *row* (`O(log m)`) and then binary-search *within* that row (`O(log n)`). Are those two approaches different in cost — and why is "flatten the index" usually the cleaner choice?
+
+They're the **same** asymptotic cost: `log(m·n) = log m + log n`, so one binary search over `m·n` indices equals one over `m` rows plus one over `n` columns. The difference is *code complexity and edge cases*. The two-step version needs care to pick the candidate row (the row whose range could contain the target — itself a lower-bound-style search), then a second search with its own bounds; two binary searches means two chances for off-by-one bugs. The flatten-the-index version is a *single* textbook binary search with one extra line of index arithmetic — fewer moving parts, fewer bugs. When the matrix is fully sorted, collapsing both dimensions into one index space is the simplest correct thing. (When it's only row/column-sorted, neither works and you switch to the staircase.)
+
+## Your Turn
+
+The reusable 2D binary search:
+
+```python run
+def search_matrix(matrix, target):
+    if not matrix or not matrix[0]:
+        return False
+    rows, cols = len(matrix), len(matrix[0])
+    lo, hi = 0, rows * cols - 1
+    while lo <= hi:
+        mid = lo + (hi - lo) // 2
+        val = matrix[mid // cols][mid % cols]
+        if val == target:
+            return True
+        elif val < target:
+            lo = mid + 1
+        else:
+            hi = mid - 1
+    return False
+
+m = [[1, 4, 7, 11], [12, 15, 20, 23], [30, 34, 50, 60]]
+print(search_matrix(m, 20), search_matrix(m, 13))   # True False
+```
+
+```java run
 public class Main {
-    static class Solution {
-        public boolean binarySearch2D(int[][] matrix, int target) {
-
-            // Get the number of rows in the matrix
-            int rows = matrix.length;
-
-            // Get the number of columns in the matrix
-            int cols = matrix[0].length;
-
-            // Initialize the low index
-            int low = 0;
-
-            // Initialize the high index
-            int high = rows * cols - 1;
-
-            // Perform binary search until low index crosses the high index
-            while (low <= high) {
-
-                // Calculate the middle index
-                int mid = low + (high - low) / 2;
-
-                // Map the middle index to 2D coordinates
-                int row = mid / cols;
-                int col = mid % cols;
-
-                // If the middle value is equal to the target, return
-                // true
-                if (matrix[row][col] == target) {
-                    return true;
-                }
-
-                // Else if the middle value is less than the target, update
-                // the low index
-                else if (matrix[row][col] < target) {
-                    low = mid + 1;
-                }
-
-                // Else if the middle value is greater than the target,
-                // update the high index
-                else {
-                    high = mid - 1;
-                }
-            }
-
-            // Return false if the target is not found
-            return false;
-        }
+  static boolean searchMatrix(int[][] m, int target) {
+    if (m.length == 0 || m[0].length == 0) return false;
+    int rows = m.length, cols = m[0].length, lo = 0, hi = rows * cols - 1;
+    while (lo <= hi) {
+      int mid = lo + (hi - lo) / 2;
+      int val = m[mid / cols][mid % cols];
+      if (val == target) return true;
+      else if (val < target) lo = mid + 1;
+      else hi = mid - 1;
     }
-
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        int[][] m = {{1, 2, 2, 4}, {5, 5, 5, 5}, {9, 10, 11, 12}};
-        System.out.println(new Solution().binarySearch2D(m, 12));   // true
-        System.out.println(new Solution().binarySearch2D(m, 5));    // true
-        System.out.println(new Solution().binarySearch2D(m, 13));   // false
-
-        // Edge cases
-        System.out.println(new Solution().binarySearch2D(new int[][]{{7}}, 7));                   // true  — 1x1, present
-        System.out.println(new Solution().binarySearch2D(new int[][]{{7}}, 3));                   // false — 1x1, absent
-        System.out.println(new Solution().binarySearch2D(new int[][]{{1, 2, 3, 4, 5}}, 3));      // true  — 1xN row, present
-        System.out.println(new Solution().binarySearch2D(new int[][]{{1, 2, 3, 4, 5}}, 6));      // false — 1xN row, absent
-        System.out.println(new Solution().binarySearch2D(new int[][]{{1, 2, 2, 4}, {5, 5, 5, 5}, {9, 10, 11, 12}}, 1));  // true — first element
-    }
+    return false;
+  }
+  public static void main(String[] args) {
+    int[][] m = {{1, 4, 7, 11}, {12, 15, 20, 23}, {30, 34, 50, 60}};
+    System.out.println(searchMatrix(m, 20) + " " + searchMatrix(m, 13));   // true false
+  }
 }
 ```
 
+This is a structural lesson — drill searching in the pattern sets.
 
-***
+## Reflect & Connect
 
-# Complexity Analysis
+2D binary search is "recognize the 1D structure hiding in 2D":
 
-| Resource | Cost |
+- **The two matrix flavors** — *fully sorted* (row-major ascending) → flatten the index, `O(log(m·n))` (this lesson); *row- and column-sorted only* → can't flatten, use the [staircase search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-staircase-search) at `O(m + n)`. Always check which precondition the matrix actually satisfies — applying flatten-search to a merely row/col-sorted matrix gives wrong answers.
+- **Virtual flattening is a reusable trick** — index arithmetic (`i // cols`, `i % cols`) lets you treat any row-major buffer as 1D without copying. The same idea underlies image/grid storage, flattened tensors, and addressing a 2D array as a contiguous block.
+- **`log(m·n) = log m + log n`** — collapsing dimensions doesn't change the asymptotics, but a single search is simpler than nested searches. Prefer the form with fewer boundary conditions.
+
+**Prerequisites:** [Binary Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-binary-search).
+**What's next:** the row-and-column-sorted matrix that *can't* be flattened — [Staircase Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-staircase-search).
+
+## Recall
+
+> **Mnemonic:** *Fully-sorted matrix = 1D sorted array. Binary-search index `[0, m·n−1]`; decode `mid → (mid//cols, mid%cols)`. `O(log(m·n))`, no copy. Needs row-major-ascending.*
+
+| | |
 |---|---|
-| **Time** | `O(log(N·M))` |
-| **Space** | `O(1)` |
+| Precondition | fully sorted (each row's start > previous row's end) |
+| Search space | flat index `[0, rows·cols − 1]` |
+| Index → cell | `(mid // cols, mid % cols)` |
+| Cost | `O(log(m·n)) = O(log m + log n)`, `O(1)` space |
+| If only row/col-sorted | use staircase search instead |
 
-The algorithm performs at most `log₂(N·M)` iterations, each `O(1)`. Same as 1D binary search on a flattened array of size `N·M`.
+- **Q:** How does 2D binary search avoid a 2D algorithm? **A:** A fully-sorted matrix is a 1D sorted array in row-major order, so it binary-searches the flat index and decodes each index to a cell.
+- **Q:** How do you map a flat index to a cell? **A:** `row = i // cols`, `col = i % cols`.
+- **Q:** Why is flatten-search the same cost as row-then-column search? **A:** `log(m·n) = log m + log n`; the difference is simplicity and fewer off-by-one bugs, not asymptotics.
+- **Q:** When does this approach fail? **A:** When the matrix is only row- and column-sorted (rows don't chain), so it isn't globally sorted — use the staircase search.
 
----
+## Sources & Verify
 
-## Key Takeaway
-
-2D binary search: `O(log(N·M))`, `O(1)` space, requires a "globally sorted" matrix. Now the canonical exercise.
-
-***
-
-# 2D Binary Search Problem
-
----
-
-## The Problem
-
-Given an `N × M` matrix where each row is sorted and each row's first element is greater than the previous row's last element, return `true` if `target` is in the matrix, else `false`. **Must run in `O(log(N·M))`.**
-
-```
-Input:  matrix = [[1,2,2,4],[5,5,5,5],[9,10,11,12]], target = 12
-Output: true
-
-Input:  matrix = [[1,2,2,4],[5,5,5,5],[9,10,11,12]], target = 5
-Output: true
-
-Input:  matrix = [[1,2,2,4],[5,5,5,5],[9,10,11,12]], target = 13
-Output: false
-```
-
----
-
-<details>
-<summary><h2>Solution &amp; Analysis</h2></summary>
-
-### The Solution
-
-The implementation matches the version above. See [Implementation](#implementation).
-
-### Edge Cases
-
-| Case | Example | Expected |
-|---|---|---|
-| Single cell match | `[[5]], target = 5` | `true` |
-| Single cell miss | `[[5]], target = 7` | `false` |
-| Single row | `[[1, 2, 3, 4, 5]], target = 3` | `true` |
-| Single-row miss | `[[1, 2, 3, 4, 5]], target = 6` | `false` |
-| Target in first cell | `[[1,2,2,4],[5,5,5,5],[9,10,11,12]], target = 1` | `true` |
-| Target in last cell | `target = matrix[N-1][M-1]` | `true` |
-
-</details>
-<details>
-<summary><h2>Final Takeaway</h2></summary>
-
-
-2D binary search reuses 1D binary search's exact algorithm by treating the matrix as a flattened sorted array. The index-flattening trick (`r = i / M`, `c = i % M`) is the only addition. `O(log(N·M))` total.
-
-The next lesson handles the looser case: matrices where rows and columns are sorted *individually* but the row-end-row-start property doesn't hold. **Staircase search** finds a target in `O(rows + cols)` by walking diagonally — a fundamentally different attack, with a fundamentally different complexity.
-
-**Transfer challenge — try before the Staircase Search lesson:** What if the matrix is row-sorted and column-sorted but the row-end-row-start property *doesn't* hold? Example: `[[1, 4, 7], [2, 5, 8], [3, 6, 9]]` (sorted by columns, sorted by rows, but the flattened sequence `[1, 4, 7, 2, 5, 8, 3, 6, 9]` is not sorted). Can 2D binary search still find `target = 5`? Why or why not?
-
-</details>
-<details>
-<summary><strong>Answer — open after you've thought about it</strong></summary>
-
-No, 2D binary search doesn't work on this kind of matrix. The flattened sequence isn't sorted, so binary search's invariant (`arr[mid] < target ⟹ target is to the right`) breaks.
-
-For example, with `target = 5`:
-- `mid = 4`, position `(1, 1)`, value `5`. Found! (lucky)
-- For `target = 4`: `mid = 4`, value `5`. `5 > 4` → search left. But `4` is at index 1 in the flattened sequence, which is in the "left half" only because the matrix's column-sortedness happens to align with row-major flattening here. On a different example, this would fail.
-
-The column-sorted-row-sorted-but-not-row-major-sorted matrix needs a different algorithm: **staircase search**, which we'll see in the Staircase Search lesson. It walks from a corner inward in `O(rows + cols)` — slower than 2D binary search's `O(log(N·M))` but applicable to a broader class of matrices.
-
-**You just identified the structural difference between the two 2D search algorithms.**
-
-</details>
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: The Hook — missing, needs to be written -->
-<!--       Guidance: real-world story opening before any definition -->
-
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
-
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
-
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
-
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
-
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
-
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
-
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
-
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
-
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
-
-<!-- TODO: Final Takeaway — missing, needs to be written -->
-<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->
+- **CLRS**, *Introduction to Algorithms*, 4th ed. — binary search; row-major addressing of multidimensional arrays.
+- The "search a 2D matrix" problem (fully-sorted variant) is a standard interview question with this flatten-the-index solution.
+- The `O(log(m·n))` bound and index mapping are standard; both runnable blocks are verified by running (`9 ⇒ True`, `8 ⇒ False`; `20 ⇒ True`, `13 ⇒ False`).

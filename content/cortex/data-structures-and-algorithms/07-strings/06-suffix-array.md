@@ -1,363 +1,237 @@
 ---
 title: Suffix Array
-summary: An array of every suffix of a string, sorted lexicographically. The compact alternative to a suffix tree — supports substring search, longest-common-substring, and many string-algorithm primitives in O(log n) per query after O(n log n) construction.
+summary: "The start indices of every suffix, sorted lexicographically — the compact alternative to a suffix tree. Substring search becomes binary search (O(m log n)); the companion LCP array (overlap of adjacent sorted suffixes) yields longest-repeated-substring and distinct-substring counts."
 prereqs:
   - strings-string-matching-naive
   - sorting-and-searching-searching-binary-search
 ---
 
-# 6. Suffix Array
+## Why It Exists
 
-## The Hook
+So far each matching algorithm preprocessed the *pattern* and scanned the text once. But many tasks fix the *text* and ask question after question about it: search many patterns, find the longest repeated block, count distinct substrings. For those you preprocess the **text** into an index — and the suffix array is the workhorse one.
 
-A **suffix array** of a string `S` is an array `SA` where `SA[i]` is the starting index of the `i`-th lexicographically smallest suffix of `S`. For `S = "banana"`, the suffixes are:
+A **suffix array** is just the list of start indices of every suffix, sorted by the suffix lexicographically. That sort is the magic: every occurrence of a pattern `P` is the start of some suffix that has `P` as a prefix, and once the suffixes are sorted, all suffixes sharing prefix `P` sit in one contiguous block — so substring search becomes **binary search**, `O(m log n)`. It's the compact cousin of the suffix *tree*: a suffix tree is powerful but memory-hungry (nodes, children, pointers); a suffix array is `n` integers plus a companion **LCP array**, giving most of the power at a fraction of the space. That's why it underpins full-text indexes, the Burrows-Wheeler transform, and genome search.
 
-```
-0: "banana"        →  6: "" (empty, sometimes excluded)
-1: "anana"         →  5: "a"
-2: "nana"          →  3: "ana"
-3: "ana"           →  1: "anana"
-4: "na"            →  0: "banana"
-5: "a"             →  4: "na"
-6: ""              →  2: "nana"
-```
+## See It Work
 
-Sorted, the suffix array is `SA = [5, 3, 1, 0, 4, 2]` (omitting the empty suffix).
+Build the array by sorting suffix indices; search a pattern by binary-searching for the block of suffixes that start with it.
 
-The suffix array is the **compact alternative to the suffix tree**. Suffix trees are linear in size but with a large constant factor (10×–20× the original string in memory). Suffix arrays are exactly `n` integers, plus an auxiliary `LCP` (Longest Common Prefix) array of `n` integers — total `~8n` bytes for 32-bit ints.
+```python run
+def suffix_array(s):
+    return sorted(range(len(s)), key=lambda i: s[i:])     # naive O(n^2 log n) build
 
-With a suffix array, you can:
-
-- **Search for a pattern `P` in `O(m log n)`** via binary search.
-- **Count distinct substrings** in `O(n)` after a one-time `O(n log n)` setup.
-- **Find longest common substring of two strings** in `O(n)`.
-- **Find the longest repeated substring** in `O(n)`.
-
----
-
-## Table of contents
-
-1. [Construction](#construction)
-2. [The LCP array](#the-lcp-array)
-3. [Pattern search via binary search](#pattern-search-via-binary-search)
-4. [Implementation](#implementation)
-5. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
-6. [Production reality](#production-reality)
-7. [Cross-links](#cross-links)
-8. [Final takeaway](#final-takeaway)
-
-***
-
-# Construction
-
-The naive approach: list all suffixes, sort. Sorting takes `O(n log n)` comparisons, each comparison up to `O(n)` chars — total `O(n² log n)`. Bad.
-
-The standard fast construction is the **prefix-doubling algorithm** (Manber-Myers, 1993) running in `O(n log² n)` or `O(n log n)` with radix-sort tricks. The intuition: after sorting suffixes by their first character, you have ranks. After sorting by first two characters, you have new ranks. Doubling at each step, after `log n` rounds you've sorted by all `n` characters.
-
-**SA-IS** (DC3, Suffix Array Induced Sorting, 2009) achieves `O(n)` construction. It's complex enough that competitive programmers usually implement prefix-doubling for clarity and accept the extra `log` factor.
-
-For the chapter implementation, I'll use the simplest correct version — Python's built-in sort — for clarity. Production should use a library (`pysuffix`, `SDSL` in C++) for serious work.
-
-***
-
-# The LCP array
-
-The **Longest Common Prefix array** `LCP[i]` stores the length of the longest common prefix between adjacent suffixes in `SA`:
-
-```
-LCP[i] = lcp(SA[i - 1], SA[i])
-```
-
-For `S = "banana"` with `SA = [5, 3, 1, 0, 4, 2]`:
-
-```
-SA[0] = 5: "a"
-SA[1] = 3: "ana"        LCP[1] = 1   ("a")
-SA[2] = 1: "anana"      LCP[2] = 3   ("ana")
-SA[3] = 0: "banana"     LCP[3] = 0
-SA[4] = 4: "na"         LCP[4] = 0
-SA[5] = 2: "nana"       LCP[5] = 2   ("na")
-```
-
-The LCP array enables: longest repeated substring (max of LCP), distinct substring counting (`Σ (n - SA[i] - LCP[i])`), and many other queries.
-
-**Kasai's algorithm** computes LCP in `O(n)` given SA. It's a beautiful linear-time algorithm worth knowing.
-
-***
-
-# Pattern search via binary search
-
-To find pattern `P` in `S`:
-
-1. Binary-search the SA for the first suffix that starts with `P`.
-2. Binary-search for the last such suffix.
-3. The matches are `SA[lo..hi]`.
-
-Each binary search comparison takes `O(m)` (compare `P` to `S[SA[mid]..SA[mid] + m]`). Total: `O(m log n)` per pattern. Better than naive's `O(nm)`.
-
-***
-
-# Implementation
-
-```python run viz=array viz-root=lcp
-def build_sa(s):
-    """O(n² log n) naive construction — fine for educational use."""
-    n = len(s)
-    return sorted(range(n), key=lambda i: s[i:])
-
-def build_lcp(s, sa):
-    """Kasai's O(n) algorithm."""
-    n = len(s)
-    rank = [0] * n
-    for i, idx in enumerate(sa):
-        rank[idx] = i
-    lcp = [0] * n
-    k = 0
-    for i in range(n):
-        if rank[i] == 0:
-            k = 0
-            continue
-        j = sa[rank[i] - 1]
-        while i + k < n and j + k < n and s[i + k] == s[j + k]:
-            k += 1
-        lcp[rank[i]] = k
-        if k > 0:
-            k -= 1
-    return lcp
-
-def search(s, sa, p):
-    """Find all occurrences of p in s using binary search on the suffix array."""
-    n, m = len(s), len(p)
-    # Binary search for the first suffix >= p
-    lo, hi = 0, n
-    while lo < hi:
+def sa_contains(s, pattern):
+    sa = suffix_array(s)
+    lo, hi = 0, len(sa)
+    while lo < hi:                                        # bisect for the first suffix >= pattern
         mid = (lo + hi) // 2
-        if s[sa[mid]:sa[mid] + m] < p:
+        if s[sa[mid]:] < pattern:
             lo = mid + 1
         else:
             hi = mid
-    start = lo
-    # Binary search for first suffix > p
-    lo, hi = start, n
-    while lo < hi:
-        mid = (lo + hi) // 2
-        if s[sa[mid]:sa[mid] + m] <= p:
-            lo = mid + 1
-        else:
-            hi = mid
-    return sorted(sa[start:lo])
+    return lo < len(sa) and s[sa[lo]:].startswith(pattern)
 
-
-if __name__ == "__main__":
-    s = "banana"
-    sa = build_sa(s)
-    lcp = build_lcp(s, sa)
-    print(f"S = {s!r}")
-    print(f"SA = {sa}")
-    print(f"Suffixes in sorted order:")
-    for i, idx in enumerate(sa):
-        print(f"  SA[{i}]={idx}: {s[idx:]!r}, LCP={lcp[i]}")
-
-    print(f"\nMatches for 'ana': {search(s, sa, 'ana')}")        # [1, 3]
-    print(f"Matches for 'na': {search(s, sa, 'na')}")            # [2, 4]
-    print(f"Matches for 'xy': {search(s, sa, 'xy')}")            # []
-
-    # Longest repeated substring is the max LCP value
-    max_lcp_i = max(range(len(lcp)), key=lambda i: lcp[i])
-    if lcp[max_lcp_i] > 0:
-        print(f"\nLongest repeated substring: {s[sa[max_lcp_i]:sa[max_lcp_i] + lcp[max_lcp_i]]!r}")
+print(suffix_array("banana"))             # [5, 3, 1, 0, 4, 2]
+print(sa_contains("banana", "ana"))       # True
+print(sa_contains("banana", "xyz"))       # False
 ```
 
-```java run viz=array viz-root=lcp
+```java run
 import java.util.*;
-
 public class Main {
-    static int[] buildSA(String s) {
-        int n = s.length();
-        Integer[] indices = new Integer[n];
-        for (int i = 0; i < n; i++) indices[i] = i;
-        Arrays.sort(indices, (a, b) -> s.substring(a).compareTo(s.substring(b)));
-        int[] sa = new int[n];
-        for (int i = 0; i < n; i++) sa[i] = indices[i];
+    static Integer[] suffixArray(String s) {
+        Integer[] sa = new Integer[s.length()];
+        for (int i = 0; i < s.length(); i++) sa[i] = i;
+        Arrays.sort(sa, (x, y) -> s.substring(x).compareTo(s.substring(y)));
         return sa;
     }
-
-    static int[] buildLCP(String s, int[] sa) {
-        int n = s.length();
-        int[] rank = new int[n];
-        for (int i = 0; i < n; i++) rank[sa[i]] = i;
-        int[] lcp = new int[n];
-        int k = 0;
-        for (int i = 0; i < n; i++) {
-            if (rank[i] == 0) { k = 0; continue; }
-            int j = sa[rank[i] - 1];
-            while (i + k < n && j + k < n && s.charAt(i + k) == s.charAt(j + k)) k++;
-            lcp[rank[i]] = k;
-            if (k > 0) k--;
+    static boolean saContains(String s, String pattern) {
+        Integer[] sa = suffixArray(s);
+        int lo = 0, hi = sa.length;
+        while (lo < hi) {
+            int mid = (lo + hi) / 2;
+            if (s.substring(sa[mid]).compareTo(pattern) < 0) lo = mid + 1; else hi = mid;
         }
-        return lcp;
+        return lo < sa.length && s.substring(sa[lo]).startsWith(pattern);
     }
-
     public static void main(String[] args) {
-        String s = "banana";
-        int[] sa = buildSA(s);
-        int[] lcp = buildLCP(s, sa);
-        System.out.println("SA = " + Arrays.toString(sa));
-        System.out.println("LCP = " + Arrays.toString(lcp));
+        System.out.println(Arrays.toString(suffixArray("banana")));   // [5, 3, 1, 0, 4, 2]
+        System.out.println(saContains("banana", "ana"));              // true
+        System.out.println(saContains("banana", "xyz"));              // false
     }
 }
 ```
 
-***
+Both print `[5, 3, 1, 0, 4, 2]` then `true`, `false`. Index 5 (`"a"`) sorts first, index 2 (`"nana"`) last. Search is `O(m log n)` after the build; this naive build is `O(n² log n)` (mention only — production uses `O(n log n)` prefix-doubling or `O(n)` SA-IS).
 
-# Edge cases and pitfalls
+## How It Works
 
-- **Empty suffix.** Some constructions include the empty suffix (giving `n + 1` entries); others don't. Be consistent.
-- **Equal characters.** Strings like `"aaaa"` produce a degenerate SA where successive suffixes share most of their content. The `O(n²)` naive build hits its worst case here. SA-IS or DC3 handles it in `O(n)`.
-- **The `max(LCP)` trick for longest repeated substring** doesn't *always* give a non-overlapping repeat. For overlapping repeats (e.g., `"aaaa"` has the longest repeated substring `"aaa"`, overlapping itself), you may need extra checks.
-- **Binary search in `search()` is `O(m log n)` only with naive comparison.** With the LCP array and a more sophisticated approach, it becomes `O(m + log n)`.
+The sorted order is everything. Lay out the sorted suffixes of `"banana"` and two facts pop out:
 
-***
-
-# Production reality
-
-- **Bioinformatics.** Whole-genome alignment tools (Bowtie, BWA) use suffix arrays (often the FM-index, a compressed variant) for fast read alignment. Genomic search of millions of short reads against a 3-billion-character reference is the canonical workload.
-- **Information retrieval.** Some search engines use suffix arrays for substring queries on documents that don't fit the inverted-index model.
-- **Compression algorithms.** The Burrows-Wheeler Transform (used in `bzip2`) is built on suffix arrays.
-- **Plagiarism detection.** Suffix arrays of two documents allow finding all common substrings in `O(n)` total — much faster than naive pairwise comparison.
-- **Standard libraries.** No mainstream language stdlib ships a suffix array. Production code uses libraries: `SDSL` (C++), `pysuffix3` (Python), `sufdsk` (Rust). For competitive programming, Yuhei Kitanaka and others publish well-tested templates.
-
-***
-
-# Memorize
-
-The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Suffix array + LCP is the dense representation of "every substring of S"; once you have it, a dozen string queries reduce to one-pass scans.
-
-## Quick recall
-
-Click any question to reveal the answer.
-
-<details>
-<summary><strong>Q:</strong> What's <code>SA[i]</code>?</summary>
-
-**A:** The starting index of the `i`-th lexicographically smallest suffix of `S`.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Time complexity of suffix-array construction (best practical algorithm)?</summary>
-
-**A:** `O(n log n)` (prefix doubling) or `O(n)` (SA-IS / DC3). Naive sort-of-suffixes is `O(n² log n)` and only good for small inputs.
-
-</details>
-<details>
-<summary><strong>Q:</strong> What's <code>LCP[i]</code>?</summary>
-
-**A:** Longest common prefix length between `SA[i-1]` and `SA[i]` — adjacent suffixes in lex order.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Time to build LCP given SA?</summary>
-
-**A:** `O(n)` via Kasai's algorithm.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Pattern-search complexity using SA?</summary>
-
-**A:** `O(m log n)` via binary search on SA. With LCP-aware speedup: `O(m + log n)`.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Longest repeated substring via LCP?</summary>
-
-**A:** `max(LCP[i])` — the largest LCP value gives the longest substring shared by two suffixes.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Distinct substrings count via SA + LCP?</summary>
-
-**A:** `Σ (n − SA[i] − LCP[i])` over all `i`. `n − SA[i]` is suffix length; `LCP[i]` is what was already counted.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Why is the FM-index more popular than raw suffix array in bioinformatics?</summary>
-
-**A:** FM-index compresses the SA + auxiliary structures using BWT, fitting genomes in a fraction of the memory while retaining `O(m)` substring-count queries.
-
-</details>
-
-## Code template
-
-```python
-def build_sa(s):                                  # naive O(n² log n) — fine for educational use
-    n = len(s)
-    return sorted(range(n), key=lambda i: s[i:])
-
-def build_lcp(s, sa):                             # Kasai's O(n)
-    n = len(s)
-    rank = [0] * n
-    for i, idx in enumerate(sa): rank[idx] = i
-    lcp = [0] * n
-    k = 0
-    for i in range(n):
-        if rank[i] == 0: k = 0; continue
-        j = sa[rank[i] - 1]
-        while i + k < n and j + k < n and s[i + k] == s[j + k]: k += 1
-        lcp[rank[i]] = k
-        if k > 0: k -= 1
-    return lcp
+```d2
+direction: down
+list: "sorted suffixes of 'banana' (suffix array = their start indices)" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
+s0: "idx 5:  a          | lcp -" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
+s1: "idx 3:  ana        | lcp 1" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
+s2: "idx 1:  anana      | lcp 3  <- 'ana' repeated!" {style.fill: "#fde68a"; style.stroke: "#d97706"}
+s3: "idx 0:  banana     | lcp 0" {style.fill: "#f3e8ff"; style.stroke: "#9333ea"}
+s4: "idx 4:  na         | lcp 0" {style.fill: "#f3e8ff"; style.stroke: "#9333ea"}
+s5: "idx 2:  nana       | lcp 2" {style.fill: "#f3e8ff"; style.stroke: "#9333ea"}
+list -> s0
+s0 -> s1
+s1 -> s2
+s2 -> s3
+s3 -> s4
+s4 -> s5
 ```
 
-## Pattern triggers
+<p align="center"><strong>Sorting clusters suffixes with a shared prefix into a contiguous block (the three <code>a…</code> suffixes lead), so pattern search is binary search. The LCP value beside each row is its overlap with the previous suffix; the maximum LCP (3, between <code>ana</code> and <code>anana</code>) is the longest repeated substring.</strong></p>
 
-- **"Pattern matching against a fixed text, many queries"** → suffix array binary search
-- **"Longest repeated substring"** → SA + LCP, take max LCP
-- **"Count distinct substrings"** → SA + LCP, sum `(n - SA[i] - LCP[i])`
-- **"Longest common substring of two strings"** → concatenate with separator; SA + LCP
-- **"Burrows-Wheeler Transform / bzip2"** → SA construction is the prerequisite
-- **"DNA / genome alignment"** → FM-index (compressed SA variant)
-- **"Distinct substrings in a string"** → SA + LCP
-- **"K-th lexicographically smallest substring"** → walk SA in order, count substrings as you go
+Three load-bearing ideas:
 
-***
+- **Search is binary search because the sort makes occurrences contiguous.** Any occurrence of `P` starts a suffix with `P` as a prefix; sorted, all such suffixes form one band. Bisect for `P`'s lower bound, check the prefix — `O(m log n)` (the `m` is the per-comparison string cost). No suffix-tree pointers needed.
+- **The LCP array is the other half of the power.** `lcp[i]` = the longest common prefix of the `i`-th and `(i-1)`-th sorted suffixes. Adjacent sorted suffixes are the *most similar* pair containing each, so `lcp` encodes all the "how much do substrings overlap?" information — and it's buildable in `O(n)` (Kasai's algorithm) given the suffix array.
+- **It's the compact alternative to a suffix tree.** A suffix tree answers the same queries (often in `O(m)`), but costs many nodes with child maps and suffix links. A suffix array is `n` integers + the LCP array — far less memory, cache-friendlier, and enough for most problems. That space win is why it won in practice (bioinformatics, BWT/bzip2, search engines).
 
-# Cross-links
+> **Key takeaway.** A suffix array is the sorted start-indices of all suffixes. Sorting clusters each pattern's occurrences into a contiguous band, so **substring search is binary search** (`O(m log n)`). The companion **LCP array** (overlap of adjacent sorted suffixes) gives the longest repeated substring (max LCP) and the distinct-substring count — all in `O(n)` space, the compact alternative to a suffix tree.
 
-- **Prerequisites:** [Naive String Matching](/cortex/data-structures-and-algorithms/strings-string-matching-naive), [Binary Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-binary-search).
-- **Sibling structure:** [Suffix Automaton](/cortex/data-structures-and-algorithms/strings-suffix-automaton) — different representation of the same suffix universe.
-- **Generalisation:** [Aho-Corasick](/cortex/data-structures-and-algorithms/strings-aho-corasick) — multi-pattern matching via a trie with failure links.
+## Trace It
 
-***
+The LCP array turns "find the longest repeated substring" — which sounds like an `O(n³)` nightmare — into a single pass over adjacent suffixes.
 
-# Final takeaway
+**Predict before you run:** the longest *repeated* substring of `"banana"` (a substring that appears at least twice). Is it `"an"` (length 2), `"ana"` (length 3), or `"nana"` (length 4)?
 
-The suffix array is the compact representation of every suffix of a string. Three patterns to internalise:
+```python run
+def suffix_array(s):
+    return sorted(range(len(s)), key=lambda i: s[i:])
 
-1. **Sorted suffixes are surprisingly powerful.** Substring search, longest repeated substring, distinct substring counting — all reduce to scans over SA + LCP.
-2. **The LCP array is the secret sauce.** Without LCP, SA is just a sorted list. With LCP, it answers a dozen string queries in linear time.
-3. **Production-grade construction is non-trivial.** Naive `O(n² log n)` is fine for educational use. Real systems use SA-IS, DC3, or library implementations to hit `O(n)` or `O(n log n)` on multi-million-character inputs.
+def lcp(a, b):
+    k = 0
+    while k < len(a) and k < len(b) and a[k] == b[k]:
+        k += 1
+    return k
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+def longest_repeated_substring(s):
+    sa = suffix_array(s)
+    best_len, best_start = 0, 0
+    for i in range(1, len(sa)):
+        k = lcp(s[sa[i-1]:], s[sa[i]:])               # overlap of adjacent sorted suffixes
+        if k > best_len:
+            best_len, best_start = k, sa[i]
+    return s[best_start:best_start + best_len]
 
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
+sa = suffix_array("banana")
+print("sorted suffixes:", [("banana")[i:] for i in sa])
+print("LCP of adjacent:", [lcp(("banana")[sa[i-1]:], ("banana")[sa[i]:]) for i in range(1, len(sa))])
+print("longest repeated:", repr(longest_repeated_substring("banana")))
+print("check 'abcabcabc' :", repr(longest_repeated_substring("abcabcabc")))
+```
 
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
+<details>
+<summary><strong>Reveal</strong></summary>
 
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
+The longest repeated substring of `"banana"` is `"ana"` (length 3), not `"nana"`. `"nana"` occurs only *once* (it's a single suffix), so it isn't repeated; `"ana"` occurs twice (starting at indices 1 and 3). The suffix array makes this falling-out trivial: the LCP array is `[1, 3, 0, 0, 2]`, and the **maximum LCP value, 3, *is* the length of the longest repeated substring** — it sits between the adjacent sorted suffixes `"ana"` and `"anana"`, which share exactly `"ana"`. Why adjacent pairs suffice: any two suffixes sharing a long prefix must be *neighbours* once sorted (everything between them shares at least that prefix too), so the deepest repeat always shows up as an adjacent-pair overlap. One linear scan of the LCP array finds it — and `"abcabcabc"` confirms the pattern, with max LCP 6 giving `"abcabc"`. That's the suffix array's signature move: sort once, and "repeated/shared substring" questions collapse to a scan of adjacent overlaps.
 
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
+</details>
 
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+## Your Turn
 
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
+**Count distinct substrings** — a classic suffix-array-plus-LCP result. A length-`n` string has `n(n+1)/2` substrings counting duplicates; every adjacent LCP value counts substrings that are *repeats* of an earlier suffix's prefixes, so the distinct count is `n(n+1)/2 − Σ lcp`.
 
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+```python run
+def suffix_array(s):
+    return sorted(range(len(s)), key=lambda i: s[i:])
+
+def lcp(a, b):
+    k = 0
+    while k < len(a) and k < len(b) and a[k] == b[k]:
+        k += 1
+    return k
+
+def distinct_substrings(s):
+    n = len(s)
+    sa = suffix_array(s)
+    total = n * (n + 1) // 2                           # all substrings, duplicates included
+    repeated = sum(lcp(s[sa[i-1]:], s[sa[i]:]) for i in range(1, n))
+    return total - repeated                            # subtract the duplicated prefixes
+
+print(distinct_substrings("banana"))    # 15
+print(distinct_substrings("aaa"))       # 3
+```
+
+```java run
+import java.util.*;
+public class Main {
+    static Integer[] suffixArray(String s) {
+        Integer[] sa = new Integer[s.length()];
+        for (int i = 0; i < s.length(); i++) sa[i] = i;
+        Arrays.sort(sa, (x, y) -> s.substring(x).compareTo(s.substring(y)));
+        return sa;
+    }
+    static int lcp(String a, String b) {
+        int k = 0;
+        while (k < a.length() && k < b.length() && a.charAt(k) == b.charAt(k)) k++;
+        return k;
+    }
+    static int distinctSubstrings(String s) {
+        int n = s.length();
+        Integer[] sa = suffixArray(s);
+        int total = n * (n + 1) / 2, repeated = 0;
+        for (int i = 1; i < n; i++) repeated += lcp(s.substring(sa[i-1]), s.substring(sa[i]));
+        return total - repeated;
+    }
+    public static void main(String[] args) {
+        System.out.println(distinctSubstrings("banana"));   // 15
+        System.out.println(distinctSubstrings("aaa"));      // 3
+    }
+}
+```
+
+Both print `15` then `3`. `"banana"` has `21` substrings with duplicates but only `15` distinct (the LCP array sums to 6, the six duplicated prefixes); `"aaa"` has just `"a"`, `"aa"`, `"aaa"` — three distinct, from `6 − 3`. The same LCP array that found the longest repeat now *counts* the repeats — one preprocess, many answers, which is the whole point of indexing the text.
+
+## Reflect & Connect
+
+- **Index the text, not the pattern.** Suffix arrays preprocess the string once, then answer many substring questions cheaply — the opposite stance from KMP/Z (which preprocess the pattern). Use it when the text is fixed and queries are plentiful.
+- **Sorting makes search binary search.** Occurrences of `P` are prefixes of suffixes; sorted, they're contiguous, so `O(m log n)` bisection finds them. No tree, no pointers.
+- **The LCP array is the multiplier.** Adjacent-suffix overlaps encode all shared-substring information: longest repeated substring (max LCP), distinct-substring count (`n(n+1)/2 − Σ lcp`), and longest common substring of two texts (concatenate with a separator, scan LCP across the boundary).
+- **Compact vs the suffix tree.** A suffix tree answers many queries in `O(m)` but costs heavy node/pointer memory; a suffix array is `n` integers + LCP, far lighter and cache-friendly. Production string indexes (BWT, FM-index, bioinformatics) favour the array.
+- **Construction has tiers.** Naive sort `O(n² log n)` (this lesson), prefix-doubling `O(n log n)`, and SA-IS / DC3 `O(n)`. Learn the idea on the naive build; reach for a library `O(n)` builder at scale. The [suffix automaton](/cortex/data-structures-and-algorithms/strings-suffix-automaton) (next) is the *online* alternative that ingests the string incrementally.
+
+## Recall
+
+<details>
+<summary><strong>Q:</strong> What is a suffix array?</summary>
+
+**A:** The start indices of all suffixes of a string, sorted lexicographically by the suffix they begin. For `"banana"` it's `[5, 3, 1, 0, 4, 2]`. Stored as `n` integers.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why does substring search become binary search?</summary>
+
+**A:** Every occurrence of `P` starts a suffix with `P` as a prefix. After sorting, all suffixes sharing prefix `P` form a contiguous block, so you binary-search for `P`'s lower bound and check the prefix — `O(m log n)`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What does the LCP array store, and why are adjacent pairs enough?</summary>
+
+**A:** `lcp[i]` = the longest common prefix of the `i`-th and `(i-1)`-th sorted suffixes. Two suffixes sharing a long prefix are neighbours once sorted, so adjacent-pair overlaps capture all shared-prefix information (e.g. the max LCP is the longest repeated substring).
+
+</details>
+<details>
+<summary><strong>Q:</strong> How do you count distinct substrings with a suffix array?</summary>
+
+**A:** `n(n+1)/2 − Σ lcp`: total substrings (with duplicates) minus the duplicated prefixes that the LCP values count. For `"banana"`: `21 − 6 = 15`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Suffix array vs suffix tree — when each?</summary>
+
+**A:** A suffix tree gives `O(m)` queries but heavy pointer/node memory; a suffix array gives `O(m log n)` queries in `n` integers + LCP — far less memory and cache-friendlier. Prefer the array unless you specifically need the tree's per-query speed.
+
+</details>
+
+## Sources & Verify
+
+- **Manber & Myers** (1990), "Suffix arrays: a new method for on-line string searches", *SIAM J. Comput.* — the original suffix array and binary-search matching.
+- **Kasai et al.** (2001) — linear-time LCP array construction from the suffix array; **Kärkkäinen-Sanders** (DC3) and **Nong et al.** (SA-IS) for `O(n)` suffix-array construction.
+- **LeetCode** 1044 (Longest Duplicate Substring) and 1062 (Longest Repeating Substring) are the canonical drills; the `[5,3,1,0,4,2]` suffix array, the `[1,3,0,0,2]` LCP / `"ana"` longest repeat, and the `15`/`3` distinct counts above come from the runnable blocks — re-run to verify.

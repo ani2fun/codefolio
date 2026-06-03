@@ -2,7 +2,7 @@
 title: "Memorize: Two Pointers Reduction"
 summary: "Pattern recognition triggers, template code, common mistakes, and quick recall."
 prereqs:
-  - 05-pattern-two-pointers-reduction/02-problems
+  - 05-pattern-two-pointers-reduction/01-pattern
 ---
 
 # Memorize: Two Pointers Reduction
@@ -28,8 +28,6 @@ Two people stand at opposite ends of a sorted bookshelf, each holding the cheape
 ---
 
 ## Visual Summary
-
-> 🖼 Diagram — TODO: 3 frames — unsorted array with arbitrary endpoints / sorted array with left at min and right at max / converged pointers on a matching pair.
 
 ---
 

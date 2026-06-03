@@ -1,451 +1,281 @@
-# 18. Practice: Mix Traversals
-
-## The Hook
-
-Eleven patterns into the chapter, you've learned every recursion shape that binary trees need: preorder (stateless and stateful), postorder (stateless and stateful), root-to-leaf (stateless and stateful), level-order (one-dimensional and column-based), LCA, and simultaneous traversal. Each pattern by itself answers a class of problems with one cohesive recipe.
-
-But interview questions and production code rarely fit a single pattern *cleanly*. The interesting problems are usually *compositions* — they take a piece of one pattern, glue it to a piece of another, and ask you to produce a single coherent answer that no individual pattern could give in one pass. The skill at this level isn't memorising more patterns — it's *recognising* which patterns combine, in what order, to solve a question you've never seen before.
-
-This capstone lesson works through one such problem — the **boundary traversal** of a binary tree — to demonstrate the composition mindset. The boundary traversal asks you to walk *anticlockwise around the outside of the tree*, returning the root, then everything on the left edge top-to-bottom, then every leaf left-to-right, then everything on the right edge bottom-to-top. There's no single pattern that does this — but the problem decomposes cleanly into *three* sub-walks, each a tiny variation of patterns you already know. Stitch the three together and you have a single linear-time, single-pass-equivalent algorithm.
-
-This kind of decomposition is what separates "I know binary trees" from "I can solve any binary-tree question I've never seen before". Practice it on this problem and the skill transfers to dozens of other multi-pattern compositions.
-
+---
+tier: spine
+title: "Mixing Traversals — Boundary Traversal"
+summary: "Hard tree problems rarely fit one traversal — they compose several. Boundary traversal is the canonical example: stitch a left-boundary descent, a leaves pass, and a reversed right-boundary descent into one anticlockwise loop, with a skip-leaves rule that stops corner nodes being counted twice. O(N) time."
+prereqs:
+  - trees-binary-tree-recursive-traversals-in-binary-trees
+  - trees-binary-tree-iterative-traversals-in-binary-trees
 ---
 
-## Table of contents
+## Why It Exists
 
-1. [Boundary traversal — the problem](#boundary-traversal--the-problem)
-2. [Decomposing into three pieces](#decomposing-into-three-pieces)
-3. [Solution](#solution)
+The chapter taught traversals one at a time — preorder, inorder, postorder, level-order. But the problems that actually show up in interviews and production rarely fit a single traversal *cleanly*. They're **compositions**: take a slice of one traversal, glue it to a slice of another, and produce one coherent answer no single pass could give. The skill at this level isn't memorizing more patterns — it's *recognizing* which patterns combine, in what order.
 
-***
+**Boundary traversal** is the canonical drill. The task: list the boundary of a binary tree anticlockwise — start at the root, go down the left edge, across the bottom (all the leaves, left to right), and back up the right edge. No one traversal does this. You decompose it into three sub-walks — a **left-boundary descent**, a **leaves pass**, and a **right-boundary descent collected then reversed** — and stitch them around the root. The whole difficulty is in the seams: the corner leaves belong to the bottom *and* sit on an edge, so a naive stitch counts them twice. One rule — *exclude leaves from the two edge walks* — keeps every node in exactly one piece. Get the decomposition and the duplicate rule right and a problem that looks intimidating becomes four simple loops.
 
-# Boundary traversal — the problem
+## See It Work
 
-> Given the root of a binary tree, return the *boundary* of the tree — the values you'd encounter walking anticlockwise around the outside of the tree, starting from the root.
->
-> The boundary consists of:
->
-> 1. The **root**.
-> 2. The **left boundary** — every node on the leftmost path from the root downward, *excluding* leaves (we'll catch them in step 3). The leftmost path is "go left if left child exists, else right" — so it threads down even when the strict left-child runs out.
-> 3. All **leaves**, left-to-right.
-> 4. The **right boundary** in *reverse* — every node on the rightmost path from the root downward (excluding leaves), then bottom-to-top.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    R(("1<br/>(root)"))
-    A(("2<br/>(left)"))
-    B(("3<br/>(right)"))
-    C(("4<br/>(leaf)"))
-    D(("7<br/>(leaf)"))
-    R --> A
-    R --> B
-    A --> C
-    B --> D
-    style R fill:#fef9c3,stroke:#f59e0b
-    style A fill:#dbeafe,stroke:#3b82f6
-    style B fill:#ede9fe,stroke:#7c3aed
-    style C fill:#dcfce7,stroke:#22c55e
-    style D fill:#dcfce7,stroke:#22c55e
-```
-
-<p align="center"><strong>Example tree — boundary (anticlockwise from root): <strong><code>1 → 2 → 4 → 7 → 3</code></strong>. Yellow root, blue left edge, green leaves left-to-right, purple right edge in reverse.</strong></p>
-
-The challenge is that *the same node should not appear twice*. The root is *not* on the left or right boundary. A leaf that happens to be on the left boundary should be reported in the leaves step, not the left-boundary step. So the four pieces have to be carved out carefully to avoid double-counting.
-
-> *Predict before reading on — for a single-node tree (just the root), what should the boundary be?*
->
-> Just the root, `[1]`. The left and right boundaries are empty (no left or right edge to walk); the leaves step would visit the root, but we've already added it. *Edge cases like this are exactly where compositions break*; check that your solution handles single-node, all-left-skew, all-right-skew, and an empty tree correctly.
-
-***
-
-# Decomposing into three pieces
-
-Each piece is a tiny variation of a pattern you've already seen.
-
-## Piece 1 — Left boundary (preorder-style descent, skip leaves)
-
-A modified preorder: visit the node *before* descending, descend left if possible else right, stop when we hit a leaf.
-
-This is essentially the **stateless preorder** pattern (lesson 8) with two tweaks: we don't visit leaves (they'll be picked up by piece 3), and the descent isn't into both children — it's "left if exists, else right".
-
-```text
-leftBoundary(node, out):
-  if node is null or node is a leaf: return
-  out.push(node.val)
-  if node.left:  leftBoundary(node.left,  out)
-  else:          leftBoundary(node.right, out)
-```
-
-## Piece 2 — Leaves (stateless preorder, leaves only)
-
-A standard depth-first walk that emits only at leaves — the **stateless postorder** pattern (lesson 10) specialised to "do work only at leaves".
-
-```text
-leaves(node, out):
-  if node is null: return
-  if node is a leaf: out.push(node.val); return
-  leaves(node.left,  out)
-  leaves(node.right, out)
-```
-
-## Piece 3 — Right boundary in reverse (postorder-style descent)
-
-A modified *post*order: descend right if possible else left, *then* visit on the way back up. By visiting after descending, we naturally produce the right edge in reverse order without needing a separate reversal pass.
-
-```text
-rightBoundary(node, out):
-  if node is null or node is a leaf: return
-  if node.right: rightBoundary(node.right, out)
-  else:          rightBoundary(node.left,  out)
-  out.push(node.val)             # post-order visit gives reverse order for free
-```
-
-## Piece 4 — Stitching it together
-
-```text
-boundary(root):
-  if root is null: return []
-  out = [root.val]
-  leftBoundary(root.left, out)         # left edge, top-to-bottom, no leaves
-  leaves(root.left,  out)              # leaves of the left subtree
-  leaves(root.right, out)              # leaves of the right subtree
-  rightBoundary(root.right, out)       # right edge, bottom-to-top
-  return out
-```
-
-The careful choice of *what to start each piece on* is what avoids double-counting. The root is added explicitly. The left/right boundaries start at `root.left` / `root.right` (so they don't re-add the root). The leaves walk both subtrees in order (so they don't double-count and they appear in left-to-right order).
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    P1["1. emit root → out=[1]"]
-    P2["2. leftBoundary(root.left) → adds non-leaf left-edge nodes
-   (preorder-style: visit then descend)"]
-    P3["3. leaves(root.left) → adds left-subtree leaves left-to-right
-   leaves(root.right) → adds right-subtree leaves left-to-right"]
-    P4["4. rightBoundary(root.right) → adds non-leaf right-edge nodes in REVERSE
-   (postorder-style: descend then visit)"]
-    P1 --> P2 --> P3 --> P4
-```
-
-<p align="center"><strong>Four ordered pieces — each is a familiar pattern, specialised to one slice of the perimeter. Together they walk the boundary anticlockwise without revisiting any node.</strong></p>
-
-***
-
-# Solution
-
-A single pass requires three helpers and one driver. Implementations follow.
-
+The full boundary, anticlockwise, from three stitched sub-walks:
 
 ```python run viz=binary-tree viz-root=root
-from typing import Optional, List
-
-
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
-        self.val = val
-        self.left = left
-        self.right = right
+        self.val, self.left, self.right = val, left, right
+#            20
+#          /    \
+#         8      22
+#        / \       \
+#       4   12      25
+#          /  \
+#         10   14
+root = TreeNode(20, TreeNode(8, TreeNode(4), TreeNode(12, TreeNode(10), TreeNode(14))),
+                    TreeNode(22, None, TreeNode(25)))
 
+def is_leaf(n): return n.left is None and n.right is None
 
-def from_level_order(values):
-    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
-    if not values:
-        return None
-    root = TreeNode(values[0])
-    queue = [root]
-    i = 1
-    while queue and i < len(values):
-        node = queue.pop(0)
-        if i < len(values) and values[i] is not None:
-            node.left = TreeNode(values[i])
-            queue.append(node.left)
-        i += 1
-        if i < len(values) and values[i] is not None:
-            node.right = TreeNode(values[i])
-            queue.append(node.right)
-        i += 1
-    return root
+def boundary(root):
+    if root is None: return []
+    res = []
+    if not is_leaf(root): res.append(root.val)        # 1. root (unless it's a lone leaf)
+    n = root.left                                      # 2. left boundary: top-down, skip leaves
+    while n:
+        if not is_leaf(n): res.append(n.val)
+        n = n.left if n.left else n.right
+    def leaves(n):                                     # 3. all leaves, left to right
+        if n is None: return
+        if is_leaf(n): res.append(n.val); return
+        leaves(n.left); leaves(n.right)
+    leaves(root)
+    rb, n = [], root.right                             # 4. right boundary: top-down, skip leaves...
+    while n:
+        if not is_leaf(n): rb.append(n.val)
+        n = n.right if n.right else n.left
+    res.extend(reversed(rb))                           # ...then reversed -> bottom-up
+    return res
 
-
-class Solution:
-    def left_boundary(
-        self, node: Optional[TreeNode], left_bd: List[int]
-    ) -> None:
-        """
-        Helper function to get the left boundary
-        """
-
-        # If the current node is None or is a leaf node, return
-        if not node or (not node.left and not node.right):
-            return
-
-        # Add the current node's value to the left boundary list
-        left_bd.append(node.val)
-
-        # Traverse the left subtree if it exists, otherwise traverse the
-        # right subtree
-        if node.left:
-            self.left_boundary(node.left, left_bd)
-        else:
-            self.left_boundary(node.right, left_bd)
-
-    def right_boundary(
-        self, node: Optional[TreeNode], right_bd: List[int]
-    ) -> None:
-        """
-        Helper function to get the right boundary
-        """
-
-        # If the current node is None or is a leaf node, return
-        if not node or (not node.left and not node.right):
-            return
-
-        # Traverse the right subtree if it exists, otherwise traverse the
-        # left subtree
-        if node.right:
-            self.right_boundary(node.right, right_bd)
-        else:
-            self.right_boundary(node.left, right_bd)
-
-        # Add the current node's value to the right boundary list
-        right_bd.append(node.val)
-
-    def leaf_nodes(
-        self, node: Optional[TreeNode], leaves: List[int]
-    ) -> None:
-        """
-        Helper function to get the leaf nodes
-        """
-
-        # If the current node is None, return
-        if not node:
-            return
-
-        # If the current node is a leaf node, add its value to the leaves
-        # list
-        if not node.left and not node.right:
-            leaves.append(node.val)
-            return
-
-        # Traverse the left and right subtrees
-        self.leaf_nodes(node.left, leaves)
-        self.leaf_nodes(node.right, leaves)
-
-    def boundary_traversal(self, root: Optional[TreeNode]) -> List[int]:
-        """
-        Define the main function to find the boundary of a binary tree
-        """
-
-        # Create a list to store the boundary nodes
-        boundary: List[int] = []
-
-        # If the root is empty, return an empty list
-        if not root:
-            return boundary
-
-        # Add the root value to the boundary
-        boundary.append(root.val)
-
-        # Add the left boundary nodes
-        self.left_boundary(root.left, boundary)
-
-        # Add the leaf nodes from the left subtree and the right subtree
-        self.leaf_nodes(root.left, boundary)
-        self.leaf_nodes(root.right, boundary)
-
-        # Add the right boundary nodes (in reverse order)
-        self.right_boundary(root.right, boundary)
-
-        return boundary
-
-
-# Examples from the problem statement
-print(Solution().boundary_traversal(from_level_order([1, 2, 3, 4, None, None, 7])))   # [1, 2, 4, 7, 3]
-print(Solution().boundary_traversal(from_level_order([1, 8, 4, None, None, 2, 7])))   # [1, 8, 2, 7, 4]
-
-# Edge cases
-print(Solution().boundary_traversal(None))                                             # []
-print(Solution().boundary_traversal(TreeNode(1)))                                      # [1]
-print(Solution().boundary_traversal(from_level_order([1, 2, None, 3, None, 4])))     # [1, 2, 3, 4] left skew
-print(Solution().boundary_traversal(from_level_order([1, None, 2, None, None, None, 3])))  # [1, 3, 2] right skew
-print(Solution().boundary_traversal(from_level_order([1, 2, 3])))                    # [1, 2, 3, 3] root + left + leaves + right
+print("boundary:", boundary(root))   # [20, 8, 4, 10, 14, 25, 22]
 ```
 
 ```java run viz=binary-tree viz-root=root
 import java.util.*;
-
 public class Main {
     static class TreeNode {
-        int val;
-        TreeNode left;
-        TreeNode right;
-        TreeNode() {}
+        int val; TreeNode left, right;
         TreeNode(int val) { this.val = val; }
+        TreeNode(int val, TreeNode left, TreeNode right) { this.val = val; this.left = left; this.right = right; }
     }
-
-    static TreeNode fromLevelOrder(Integer... values) {
-        if (values.length == 0 || values[0] == null) return null;
-        TreeNode root = new TreeNode(values[0]);
-        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
-        queue.add(root);
-        int i = 1;
-        while (!queue.isEmpty() && i < values.length) {
-            TreeNode node = queue.poll();
-            if (i < values.length && values[i] != null) {
-                node.left = new TreeNode(values[i]);
-                queue.add(node.left);
-            }
-            i++;
-            if (i < values.length && values[i] != null) {
-                node.right = new TreeNode(values[i]);
-                queue.add(node.right);
-            }
-            i++;
-        }
-        return root;
+    static boolean isLeaf(TreeNode n) { return n.left == null && n.right == null; }
+    static List<Integer> res;
+    static void leaves(TreeNode n) {
+        if (n == null) return;
+        if (isLeaf(n)) { res.add(n.val); return; }
+        leaves(n.left); leaves(n.right);
     }
-
-    static class Solution {
-
-        // Helper function to get the left boundary
-        private void leftBoundary(TreeNode node, List<Integer> leftBd) {
-
-            // If the current node is null or is a leaf node, return
-            if (node == null || (node.left == null && node.right == null)) {
-                return;
-            }
-
-            // Add the current node's value to the left boundary list
-            leftBd.add(node.val);
-
-            // Traverse the left subtree if it exists, otherwise traverse the
-            // right subtree
-            if (node.left != null) {
-                leftBoundary(node.left, leftBd);
-            } else {
-                leftBoundary(node.right, leftBd);
-            }
-        }
-
-        // Helper function to get the right boundary
-        private void rightBoundary(TreeNode node, List<Integer> rightBd) {
-
-            // If the current node is null or is a leaf node, return
-            if (node == null || (node.left == null && node.right == null)) {
-                return;
-            }
-
-            // Traverse the right subtree if it exists, otherwise traverse
-            // the left subtree
-            if (node.right != null) {
-                rightBoundary(node.right, rightBd);
-            } else {
-                rightBoundary(node.left, rightBd);
-            }
-
-            // Add the current node's value to the right boundary list
-            rightBd.add(node.val);
-        }
-
-        // Helper function to get the leaf nodes
-        private void leafNodes(TreeNode node, List<Integer> leaves) {
-
-            // If the current node is null, return
-            if (node == null) {
-                return;
-            }
-
-            // If the current node is a leaf node, add its value to the
-            // leaves list
-            if (node.left == null && node.right == null) {
-                leaves.add(node.val);
-                return;
-            }
-
-            // Traverse the left and right subtrees
-            leafNodes(node.left, leaves);
-            leafNodes(node.right, leaves);
-        }
-
-        // Define the main function to find the boundary of a binary tree
-        public List<Integer> boundaryTraversal(TreeNode root) {
-
-            // Create a list to store the boundary nodes
-            List<Integer> boundary = new ArrayList<Integer>();
-
-            // If the root is empty, return an empty list
-            if (root == null) {
-                return boundary;
-            }
-
-            // Add the root value to the boundary
-            boundary.add(root.val);
-
-            // Add the left boundary nodes
-            leftBoundary(root.left, boundary);
-
-            // Add the leaf nodes from the left subtree and the right subtree
-            leafNodes(root.left, boundary);
-            leafNodes(root.right, boundary);
-
-            // Add the right boundary nodes (in reverse order)
-            rightBoundary(root.right, boundary);
-
-            return boundary;
-        }
+    static List<Integer> boundary(TreeNode root) {
+        res = new ArrayList<>();
+        if (root == null) return res;
+        if (!isLeaf(root)) res.add(root.val);                                  // 1. root
+        TreeNode n = root.left;                                                // 2. left boundary
+        while (n != null) { if (!isLeaf(n)) res.add(n.val); n = n.left != null ? n.left : n.right; }
+        leaves(root);                                                          // 3. leaves L->R
+        List<Integer> rb = new ArrayList<>();                                  // 4. right boundary...
+        n = root.right;
+        while (n != null) { if (!isLeaf(n)) rb.add(n.val); n = n.right != null ? n.right : n.left; }
+        Collections.reverse(rb);                                              // ...reversed
+        res.addAll(rb);
+        return res;
     }
-
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        System.out.println(new Solution().boundaryTraversal(fromLevelOrder(1, 2, 3, 4, null, null, 7)));   // [1, 2, 4, 7, 3]
-        System.out.println(new Solution().boundaryTraversal(fromLevelOrder(1, 8, 4, null, null, 2, 7)));   // [1, 8, 2, 7, 4]
-
-        // Edge cases
-        System.out.println(new Solution().boundaryTraversal(null));                                         // []
-        System.out.println(new Solution().boundaryTraversal(new TreeNode(1)));                             // [1]
-        System.out.println(new Solution().boundaryTraversal(fromLevelOrder(1, 2, null, 3)));              // left skew
-        System.out.println(new Solution().boundaryTraversal(fromLevelOrder(1, null, 2, null, null, null, 3)));  // right skew
-        System.out.println(new Solution().boundaryTraversal(fromLevelOrder(1, 2, 3)));                    // [1, 2, 3, 3]
+    public static void main(String[] a) {
+        TreeNode root = new TreeNode(20, new TreeNode(8, new TreeNode(4), new TreeNode(12, new TreeNode(10), new TreeNode(14))),
+                                         new TreeNode(22, null, new TreeNode(25)));
+        System.out.println("boundary: " + boundary(root));
     }
 }
 ```
 
+Both print `boundary: [20, 8, 4, 10, 14, 25, 22]` — root `20`, down the left edge (`8`), across the leaves (`4, 10, 14, 25`), back up the right edge (`22`). Four little loops, one anticlockwise tour.
 
-## Complexity
+## How It Works
 
-> **Time:** O(N) — each node is visited at most twice (once by a boundary helper, possibly once by `leaf_nodes`). **Space:** O(h) for recursion stack.
+The decomposition is the whole technique: split the boundary into pieces each traversal can handle, then concatenate in order.
 
-***
+```d2
+direction: down
+a: "1. root  (skip if the root itself is a leaf)"
+b: "2. left boundary: walk down root.left, EXCLUDE leaves  (preorder-style descent)"
+c: "3. leaves: every leaf, left to right  (stateless preorder, leaves only)"
+d: "4. right boundary: walk down root.right EXCLUDING leaves, collect, then REVERSE  (postorder-style)"
+a -> b -> c -> d
+e: "stitch:  root ++ left ++ leaves ++ reversed-right  =  anticlockwise boundary"
+d -> e
+```
 
-## Final Takeaway — and a chapter close
+<p align="center"><strong>Boundary traversal as four sub-walks stitched in order. Each piece is a familiar traversal; the art is the decomposition and the seams.</strong></p>
 
-The boundary traversal is *one* problem that needs *three* patterns stitched together. There are dozens of similar problems across the binary-tree interview canon — they all look intimidating until you decompose them into pieces you already know. Three things to walk away with:
+- **Each piece is a traversal you already know.** The left and right edges are preorder-style descents (follow one child, fall back to the other); the leaves pass is a stateless preorder that emits only leaves. Nothing new — it's *composition*.
+- **The skip-leaves rule prevents duplicates.** The leftmost and rightmost leaves sit on an edge *and* are leaves. If the edge walks included leaves, those corners would appear twice. Excluding leaves from the two edge walks puts every node in exactly one piece ([Trace It](#trace-it)).
+- **The right boundary is collected top-down, then reversed.** Anticlockwise means the right edge is walked *bottom-up*, but it's easier to descend top-down and reverse the list — the same trick the two-stack [iterative postorder](/cortex/data-structures-and-algorithms/trees-binary-tree-iterative-traversals-in-binary-trees) uses.
+- **Cost is `O(N)`.** The leaves pass visits every node once; the two edge walks each touch `O(H)` nodes. Total `O(N)` time, `O(N)` space for the output (plus `O(H)` recursion for the leaves).
 
-1. **Decompose first, code second.** Before writing a line, name the slices of the answer and which pattern each slice fits. Once the decomposition is written down, the implementation is mechanical. *"What slice am I computing? Which pattern?"* — say it out loud for each piece.
-2. **Avoid double-counting by careful boundaries.** Every composed solution has overlap risks at the seams. The boundary problem makes you confront this directly: the root, the left-boundary, the leaves, and the right-boundary all have potential overlap with each other, and the cure is to start each helper at the right node (not the root) and exclude the right cases (leaves from boundaries, root from leaves).
-3. **The chapter is a toolkit, not a checklist.** Eleven patterns sounds like a lot, but each is a five-line skeleton that you can write from memory once it's internalised. The hard part of "binary-tree interview problems" isn't *knowing* the patterns — it's recognising which one (or which combination) the problem in front of you needs. That recognition only comes with practice, and this lesson's boundary traversal is a good first composition to chew on.
+> **Key takeaway.** Hard tree problems are *compositions* of simple traversals. Boundary traversal stitches four pieces — root, left-boundary descent, leaves left-to-right, and a reversed right-boundary descent — into one anticlockwise loop. The one rule that makes it correct: **exclude leaves from the two edge walks**, so the corner leaves (which are both edge nodes and leaves) are counted exactly once. `O(N)` time. The meta-skill is decomposition: see which traversals combine and in what order.
 
-> *Chapter end.* The next chapter (**Binary Search Trees**) builds on everything from this one — every algorithm here generalises naturally to a BST, and the BST's invariant gives us *additional* algorithmic leverage (O(log N) lookups, sorted iteration, predecessor/successor in O(h)) on top of what you've already learned. The patterns from this chapter will carry forward — the next chapter teaches you when the BST shape lets you go faster.
+## Trace It
+
+The single bug that breaks every first attempt at boundary traversal is forgetting to skip leaves on the edges. Watch the left-boundary walk with and without the guard:
+
+**Predict before you run:** the left boundary of this tree starts at node `8`, whose left child is the leaf `4`. With the skip-leaves guard, what does the left-boundary walk emit? Without it?
+
+```python run
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val, self.left, self.right = val, left, right
+root = TreeNode(20, TreeNode(8, TreeNode(4), TreeNode(12, TreeNode(10), TreeNode(14))),
+                    TreeNode(22, None, TreeNode(25)))
+def is_leaf(n): return n.left is None and n.right is None
+
+def left_boundary(root, skip_leaves):
+    res, n = [], root.left
+    while n:
+        if not (skip_leaves and is_leaf(n)):
+            res.append(n.val)
+        n = n.left if n.left else n.right
+    return res
+
+print("skip leaves = True :", left_boundary(root, True))    # [8]
+print("skip leaves = False:", left_boundary(root, False))   # [8, 4]
+```
+
+<details>
+<summary><strong>Reveal</strong></summary>
+
+```
+skip leaves = True : [8]
+skip leaves = False: [8, 4]
+```
+
+With the guard the left boundary is just `[8]`; without it, the leaf `4` sneaks in → `[8, 4]`. The problem: `4` is a **leaf**, so the separate leaves pass *also* emits it. Stitch the unguarded edge with the leaves pass and you get `…, 8, 4, … 4, …` — `4` counted twice, and the boundary is wrong. The fix is the one-line rule: edge walks skip leaves, the leaves pass owns them. It's the same "who is responsible for this node" discipline that makes any multi-piece traversal correct — each node must belong to exactly one sub-walk. (Symmetric trap: the rightmost leaf `25` would double-count on the right edge without the same guard.)
+
+## Your Turn
+
+Decompositions have to survive degenerate shapes. Run the *same* `boundary` function on a tree that's all left edge and no right edge — a left-skewed spine.
+
+**Predict:** for the spine `1 → 2 → 3` (each node's only child is its left), what is the boundary? (Hint: every node is on the left edge or is the single leaf.)
+
+```python run
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val, self.left, self.right = val, left, right
+def is_leaf(n): return n.left is None and n.right is None
+def boundary(root):
+    if root is None: return []
+    res = []
+    if not is_leaf(root): res.append(root.val)
+    n = root.left
+    while n:
+        if not is_leaf(n): res.append(n.val)
+        n = n.left if n.left else n.right
+    def leaves(n):
+        if n is None: return
+        if is_leaf(n): res.append(n.val); return
+        leaves(n.left); leaves(n.right)
+    leaves(root)
+    rb, n = [], root.right
+    while n:
+        if not is_leaf(n): rb.append(n.val)
+        n = n.right if n.right else n.left
+    res.extend(reversed(rb))
+    return res
+
+#   1
+#  /
+# 2
+#/
+# 3
+spine = TreeNode(1, TreeNode(2, TreeNode(3), None), None)
+print("spine boundary:", boundary(spine))   # [1, 2, 3]
+```
+
+```java run
+import java.util.*;
+public class Main {
+    static class TreeNode {
+        int val; TreeNode left, right;
+        TreeNode(int val) { this.val = val; }
+        TreeNode(int val, TreeNode left, TreeNode right) { this.val = val; this.left = left; this.right = right; }
+    }
+    static boolean isLeaf(TreeNode n) { return n.left == null && n.right == null; }
+    static List<Integer> res;
+    static void leaves(TreeNode n) {
+        if (n == null) return;
+        if (isLeaf(n)) { res.add(n.val); return; }
+        leaves(n.left); leaves(n.right);
+    }
+    static List<Integer> boundary(TreeNode root) {
+        res = new ArrayList<>();
+        if (root == null) return res;
+        if (!isLeaf(root)) res.add(root.val);
+        TreeNode n = root.left;
+        while (n != null) { if (!isLeaf(n)) res.add(n.val); n = n.left != null ? n.left : n.right; }
+        leaves(root);
+        List<Integer> rb = new ArrayList<>();
+        n = root.right;
+        while (n != null) { if (!isLeaf(n)) rb.add(n.val); n = n.right != null ? n.right : n.left; }
+        Collections.reverse(rb);
+        res.addAll(rb);
+        return res;
+    }
+    public static void main(String[] a) {
+        TreeNode spine = new TreeNode(1, new TreeNode(2, new TreeNode(3), null), null);
+        System.out.println("spine boundary: " + boundary(spine));
+    }
+}
+```
+
+Both print `spine boundary: [1, 2, 3]` — the whole tree. Root `1` and `2` are on the left edge (neither is a leaf), `3` is the lone leaf, and the right edge is empty. The decomposition degrades gracefully: with no right subtree the fourth piece contributes nothing, and the skip-leaves rule keeps `3` out of the edge walk so it appears once, via the leaves pass.
+
+## Reflect & Connect
+
+- **The real skill is decomposition.** Hard tree problems are compositions of the simple traversals. Spot the pieces, order them, and stitch — boundary traversal is the archetype (left edge + leaves + reversed right edge).
+- **Every node belongs to exactly one piece.** The skip-leaves rule is a special case of a general discipline: when sub-walks overlap, assign each shared node to one owner. Here, corner leaves belong to the leaves pass, not the edges.
+- **Reuse the tricks you have.** The right-edge "descend then reverse" is the same move as two-stack [iterative postorder](/cortex/data-structures-and-algorithms/trees-binary-tree-iterative-traversals-in-binary-trees); the edge descents are [preorder](/cortex/data-structures-and-algorithms/trees-binary-tree-recursive-traversals-in-binary-trees)-style. Nothing here is new — it's recombination.
+- **Test the seams on degenerate shapes.** Left-only spines, right-only spines, a single-node tree, an all-leaves tree — these are where double-counting and off-by-one stitch bugs surface. A composition that survives them is correct.
+- **This closes the binary-tree chapter.** With representations, traversals (recursive and iterative), construction, insertion, and now composition, you have the full toolkit — the [binary search tree](/cortex/data-structures-and-algorithms/trees-binary-search-tree-introduction-to-binary-search-trees) adds the ordering rule that turns these traversals into `O(log N)` search.
+
+## Recall
+
+<details>
+<summary><strong>Q:</strong> What are the four pieces of a boundary traversal, and in what order are they stitched?</summary>
+
+**A:** (1) the root, (2) the left boundary top-down excluding leaves, (3) all leaves left to right, (4) the right boundary top-down excluding leaves, *reversed*. Concatenated in that order they form the anticlockwise boundary.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why must the left and right boundary walks skip leaf nodes?</summary>
+
+**A:** The corner leaves sit on an edge *and* are leaves, so the separate leaves pass already emits them. If the edge walks included leaves, those corners would be counted twice. Skipping leaves on the edges makes every node belong to exactly one piece.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is the right boundary collected top-down and then reversed?</summary>
+
+**A:** Anticlockwise order needs the right edge bottom-up, but descending top-down is simpler. Collect the right edge top-down into a list and reverse it — the same descend-then-reverse trick as two-stack iterative postorder.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What is the time complexity of boundary traversal?</summary>
+
+**A:** `O(N)`. The leaves pass visits every node once; each edge walk touches `O(H)` nodes. Output and the leaves recursion add `O(N)` and `O(H)` space respectively.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What's the general lesson behind composing traversals?</summary>
+
+**A:** Decomposition — break a problem no single traversal solves into sub-walks each traversal *can* handle, then stitch them in order, ensuring every shared node has exactly one owner. Recognizing which patterns combine is the senior-level tree skill.
+
+</details>
+
+## Sources & Verify
+
+- **Boundary of Binary Tree** — LeetCode 545 and the GeeksforGeeks "boundary traversal" problem are the canonical statements; the decomposition (left boundary + leaves + reversed right boundary) is the standard solution.
+- The [recursive-traversals lesson](/cortex/data-structures-and-algorithms/trees-binary-tree-recursive-traversals-in-binary-trees) for the preorder pieces and the [iterative-traversals lesson](/cortex/data-structures-and-algorithms/trees-binary-tree-iterative-traversals-in-binary-trees) for the descend-then-reverse trick this reuses.
+- The boundary `[20, 8, 4, 10, 14, 25, 22]`, the skip-leaves contrast (`[8]` vs `[8, 4]`), and the left-spine `[1, 2, 3]` all come from the runnable blocks above (deterministic) — re-run to verify.

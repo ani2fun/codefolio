@@ -1,15 +1,37 @@
 ---
 title: "Pattern: Kth-Bit Operations"
-summary: "Four one-line primitives — check, set, clear, toggle the bit at position K using a mask built by bit-shifting 1."
+summary: "Build a mask 1 << (k-1) with a single 1 at position k, then combine it with the integer: AND to check, OR to set, AND-NOT to clear, XOR to toggle. One mask, four operators, O(1) each — the alphabet of bit manipulation."
 prereqs:
-
+  - 08-bit-tricks/00-bit-manipulation
 ---
 
-# The Bit-Manipulation Toolkit
+# Pattern: Kth-Bit Operations
 
-A 32-bit integer is a row of 32 boolean cells. The bit at *position k* (counting from 1, starting at the least-significant end) is what the operations target. The trick: every kth-bit operation builds a **mask** — `1 << (k - 1)` — and combines it with the integer using a bitwise operator.
+## Why It Exists
 
-> 🖼 Diagram — Mask 1 &lt;&lt; (k - 1) for k = 3 isolates exactly bit 3. Every kth-bit operation combines this mask with the input via AND / OR / NOT-AND / XOR — one operator per intent.
+An integer is a row of bits — 32 boolean cells in a 32-bit `int` — but you can't index one like `bits[k]`. You need to read or change the single bit at position `k` while leaving all the others exactly as they were.
+
+The trick is a **mask**: a number that is `1` at position `k` and `0` everywhere else, built by shifting — `1 << (k - 1)`. Combine that mask with your integer using the bitwise operator that matches your intent, and only bit `k` is affected (the mask's zeros leave every other bit untouched, because bitwise operators act on each position independently). One mask, four operators: **AND** to check, **OR** to set, **AND-NOT** to clear, **XOR** to toggle. Each is a single `O(1)` machine instruction — the primitives every higher-level bit trick is built from.
+
+## See It Work
+
+Take `n = 0b1010` (decimal `10`) and operate on bit `k = 3` (1-indexed from the least-significant end, which is currently `0`). Run it.
+
+```python run
+n = 0b1010                    # 10; bits 1-indexed from LSB: b1=0, b2=1, b3=0, b4=1
+k = 3
+mask = 1 << (k - 1)           # 0b0100 — a single 1 at position 3
+
+print(bool(n & mask))         # check : False (bit 3 is 0)
+print(n | mask)               # set   : 14  (0b1110)
+print(n & ~mask)              # unset : 10  (already 0 → unchanged)
+print(n ^ mask)               # toggle: 14  (0b1110 — flipped 0→1)
+```
+
+## How It Works
+
+Everything hinges on the mask `1 << (k - 1)` — a `1` slid into position `k`:
+
 ```d2
 direction: right
 mask: "Mask for k = 3:  1 << (k - 1)" {
@@ -35,91 +57,99 @@ mask: "Mask for k = 3:  1 << (k - 1)" {
 }
 ```
 
-<p align="center"><strong>Mask <code>1 &lt;&lt; (k - 1)</code> for <code>k = 3</code> isolates exactly bit 3. Every kth-bit operation combines this mask with the input via AND / OR / NOT-AND / XOR — one operator per intent.</strong></p>
+<p align="center"><strong>the mask <code>1 << (k - 1)</code> for <code>k = 3</code> has a single 1 at position 3 and 0 everywhere else; each operator combines it with the input to touch only that bit.</strong></p>
 
-The four operators map onto the four operations:
+Then the operator encodes the intent:
 
-| Intent | Operator | Why |
+| Intent | Expression | Why it works |
 |---|---|---|
-| **Check** if bit is on | `&` | AND with mask isolates bit k; non-zero ⇒ on |
-| **Set** bit to 1 | `\|` | OR with mask forces bit k to 1; other bits unchanged |
-| **Unset** bit to 0 | `& ~` | AND with inverted mask clears bit k; other bits unchanged |
-| **Toggle** bit | `^` | XOR with mask flips bit k; other bits unchanged |
+| **Check** bit `k` | `n & (1 << (k-1))` | AND keeps only bit `k`; result non-zero ⇒ the bit was `1` |
+| **Set** bit `k` to 1 | `n \| (1 << (k-1))` | OR forces bit `k` to `1`; zeros in the mask leave others alone |
+| **Clear** bit `k` to 0 | `n & ~(1 << (k-1))` | the inverted mask is `0` only at `k`, so AND zeroes just that bit |
+| **Toggle** bit `k` | `n ^ (1 << (k-1))` | XOR flips wherever the mask is `1` — only bit `k` |
 
-The mask is the unifying piece. Every kth-bit operation is "build the mask, apply the right operator." Different operator = different operation.
+Each is `O(1)`. The reason other bits survive: where the mask is `0`, `OR`/`XOR` leave the input unchanged and `AND ~mask` keeps it — bitwise operators treat each position independently.
 
-> *Predict before reading on — what does <code>1 &lt;&lt; (k - 1)</code> compute for <code>k = 1, 2, 3, 8</code>?*
+### Key Takeaway
 
-`1, 2, 4, 128`. Each shift left by one doubles the value. `1 << 0 = 1`, `1 << 1 = 2`, `1 << 2 = 4`, `1 << 7 = 128`. The shift count is one less than the position because we 1-index positions but 0-index shifts.
+Every kth-bit primitive is `mask = 1 << (k - 1)` plus one operator: `&` check, `|` set, `& ~` clear, `^` toggle. Memorise the mask; the rest is choosing the operator — all `O(1)`.
 
-## Indexing — 1-based vs 0-based
+## Trace It
 
-This section uses **1-based** bit positions throughout (`k = 1` is the least-significant bit). Many APIs and language libraries use **0-based** positions instead (`k = 0` is the LSB). Translation: the `(k - 1)` in our masks becomes plain `k` if you switch conventions. Pick one and stick with it; mixing is how off-by-one bugs sneak in.
+Operating on `n = 0b1010` at `k = 3` (`mask = 0b0100`):
 
----
-
-## Key Takeaway
-
-Every kth-bit primitive is `mask = 1 << (k - 1)` plus one of four operators. Memorise the mask; the rest is operator selection.
-
-# Final Takeaway
-
-The kth-bit operations are the alphabet of bit manipulation. Four primitives, one mask:
-
-| Operation | Expression | Operator's Magic |
+| op | computation | result |
 |---|---|---|
-| Check | `num & (1 << (k - 1))` | AND isolates the bit |
-| Set | `num \| (1 << (k - 1))` | OR forces to 1 |
-| Unset | `num & ~(1 << (k - 1))` | NOT-AND forces to 0 |
-| Toggle | `num ^ (1 << (k - 1))` | XOR flips |
+| check | `0b1010 & 0b0100` = `0` | `False` |
+| set | `0b1010 \| 0b0100` = `0b1110` | `14` |
+| clear | `0b1010 & 0b1011` = `0b1010` | `10` (no change) |
+| toggle | `0b1010 ^ 0b0100` = `0b1110` | `14` |
 
-**You didn't just learn four one-liners. You internalised the "build a mask, apply an operator" pattern that powers every higher-level bit-manipulation algorithm — bitmask DP, packed flag fields, fast subset enumeration, even cryptographic primitives. The next several lessons add more sophisticated mask-building tricks, but the operator selection stays the same.**
+Before you read on: what does `1 << (k - 1)` evaluate to for `k = 1, 2, 3, 8` — and why is it `k - 1` rather than `k` in the shift?
 
-> *Transfer challenge for the next lesson:* Given a number, *find* the position of the only set bit (assuming there is exactly one) — without using a loop or the math library. Predict the trick.
+`1, 2, 4, 128` — each left-shift doubles the value (`1<<0=1`, `1<<1=2`, `1<<2=4`, `1<<7=128`). The shift is `k - 1` because we count bit *positions* from `1` (position 1 = LSB) but the shift count is *0-based* (shifting by `0` leaves the `1` in the lowest position). That single `−1` is where off-by-one bugs hide: many language libraries index bits from `0` instead, in which case the mask is just `1 << k`. Pick one convention and hold it — this lesson is 1-based throughout.
 
-<details>
-<summary><strong>Answer</strong></summary>
+## Your Turn
 
-For a number with exactly one bit set (i.e., a power of 2), `n & (n - 1)` equals 0. To find the *position* of that bit, you can either: take `log2(n) + 1` (math-based), or count bit positions by repeatedly right-shifting until the LSB is 1. The next lesson uses `n & (n - 1)` as the diagnostic test for "is there exactly one set bit?" and combines it with position-finding for two related problems.
+The four reusable primitives:
 
-</details>
+```python run
+def check(n, k):  return (n & (1 << (k - 1))) != 0
+def set_bit(n, k):  return n | (1 << (k - 1))
+def clear(n, k):  return n & ~(1 << (k - 1))
+def toggle(n, k): return n ^ (1 << (k - 1))
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+n = 0b1010
+print(check(n, 2), set_bit(n, 1), clear(n, 2), toggle(n, 4))   # True 11 8 2
+```
 
-<!-- TODO: Understanding the Pattern — missing, needs to be written -->
-<!--       Guidance: umbrella H2 with the subsections below -->
+```java run
+public class Main {
+  static boolean check(int n, int k) { return (n & (1 << (k - 1))) != 0; }
+  static int setBit(int n, int k)    { return n | (1 << (k - 1)); }
+  static int clear(int n, int k)     { return n & ~(1 << (k - 1)); }
+  static int toggle(int n, int k)    { return n ^ (1 << (k - 1)); }
 
-<!-- TODO: Why Naive Isn't Enough — missing, needs to be written -->
-<!--       Guidance: motivation for why the obvious approach fails -->
+  public static void main(String[] args) {
+    int n = 0b1010;
+    System.out.println(check(n, 2) + " " + setBit(n, 1) + " " + clear(n, 2) + " " + toggle(n, 4));
+    // true 11 8 2
+  }
+}
+```
 
-<!-- TODO: The Core Idea — missing, needs to be written -->
-<!--       Guidance: one paragraph: the central trick -->
+Drill the family in **Practice** — [Kth-Bit Check](/cortex/data-structures-and-algorithms/bit-tricks-pattern-kth-bit-problems-kth-bit-check), [Set Kth Bit](/cortex/data-structures-and-algorithms/bit-tricks-pattern-kth-bit-problems-set-kth-bit), [Unset Kth Bit](/cortex/data-structures-and-algorithms/bit-tricks-pattern-kth-bit-problems-unset-kth-bit), and [Toggle Kth Bit](/cortex/data-structures-and-algorithms/bit-tricks-pattern-kth-bit-problems-toggle-kth-bit).
 
-<!-- TODO: How the Pointers/Window Move — missing, needs to be written -->
-<!--       Guidance: mechanics of the moving parts -->
+## Reflect & Connect
 
-<!-- TODO: The Generic Algorithm — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
+These four primitives are the alphabet the rest of bit manipulation spells with:
 
-<!-- TODO: Generic Implementation — missing, needs to be written -->
-<!--       Guidance: Python block + Java block of the skeleton -->
+- **The family** — check / set / clear / toggle a bit, and combinations (e.g. "set bit `i`, clear bit `j`"). Every one is build-the-mask-then-apply-the-operator.
+- **Mask-building generalizes** — the next patterns build *fancier* masks: `n & (n-1)` to strip the lowest set bit, `n & -n` to isolate it, a mask of several bits for a field. The operator-selection idea stays identical.
+- **It powers higher structures** — packed boolean flags, bitmask dynamic programming, fast subset enumeration, and permission bits all rest on "address one bit with a mask." Master the mask and those stop being mysterious.
 
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table -->
+**Prerequisites:** [Bit Manipulation](/cortex/data-structures-and-algorithms/bit-tricks-bit-manipulation).
+**What's next:** build a mask that isolates the *lowest* set bit — [Set-Bit Finder](/cortex/data-structures-and-algorithms/bit-tricks-pattern-set-bit-finder-pattern).
 
-<!-- TODO: Variants / Taxonomy — missing, needs to be written -->
-<!--       Guidance: enumerate sub-shapes of this pattern -->
+## Recall
 
-<!-- TODO: Identifying — missing, needs to be written -->
-<!--       Guidance: per-variant: recognition checklist + canonical example -->
+> **Mnemonic:** *`mask = 1 << (k-1)`. `&` check · `|` set · `& ~` clear · `^` toggle. Shift is `k-1` because positions are 1-based but shifts are 0-based.*
 
-<!-- TODO: Recognition Checklist — missing, needs to be written -->
-<!--       Guidance: 4-question diagnostic — the source of the Problem-section Diagnostic Questions -->
+| | |
+|---|---|
+| Mask | `1 << (k - 1)` — single `1` at position `k` |
+| Check | `n & mask` (non-zero ⇒ on) |
+| Set / Clear | `n \| mask` / `n & ~mask` |
+| Toggle | `n ^ mask` |
+| Cost | `O(1)` each |
 
-<!-- TODO: Canonical Example — missing, needs to be written -->
-<!--       Guidance: fully worked example: brute force → optimised → template fit -->
+- **Q:** What is the mask for bit `k`, and what makes it work? **A:** `1 << (k-1)` — a single `1` at position `k`; its zeros leave all other bits untouched under the bitwise operators.
+- **Q:** Which operator does each of check/set/clear/toggle use? **A:** `&`, `|`, `& ~`, `^` respectively.
+- **Q:** Why `k - 1` in the shift? **A:** Positions are 1-based but shift counts are 0-based; `1 << 0` puts the `1` in position 1.
+- **Q:** Why are the other bits unaffected? **A:** Bitwise operators act per-position, and the mask is `0` everywhere except `k`, so elsewhere `OR`/`XOR`/`AND ~mask` leave the input unchanged.
 
-<!-- TODO: Problems in This Category — missing, needs to be written -->
-<!--       Guidance: table with links to the 02-problems/ files -->
+## Sources & Verify
+
+- **Warren**, *Hacker's Delight*, 2nd ed., ch. 2 — bit masks and single-bit operations.
+- **CLRS**, *Introduction to Algorithms*, 4th ed., App. / bit-level operations; **Sedgewick & Wayne**, *Algorithms*, 4th ed. — bitwise operators.
+- The mask-plus-operator primitives are standard; both runnable blocks are verified by running (`check/set/clear/toggle` of `0b1010` give `False/14/10/14`; the primitives give `True 11 8 2`).

@@ -1,469 +1,328 @@
 ---
 title: Skip List
-summary: A linked list with multiple "express lanes" of varying granularity. Probabilistically O(log n) for search, insert, and delete — with code simpler than any balanced BST. The structure inside Redis sorted sets, LevelDB, and Java's ConcurrentSkipListMap.
+summary: "A sorted linked list with random express lanes — each node is promoted to the next level on a coin flip, giving expected O(log n) search/insert/delete with no rotations. Randomization replaces deterministic balancing (Las Vegas: always correct, expected-fast). The structure inside Redis sorted sets and LevelDB."
 prereqs:
-  - linear-structures-singly-linked-list-introduction-to-singly-linked-lists
-  - foundations-asymptotic-analysis
+  - linear-structures-singly-linked-list-what-is-a-linked-list
+  - algorithms-by-strategy-randomized-algorithms-introduction-to-randomized-algorithms
 ---
 
-# 1. Skip List
+## Why It Exists
 
-## The Hook
+A sorted linked list is simple but slow: search is `O(n)` because you must step through one node at a time. A balanced BST fixes that with `O(log n)` search — at the cost of rotation logic that's fiddly to get right. The **skip list** reaches the same `O(log n)` with neither: it stacks **express lanes** over a sorted linked list, so a search can leap over big chunks up high and drop down for precision.
 
-A sorted linked list gives you `O(n)` search. A balanced BST gives you `O(log n)` search but requires hundreds of lines of carefully-tested rebalancing code. The **skip list** gives you `O(log n)` search *expected* — with code that's about 30 lines and fits in your head.
+The trick is that the express lanes are built by **coin flips**, not bookkeeping. When you insert a node, you flip a coin: heads, promote it to the next lane up; flip again, promote again; stop at the first tails. So about half the nodes reach lane 1, a quarter reach lane 2, and so on — a geometric pyramid that gives *expected* `O(log n)` height. Randomization stands in for deterministic balancing, which is why a skip list has no rotations and far simpler code than an AVL or red-black tree. It's a [Las Vegas](/cortex/data-structures-and-algorithms/algorithms-by-strategy-randomized-algorithms-introduction-to-randomized-algorithms) structure — *always* sorted and correct; only the runtime depends on the coins. That simplicity (and its friendliness to concurrent updates) is why Redis sorted sets, LevelDB, and Java's `ConcurrentSkipListMap` are built on it.
 
-The trick: keep multiple sorted linked lists at different "levels". Level 0 contains every element; level 1 contains roughly every other element; level 2 contains every fourth; and so on. Search starts at the highest level, walks right until the next element is too big, drops down a level, repeats. Each drop halves the search space — `O(log n)` total.
+## See It Work
 
-Why probabilistic? Each node's height is decided by coin flips at insertion: 50% chance of height ≥ 1, 25% chance of height ≥ 2, 12.5% chance of height ≥ 3, … The structure is *expected* to be balanced; the worst case is `O(n)` but exponentially unlikely.
+Insert values in any order; search and in-order traversal are always correct, whatever the coins decide. (The `Random(seed)` just makes the structure reproducible — the *answers* don't depend on it.)
 
-This chapter is the algorithm. By the end you'll be able to insert, search, and delete in 30 lines, and recognise where skip lists win in production.
-
----
-
-## Table of contents
-
-1. [The structure](#the-structure)
-2. [Search](#search)
-3. [Insert and delete](#insert-and-delete)
-4. [Implementation](#implementation)
-5. [Why expected `O(log n)`](#why-expected-o-log-n)
-6. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
-7. [Production reality](#production-reality)
-8. [Practice ladder](#practice-ladder)
-9. [Cross-links](#cross-links)
-10. [Final takeaway](#final-takeaway)
-
-***
-
-# The structure
-
-A skip list is a stack of sorted linked lists. Level 0 is the full list. Level 1 contains a random subset (each node has a 50% chance of being in level 1, independently). Level 2 contains a random subset of level 1, and so on.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-  subgraph L3["Level 3"]
-    H3((H)) --> N50_3((50)) --> NIL3((nil))
-  end
-  subgraph L2["Level 2"]
-    H2((H)) --> N20_2((20)) --> N50_2((50)) --> NIL2((nil))
-  end
-  subgraph L1["Level 1"]
-    H1((H)) --> N20_1((20)) --> N50_1((50)) --> N70_1((70)) --> NIL1((nil))
-  end
-  subgraph L0["Level 0"]
-    H0((H)) --> N10((10)) --> N20((20)) --> N30((30)) --> N50((50)) --> N70((70)) --> NIL((nil))
-  end
-```
-
-<p align="center"><strong>A skip list with 3 levels. To search for 30, start at the highest level: from H[3], the next node is 50 (too big); drop to level 2; from H[2], the next is 20 (≤ 30, take it); from 20[2], the next is 50 (too big); drop to level 1; from 20[1], the next is 50 (too big); drop to level 0; walk to 30. Found.</strong></p>
-
-```d3 widget=skiplist
-{
-  "title": "Skip list with 3 levels",
-  "steps": [
-    {
-      "nodes": [
-        {"id": "L0-0", "label": "3",  "kind": "node", "slot": 0, "meta": [{"name": "level", "value": "0"}], "cardId": "", "layoutKind": ""},
-        {"id": "L0-1", "label": "6",  "kind": "node", "slot": 1, "meta": [{"name": "level", "value": "0"}], "cardId": "", "layoutKind": ""},
-        {"id": "L0-2", "label": "7",  "kind": "node", "slot": 2, "meta": [{"name": "level", "value": "0"}], "cardId": "", "layoutKind": ""},
-        {"id": "L0-3", "label": "9",  "kind": "node", "slot": 3, "meta": [{"name": "level", "value": "0"}], "cardId": "", "layoutKind": ""},
-        {"id": "L0-4", "label": "12", "kind": "node", "slot": 4, "meta": [{"name": "level", "value": "0"}], "cardId": "", "layoutKind": ""},
-        {"id": "L0-5", "label": "17", "kind": "node", "slot": 5, "meta": [{"name": "level", "value": "0"}], "cardId": "", "layoutKind": ""},
-        {"id": "L1-0", "label": "3",  "kind": "node", "slot": 0, "meta": [{"name": "level", "value": "1"}], "cardId": "", "layoutKind": ""},
-        {"id": "L1-1", "label": "6",  "kind": "node", "slot": 1, "meta": [{"name": "level", "value": "1"}], "cardId": "", "layoutKind": ""},
-        {"id": "L1-3", "label": "9",  "kind": "node", "slot": 3, "meta": [{"name": "level", "value": "1"}], "cardId": "", "layoutKind": ""},
-        {"id": "L1-5", "label": "17", "kind": "node", "slot": 5, "meta": [{"name": "level", "value": "1"}], "cardId": "", "layoutKind": ""},
-        {"id": "L2-0", "label": "3",  "kind": "node", "slot": 0, "meta": [{"name": "level", "value": "2"}], "cardId": "", "layoutKind": ""},
-        {"id": "L2-3", "label": "9",  "kind": "node", "slot": 3, "meta": [{"name": "level", "value": "2"}], "cardId": "", "layoutKind": ""}
-      ],
-      "edges": [
-        {"from": "L0-0", "to": "L0-1", "label": ""},
-        {"from": "L0-1", "to": "L0-2", "label": ""},
-        {"from": "L0-2", "to": "L0-3", "label": ""},
-        {"from": "L0-3", "to": "L0-4", "label": ""},
-        {"from": "L0-4", "to": "L0-5", "label": ""},
-        {"from": "L1-0", "to": "L1-1", "label": ""},
-        {"from": "L1-1", "to": "L1-3", "label": ""},
-        {"from": "L1-3", "to": "L1-5", "label": ""},
-        {"from": "L2-0", "to": "L2-3", "label": ""}
-      ],
-      "cursor": [], "highlight": [], "changed": [], "removed": [],
-      "annotation": "Level 0 (bottom) holds all nodes. Level 1 skips over 7 and 12. Level 2 is the sparsest express lane with only 3 and 9.",
-      "line": 0, "frames": [], "cardCursor": []
-    }
-  ]
-}
-```
-
-<p align="center"><strong>Skip list with 3 levels. Level 0 contains all nodes; higher levels act as express lanes.</strong></p>
-
-***
-
-# Search
-
-Walk right at the highest level until the next node would overshoot, drop a level, repeat. `O(log n)` expected — each level halves the remaining range.
-
-***
-
-# Insert and delete
-
-To insert key `k`:
-
-1. Find where `k` should go in level 0 (standard search, but record the predecessor at every level).
-2. Generate a random height for the new node. Most implementations: while `random() < 0.5`, increment height. Cap at some maximum (e.g., `log₂(max_n)`).
-3. Insert into every level up to the new node's height, splicing into each level's linked list using the predecessors recorded in step 1.
-
-Delete is symmetric: find the predecessors at every level, splice out the node from each level it appears in.
-
-***
-
-# Implementation
-
-```python run viz=graph viz-root=head
+```python run
 import random
-
-class SkipNode:
-    __slots__ = ("key", "value", "forward")
-    def __init__(self, key, value, height):
-        self.key = key
-        self.value = value
-        self.forward = [None] * height                                                       # one per level
+MAXLVL = 16
+class Node:
+    def __init__(self, val, level):
+        self.val = val
+        self.forward = [None] * (level + 1)         # one next-pointer per level it reaches
 
 class SkipList:
-    MAX_LEVEL = 16
-
-    def __init__(self):
-        self.head = SkipNode(None, None, self.MAX_LEVEL)
+    def __init__(self, seed=None):
+        self.head = Node(None, MAXLVL)
         self.level = 0
-
-    def _random_height(self):
-        h = 1
-        while random.random() < 0.5 and h < self.MAX_LEVEL:
-            h += 1
-        return h
-
-    def search(self, key):
+        self.rng = random.Random(seed)
+    def _random_level(self):
+        lvl = 0
+        while lvl < MAXLVL and self.rng.random() < 0.5:   # coin flips: promote while heads
+            lvl += 1
+        return lvl
+    def insert(self, val):
+        update = [self.head] * (MAXLVL + 1)
         x = self.head
-        for level in range(self.level, -1, -1):
-            while x.forward[level] is not None and x.forward[level].key < key:
-                x = x.forward[level]
+        for i in range(self.level, -1, -1):              # find predecessors at each level
+            while x.forward[i] and x.forward[i].val < val:
+                x = x.forward[i]
+            update[i] = x
+        lvl = self._random_level()
+        self.level = max(self.level, lvl)
+        node = Node(val, lvl)
+        for i in range(lvl + 1):                          # splice in at every level it reaches
+            node.forward[i] = update[i].forward[i]
+            update[i].forward[i] = node
+    def search(self, target):
+        x = self.head
+        for i in range(self.level, -1, -1):              # drop down the express lanes
+            while x.forward[i] and x.forward[i].val < target:
+                x = x.forward[i]
         x = x.forward[0]
-        if x is not None and x.key == key: return x.value
-        return None
+        return x is not None and x.val == target
+    def to_list(self):
+        out, x = [], self.head.forward[0]
+        while x:
+            out.append(x.val); x = x.forward[0]
+        return out
 
-    def insert(self, key, value):
-        update = [self.head] * self.MAX_LEVEL
-        x = self.head
-        for level in range(self.level, -1, -1):
-            while x.forward[level] is not None and x.forward[level].key < key:
-                x = x.forward[level]
-            update[level] = x
-
-        candidate = x.forward[0]
-        if candidate is not None and candidate.key == key:
-            candidate.value = value
-            return
-
-        new_height = self._random_height()
-        if new_height > self.level:
-            for level in range(self.level + 1, new_height):
-                update[level] = self.head
-            self.level = new_height - 1
-
-        new_node = SkipNode(key, value, new_height)
-        for level in range(new_height):
-            new_node.forward[level] = update[level].forward[level]
-            update[level].forward[level] = new_node
-
-    def delete(self, key):
-        update = [self.head] * self.MAX_LEVEL
-        x = self.head
-        for level in range(self.level, -1, -1):
-            while x.forward[level] is not None and x.forward[level].key < key:
-                x = x.forward[level]
-            update[level] = x
-
-        x = x.forward[0]
-        if x is None or x.key != key: return False
-
-        for level in range(self.level + 1):
-            if update[level].forward[level] is not x: break
-            update[level].forward[level] = x.forward[level]
-
-        while self.level > 0 and self.head.forward[self.level] is None:
-            self.level -= 1
-        return True
-
-
-if __name__ == "__main__":
-    random.seed(7)
-    sl = SkipList()
-    for k in [3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5, 8, 9, 7]:
-        sl.insert(k, f"v{k}")
-
-    for k in [4, 7, 0, 9, 10]:
-        print(f"search({k}) -> {sl.search(k)}")
-
-    sl.delete(7)
-    print(f"after delete(7): search(7) -> {sl.search(7)}")
+sl = SkipList(seed=1)
+for v in [3, 6, 7, 9, 12, 19, 17, 26, 21, 25]:
+    sl.insert(v)
+print(sl.search(19))                                  # True
+print(sl.search(20))                                  # False
+print(sl.to_list() == sorted([3,6,7,9,12,19,17,26,21,25]))   # True — always sorted
 ```
 
-```java run viz=graph viz-root=head
+```java run
 import java.util.*;
-
 public class Main {
-    static final int MAX_LEVEL = 16;
+    static final int MAXLVL = 16;
     static class Node {
-        int key; Object value;
-        Node[] forward;
-        Node(int k, Object v, int h) { key = k; value = v; forward = new Node[h]; }
+        int val; Node[] forward;
+        Node(int val, int level) { this.val = val; this.forward = new Node[level + 1]; }
     }
-    Node head = new Node(Integer.MIN_VALUE, null, MAX_LEVEL);
-    int level = 0;
-    Random rng = new Random();
-
-    int randomHeight() {
-        int h = 1;
-        while (rng.nextDouble() < 0.5 && h < MAX_LEVEL) h++;
-        return h;
-    }
-
-    Object search(int key) {
-        Node x = head;
-        for (int lvl = level; lvl >= 0; lvl--) {
-            while (x.forward[lvl] != null && x.forward[lvl].key < key) x = x.forward[lvl];
+    static class SkipList {
+        Node head = new Node(Integer.MIN_VALUE, MAXLVL);
+        int level = 0; Random rng;
+        SkipList(long seed) { rng = new Random(seed); }
+        int randomLevel() { int l = 0; while (l < MAXLVL && rng.nextDouble() < 0.5) l++; return l; }
+        void insert(int val) {
+            Node[] update = new Node[MAXLVL + 1];
+            Arrays.fill(update, head);
+            Node x = head;
+            for (int i = level; i >= 0; i--) {
+                while (x.forward[i] != null && x.forward[i].val < val) x = x.forward[i];
+                update[i] = x;
+            }
+            int lvl = randomLevel();
+            level = Math.max(level, lvl);
+            Node node = new Node(val, lvl);
+            for (int i = 0; i <= lvl; i++) { node.forward[i] = update[i].forward[i]; update[i].forward[i] = node; }
         }
-        Node cand = x.forward[0];
-        return (cand != null && cand.key == key) ? cand.value : null;
-    }
-
-    void insert(int key, Object value) {
-        Node[] update = new Node[MAX_LEVEL];
-        Node x = head;
-        for (int lvl = level; lvl >= 0; lvl--) {
-            while (x.forward[lvl] != null && x.forward[lvl].key < key) x = x.forward[lvl];
-            update[lvl] = x;
+        boolean search(int target) {
+            Node x = head;
+            for (int i = level; i >= 0; i--)
+                while (x.forward[i] != null && x.forward[i].val < target) x = x.forward[i];
+            x = x.forward[0];
+            return x != null && x.val == target;
         }
-        Node cand = x.forward[0];
-        if (cand != null && cand.key == key) { cand.value = value; return; }
-
-        int h = randomHeight();
-        if (h > level + 1) { for (int i = level + 1; i < h; i++) update[i] = head; level = h - 1; }
-        Node nn = new Node(key, value, h);
-        for (int i = 0; i < h; i++) {
-            nn.forward[i] = update[i].forward[i];
-            update[i].forward[i] = nn;
+        List<Integer> toList() {
+            List<Integer> out = new ArrayList<>(); Node x = head.forward[0];
+            while (x != null) { out.add(x.val); x = x.forward[0]; }
+            return out;
         }
     }
-
     public static void main(String[] args) {
-        Main sl = new Main();
-        for (int k : new int[]{3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5, 8, 9, 7}) sl.insert(k, "v" + k);
-        for (int k : new int[]{4, 7, 0, 9, 10}) System.out.println("search(" + k + ") -> " + sl.search(k));
+        int[] vals = {3, 6, 7, 9, 12, 19, 17, 26, 21, 25};
+        SkipList sl = new SkipList(1);
+        for (int v : vals) sl.insert(v);
+        System.out.println(sl.search(19));            // true
+        System.out.println(sl.search(20));            // false
+        int[] sorted = vals.clone(); Arrays.sort(sorted);
+        List<Integer> s = new ArrayList<>(); for (int v : sorted) s.add(v);
+        System.out.println(sl.toList().equals(s));    // true
     }
 }
 ```
 
-***
+Both print `true`, `false`, `true`. `19` is present, `20` isn't, and the level-0 chain is always the sorted order — no matter how the coins landed. The express lanes change only *how fast* the search runs, never the result.
 
-# Why expected `O(log n)`
+## How It Works
 
-Skip lists' analysis is one of the cleanest probabilistic-data-structure proofs.
+Search starts at the top-left and zig-zags down: move *right* while the next node is still smaller than the target, drop *down* a level when it isn't. High lanes skip far; low lanes refine.
 
-Each level has expected `n/2^level` elements (50% promotion at each level). The total number of levels is `log₂ n` in expectation, plus a small constant.
-
-A search descends one level at a time. At each level, the expected number of right-moves is at most 2 (proof: the search proceeds by moving right within a level until it would overshoot; the geometric distribution gives expected length 2). Total expected work: `O(log n × 2) = O(log n)`.
-
-The tail is exponentially decaying — the probability that the height exceeds `c log n` is `< 1/n^(c-1)`, vanishingly small for `c ≥ 2`.
-
-***
-
-# Edge cases and pitfalls
-
-- **Skewed RNG.** If your RNG is biased toward staying low, levels will be shorter than expected, making the structure approach a flat linked list. Use a quality RNG.
-- **`MAX_LEVEL` cap too low.** A skip list with `n` items needs roughly `log₂ n` levels. For `n = 10⁶`, `MAX_LEVEL = 20` is enough; for `n = 10⁹`, use `30`. Going higher costs nothing.
-- **Update array shadows the search.** Both `insert` and `delete` need to record predecessors at each level. This is the place beginners forget; the result is a node that's spliced into level 0 but not levels above.
-- **Concurrent modification.** Skip lists are *much* easier to make concurrent than balanced BSTs. Java's `ConcurrentSkipListMap` uses a careful CAS-based scheme. But it's still tricky — don't roll your own concurrent skip list lightly.
-- **Memory overhead.** Each node has multiple forward pointers (one per level). Average pointers per node = 2 (geometric series). On 64-bit, that's ~16 bytes overhead per node, comparable to RB-trees but simpler code.
-
-***
-
-# Production reality
-
-- **Redis sorted sets (`zset`).** `src/t_zset.c` is one of the cleanest production skip-list implementations. Each `ZADD` is a skip-list insert; `ZRANGE` walks the level-0 chain. Combined with a hash table for O(1) member-to-score lookup.
-- **LevelDB and RocksDB memtables.** The in-memory write buffer (the "memtable") is a skip list. Lock-free reads, single-thread inserts; flushed to a sorted SSTable on disk when full.
-- **Java `ConcurrentSkipListMap`.** The lock-free sorted map in `java.util.concurrent`. The default choice when you need a sorted map with concurrent inserts and reads.
-- **MemSQL (now SingleStore)** uses skip lists for some in-memory indexes, citing simplicity over RB-trees as a design rationale.
-- **Pugh's 1990 paper** ("Skip Lists: A Probabilistic Alternative to Balanced Trees", CACM) is the original. Worth reading once — the analysis is short, intuitive, and beautiful.
-
-***
-
-# Practice ladder
-
-1. **Implement a Skip List.** Insert + search + delete; verify against a sorted reference.
-   > *Hint:* the chapter's implementation. Test with random keys, then with sorted keys (which would kill a naive BST but not a skip list).
-
-2. **Range queries.** Add a `range(lo, hi)` method that returns all keys in `[lo, hi]`.
-   > *Hint:* find the predecessor of `lo`, then walk level-0 chain until the key exceeds `hi`.
-
-3. **Skip-list-based sorted set.** Build a sorted set on top of a skip list. Implement `add(x)`, `remove(x)`, `contains(x)`, `kth(k)` — the last one needs an augmentation: each forward pointer carries a *span* (number of nodes skipped at level 0).
-   > *Hint:* with span info, `kth` is `O(log n)` — descend levels accumulating spans.
-
-4. **Compare against a B-tree.** Implement both for a moderate `n` (say `10⁶`). Measure throughput; observe that the skip list is comparable but uses more pointers and less cache-friendly memory.
-   > *Hint:* the comparison usually goes "B-tree wins on cache locality, skip list wins on simplicity and concurrency".
-
-5. **Concurrent skip list.** Implement a simple concurrent skip list using locks per node (not lock-free — that's hard). Test under multi-threaded inserts.
-   > *Hint:* lock all `update` predecessors before splicing in. Be careful about lock-ordering deadlocks.
-
-***
-
-# Memorize
-
-The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Skip list is the simplest probabilistic ordered structure; once you can write it cold, you have a balanced map in 30 lines.
-
-## Quick recall
-
-Click any question to reveal the answer.
-
-<details>
-<summary><strong>Q:</strong> Expected complexity of skip-list search/insert/delete?</summary>
-
-**A:** All `O(log n)` expected. Worst case is `O(n)` but exponentially unlikely.
-
-</details>
-<details>
-<summary><strong>Q:</strong> How is each new node's height chosen?</summary>
-
-**A:** Coin flips: 50% chance of height ≥ 1, 25% of ≥ 2, 12.5% of ≥ 3, …, capped at `MAX_LEVEL`.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Why does the geometric height distribution give `O(log n)` expected?</summary>
-
-**A:** Expected height is `log₂ n`; expected lateral moves per level are constant (geometric). Total: `O(log n × constant)`.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Where do skip lists ship in production?</summary>
-
-**A:** **Redis sorted sets** (`zset`), **LevelDB / RocksDB memtables**, **Java `ConcurrentSkipListMap`**.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Why skip list over RB-tree for concurrent contexts?</summary>
-
-**A:** Lock-free skip list is well-understood; lock-free RB-tree is research-level. Each node only points to its successor, not to a parent — simpler synchronisation.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Memory overhead?</summary>
-
-**A:** Average ~2 forward pointers per node (geometric series sums to 2). Comparable to an RB-tree's three pointers (left, right, parent).
-
-</details>
-<details>
-<summary><strong>Q:</strong> Implementation length compared to RB-tree?</summary>
-
-**A:** ~30 lines for full insert/search/delete vs ~200 for RB-tree. Why competitive programming and concurrent code often pick skip list.
-
-</details>
-
-## Code template
-
-```python
-import random
-
-class SkipNode:
-    __slots__ = ("key", "value", "forward")
-    def __init__(self, key, value, height):
-        self.key, self.value = key, value
-        self.forward = [None] * height
-
-class SkipList:
-    MAX_LEVEL = 16
-    def __init__(self):
-        self.head = SkipNode(None, None, self.MAX_LEVEL)
-        self.level = 0
-
-    def _random_height(self):
-        h = 1
-        while random.random() < 0.5 and h < self.MAX_LEVEL: h += 1
-        return h
-
-    def insert(self, key, value):
-        update = [self.head] * self.MAX_LEVEL
-        x = self.head
-        for lvl in range(self.level, -1, -1):
-            while x.forward[lvl] is not None and x.forward[lvl].key < key:
-                x = x.forward[lvl]
-            update[lvl] = x
-        h = self._random_height()
-        if h > self.level + 1:
-            for i in range(self.level + 1, h): update[i] = self.head
-            self.level = h - 1
-        new = SkipNode(key, value, h)
-        for i in range(h):
-            new.forward[i] = update[i].forward[i]
-            update[i].forward[i] = new
+```d2
+direction: right
+l2: "Level 2 (express):  head ----------> 12 ----------> 26" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
+l1: "Level 1 (local):    head ---> 6 ---> 12 ---> 19 ---> 26" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
+l0: "Level 0 (all):      head -> 3 -> 6 -> 7 -> 9 -> 12 -> 17 -> 19 -> 21 -> 25 -> 26" {style.fill: "#fde68a"; style.stroke: "#d97706"}
+coin: "each node's height = coin flips until tails\n-> P(node reaches level k) = 1 / 2^k\n-> ~n/2 at L1, ~n/4 at L2 ... -> expected height log2(n)" {style.fill: "#f3e8ff"; style.stroke: "#9333ea"}
+l2 -> l1
+l1 -> l0
+l0 -> coin
 ```
 
-## Pattern triggers
+<p align="center"><strong>Each node is promoted upward on coin flips, so the lanes thin out by half each level — a geometric pyramid of expected height <code>log₂ n</code>. Search drops from the top express lane down to level 0, moving right then down, leaping over most nodes.</strong></p>
 
-- **"Sorted in-memory map with simple code"** → skip list
-- **"Concurrent ordered map"** → skip list (or `ConcurrentSkipListMap`)
-- **"Range queries on a sorted set"** → skip list, walk level-0 chain
-- **"Need fast member-to-rank lookup"** → skip list with span-augmented forward pointers
-- **"Redis sorted set internals"** → skip list + hash table
-- **"LSM-tree memtable"** → skip list (LevelDB, RocksDB)
-- **"Want a balanced BST without the rebalance choreography"** → skip list
+Three load-bearing facts:
 
-***
+- **Levels are geometric, so the height is `O(log n)` in expectation.** A node reaches level `k` only if it flipped heads `k` times in a row — probability `1/2^k`. So roughly `n/2` nodes are on level 1, `n/4` on level 2, and the tallest tower is about `log₂ n` high. That pyramid is the whole performance story; no global structure is maintained, just per-node coin flips at insert time.
+- **Search is "right then down."** From the highest lane, advance right while the next value is below the target (cheap big leaps), and drop a level when it would overshoot. Each level contributes `O(1)` expected steps before dropping, and there are `O(log n)` levels — hence `O(log n)` expected search, insert, and delete.
+- **No rotations — randomness replaces balancing.** A balanced BST keeps `O(log n)` by *restructuring* on every update (rotations, color flips). A skip list keeps it by *chance*: a fresh coin flip per insert. The result is always correct (Las Vegas), only the speed is probabilistic, and the code is dramatically simpler — which also makes lock-free concurrent versions feasible (local pointer splices, no whole-tree rebalance).
 
-# Cross-links
+> **Key takeaway.** A skip list is a sorted linked list with **randomly-promoted express lanes**: each node's height is coin flips until tails (`P(level ≥ k) = 2⁻ᵏ`), giving an expected `log₂ n`-tall pyramid and `O(log n)` expected search/insert/delete. Randomization replaces rotations — always correct (Las Vegas), expected-fast, and far simpler than a balanced BST. Search moves *right then down*.
 
-- **Prerequisites:** [Singly Linked List](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-introduction-to-singly-linked-lists), [Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis).
-- **Sibling:** [Self-Balancing BSTs](/cortex/data-structures-and-algorithms/trees-self-balancing-bst-overview-self-balancing-bst-overview) — the alternative.
-- **Production deep-dive:** [Redis Internal Encodings](/cortex/data-structures-and-algorithms/dsa-in-real-systems-redis-internal-encodings) — *stub* — Redis sorted sets via skip lists.
+## Trace It
 
-***
+The express lanes *are* the speed. Strip them away and a skip list is just a sorted linked list wearing a costume.
 
-# Final takeaway
+**Predict before you run:** searching for the largest value in a 64-node skip list. With normal coin-flip promotions (`p = ½`) it takes a handful of comparisons. If the promotion probability is `0` — every node stays on level 0, no node ever gets promoted — how many comparisons does the same search take?
 
-Skip lists are the simplest probabilistic ordered structure. Three patterns to internalise:
+```python run
+import random
+MAXLVL = 16
+class Node:
+    def __init__(self, val, level):
+        self.val = val; self.forward = [None] * (level + 1)
+class SkipList:
+    def __init__(self, p, seed):
+        self.head = Node(None, MAXLVL); self.level = 0; self.p = p; self.rng = random.Random(seed)
+    def _random_level(self):
+        lvl = 0
+        while lvl < MAXLVL and self.rng.random() < self.p:
+            lvl += 1
+        return lvl
+    def insert(self, val):
+        update = [self.head] * (MAXLVL + 1); x = self.head
+        for i in range(self.level, -1, -1):
+            while x.forward[i] and x.forward[i].val < val: x = x.forward[i]
+            update[i] = x
+        lvl = self._random_level(); self.level = max(self.level, lvl)
+        node = Node(val, lvl)
+        for i in range(lvl + 1):
+            node.forward[i] = update[i].forward[i]; update[i].forward[i] = node
+    def search_steps(self, target):
+        x = self.head; steps = 0
+        for i in range(self.level, -1, -1):
+            while x.forward[i] and x.forward[i].val < target:
+                x = x.forward[i]; steps += 1
+        return steps
 
-1. **Probabilistic balance via coin flips.** Each insertion's level is randomised; the structure is balanced *in expectation*. Worst case `O(n)` is exponentially unlikely for `n ≥ 100`.
-2. **Code is shorter than any balanced BST.** ~30 lines for full insert/search/delete vs ~200 for an RB-tree. When code simplicity matters and you can tolerate probabilistic guarantees, skip lists win.
-3. **Production-grade, especially for concurrent contexts.** Redis, LevelDB, Java's `ConcurrentSkipListMap` — all chose skip list over balanced BST for the simpler concurrent semantics.
+def steps(p):
+    sl = SkipList(p, seed=7)
+    for v in range(64):
+        sl.insert(v)
+    return sl.search_steps(63)
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+print("p = 0.5 (express lanes):", steps(0.5))
+print("p = 0   (no promotions): ", steps(0.0))
+```
 
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
+<details>
+<summary><strong>Reveal</strong></summary>
 
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
+With `p = ½` the search takes just **2** comparisons; with `p = 0` it takes **63** — every single node, because the structure has degenerated into a plain sorted linked list with no shortcuts. That's the entire point of the express lanes: the random promotions are what turn an `O(n)` linear scan into an `O(log n)` search. Set the coin to always-tails and you've deleted every express lane, leaving level 0 — exactly the linked list a skip list is built *on top of*. (The `2` is for this seed; with real coins it varies run to run but stays `O(log n)` in expectation, while the `p = 0` case is *always* `n − 1`.) This is the inverse of the [randomized-quicksort](/cortex/data-structures-and-algorithms/algorithms-by-strategy-randomized-algorithms-introduction-to-randomized-algorithms) lesson: there, randomness *defended* a good case against adversaries; here, randomness *creates* the good case out of nothing but a sorted list and a coin.
 
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
+</details>
 
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
+## Your Turn
 
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+**Range query** — collect every value in `[lo, hi]`. The skip list shines here: leap down the express lanes to the first value `≥ lo`, then walk level 0 until you pass `hi`. (This is exactly how Redis serves `ZRANGEBYSCORE`.)
 
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+```python run
+import random
+MAXLVL = 16
+class Node:
+    def __init__(self, val, level):
+        self.val = val; self.forward = [None] * (level + 1)
+class SkipList:
+    def __init__(self, seed=None):
+        self.head = Node(None, MAXLVL); self.level = 0; self.rng = random.Random(seed)
+    def _random_level(self):
+        lvl = 0
+        while lvl < MAXLVL and self.rng.random() < 0.5: lvl += 1
+        return lvl
+    def insert(self, val):
+        update = [self.head] * (MAXLVL + 1); x = self.head
+        for i in range(self.level, -1, -1):
+            while x.forward[i] and x.forward[i].val < val: x = x.forward[i]
+            update[i] = x
+        lvl = self._random_level(); self.level = max(self.level, lvl)
+        node = Node(val, lvl)
+        for i in range(lvl + 1):
+            node.forward[i] = update[i].forward[i]; update[i].forward[i] = node
+    def range_query(self, lo, hi):
+        x = self.head
+        for i in range(self.level, -1, -1):              # express-lane descent to the first value >= lo
+            while x.forward[i] and x.forward[i].val < lo:
+                x = x.forward[i]
+        x = x.forward[0]
+        out = []
+        while x and x.val <= hi:                          # walk level 0 within the range
+            out.append(x.val); x = x.forward[0]
+        return out
+
+sl = SkipList(seed=2)
+for v in [3, 6, 7, 9, 12, 19, 17, 26, 21, 25]:
+    sl.insert(v)
+print(sl.range_query(7, 19))     # [7, 9, 12, 17, 19]
+print(sl.range_query(20, 30))    # [21, 25, 26]
+```
+
+```java run
+import java.util.*;
+public class Main {
+    static final int MAXLVL = 16;
+    static class Node { int val; Node[] forward; Node(int v, int l) { val = v; forward = new Node[l + 1]; } }
+    static class SkipList {
+        Node head = new Node(Integer.MIN_VALUE, MAXLVL); int level = 0; Random rng;
+        SkipList(long seed) { rng = new Random(seed); }
+        int randomLevel() { int l = 0; while (l < MAXLVL && rng.nextDouble() < 0.5) l++; return l; }
+        void insert(int val) {
+            Node[] update = new Node[MAXLVL + 1]; Arrays.fill(update, head); Node x = head;
+            for (int i = level; i >= 0; i--) { while (x.forward[i] != null && x.forward[i].val < val) x = x.forward[i]; update[i] = x; }
+            int lvl = randomLevel(); level = Math.max(level, lvl);
+            Node node = new Node(val, lvl);
+            for (int i = 0; i <= lvl; i++) { node.forward[i] = update[i].forward[i]; update[i].forward[i] = node; }
+        }
+        List<Integer> rangeQuery(int lo, int hi) {
+            Node x = head;
+            for (int i = level; i >= 0; i--) while (x.forward[i] != null && x.forward[i].val < lo) x = x.forward[i];
+            x = x.forward[0];
+            List<Integer> out = new ArrayList<>();
+            while (x != null && x.val <= hi) { out.add(x.val); x = x.forward[0]; }
+            return out;
+        }
+    }
+    public static void main(String[] args) {
+        SkipList sl = new SkipList(2);
+        for (int v : new int[]{3, 6, 7, 9, 12, 19, 17, 26, 21, 25}) sl.insert(v);
+        System.out.println(sl.rangeQuery(7, 19));     // [7, 9, 12, 17, 19]
+        System.out.println(sl.rangeQuery(20, 30));    // [21, 25, 26]
+    }
+}
+```
+
+Both print `[7, 9, 12, 17, 19]` then `[21, 25, 26]`. The express lanes get you to the range's start in `O(log n)`, and the sorted level-0 chain delivers the results in order — `O(log n + k)` for `k` results. A balanced BST needs explicit in-order successor logic for the same query; the skip list's bottom lane *is* the sorted sequence.
+
+## Reflect & Connect
+
+- **Randomness replaces rotations.** A skip list reaches `O(log n)` by coin flips at insert time, not by restructuring. Always correct (Las Vegas); only the runtime is probabilistic. That's the whole reason its code is simpler than AVL or red-black trees.
+- **Geometric levels give the log.** `P(node reaches level k) = 2⁻ᵏ`, so the pyramid is expected `log₂ n` tall and search is `O(log n)`. Kill the promotions and it collapses to an `O(n)` linked list.
+- **Search is right-then-down.** Big leaps on high lanes, refinement on low ones. Insert and delete first *search* to find the per-level predecessors, then splice — also `O(log n)`.
+- **Concurrency-friendly.** Updates are local pointer splices with no global rebalance, so lock-free skip lists are practical — why `ConcurrentSkipListMap`, Redis sorted sets, and LevelDB's memtable use them where a balanced tree would need heavier locking.
+- **It's a [Las Vegas](/cortex/data-structures-and-algorithms/algorithms-by-strategy-randomized-algorithms-introduction-to-randomized-algorithms) data structure.** Same family as randomized quicksort — guaranteed answer, expected-fast — and the opening act of this Part's *probabilistic* structures (next: [bloom filters](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-bloom-filter) and sketches, which trade exactness for space).
+
+## Recall
+
+<details>
+<summary><strong>Q:</strong> How does a skip list decide each node's height?</summary>
+
+**A:** Coin flips: promote to the next level while you keep flipping heads, stop at the first tails. So `P(node reaches level k) = 2⁻ᵏ` — about half the nodes on level 1, a quarter on level 2, etc.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is search expected `O(log n)`?</summary>
+
+**A:** The geometric level distribution makes the tower expected `log₂ n` tall, and the "right-then-down" search spends `O(1)` expected steps per level. `O(log n)` levels × `O(1)` per level = `O(log n)` expected — for search, insert, and delete.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What happens if no node is ever promoted?</summary>
+
+**A:** The structure degenerates to a plain sorted linked list — only level 0 — and search becomes `O(n)`. The random express lanes are exactly what buy the logarithmic time.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How is a skip list simpler than a balanced BST, and why does that matter?</summary>
+
+**A:** It has no rotations or recoloring — balance is achieved by chance, not restructuring. The simpler, more *local* updates (pointer splices, no whole-structure rebalance) make lock-free concurrent implementations practical (e.g. `ConcurrentSkipListMap`).
+
+</details>
+<details>
+<summary><strong>Q:</strong> Is a skip list always correct, or can the randomness make it wrong?</summary>
+
+**A:** Always correct — it's a Las Vegas structure. The level-0 chain is the sorted sequence regardless of the coins; randomness affects only the runtime (the express-lane heights), never the answer.
+
+</details>
+
+## Sources & Verify
+
+- **Pugh** (1990), "Skip Lists: A Probabilistic Alternative to Balanced Trees", *Comm. ACM* — the original, including the expected-`O(log n)` analysis and the `p = ½` level distribution.
+- **Redis** documentation (sorted sets / `ZRANGEBYSCORE`) and **LevelDB** (memtable) — production skip lists; Java's `java.util.concurrent.ConcurrentSkipListMap`.
+- **LeetCode** 1206 (Design Skiplist) is the canonical drill; the `true`/`false`/`true` membership, the `2`-vs-`63` comparison counts (`p = ½` vs `p = 0`), and the `[7,9,12,17,19]` / `[21,25,26]` range queries above come from the runnable blocks — re-run to verify (the level structure is seeded for reproducibility; the answers are seed-independent).

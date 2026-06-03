@@ -68,7 +68,6 @@ What **breaks if you reach for value-swapping**? Copying `val` between adjacent 
 
 A pairwise swap is just `reverseKSegments` with `k` hard-coded to `2`. Every window has exactly two nodes; `end` is always `start.next`; no `getNodeAtPosition` walk needed.
 
-> 🖼 Diagram — Pairwise swap — every adjacent pair becomes a length-2 reversal.
 ```mermaid
 ---
 config:
@@ -133,7 +132,6 @@ What breaks if you skip the bidirectional check `start != null && start.next != 
 <summary><h2>The Pairwise Strategy (Visualised)</h2></summary>
 
 
-> 🖼 Diagram — The Pairwise Strategy — same template as reverseKSegments, with the window hard-pinned to 2.
 ```mermaid
 ---
 config:

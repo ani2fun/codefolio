@@ -80,7 +80,6 @@ The naive circular approach breaks the time budget badly. For each index you wou
 
 A circular array can be linearised by **iterating over `2n` indices**, mapping each index `i` to `i % n`. Each element gets two chances at finding its preceding greater — once on the "natural" pass and once with the wrap-around in play. Because every original element is processed twice, the time is still O(N).
 
-> 🖼 Diagram — Doubled-array trick — iterate 2n times with i % n indexing. The first pass establishes most answers; the second pass catches values whose "previous greater" is on the other side of the wrap. Result is O(N) with O(N) extra space.
 ```mermaid
 ---
 config:

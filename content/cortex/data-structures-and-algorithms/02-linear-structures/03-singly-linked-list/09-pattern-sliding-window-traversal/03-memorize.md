@@ -2,7 +2,7 @@
 title: "Memorize: Sliding Window Traversal"
 summary: "Pattern recognition triggers, template code, common mistakes, and quick recall."
 prereqs:
-  - 09-pattern-sliding-window-traversal/02-problems
+  - 09-pattern-sliding-window-traversal/01-pattern
 ---
 
 # Memorize: Sliding Window Traversal
@@ -30,8 +30,6 @@ Picture two cars on a single-lane straight road, the front car towing the back c
 ---
 
 ## Visual Summary
-
-> 🖼 Diagram — TODO: 3 frames — (1) initial state with `start = end = head` on a 6-node list; (2) post-priming state with `end` advanced `k − 1` hops ahead, `start` still at head, gap visible; (3) terminal state with `end` on the tail (`end.next == null`) and `start` parked `k − 1` hops behind, highlighted as the answer-bearing node.
 
 ---
 

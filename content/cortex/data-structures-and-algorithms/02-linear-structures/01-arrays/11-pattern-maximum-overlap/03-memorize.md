@@ -2,7 +2,7 @@
 title: "Memorize: Maximum Overlap"
 summary: "Pattern recognition triggers, template code, common mistakes, and quick recall."
 prereqs:
-  - 11-pattern-maximum-overlap/02-problems
+  - 11-pattern-maximum-overlap/01-pattern
 ---
 
 # Memorize: Maximum Overlap
@@ -28,8 +28,6 @@ A coat check at a busy theatre. Every time a guest hands over a coat (`+1`) and 
 ---
 
 ## Visual Summary
-
-> 🖼 Diagram — TODO: 3 frames showing (1) raw intervals on a timeline, (2) the same intervals split into tagged ± events along the axis, (3) the running counter overlaid above, with its peak annotated as `maxOverlap`.
 
 ---
 

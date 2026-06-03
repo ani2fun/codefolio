@@ -366,7 +366,7 @@ The output has `max(n, m)` digits if the final carry is zero, otherwise `max(n, 
 List addition is the merge variant where the selector emits a brand-new node per tick instead of splicing an input node, and the `O(1)` per-step state grows to include a running `carry`. The skeleton is unchanged — dummy head, main loop on both cursors, drain step on the longer input, then one final flourish for the tail carry.
 
 <details>
-<summary><h2>Final Takeaway</h2></summary>
+<summary><h2>Key Takeaway</h2></summary>
 
 
 Merge is the dual of split. Where split routed nodes from one list into `k` outputs by a classifier, merge routes nodes from `k` inputs into one output by a selector. The template:

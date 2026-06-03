@@ -244,7 +244,7 @@ Stacking the *inferior* flip on top of the *circular* doubled pass changes neith
 This problem stacks both prior twists: the *increasing* stack of the inferior variant runs over the `2n`-iteration doubled pass of the circular variant. Nothing new is invented — it is the composition of the operator flip and the modular index, still `O(N)` time and `O(N)` space.
 
 <details>
-<summary><h2>Final Takeaway</h2></summary>
+<summary><h2>Key Takeaway</h2></summary>
 
 
 Three lessons:

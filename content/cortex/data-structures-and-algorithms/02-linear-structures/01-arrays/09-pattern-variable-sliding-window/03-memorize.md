@@ -2,7 +2,7 @@
 title: "Memorize: Variable Sliding Window"
 summary: "Pattern recognition triggers, template code, common mistakes, and quick recall."
 prereqs:
-  - 09-pattern-variable-sliding-window/02-problems
+  - 09-pattern-variable-sliding-window/01-pattern
 ---
 
 # Memorize: Variable Sliding Window
@@ -28,8 +28,6 @@ Picture a thirsty hiker walking down a long road with a rubber-banded water flas
 ---
 
 ## Visual Summary
-
-> 🖼 Diagram — TODO: 3 frames — empty window at index 0 / mid-walk window arr[start..end] satisfying invariant / contraction step shrinking start after invariant break.
 
 ---
 

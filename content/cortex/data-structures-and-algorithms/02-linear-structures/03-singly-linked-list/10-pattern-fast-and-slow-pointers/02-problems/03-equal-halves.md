@@ -12,7 +12,6 @@ difficulty: medium
 
 Given the **head** of a singly linked list, write a function that returns `true` if the sum of the nodes of the first half of the linked list is equal to the sum of the nodes of the second half. Return `false` otherwise.
 
-> 🖼 Diagram — Odd length — the middle node (3) belongs to the first half. Sums must match across {1,2,3} and {4,5}.
 ```d2
 direction: right
 title: "Odd length [1, 2, 3, 4, 5] — middle (★ 3) belongs to the first half" {shape: text; near: top-center}
@@ -34,7 +33,6 @@ h1 -> h2
 
 <p align="center"><strong>Odd length — the middle node (3) belongs to the first half. Sums must match across <code>{1,2,3}</code> and <code>{4,5}</code>.</strong></p>
 
-> 🖼 Diagram — Even length — the two halves are equal in size. Sums must match across {1,2} and {3,4}.
 ```d2
 direction: right
 title: "Even length [1, 2, 3, 4] — halves are equal (2 + 2)" {shape: text; near: top-center}

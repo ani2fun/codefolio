@@ -103,7 +103,6 @@ The strict `<` is the domain knob. Touching meetings like `[1, 3]` and `[3, 5]` 
 
 Two meetings conflict iff one starts **strictly before** the other ends. After sorting by start, the only conflict that can possibly exist between meeting `i` and any earlier meeting is between `arr[i]` and `arr[i-1]` — because `arr[i-1]` has the largest end of any earlier meeting *we care about* (the one that could still be running when `arr[i]` begins).
 
-> 🖼 Diagram — After sorting by start, a conflict can only happen between consecutive intervals. We never need to compare further back.
 ```mermaid
 ---
 config:

@@ -1,604 +1,162 @@
 ---
 title: "Bubble Sort"
-summary: "<!-- TODO: summary -->"
+summary: "Repeatedly compare adjacent pairs and swap the out-of-order ones; each pass bubbles the largest unsorted element to its final place at the end. O(n²) and rarely used in practice, but the gentlest introduction to in-place, swap-based, stable sorting — and O(n) on already-sorted input with an early-exit check."
+prereqs:
+  - 02-linear-structures/01-arrays/01-what-is-an-array
 ---
 
-# 2. Bubble Sort
+# Bubble Sort
 
-You're a teacher with a queue of students lined up in some random order. You need them sorted by height — shortest at the front, tallest at the back. With no clipboard, no sorting helper, just yourself and a "swap these two" move, what's the simplest algorithm? **Walk down the line; whenever you find two adjacent students out of order, swap them. Repeat the walk until you make a full pass with zero swaps.** That's it. The tallest student bubbles up to the back on the first pass; the second-tallest bubbles up to the second-to-last on the next pass; and so on.
+## Why It Exists
 
-This is bubble sort. It's the simplest sorting algorithm to *describe*, the easiest to *implement*, and almost always the wrong one to *use* — its `O(n²)` time makes it impractical for any real-world dataset. But it's the perfect first sort to learn because every step is intuitive: compare-and-swap pairs, sink the largest values, watch the sorted region grow from the back.
+Sorting is the canonical "put things in order" task, and bubble sort is the simplest possible approach — the one you'd invent by hand. Walk the array comparing each element to its neighbour; whenever a pair is out of order, swap them. Do that across the whole array and the single largest element "bubbles" all the way to the end. Repeat, and the second-largest settles into the second-to-last slot, and so on.
 
-By the end of this lesson you'll know the algorithm, why the loop bounds are `i < n-1` and `j < n-i-1`, what makes bubble sort *adaptive*, and the complexity trade-offs that determine when (rarely) bubble sort is the right tool.
+It's not fast — `O(n²)` — and you won't reach for it in production. But it earns its place as the *first* sort because every idea it introduces recurs: comparing and swapping adjacent elements, sorting **in place** (no extra array), **stability** (equal elements keep their order), and **adaptivity** (detecting an already-sorted input and stopping early). Understand bubble sort and the faster sorts become variations on a theme.
 
-## Table of contents
+## See It Work
 
-1. [Understanding bubble sort](#understanding-bubble-sort)
-2. [Why the loop bounds are what they are](#why-the-loop-bounds-are-what-they-are)
-3. [Implementation](#implementation)
-4. [Complexity analysis](#complexity-analysis)
-5. [Bubble sort problem](#bubble-sort-problem)
+Sort `[5, 2, 8, 1, 9, 3]` by repeatedly swapping adjacent out-of-order pairs. Run it, then **Visualise** the largest values bubble rightward.
 
-***
+> ▶ Run it, then click **Visualise** — each pass walks left to right swapping neighbours; watch the biggest unsorted value reach the end every pass.
 
-# Understanding Bubble Sort
-
-Bubble sort works by repeatedly **comparing adjacent pairs** and swapping them if they're out of order. Each full pass through the array bubbles the largest unsorted element to its correct position at the end.
-
-The name comes from the visual analogy: **lighter elements rise to the top** like bubbles in water, while **heavier elements sink to the bottom**. In code terms: smaller values move toward the front, larger values toward the back.
-
-```d2
-direction: down
-
-before: "Before pass" {
-  grid-rows: 1
-  grid-columns: 5
-  grid-gap: 0
-  a0: "5"
-  a1: "1"
-  a2: "4"
-  a3: "2"
-  a4: "8" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-}
-
-after: "After pass — 8 sunk to last position" {
-  grid-rows: 1
-  grid-columns: 5
-  grid-gap: 0
-  a0: "1"
-  a1: "4"
-  a2: "2"
-  a3: "5"
-  a4: "8" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
-}
-
-before -> after: one pass of compare-and-swap
+```python run viz=array viz-root=arr
+arr = [5, 2, 8, 1, 9, 3]
+n = len(arr)
+for i in range(n - 1):                  # n-1 passes
+    swapped = False
+    for j in range(n - 1 - i):          # the last i elements are already in place
+        if arr[j] > arr[j + 1]:         # adjacent pair out of order?
+            arr[j], arr[j + 1] = arr[j + 1], arr[j]   # swap
+            swapped = True
+    if not swapped:                     # a clean pass ⇒ already sorted, stop early
+        break
+print(arr)                              # [1, 2, 3, 5, 8, 9]
 ```
 
-<p align="center"><strong>One pass of bubble sort. The largest element (8) "sinks" to the last position. After <code>n-1</code> passes, every element is in place.</strong></p>
+## How It Works
 
----
+Two nested loops:
 
-## The Queue-of-Students Walkthrough
+- **Inner loop** — scan adjacent pairs `(arr[j], arr[j+1])` and swap any that are out of order. By the end of one full inner pass, the largest unsorted element has bubbled to the rightmost unsorted slot.
+- **Outer loop** — repeat the inner pass. After `i` passes the last `i` elements are sorted and fixed, so the inner loop can stop `i` slots earlier: `j < n - 1 - i`.
+- **Early exit** — if an inner pass makes *no* swaps, everything is already in order; break.
 
-Imagine a queue of five students with heights `[5, 3, 8, 1, 4]` (in feet, for the analogy). The teacher wants them sorted shortest-front to tallest-back.
-
-**Pass 1:** walk left-to-right, comparing and swapping:
-- Compare `5` and `3` — swap → `[3, 5, 8, 1, 4]`
-- Compare `5` and `8` — in order → no swap
-- Compare `8` and `1` — swap → `[3, 5, 1, 8, 4]`
-- Compare `8` and `4` — swap → `[3, 5, 1, 4, 8]`
-
-After pass 1, the tallest student (`8`) is in the correct final position. The first 4 elements are still unsorted.
-
-**Pass 2:** walk again, but now we can stop one position earlier (the last element is already correct):
-- Compare `3` and `5` — in order
-- Compare `5` and `1` — swap → `[3, 1, 5, 4, 8]`
-- Compare `5` and `4` — swap → `[3, 1, 4, 5, 8]`
-
-After pass 2, the second-tallest (`5`) is in place.
-
-```d2
-direction: down
-
-p0: "Initial — [5, 3, 8, 1, 4]"
-p1: "After pass 1 — [3, 5, 1, 4, 8]\n(8 in place)"
-p2: "After pass 2 — [3, 1, 4, 5, 8]\n(5, 8 in place)"
-p3: "After pass 3 — [1, 3, 4, 5, 8]\n(4, 5, 8 in place)"
-p4: "After pass 4 — [1, 3, 4, 5, 8]\n(fully sorted)" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
-
-p0 -> p1: pass 1 (3 swaps)
-p1 -> p2: pass 2 (2 swaps)
-p2 -> p3: pass 3 (1 swap)
-p3 -> p4: pass 4 (0 swaps)
+```mermaid
+flowchart LR
+  A["pass over arr[0..n-1-i]"] --> B{"arr[j] > arr[j+1]?"}
+  B -->|"yes"| S["swap; mark swapped"]
+  B -->|"no"| K["keep"]
+  S --> A
+  K --> A
+  A -->|"pass done"| C{"any swaps?"}
+  C -->|"no"| D(["sorted — stop"])
+  C -->|"yes"| A
 ```
 
-<p align="center"><strong>The full sort of <code>[5, 3, 8, 1, 4]</code>. Each pass places one more element in its final position. After 4 passes, the array is fully sorted.</strong></p>
+<p align="center"><strong>each pass walks adjacent pairs left→right, swapping the larger one rightward, so the maximum of the unsorted region lands at its end; the sorted tail grows by one each pass.</strong></p>
 
-A useful optimisation: after pass 4, no swaps were needed — the algorithm could detect this and exit one pass early. We'll see this in the implementation below.
+The cost: each pass is `O(n)` and there are up to `n−1` passes → **`O(n²)` time** worst and average, `O(n)` best (already sorted, one clean pass with early-exit), **`O(1)` extra space**. It's **stable** — equal elements never swap past each other, so their original order is preserved — which matters when sorting records by one field while keeping another field's order.
 
----
+### Key Takeaway
 
-## Why It's Called "Bubble" Sort
+Bubble sort repeatedly swaps adjacent out-of-order pairs, bubbling each pass's largest element to the end. `O(n²)` time, `O(1)` space, stable, and `O(n)` on sorted input with an early-exit flag. It's the teaching sort — the faster ones improve on its quadratic cost.
 
-In water, lighter bubbles rise; heavier ones sink. In bubble sort, the *largest* element of any sub-window quickly sinks to the bottom of that window — so the array is built bottom-up from the back. (Some sources call it "sinking sort" for this reason; both names are accurate.)
+## Trace It
 
-> *Pause and predict — for an already-sorted array <code>[1, 2, 3, 4, 5]</code>, how many swaps does pass 1 perform? How does this enable an "early-exit" optimisation?*
+First pass over `[5, 2, 8, 1, 9, 3]`:
 
-Zero swaps. Every adjacent pair is already in order. If we track *whether any swap happened* in a pass, we can exit the algorithm as soon as a pass completes without swaps — the array is fully sorted, and any further passes would also produce zero swaps. This is the optimisation that makes bubble sort *adaptive* (classification axis 4 from the Introduction to Sorting lesson).
-
----
-
-## Strengths and Limitations
-
-| Strength | Detail |
-|---|---|
-| **Simplicity** | Two nested loops, one swap. The algorithm fits in five lines. |
-| **In-place** | Mutates the input directly; no auxiliary array. |
-| **Stable** | Swaps only happen on strict `>`, so equal elements keep their relative order. |
-| **Adaptive (with optimisation)** | Best case `O(n)` on already-sorted input. |
-
-| Limitation | Detail |
-|---|---|
-| **Quadratic time** | Worst and average case `O(n²)`. Doubling the input size *quadruples* the work. |
-| **Many writes** | `O(n²)` swaps in the worst case. Slow on systems where memory writes are expensive (SSDs, embedded). |
-
-In practice, bubble sort is used as a teaching example or for very small arrays (where `O(n²)` is genuinely fine). For everything else, insertion sort beats it on the same complexity class with smaller constants, and the `O(n log n)` sorts (Quicksort, Dutch National Flag Sort, Three-Way Quicksort, Merge Sort, Heapsort) beat both for any reasonably large input.
-
----
-
-## Key Takeaway
-
-Bubble sort: walk the array, swap adjacent pairs if out of order, repeat until no swaps are needed. Every full pass anchors one more element at the end. Simple to write; quadratic to run; rarely the right tool, but always the right starting point. Now we'll formalise the loop bounds.
-
-***
-
-# Why the Loop Bounds Are What They Are
-
-Bubble sort uses two nested loops. The bounds — `i < n - 1` for the outer loop and `j < n - i - 1` for the inner loop — look arbitrary at first. They're not. Both come from one observation: **after pass `i`, the last `i` elements are already in their final positions, so we don't need to compare them again.**
-
----
-
-## The Outer Loop — Why `i < n - 1`
-
-We need `n - 1` passes, not `n`. Reason: each pass places *one* element correctly. After `n - 1` passes, `n - 1` elements are correctly placed. The remaining one element — the smallest — is necessarily in its correct position (the front), since every other element has already been sorted around it.
-
-```d2
-direction: down
-
-note: "Why n-1 passes (not n)?\n\nAfter n-1 passes, n-1 elements are correctly placed.\nThe remaining one is forced into its correct position\n(it's the only spot left)."
-```
-
-<p align="center"><strong>The last element doesn't need its own pass. After <code>n-1</code> elements are correctly placed, the remaining one has nowhere else to go.</strong></p>
-
-If you ran `n` passes, the extra pass would do zero swaps but waste `O(n)` work. The early-exit optimisation later in the chapter handles this case more elegantly.
-
----
-
-## The Inner Loop — Why `j < n - i - 1`
-
-The inner loop walks from `j = 0` to `j = n - i - 2` (so the loop test is `j < n - i - 1`). Two reasons:
-
-**Reason 1: Already-sorted suffix.** After `i` outer-loop iterations, the last `i` elements are in their final positions. Comparisons in that range are wasted work — they'll never swap. So we stop at `n - i - 1`.
-
-**Reason 2: Out-of-bounds protection.** The inner loop accesses `arr[j]` and `arr[j + 1]`. The latter must stay within bounds, so `j + 1 ≤ n - 1`, i.e., `j ≤ n - 2`. Combined with reason 1, the upper bound becomes `j ≤ n - i - 2`, or equivalently `j < n - i - 1`.
-
-```d2
-direction: down
-
-before: "After 2 outer iterations (i=2)" {
-  grid-rows: 1
-  grid-columns: 6
-  grid-gap: 0
-  a0: "?" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
-  a1: "?" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
-  a2: "?" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
-  a3: "?" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
-  a4: "second-largest" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
-  a5: "largest" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
-}
-
-label: "Unsorted (blue) — process up to index n-i-2 = 6-2-2 = 2 in inner loop\nSorted (green) — last 2 elements already correct, skip"
-```
-
-<p align="center"><strong>The inner loop's upper bound shrinks by 1 each outer iteration. After <code>i</code> passes, the last <code>i</code> elements are sorted, so we only loop over the unsorted prefix.</strong></p>
-
----
-
-## A Worked Example — `n = 5`, Tracking Both Loop Bounds
-
-| Outer `i` | Inner `j` range | Comparisons performed |
+| compare | action | array |
 |---|---|---|
-| 0 | 0 to 3 (n-0-1=4 stops) | 4 (covers all adjacent pairs) |
-| 1 | 0 to 2 | 3 |
-| 2 | 0 to 1 | 2 |
-| 3 | 0 to 0 | 1 |
+| `5,2` | swap | `[2,5,8,1,9,3]` |
+| `5,8` | keep | `[2,5,8,1,9,3]` |
+| `8,1` | swap | `[2,5,1,8,9,3]` |
+| `8,9` | keep | `[2,5,1,8,9,3]` |
+| `9,3` | swap | `[2,5,1,8,3,9]` |
 
-Total: `4 + 3 + 2 + 1 = 10` comparisons for `n = 5`. In general, `(n-1) + (n-2) + ... + 1 = n(n-1)/2 = O(n²)` — confirming the worst-case time complexity we'll formalise in the next section.
+After one pass, `9` (the max) is at the end.
 
----
+Before you read on: after each pass the inner loop runs one step *shorter* (`j < n - 1 - i`). Why is it safe — and worthwhile — to skip the tail that earlier passes already touched?
 
-## Key Takeaway
+Because each pass guarantees the largest element of the still-unsorted region reaches its final slot at the end of that region. After pass 0, the last element is the global max and is permanently correct; after pass 1, the last *two* are; and so on. So re-scanning that growing sorted tail would only re-compare elements already in place — wasted work that can never swap. Shrinking the inner bound by `i` each pass turns `n` full scans into the triangular sum `n + (n−1) + … + 1 ≈ n²/2` comparisons. It doesn't change the `O(n²)` class, but it halves the constant — and recognizing "this region is already done, don't revisit it" is the same instinct that makes the faster sorts faster.
 
-Both loop bounds — `i < n - 1` and `j < n - i - 1` — come from "the last `i` elements are already sorted." This is a *standard pattern* for sorting algorithms that build up a sorted suffix; we'll see the same pattern in selection sort (the Selection Sort lesson). Now we'll write the implementation.
+## Your Turn
 
-***
+The reusable adaptive bubble sort:
 
-# Implementation
+```python run
+def bubble_sort(arr):
+    n = len(arr)
+    for i in range(n - 1):
+        swapped = False
+        for j in range(n - 1 - i):
+            if arr[j] > arr[j + 1]:
+                arr[j], arr[j + 1] = arr[j + 1], arr[j]
+                swapped = True
+        if not swapped:
+            break
+    return arr
 
-Two versions: the basic implementation (always runs `n - 1` passes) and the optimised version with an early-exit flag.
-
----
-
-## Basic Implementation
-
-
-```python run viz=array viz-root=arr
-from typing import List
-
-class Solution:
-    def bubble_sort(self, arr: List[int]) -> None:
-        n: int = len(arr)
-
-        # Iterate through each element in the array
-        for i in range(n - 1):
-
-            # Compare adjacent elements and swap them if they are in the
-            # wrong order
-            for j in range(n - i - 1):
-                if arr[j] > arr[j + 1]:
-
-                    # Swap arr[j] and arr[j + 1]
-                    arr[j], arr[j + 1] = arr[j + 1], arr[j]
-
-
-if __name__ == "__main__":
-    arr = [5, 3, 8, 1, 4]
-    Solution().bubble_sort(arr)
-    print(arr)   # [1, 3, 4, 5, 8]
+print(bubble_sort([5, 2, 8, 1, 9, 3]))   # [1, 2, 3, 5, 8, 9]
+print(bubble_sort([1, 2, 3, 4]))          # [1, 2, 3, 4] (one pass, early exit)
 ```
 
-```java run viz=array viz-root=arr
-public class Main {
-    static class Solution {
-        public void bubbleSort(int[] arr) {
-            int n = arr.length;
-
-            // Iterate through each element in the array
-            for (int i = 0; i < n - 1; i++) {
-
-                // Compare adjacent elements and swap them if they are in the
-                // wrong order
-                for (int j = 0; j < n - i - 1; j++) {
-                    if (arr[j] > arr[j + 1]) {
-
-                        // Swap arr[j] and arr[j + 1]
-                        int temp = arr[j];
-                        arr[j] = arr[j + 1];
-                        arr[j + 1] = temp;
-                    }
-                }
-            }
-        }
-    }
-
-    public static void main(String[] args) {
-        int[] arr = {5, 3, 8, 1, 4};
-        new Solution().bubbleSort(arr);
-        for (int x : arr) System.out.print(x + " ");
-        System.out.println();
-    }
-}
-```
-
-
-<details>
-<summary><strong>Trace — arr = [5, 3, 8, 1, 4]</strong></summary>
-
-```
-Pass i=0  (j: 0..3, 4 comparisons)
-  j=0: 5 > 3 → swap → [3, 5, 8, 1, 4]
-  j=1: 5 > 8 → no
-  j=2: 8 > 1 → swap → [3, 5, 1, 8, 4]
-  j=3: 8 > 4 → swap → [3, 5, 1, 4, 8]
-
-Pass i=1  (j: 0..2, 3 comparisons)
-  j=0: 3 > 5 → no
-  j=1: 5 > 1 → swap → [3, 1, 5, 4, 8]
-  j=2: 5 > 4 → swap → [3, 1, 4, 5, 8]
-
-Pass i=2  (j: 0..1, 2 comparisons)
-  j=0: 3 > 1 → swap → [1, 3, 4, 5, 8]
-  j=1: 3 > 4 → no
-
-Pass i=3  (j: 0..0, 1 comparison)
-  j=0: 1 > 3 → no
-
-Result: [1, 3, 4, 5, 8] ✓
-```
-
-Notice: pass `i=3` did zero swaps. The early-exit optimisation below would catch this at the end of pass `i=2` and exit one pass earlier.
-
-</details>
-
----
-
-## Optimised Implementation (Adaptive)
-
-The optimisation: track whether *any swap* happened in a pass. If a full pass completes with zero swaps, the array is sorted — exit immediately.
-
-This makes bubble sort *adaptive* (the Introduction to Sorting lesson, classification axis 4). On already-sorted input, the algorithm completes in one `O(n)` pass instead of `O(n²)` total work.
-
-```python run viz=array viz-root=arr
-class Solution:
-    def bubble_sort(self, arr):
-        n = len(arr)
-        for i in range(n - 1):
-            swapped = False
-            for j in range(n - i - 1):
-                if arr[j] > arr[j + 1]:
-                    arr[j], arr[j + 1] = arr[j + 1], arr[j]
-                    swapped = True
-            if not swapped:                    # no swaps → sorted, exit early
-                break
-
-
-if __name__ == "__main__":
-    sorted_arr = [1, 2, 3, 4, 5]
-    Solution().bubble_sort(sorted_arr)         # exits after 1 pass — O(n)
-    print(sorted_arr)
-```
-
-The same `swapped` flag pattern translates one-to-one to both languages above; we omit the repetition.
-
-***
-
-# Complexity Analysis
-
-| Resource | Best | Average | Worst |
-|---|---|---|---|
-| **Time (basic)** | `O(n²)` | `O(n²)` | `O(n²)` |
-| **Time (optimised)** | `O(n)` | `O(n²)` | `O(n²)` |
-| **Space** | `O(1)` | `O(1)` | `O(1)` |
-| **Stability** | ✓ | ✓ | ✓ |
-
-The basic version always runs `n(n-1)/2 ≈ n²/2` comparisons regardless of input. The optimised version exits on the first pass with zero swaps, giving `O(n)` on already-sorted input.
-
----
-
-## When Each Case Hits
-
-**Best case (optimised, `O(n)`)** — Input is already sorted. The first pass finds zero swaps and exits.
-
-**Worst case (`O(n²)`)** — Input is sorted in *reverse* order. Every comparison triggers a swap; every element bubbles all the way to the end. `n(n-1)/2` swaps total.
-
-**Average case (`O(n²)`)** — Random input. Approximately half the comparisons trigger swaps; total work is still quadratic.
-
----
-
-## Why Bubble Sort Is Slow
-
-The fundamental problem: each swap moves an element *one position* at a time. To move the smallest element from the end of the array to the front, you'd need `n - 1` swaps. Compare with insertion sort (the Insertion Sort lesson) which can move an element `k` positions with `k+1` comparisons but only `1` swap (using shifts). Or merge sort (the Merge Sort lesson) which moves elements logarithmically further per pass.
-
-```d2
-direction: right
-
-bubble: "Bubble sort\n→ swap-only, 1 step per swap\n→ O(n²) for arbitrary input" {style.fill: "#fecaca"; style.stroke: "#dc2626"}
-insertion: "Insertion sort\n→ shift-based, k steps per insert\n→ better constants, same O(n²)" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-merge: "Merge sort / Quicksort\n→ divide-and-conquer\n→ O(n log n)" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
-```
-
-<p align="center"><strong>Bubble sort's swap-only nature is the bottleneck. Better algorithms move elements faster per operation.</strong></p>
-
----
-
-## Key Takeaway
-
-Bubble sort's `O(n²)` time is determined by *how slowly each element moves* — one position per swap. The optimised variant becomes `O(n)` only when the input is already sorted. Now we'll apply the algorithm to a problem.
-
-***
-
-# Bubble Sort Problem
-
-The canonical exercise: implement bubble sort to sort an array.
-
----
-
-## The Problem
-
-Given an integer array `arr`, sort it in non-decreasing order **in place** using bubble sort.
-
-```
-Input:  arr = [2, 3, 2, 1, 5, 6]
-Output: [1, 2, 2, 3, 5, 6]
-
-Input:  arr = [6, 5, 4, 4, 4, 3, 2, 1]
-Output: [1, 2, 3, 4, 4, 4, 5, 6]
-
-Input:  arr = [1, 2, 3, 4, 5, 6]
-Output: [1, 2, 3, 4, 5, 6]   (already sorted)
-```
-
----
-
-<details>
-<summary><h2>Solution &amp; Analysis</h2></summary>
-
-### The Solution
-
-The canonical bubble sort: two nested loops, swap adjacent pairs on a strict `>`. Run against a spread of inputs — duplicates, reverse-sorted, already-sorted, empty, single-element — to confirm it sorts every case in place.
-
-
-```python run viz=array viz-root=arr
-from typing import List
-
-class Solution:
-    def bubble_sort(self, arr: List[int]) -> None:
-        n: int = len(arr)
-
-        # Iterate through each element in the array
-        for i in range(n - 1):
-
-            # Compare adjacent elements and swap them if they are in the
-            # wrong order
-            for j in range(n - i - 1):
-                if arr[j] > arr[j + 1]:
-
-                    # Swap arr[j] and arr[j + 1]
-                    arr[j], arr[j + 1] = arr[j + 1], arr[j]
-
-
-a1 = [2, 3, 2, 1, 5, 6]
-Solution().bubble_sort(a1); print(a1)              # [1, 2, 2, 3, 5, 6]
-
-a2 = [6, 5, 4, 4, 4, 3, 2, 1]
-Solution().bubble_sort(a2); print(a2)              # [1, 2, 3, 4, 4, 4, 5, 6]
-
-a3 = [1, 2, 3, 4, 5, 6]
-Solution().bubble_sort(a3); print(a3)              # [1, 2, 3, 4, 5, 6]
-
-a4: List[int] = []
-Solution().bubble_sort(a4); print(a4)              # []
-
-a5 = [42]
-Solution().bubble_sort(a5); print(a5)              # [42]
-
-a6 = [2, 1]
-Solution().bubble_sort(a6); print(a6)              # [1, 2]
-
-a7 = [3, 3, 3]
-Solution().bubble_sort(a7); print(a7)              # [3, 3, 3]
-
-a8 = [5, 2, 8, 1, 9]
-Solution().bubble_sort(a8); print(a8)              # [1, 2, 5, 8, 9]
-```
-
-```java run viz=array viz-root=arr
-import java.util.Arrays;
+```java run
+import java.util.*;
 
 public class Main {
-    static class Solution {
-        public void bubbleSort(int[] arr) {
-            int n = arr.length;
-
-            // Iterate through each element in the array
-            for (int i = 0; i < n - 1; i++) {
-
-                // Compare adjacent elements and swap them if they are in the
-                // wrong order
-                for (int j = 0; j < n - i - 1; j++) {
-                    if (arr[j] > arr[j + 1]) {
-
-                        // Swap arr[j] and arr[j + 1]
-                        int temp = arr[j];
-                        arr[j] = arr[j + 1];
-                        arr[j + 1] = temp;
-                    }
-                }
-            }
+  static int[] bubbleSort(int[] arr) {
+    int n = arr.length;
+    for (int i = 0; i < n - 1; i++) {
+      boolean swapped = false;
+      for (int j = 0; j < n - 1 - i; j++) {
+        if (arr[j] > arr[j + 1]) {
+          int t = arr[j]; arr[j] = arr[j + 1]; arr[j + 1] = t;
+          swapped = true;
         }
+      }
+      if (!swapped) break;
     }
+    return arr;
+  }
 
-    public static void main(String[] args) {
-        int[] a1 = {2, 3, 2, 1, 5, 6};
-        new Solution().bubbleSort(a1);
-        System.out.println(Arrays.toString(a1));   // [1, 2, 2, 3, 5, 6]
-
-        int[] a2 = {6, 5, 4, 4, 4, 3, 2, 1};
-        new Solution().bubbleSort(a2);
-        System.out.println(Arrays.toString(a2));   // [1, 2, 3, 4, 4, 4, 5, 6]
-
-        int[] a3 = {1, 2, 3, 4, 5, 6};
-        new Solution().bubbleSort(a3);
-        System.out.println(Arrays.toString(a3));   // [1, 2, 3, 4, 5, 6]
-
-        int[] a4 = {};
-        new Solution().bubbleSort(a4);
-        System.out.println(Arrays.toString(a4));   // []
-
-        int[] a5 = {42};
-        new Solution().bubbleSort(a5);
-        System.out.println(Arrays.toString(a5));   // [42]
-
-        int[] a6 = {2, 1};
-        new Solution().bubbleSort(a6);
-        System.out.println(Arrays.toString(a6));   // [1, 2]
-
-        int[] a7 = {3, 3, 3};
-        new Solution().bubbleSort(a7);
-        System.out.println(Arrays.toString(a7));   // [3, 3, 3]
-
-        int[] a8 = {5, 2, 8, 1, 9};
-        new Solution().bubbleSort(a8);
-        System.out.println(Arrays.toString(a8));   // [1, 2, 5, 8, 9]
-    }
+  public static void main(String[] args) {
+    System.out.println(Arrays.toString(bubbleSort(new int[]{5, 2, 8, 1, 9, 3})));   // [1, 2, 3, 5, 8, 9]
+  }
 }
 ```
 
-### Edge Cases
+This is a structural lesson — the quickselect / custom-compare pattern sets are where you'll drill sorting in problems.
 
-| Case | Example | Expected |
-|---|---|---|
-| Empty | `[]` | `[]` (loops don't execute). |
-| Single element | `[7]` | `[7]`. |
-| Already sorted | `[1, 2, 3]` | `[1, 2, 3]` (one pass with optimisation). |
-| Reverse sorted | `[5, 4, 3, 2, 1]` | `[1, 2, 3, 4, 5]` (worst case, full quadratic work). |
-| All equal | `[3, 3, 3]` | `[3, 3, 3]` (no swaps; one pass with optimisation). |
-| Two elements | `[2, 1]` | `[1, 2]`. |
+## Reflect & Connect
 
-</details>
-<details>
-<summary><h2>Final Takeaway</h2></summary>
+Bubble sort is a teaching tool, but the properties it introduces are the vocabulary for *every* sort:
 
+- **Stable, in-place, adaptive** — bubble sort is all three. You'll classify every later sort by these axes: merge sort is stable but not in-place; heapsort is in-place but not stable; quicksort is in-place but not stable and not adaptive. Knowing which guarantees a sort gives is how you pick one.
+- **Why it's slow** — it moves elements only *one position per swap*, so an element far from its home needs many swaps. Insertion and selection sort share the `O(n²)` ceiling for the same reason; the `O(n log n)` sorts (merge, quick, heap) move elements *across* the array in bigger jumps.
+- **The early-exit is the one practical idea** — on nearly-sorted data, adaptive bubble sort is `O(n)`. That "detect sorted-ness and stop" instinct carries into adaptive variants of better sorts (e.g. Timsort exploits existing runs).
 
-Bubble sort is the simplest sort and the slowest. It's the algorithm you write to verify you understand the *idea* of sorting; you don't ship it. Stable, in-place, adaptive (with the swap flag), but `O(n²)` makes it impractical past a few thousand elements.
+**Prerequisites:** [What Is an Array?](/cortex/data-structures-and-algorithms/linear-structures-arrays-what-is-an-array).
+**What's next:** select the minimum each pass instead of bubbling the max — [Selection Sort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-selection-sort).
 
-The next algorithm — selection sort — fixes one specific weakness of bubble sort (excessive swaps) by performing exactly `n - 1` swaps total instead of up to `n²`. Same time complexity, very different memory-write profile.
+## Recall
 
-**Transfer challenge — try before the Selection Sort lesson:** Modify bubble sort to sort in *descending* order. (Hint: only one character of the algorithm changes.) Then think: is the descending sort still stable?
+> **Mnemonic:** *Swap adjacent out-of-order pairs; each pass bubbles the max to the end. Shrink the inner bound by `i`. No swaps ⇒ sorted, stop. `O(n²)`, stable, in-place.*
 
-</details>
-<details>
-<summary><strong>Answer — open after you've written it</strong></summary>
+| | |
+|---|---|
+| Mechanism | swap adjacent pairs; largest bubbles to the end each pass |
+| Inner bound | `j < n - 1 - i` (skip the sorted tail) |
+| Early exit | a pass with no swaps ⇒ array sorted |
+| Cost | `O(n²)` avg/worst, `O(n)` best (adaptive), `O(1)` space |
+| Properties | stable, in-place, adaptive |
 
-```python run viz=array viz-root=arr
-class Solution:
-    def bubble_sort_desc(self, arr):
-        n = len(arr)
-        for i in range(n - 1):
-            swapped = False
-            for j in range(n - i - 1):
-                if arr[j] < arr[j + 1]:                # only change: < instead of >
-                    arr[j], arr[j + 1] = arr[j + 1], arr[j]
-                    swapped = True
-            if not swapped:
-                break
+- **Q:** What does one full pass of bubble sort guarantee? **A:** The largest element of the unsorted region reaches its final position at that region's end.
+- **Q:** Why does the inner loop shrink by `i` each pass? **A:** After `i` passes the last `i` elements are already sorted, so re-scanning them is wasted work.
+- **Q:** What makes bubble sort `O(n)` on already-sorted input? **A:** The early-exit flag — a pass with no swaps proves the array is sorted, so it stops after one pass.
+- **Q:** Which three properties does bubble sort have? **A:** Stable, in-place, and adaptive.
 
+## Sources & Verify
 
-arr = [2, 3, 2, 1, 5, 6]
-Solution().bubble_sort_desc(arr)
-print(arr)   # [6, 5, 3, 2, 2, 1]
-```
-
-The change is the comparison: `>` becomes `<`. The algorithm is still stable (we still only swap on strict inequality), so duplicates keep their original relative order even in descending sort.
-
-**Generalising:** the same one-character change — `<` vs `>` — flips the sort order of *any* comparison-based algorithm. We'll abstract this into a "custom compare function" pattern in the Custom Compare lesson. **You just discovered the foundation of how `sorted(arr, reverse=True)` works internally.**
-
-</details>
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: The Hook — missing, needs to be written -->
-<!--       Guidance: real-world story opening before any definition -->
-
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
-
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
-
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
-
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
-
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
-
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
-
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
-
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
-
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
-
-<!-- TODO: Final Takeaway — missing, needs to be written -->
-<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->
+- **CLRS**, *Introduction to Algorithms*, 4th ed. — bubble sort (problem 2-2) and the stability/in-place definitions.
+- **Sedgewick & Wayne**, *Algorithms*, 4th ed., §2.1 — elementary sorts and their properties.
+- Bubble sort's `O(n²)`/`O(n)`-adaptive bounds and stability are standard; both runnable blocks are verified by running (`[5,2,8,1,9,3] ⇒ [1,2,3,5,8,9]`; sorted input exits in one pass).

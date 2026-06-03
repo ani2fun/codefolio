@@ -30,7 +30,6 @@ Example 2
 
 Imagine numbering the nodes from 1 at the head. The **odd-indexed** nodes (positions 1, 3, 5, …) form one stripe; the **even-indexed** nodes (2, 4, 6, …) form the other. Parity order means: stripe-1 first, then stripe-2, in their original relative order.
 
-> 🖼 Diagram — Parity order — split by index parity, concatenate odd stripe before even stripe. The reorder skeleton with f1 = counter is odd and f2 = simple concat.
 ```mermaid
 ---
 config:

@@ -1,366 +1,261 @@
 ---
 title: Bloom Filter
-summary: A probabilistic set that gives "definitely not" or "probably yes" answers using a fraction of the memory a hash set needs. False positives only — never false negatives. The first line of defence in many databases.
+summary: "A probabilistic set in a fraction of a hash set's memory — a bit array plus k hashes. Its answers are one-sided: definitely-absent is certain, probably-present can be a false positive, and false negatives never happen. The Monte Carlo first line of defence in databases and caches."
 prereqs:
-  - linear-structures-hash-table-introduction-to-hash-tables
+  - linear-structures-hash-table-what-is-a-hash-table
+  - algorithms-by-strategy-randomized-algorithms-introduction-to-randomized-algorithms
 ---
 
-# 2. Bloom Filter
+## Why It Exists
 
-## The Hook
+You want to answer "have I seen this item before?" over a billion items — recently-logged queries, crawled URLs, keys that might live on disk. A [hash set](/cortex/data-structures-and-algorithms/linear-structures-hash-table-what-is-a-hash-table) does it exactly, but storing a billion strings costs tens of gigabytes. Often you don't need exactness; you need *cheap* — and you can tolerate occasionally being told "yes" when the answer is "no," as long as you're never told "no" when the answer is "yes."
 
-You're a search engine. A user just typed a query. Before sending it to the (expensive) ranker, you want to skip queries that have already been logged in the last 24 hours. A regular hash set of recent queries works — except a 24-hour log might contain a *billion* queries, costing tens of GB. Inflexible.
+A **bloom filter** is that trade. It's a bit array plus `k` hash functions, using a *handful of bits per item* instead of the whole item. Its answers are deliberately **one-sided**: "definitely not in the set" is always correct, but "probably in the set" might be a **false positive** — there are **no false negatives**. That asymmetry is the entire design. It's a [Monte Carlo](/cortex/data-structures-and-algorithms/algorithms-by-strategy-randomized-algorithms-introduction-to-randomized-algorithms) structure (bounded one-sided error), and it's the first line of defence in Cassandra and Bigtable (skip a disk read for keys *definitely* not in an SSTable), Chrome's Safe Browsing (is this URL *definitely* not malicious?), and CDN caches.
 
-The **Bloom filter** does the same job in 1 GB or less. The catch: it returns "definitely not in the set" or *"probably in the set"*. There are false positives (it occasionally claims a query is logged when it isn't), but never false negatives (it never claims an actually-logged query is unseen). For this use case, the rare false positive just means "occasionally re-rank a duplicate query" — minor cost. The 10× memory savings is worth it.
+## See It Work
 
-The structure: a bit array of `m` bits, plus `k` independent hash functions. To **add** an item, hash it `k` times; set those `k` bits. To **test**, hash it `k` times; if all `k` bits are set, return "probably in"; if any is 0, return "definitely not". A clean idea, deployed everywhere from databases (Cassandra, HBase, RocksDB) to networking (Bitcoin SPV proofs, Chrome's malicious-URL filter).
+A bloom filter hashes each item to `k` bit positions. `add` sets those bits; `contains` checks whether *all* of them are set.
 
----
-
-## Table of contents
-
-1. [The bit array and the hashes](#the-bit-array-and-the-hashes)
-2. [Tuning `m` and `k`](#tuning-m-and-k)
-3. [Implementation](#implementation)
-4. [Variants](#variants)
-5. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
-6. [Production reality](#production-reality)
-7. [Practice ladder](#practice-ladder)
-8. [Cross-links](#cross-links)
-9. [Final takeaway](#final-takeaway)
-
-***
-
-# The bit array and the hashes
-
-A Bloom filter is:
-
-- A bit array `B` of length `m`, all bits initialised to 0.
-- `k` independent hash functions `h_1, h_2, …, h_k`, each mapping items uniformly to `[0, m)`.
-
-**Add(`x`):** for `i = 1..k`, set `B[h_i(x)] = 1`.
-
-**Contains(`x`):** for `i = 1..k`, check `B[h_i(x)]`. If any is 0, return False (definitely not in set). If all are 1, return True (probably in).
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-  subgraph IN["Add 'apple'"]
-    A1["h₁('apple')=2"] --> B1["set B[2]"]
-    A2["h₂('apple')=5"] --> B2["set B[5]"]
-    A3["h₃('apple')=8"] --> B3["set B[8]"]
-  end
-  subgraph CK["Contains 'apple'? (after Add)"]
-    C1["B[2]=1 ✓"] --> C2["B[5]=1 ✓"] --> C3["B[8]=1 ✓"]
-    C3 --> Y["return YES"]
-  end
-  IN --> CK
-  style Y fill:#bbf7d0,stroke:#16a34a
-```
-
-<p align="center"><strong>Bloom filter: add an item by setting <code>k</code> bits; check by reading those <code>k</code> bits. False positives happen when an unrelated item's <code>k</code> bits happen to all be set by other items.</strong></p>
-
-***
-
-# Tuning `m` and `k`
-
-For a target false-positive rate `p` and `n` expected items:
-
-```
-m = -n · ln(p) / (ln 2)²    (bits)
-k =  m / n · ln 2           (hash functions)
-```
-
-For `n = 10⁹` items at 1% false-positive rate: `m ≈ 9.5 GB`, `k ≈ 7`. At 0.1% FPR: `m ≈ 14 GB`, `k ≈ 10`. Memory grows logarithmically with target FPR — squeeze the FPR another 10× and you pay ~30% more memory.
-
-Compared to a regular hash set: storing `10⁹` 32-byte keys costs `32 GB` minimum. The Bloom filter is 3-10× more compact for typical FPR targets.
-
-***
-
-# Implementation
-
-```python run viz=array viz-root=bits
-import math, hashlib
+```python run
+MOD = (1 << 31) - 1
+def _h(s, base):                                      # deterministic polynomial hash
+    h = 0
+    for c in s:
+        h = (h * base + ord(c)) % MOD
+    return h
 
 class BloomFilter:
-    def __init__(self, n, p):
-        """n = expected items; p = target false-positive rate."""
-        self.m = max(1, int(-n * math.log(p) / (math.log(2) ** 2)))
-        self.k = max(1, int(self.m / n * math.log(2)))
-        self.bits = bytearray((self.m + 7) // 8)
-        self.count = 0
-
-    def _hashes(self, x):
-        # Use double-hashing trick: hash with two different seeds, combine for k hashes
-        data = str(x).encode()
-        h1 = int(hashlib.sha1(data).hexdigest()[:16], 16)
-        h2 = int(hashlib.sha256(data).hexdigest()[:16], 16)
-        for i in range(self.k):
-            yield (h1 + i * h2) % self.m
-
+    def __init__(self, m, k):
+        self.m, self.k = m, k                         # m bits, k hash functions
+        self.bits = [0] * m
+    def _positions(self, x):                          # double hashing -> k positions
+        h1, h2 = _h(x, 131), _h(x, 137) | 1
+        return [(h1 + i * h2) % self.m for i in range(self.k)]
     def add(self, x):
-        for h in self._hashes(x):
-            self.bits[h // 8] |= 1 << (h % 8)
-        self.count += 1
+        for p in self._positions(x):
+            self.bits[p] = 1                          # set all k bits
+    def contains(self, x):
+        return all(self.bits[p] for p in self._positions(x))   # present only if ALL k bits are set
 
-    def __contains__(self, x):
-        for h in self._hashes(x):
-            if not (self.bits[h // 8] & (1 << (h % 8))):
-                return False
-        return True
-
-
-if __name__ == "__main__":
-    bf = BloomFilter(n=1000, p=0.01)
-    print(f"Bloom filter: m={bf.m} bits ({bf.m / 8:.0f} bytes), k={bf.k} hashes")
-
-    # Add some items
-    for w in ["apple", "banana", "cherry", "date", "elderberry"]:
-        bf.add(w)
-
-    for w in ["apple", "banana", "fig"]:
-        print(f"  '{w}' in filter? {w in bf}")
-
-    # Empirical false-positive check
-    bf2 = BloomFilter(n=10_000, p=0.01)
-    for i in range(10_000):
-        bf2.add(f"item_{i}")
-    fp = sum(1 for i in range(20_000, 30_000) if f"item_{i}" in bf2)
-    print(f"\nFalse positives: {fp}/10000 = {fp / 100:.2f}%  (target: 1%)")
+bf = BloomFilter(m=64, k=3)
+for w in ["apple", "banana", "cherry"]:
+    bf.add(w)
+print(bf.contains("apple"))     # True
+print(bf.contains("banana"))    # True
+print(bf.contains("grape"))     # False
 ```
 
-```java run viz=array viz-root=bits
-import java.security.MessageDigest;
-import java.util.*;
-
+```java run
 public class Main {
-    int m, k;
-    byte[] bits;
-
-    Main(int n, double p) {
-        m = (int) Math.max(1, -n * Math.log(p) / (Math.log(2) * Math.log(2)));
-        k = (int) Math.max(1, (double) m / n * Math.log(2));
-        bits = new byte[(m + 7) / 8];
+    static final long MOD = (1L << 31) - 1;
+    static long h(String s, long base) {
+        long v = 0;
+        for (int i = 0; i < s.length(); i++) v = (v * base + s.charAt(i)) % MOD;
+        return v;
     }
-
-    int[] hashes(String x) throws Exception {
-        MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
-        byte[] d1 = sha1.digest(x.getBytes());
-        long h1 = 0, h2 = 0;
-        for (int i = 0; i < 8; i++) h1 = (h1 << 8) | (d1[i] & 0xff);
-        for (int i = 8; i < 16; i++) h2 = (h2 << 8) | (d1[i] & 0xff);
-        int[] out = new int[k];
-        for (int i = 0; i < k; i++) out[i] = (int) (((h1 + i * h2) % m + m) % m);
-        return out;
+    static class BloomFilter {
+        int m, k; boolean[] bits;
+        BloomFilter(int m, int k) { this.m = m; this.k = k; bits = new boolean[m]; }
+        int[] positions(String x) {
+            long h1 = h(x, 131), h2 = h(x, 137) | 1;
+            int[] p = new int[k];
+            for (int i = 0; i < k; i++) p[i] = (int) ((h1 + (long) i * h2) % m);
+            return p;
+        }
+        void add(String x) { for (int p : positions(x)) bits[p] = true; }
+        boolean contains(String x) { for (int p : positions(x)) if (!bits[p]) return false; return true; }
     }
-
-    void add(String x) throws Exception {
-        for (int h : hashes(x)) bits[h >> 3] |= (byte) (1 << (h & 7));
-    }
-
-    boolean contains(String x) throws Exception {
-        for (int h : hashes(x)) if ((bits[h >> 3] & (1 << (h & 7))) == 0) return false;
-        return true;
-    }
-
-    public static void main(String[] args) throws Exception {
-        Main bf = new Main(1000, 0.01);
+    public static void main(String[] args) {
+        BloomFilter bf = new BloomFilter(64, 3);
         for (String w : new String[]{"apple", "banana", "cherry"}) bf.add(w);
-        for (String w : new String[]{"apple", "fig"}) System.out.println(w + " -> " + bf.contains(w));
+        System.out.println(bf.contains("apple"));    // true
+        System.out.println(bf.contains("banana"));   // true
+        System.out.println(bf.contains("grape"));    // false
     }
 }
 ```
 
-***
+Both print `true`, `true`, `false`. The three added fruits are found; `"grape"` isn't (here a true negative). The filter stores no fruit names — only 64 bits — yet answers membership. (We use a homemade polynomial hash because Python's built-in `hash` is randomized per process; a real filter uses a fixed, well-mixed hash.)
 
-# Variants
+## How It Works
 
-- **Counting Bloom Filter.** Replace each bit with a small counter (e.g., 4 bits). On Add, increment counters. On Delete, decrement. Supports deletes (which standard Bloom filters can't).
-- **Cuckoo Filter.** A more recent (~2014) data structure with better space efficiency for the same FPR, plus support for deletions. Used in modern caching systems.
-- **Scalable Bloom Filter.** A series of Bloom filters; each new one is larger and has lower FPR. New items go into the latest filter. Membership tests check all filters. Use when you don't know `n` in advance.
-- **Spectral Bloom Filter / Quotient Filter.** Variants optimised for specific access patterns or hardware. Niche but real.
+`add` and `contains` walk the same `k` positions; the asymmetry is in what a *miss* on those bits means:
 
-***
-
-# Edge cases and pitfalls
-
-- **Cannot delete from standard Bloom filter.** Setting a bit to 0 might affect *other* items that hashed to that bit. Use Counting Bloom Filter or Cuckoo Filter if you need deletes.
-- **Saturation.** As you add more items than designed-for, FPR climbs rapidly. Once roughly 50% of bits are set, the filter is barely useful. Plan capacity carefully.
-- **Hash quality.** Bloom filters assume the `k` hashes are independent and uniform. Bad hashes (correlated, biased) wreck the FPR. The "double hashing trick" (`h_i(x) = h_1(x) + i · h_2(x)`) approximates `k` independent hashes from just 2.
-- **Memory layout.** Random bit access is cache-hostile. For large filters, this matters. Variants like "blocked Bloom filters" group bits by cache line for better locality.
-- **Don't store sensitive data.** Bloom filters can be probed: query lots of candidate items; the ones that test positive are likely real. Don't store plaintext password hashes in a Bloom filter and assume they're hidden.
-
-***
-
-# Production reality
-
-- **Cassandra and HBase** use Bloom filters per SSTable to skip disk reads. Before reading a row, check the SSTable's Bloom filter; if it says "no", skip the read entirely. Cuts disk I/O dramatically.
-- **RocksDB** uses Bloom filters per SST file (the LSM tree's on-disk component). Same purpose.
-- **Bitcoin SPV (Simple Payment Verification).** Lightweight clients send Bloom filters of their wallet addresses to full nodes; the full nodes return only transactions matching the filter. Saves bandwidth without revealing exact wallet contents.
-- **Chrome's malicious-URL detection.** Browser ships with a Bloom filter of known malicious URLs. Local check is fast; only on a positive does Chrome consult the central server. Privacy-preserving and fast.
-- **Web crawlers (Google, Bing).** Bloom filter of "URLs we've already crawled" — keep memory bounded even with billions of URLs.
-- **Database query optimisers.** Bloom filters on join keys can skip rows that won't contribute to the result. PostgreSQL's `pg_bloom` extension provides Bloom-indexes.
-
-***
-
-# Practice ladder
-
-1. **Implement a Bloom Filter.** Use any hashing library; tune `m` and `k` for `n = 10⁴` and `p = 0.01`. Empirically measure FPR.
-   > *Hint:* the chapter's implementation. Insert 10k random strings; query 10k different random strings; count how many return True.
-
-2. **Counting Bloom Filter.** Implement with 4-bit counters; support `delete`.
-   > *Hint:* counters can saturate at 15 (4-bit max). Above that, delete becomes ambiguous.
-
-3. **Bloom-Filter-Backed Spell-Checker.** Load a dictionary into a Bloom filter; check incoming words against it. Tune for a target FPR.
-   > *Hint:* the FPR translates to "fraction of misspelled words flagged as correct". For a usable spell-checker, target FPR ≤ 0.1%.
-
-4. **Distributed Set Intersection via Bloom Filters.** Two parties have item sets `A` and `B`. They want `|A ∩ B|`. Each sends a Bloom filter; intersect bit-wise; estimate from the count of set bits. (This is a privacy-preserving estimation.)
-   > *Hint:* the "intersection" of two Bloom filters by AND is not exact, but the count of set bits in the result gives an estimate of the intersection size. Beware: many false positives.
-
-5. **Compare with a hash set.** For 10M strings of average length 32 bytes, measure memory and lookup speed of a Python `set` vs Bloom filter at 1% FPR.
-   > *Hint:* hash set: ~640 MB. Bloom filter: ~12 MB at 1% FPR. Hash set has zero false positives; Bloom filter has 1%.
-
-***
-
-# Memorize
-
-The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Bloom filters trade certainty for memory — knowing when that trade is acceptable is the skill.
-
-## Quick recall
-
-Click any question to reveal the answer.
-
-<details>
-<summary><strong>Q:</strong> What kind of error does a Bloom filter produce?</summary>
-
-**A:** False positives only. Never false negatives. "Definitely not in the set" or "probably yes".
-
-</details>
-<details>
-<summary><strong>Q:</strong> Tuning formulas — given <code>n</code> items and target false-positive rate <code>p</code>?</summary>
-
-**A:** `m = −n · ln(p) / (ln 2)²` bits; `k = (m / n) · ln 2` hash functions.
-
-</details>
-<details>
-<summary><strong>Q:</strong> For <code>n = 10⁹</code> and <code>p = 0.01</code> — what memory?</summary>
-
-**A:** `m ≈ 9.5 GB`, `k ≈ 7`. Compared to a hash set of 32-byte keys: `32 GB`. ~3× compression at 1% FPR.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Why can't a standard Bloom filter support deletion?</summary>
-
-**A:** Setting a bit to 0 might affect *other* items that hashed to that bit. Use a Counting Bloom Filter (4-bit counters) for deletes.
-
-</details>
-<details>
-<summary><strong>Q:</strong> What's the "double hashing trick"?</summary>
-
-**A:** Generate `k` hashes from just two: `h_i(x) = h_1(x) + i · h_2(x) mod m`. Saves computing `k` independent hashes; quality is good enough for typical FPR targets.
-
-</details>
-<details>
-<summary><strong>Q:</strong> When does FPR climb beyond the design target?</summary>
-
-**A:** When you insert significantly more items than `n`. Once roughly half the bits are set, the FPR rises rapidly.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Three production places Bloom filters live?</summary>
-
-**A:** **Cassandra/RocksDB SSTables** (skip disk reads), **Chrome's malicious-URL filter** (privacy + speed), **Bitcoin SPV proofs** (lightweight client filtering).
-
-</details>
-<details>
-<summary><strong>Q:</strong> Modern alternative to Bloom filter?</summary>
-
-**A:** **Cuckoo filter** — better space efficiency at the same FPR, supports deletes natively. Used in newer caching systems.
-
-</details>
-
-## Code template
-
-```python
-import math, hashlib
-
-class BloomFilter:
-    def __init__(self, n, p):
-        self.m = max(1, int(-n * math.log(p) / (math.log(2) ** 2)))
-        self.k = max(1, int(self.m / n * math.log(2)))
-        self.bits = bytearray((self.m + 7) // 8)
-
-    def _hashes(self, x):
-        d = hashlib.sha1(str(x).encode()).digest()
-        h1 = int.from_bytes(d[:8], "big")
-        h2 = int.from_bytes(d[8:16], "big")
-        for i in range(self.k):
-            yield (h1 + i * h2) % self.m
-
-    def add(self, x):
-        for h in self._hashes(x):
-            self.bits[h // 8] |= 1 << (h % 8)
-
-    def __contains__(self, x):
-        return all(self.bits[h // 8] & (1 << (h % 8)) for h in self._hashes(x))
+```d2
+direction: right
+add: "add(x): set bits h1(x), h2(x), ..., hk(x) = 1" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
+absent: "contains(x): any of x's k bits = 0?\n-> DEFINITELY NOT in the set (certain)\n(an added item would have set that bit)" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
+present: "all k bits = 1?\n-> PROBABLY in the set\n(maybe a false positive: other adds set those bits)" {style.fill: "#fde68a"; style.stroke: "#d97706"}
+nofn: "NO false negatives, EVER\nbut false-positive rate ~ (1 - e^(-kn/m))^k" {style.fill: "#f3e8ff"; style.stroke: "#9333ea"}
+add -> absent
+add -> present
+present -> nofn
+absent -> nofn
 ```
 
-## Pattern triggers
+<p align="center"><strong>A zero bit proves absence (an added item would have set it), so "definitely not" is certain. All-ones only suggests presence — other items may have set those bits — so "probably yes" can be a false positive. False negatives are impossible by construction.</strong></p>
 
-- **"Skip an expensive lookup if we know the key is absent"** → Bloom filter pre-check (databases, browser malicious-URL)
-- **"Set membership with a tight memory budget"** → Bloom filter
-- **"Privacy-preserving 'do you have this?' query"** → Bloom filter (Bitcoin SPV)
-- **"Need deletes on a Bloom"** → Counting Bloom or Cuckoo filter
-- **"Don't know `n` in advance"** → Scalable Bloom Filter
-- **"Adversarial inputs / DoS vector"** → use cryptographic-quality hash + random seed
-- **"Two parties want set intersection size"** → bit-AND of their Bloom filters; estimate from set bits
-- **"Rolling time-window membership"** → multiple Bloom filters, rotate and discard
+Three load-bearing facts:
 
-***
+- **No false negatives, by construction.** `add(x)` sets all `k` of `x`'s bits to 1, and bits never reset. So if `x` was ever added, every one of its bits is 1 and `contains(x)` is `True` — always. The error is strictly one-sided, which is what makes a bloom filter *safe* as a pre-filter: a "no" is final.
+- **False positives come from bit collisions.** `contains(y)` is `True` whenever *all* `k` of `y`'s bits happen to be set — even if `y` was never added, because *other* items collectively set them. The false-positive rate is `≈ (1 − e^{−kn/m})^k` for `n` items in `m` bits with `k` hashes; it's minimised at `k ≈ (m/n)·ln 2`, costing about `1.44·log₂(1/ε)` bits per item for rate `ε`. More bits or tuned `k` → fewer lies.
+- **You can't delete (from a plain one).** Clearing `x`'s bits might clear a bit some *other* item relies on, creating a false *negative* — the one error a bloom filter must never make. So deletion is forbidden; if you need it, a **counting bloom filter** replaces bits with small counters (increment on add, decrement on delete).
 
-# Cross-links
+> **Key takeaway.** A bloom filter is a bit array + `k` hashes: `add` sets `k` bits, `contains` checks them all. **No false negatives** ("definitely absent" is certain); **possible false positives** ("probably present" may be wrong), at rate `≈ (1 − e^{−kn/m})^k`, optimal `k ≈ (m/n)ln 2`. One-sided error = Monte Carlo. No deletion without a counting variant. A few bits per item replaces the whole set.
 
-- **Prerequisite:** [Hash Table](/cortex/data-structures-and-algorithms/linear-structures-hash-table-introduction-to-hash-tables) — the underlying primitive (we need good hash functions).
-- **Sibling structures:** [Count-Min Sketch](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-count-min-sketch) (frequencies, not membership), [HyperLogLog](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-hyperloglog) (cardinality estimation).
+## Trace It
 
-***
+The one-sided error is the whole point — and it's easy to half-remember as "bloom filters are sometimes wrong." They're wrong in *exactly one direction*.
 
-# Final takeaway
+**Predict before you run:** a small filter (10 bits, 2 hashes) has had `cat`, `dog`, `fox`, `owl` added. Query a word that was **never** added. Can `contains` return `True` for it — and can it ever return `False` for `cat`?
 
-The Bloom filter is the probabilistic set. Three patterns to internalise:
+```python run
+MOD = (1 << 31) - 1
+def _h(s, base):
+    h = 0
+    for c in s:
+        h = (h * base + ord(c)) % MOD
+    return h
+class BloomFilter:
+    def __init__(self, m, k):
+        self.m, self.k = m, k; self.bits = [0] * m
+    def _positions(self, x):
+        h1, h2 = _h(x, 131), _h(x, 137) | 1
+        return [(h1 + i * h2) % self.m for i in range(self.k)]
+    def add(self, x):
+        for p in self._positions(x): self.bits[p] = 1
+    def contains(self, x):
+        return all(self.bits[p] for p in self._positions(x))
 
-1. **False positives only.** A Bloom filter never lies "no" but sometimes lies "yes". Whenever that asymmetry is acceptable (cache, skip-list-of-disk-files, malicious-URL probe), Bloom is a memory win.
-2. **Tune `m` and `k` from `n` and target FPR.** The two formulas are the entire calibration. Memory grows logarithmically with the target FPR.
-3. **Production-grade for "set membership at scale".** Cassandra, RocksDB, Chrome, Bitcoin — every Bloom filter in those systems saves orders of magnitude of memory or bandwidth versus exact methods.
+bf = BloomFilter(m=10, k=2)
+for w in ["cat", "dog", "fox", "owl"]:
+    bf.add(w)
+never_added = ["bee", "ant", "elk", "cow", "pig", "ram", "hen", "eel", "jay", "yak"]
+false_pos = [w for w in never_added if bf.contains(w)]
+print("never-added words that test PRESENT (false positives):", false_pos)
+print("contains('cat')  — an added item:", bf.contains("cat"))
+print("any added item ever tests absent?:", not all(bf.contains(w) for w in ["cat", "dog", "fox", "owl"]))
+```
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+<details>
+<summary><strong>Reveal</strong></summary>
 
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
+`contains` returns `True` for `"ant"` (and possibly others) even though it was never added — a **false positive** — while every actually-added word (`cat`, `dog`, ...) tests `True`, and *no* added word ever tests `False`. With only 10 bits and four items each setting 2 bits, most of the array is already 1, so a never-added word whose two hash positions both happen to land on set bits is reported as present. That's a lie in the "present" direction. But the "absent" direction is incorruptible: an added word set *all* its bits, and bits never reset, so it can never test absent. This is what "no false negatives, possible false positives" means concretely — and it's why a bloom filter is a safe *pre-filter*: when it says "definitely not here," you can skip the expensive lookup with total confidence; when it says "maybe," you fall back to the real, exact check. Shrinking the filter (fewer bits per item) trades space for *more* false positives but never introduces a false negative — the error stays one-sided no matter how you tune it.
 
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
+</details>
 
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
+## Your Turn
 
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
+**Measure the false-positive rate** and watch it track the theory. Fill a filter with `n` items, query a large set of never-added items, and count how many falsely test present — then compare to `(1 − e^{−kn/m})^k`.
 
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+```python run
+import math
+MOD = (1 << 31) - 1
+def _h(s, base):
+    h = 0
+    for c in s:
+        h = (h * base + ord(c)) % MOD
+    return h
+class BloomFilter:
+    def __init__(self, m, k):
+        self.m, self.k = m, k; self.bits = [0] * m
+    def _positions(self, x):
+        h1, h2 = _h(x, 131), _h(x, 137) | 1
+        return [(h1 + i * h2) % self.m for i in range(self.k)]
+    def add(self, x):
+        for p in self._positions(x): self.bits[p] = 1
+    def contains(self, x):
+        return all(self.bits[p] for p in self._positions(x))
 
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+def empirical_fp(m, k, n, queries):
+    bf = BloomFilter(m, k)
+    for i in range(n):
+        bf.add(f"item{i}")
+    fp = sum(1 for j in range(queries) if bf.contains(f"query{j}"))
+    return fp / queries
+
+m, k, n, q = 1000, 3, 100, 10000
+print(f"empirical FP rate : {empirical_fp(m, k, n, q):.4f}")          # ~0.0219
+print(f"theoretical       : {(1 - math.exp(-k*n/m))**k:.4f}")          # ~0.0174
+```
+
+```java run
+public class Main {
+    static final long MOD = (1L << 31) - 1;
+    static long h(String s, long base) {
+        long v = 0;
+        for (int i = 0; i < s.length(); i++) v = (v * base + s.charAt(i)) % MOD;
+        return v;
+    }
+    static class BloomFilter {
+        int m, k; boolean[] bits;
+        BloomFilter(int m, int k) { this.m = m; this.k = k; bits = new boolean[m]; }
+        int[] positions(String x) {
+            long h1 = h(x, 131), h2 = h(x, 137) | 1;
+            int[] p = new int[k];
+            for (int i = 0; i < k; i++) p[i] = (int) ((h1 + (long) i * h2) % m);
+            return p;
+        }
+        void add(String x) { for (int p : positions(x)) bits[p] = true; }
+        boolean contains(String x) { for (int p : positions(x)) if (!bits[p]) return false; return true; }
+    }
+    public static void main(String[] args) {
+        int m = 1000, k = 3, n = 100, q = 10000;
+        BloomFilter bf = new BloomFilter(m, k);
+        for (int i = 0; i < n; i++) bf.add("item" + i);
+        int fp = 0;
+        for (int j = 0; j < q; j++) if (bf.contains("query" + j)) fp++;
+        System.out.printf("empirical FP rate : %.4f%n", (double) fp / q);              // ~0.0219
+        System.out.printf("theoretical       : %.4f%n", Math.pow(1 - Math.exp(-(double)k*n/m), k));  // ~0.0174
+    }
+}
+```
+
+Both report an empirical rate near **2.2%**, close to the theoretical **1.7%** — the small gap is because double-hashing approximates `k` truly-independent hashes. The point is that the false-positive rate is a *knob*: more bits (`m`) or a tuned `k` drives it down predictably, so you size a bloom filter to whatever error budget you can afford. (False negatives stay at zero regardless — they're not a knob, they're impossible.)
+
+## Reflect & Connect
+
+- **One-sided error is the design.** "Definitely absent" is certain (a zero bit proves it); "probably present" can be a false positive (collisions). False negatives never happen — which is why it's a *safe* pre-filter for an expensive exact lookup.
+- **Tunable space-vs-accuracy.** Rate `≈ (1 − e^{−kn/m})^k`, optimal `k ≈ (m/n)ln 2`, cost `≈ 1.44·log₂(1/ε)` bits per item. You pick the error budget; the structure delivers it in a fraction of a hash set's memory.
+- **No deletion without counters.** Clearing bits could create a false *negative*, the forbidden error. A counting bloom filter swaps bits for counters to allow removal.
+- **Monte Carlo, like Miller-Rabin.** Bounded one-sided error you accept for speed/space — contrast the [skip list](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-skip-list)'s Las Vegas guarantee (always correct, random runtime). Different bargains: bloom trades *accuracy* for space; skip list trades *runtime* for simplicity.
+- **Everywhere in systems.** SSTable read-skipping (Cassandra, Bigtable, RocksDB), Safe Browsing URL checks, CDN/proxy cache filters, spell-checkers, and the [count-min sketch](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-count-min-sketch) / HyperLogLog (next lessons) that extend the "hash into a small array, accept approximation" idea from membership to *counts* and *cardinality*.
+
+## Recall
+
+<details>
+<summary><strong>Q:</strong> What are a bloom filter's two possible errors, and which can actually happen?</summary>
+
+**A:** False positive ("probably present" when absent) — possible. False negative ("absent" when present) — impossible by construction. The error is strictly one-sided.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why can a bloom filter never give a false negative?</summary>
+
+**A:** `add(x)` sets all `k` of `x`'s bits to 1 and bits never reset, so an added item always has all its bits set and tests present. A zero bit therefore *proves* an item was never added.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Where do false positives come from, and how do you reduce them?</summary>
+
+**A:** From bit collisions — a never-added item whose `k` bits were all set by *other* items. The rate is `≈ (1 − e^{−kn/m})^k`; reduce it with more bits `m` or the optimal `k ≈ (m/n)ln 2`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why can't you delete from a plain bloom filter?</summary>
+
+**A:** Clearing an item's bits might clear a bit another item depends on, producing a false negative — the one error that's not allowed. A counting bloom filter (counters instead of bits) supports deletion.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is a bloom filter a safe pre-filter for an expensive lookup?</summary>
+
+**A:** Because "definitely absent" is always correct, a "no" lets you skip the costly exact check with full confidence. A "maybe" just falls back to the real lookup — so the filter only ever saves work, never causes a missed item.
+
+</details>
+
+## Sources & Verify
+
+- **Bloom** (1970), "Space/time trade-offs in hash coding with allowable errors", *Comm. ACM* — the original structure and the false-positive analysis.
+- **Broder & Mitzenmacher** (2004), "Network applications of Bloom filters: a survey" — tuning `m`, `k`, counting variants, and systems uses.
+- **Cassandra / Bigtable / RocksDB** docs (SSTable bloom filters) and **Google Safe Browsing** — production deployments; **LeetCode**-style "design a HashSet / data stream dedup" problems are adjacent drills. The `true`/`true`/`false` memberships, the constructed false positive, and the `~2.2%`-vs-`~1.7%` rates above come from the runnable blocks — re-run to verify.

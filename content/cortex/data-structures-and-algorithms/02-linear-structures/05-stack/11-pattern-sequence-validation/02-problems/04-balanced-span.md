@@ -92,7 +92,6 @@ Push indices, seed a sentinel, and measure each valid run against the boundary o
 
 The trick is to push **indices** (not characters), starting with a sentinel `-1` at the bottom. The top of the stack always represents *the index just before the current valid substring started*. When we hit `(`: push its index. When we hit `)`: pop. If the stack is now empty (we popped the sentinel), push the current index as a *new sentinel* (no valid substring can include it). Otherwise, the new top is "one before the current valid run", so the current run length is `i − stack.top()`.
 
-> 🖼 Diagram — Balanced span — index stack with sentinel -1. The top is always "one before the current valid run". Pop on closer; if the stack drops to empty, the current index becomes the new sentinel (no run can cross an unmatched closer).
 ```mermaid
 ---
 config:
@@ -238,7 +237,7 @@ public class Main {
 
 </details>
 <details>
-<summary><h2>Final Takeaway</h2></summary>
+<summary><h2>Key Takeaway</h2></summary>
 
 
 Three lessons:

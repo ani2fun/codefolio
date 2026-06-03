@@ -64,7 +64,6 @@ Two sequential reversals cancel inside each word and compound across words. Afte
 
 A direct approach — split on whitespace, reverse the resulting list, join with single spaces — works but allocates `O(n)` extra space for the token list and its reversed copy. The two-pass trick does the same work in place on the mutable character array, with `O(n)` time (each character visited at most twice) and `O(1)` extra space beyond the array itself. The whitespace normalisation step at the end handles redundant spaces in the input — the two-pointer machinery never has to special-case them.
 
-> 🖼 Diagram — The two-step trick — reversing the whole string flips word order but scrambles each word; reversing each word individually unscrambles the characters while keeping the new word order.
 ```mermaid
 ---
 config:
@@ -97,7 +96,6 @@ flowchart TB
 
 Let's trace exactly what each step does to `"the sky"`:
 
-> ▶ Interactive Diagram — Step-by-step on "the sky" — Step 1 reverses the whole string (flipping word order but scrambling each word); Step 2 reverses each word, unscrambling letters while keeping the new word order.
 ```d3 widget=array-1d
 {
   "steps": [
@@ -799,7 +797,6 @@ public class Main {
 
 You've now seen every direct-application two-pointer problem in this section. They all share the same skeleton — what changes is the work done inside the loop:
 
-> 🖼 Diagram — All six direct-application problems — one template, six variations in the loop body.
 ```mermaid
 ---
 config:

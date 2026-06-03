@@ -1,879 +1,172 @@
 ---
-title: "Insertion In Binary Search Trees"
-summary: "<!-- TODO: summary -->"
+title: "Insertion in Binary Search Trees"
+summary: "To add a key, search for it — it's absent, so the empty child slot where the search falls off is exactly where the key belongs. Attach it there as a new leaf. Existing nodes never move; O(h). The downside: insertion order alone decides the tree's shape (and balance)."
+prereqs:
+  - 03-trees/02-binary-search-tree/03-recursive-searching-in-binary-search-trees
 ---
 
-# 5. Insertion in Binary Search Trees
+# Insertion in Binary Search Trees
 
-## The Hook
+## Why It Exists
 
-So far, we've only *read* from a BST — search, min, max, lower bound, upper bound. The tree was a fixed object we descended into. Now we make it **alive**: every insertion has to slot a new value into the tree *while preserving* the binary search property at every node it touches.
+A search tree you can't grow is useless. Insertion must add a key *while preserving the invariant* (left < node < right everywhere) — and the elegant fact is that there's exactly **one** spot where a new key can go and keep the tree valid.
 
-Here's the beautiful part: insertion is *almost free*. We've already done the hard work in lessons 3 and 4. Searching for a value that *isn't* there walks all the way down to a `null` leaf — and **that is the exact slot the new node belongs in**. So insertion = search + one pointer assignment.
+Finding it is just a search. Search for the key; since it's not present, the search walks down and falls off the tree at some empty child slot — and *that* slot is precisely where the key belongs (everything above it already compares correctly). Attach the new key there as a **leaf**. No existing node moves; you only add one link. So insertion is "search, then attach at the failure point," `O(h)`. The one catch: because each key lands wherever the search leads, the *order* you insert determines the tree's shape — and a bad order yields a degenerate chain.
 
-This lesson covers the recursive and iterative versions. Both run in O(h), both touch a single root-to-leaf path, and both let us turn a static structure into a dynamic one.
+## See It Work
 
----
+Insert `6` into an existing BST and confirm it lands as a leaf at the search-failure point. Run it, then **Visualise** — the new node hangs off an existing one.
 
-## Table of Contents
-
-1. [Understanding recursive insertion](#understanding-recursive-insertion)
-2. [Recursive insertion](#recursive-insertion)
-3. [Understanding iterative insertion](#understanding-iterative-insertion)
-4. [Iterative insertion](#iterative-insertion)
-
-***
-
-# Understanding recursive insertion
-
-To insert a value `v` into a BST, do the following thought experiment: *pretend* `v` is already in the tree, and search for it. Where does the search end? At a `null` child of some node — the *only* place `v` could legally live without breaking the BST rule. That's where you create the new node.
-
-> Insertion = search + create new node at the slot where the search runs out.
-
-## Algorithm
-
-The recursive version is a two-step process expressed as a single function:
-
-> **Algorithm**
->
-> - **Step 1:** If the `current` node is `null`, create a new node with the given value and return it.
-> - **Step 2:** If the new value is less than `current.val`, recurse on the **left** subtree, then store the result back into `current.left`.
-> - **Step 3:** Else recurse on the **right** subtree, store the result back into `current.right`.
-> - **Step 4:** Return `current`.
-
-The "store the result back" step is the key trick: every recursive call returns *the (possibly new) subtree*, and the parent uses that return value to update its child pointer. When we hit the null slot, we return a freshly allocated node — and the parent's `current.left = ...` (or `.right = ...`) wires it in.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    A["insert(node, v)"] --> B{"node == null?"}
-    B -->|Yes| C["return new TreeNode(v)"]
-    B -->|No| D{"v &lt; node.val?"}
-    D -->|Yes| E["node.left = insert(node.left, v)"]
-    D -->|No| F["node.right = insert(node.right, v)"]
-    E --> G["return node"]
-    F --> G
-    style C fill:#bbf7d0,stroke:#16a34a
-```
-
-<p align="center"><strong>The recursive insertion equation. The base case <em>creates</em> the new node; every other case wires the returned subtree back into the parent.</strong></p>
-
-## A worked example
-
-Insert `25` into the tree below.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    subgraph Before["Before insert(25)"]
-        direction TB
-        R1((50))
-        A1((30))
-        B1((70))
-        C1((20))
-        D1((40))
-        R1 --> A1
-        R1 --> B1
-        A1 --> C1
-        A1 --> D1
-    end
-    subgraph After["After insert(25)"]
-        direction TB
-        R2((50))
-        A2((30))
-        B2((70))
-        C2((20))
-        D2((40))
-        E2((25))
-        R2 --> A2
-        R2 --> B2
-        A2 --> C2
-        A2 --> D2
-        C2 --> E2
-        style E2 fill:#bbf7d0,stroke:#16a34a
-    end
-```
-
-<p align="center"><strong>Walk: <code>50</code> (25 &lt; 50, go left) → <code>30</code> (25 &lt; 30, go left) → <code>20</code> (25 &gt; 20, go right) → <code>null</code>. Allocate <code>25</code> as the right child of <code>20</code>.</strong></p>
-
-The path the search would have taken — `50, 30, 20` — and the side it tried to step into — *right of 20* — together specify the exact insertion slot.
-
-## Complexity
-
-| Case | Time | Space |
-|---|---|---|
-| Best (balanced) | O(log n) | O(log n) |
-| Worst (skewed) | O(n) | O(n) |
-
-The space cost is the recursion stack along the descent path.
-
-***
-
-# Recursive insertion
-
-## Problem Statement
-
-Given the **root** of a binary search tree and a **data** value, insert a new node with the given value and return the root of the updated tree.
-
-You must do this **recursively**.
-
-### Example 1
-
-> - **Input:** `root = [5, 4, 6, 2, null, null, 7]`, `data = 10`
-> - **Output:** `[5, 4, 6, 2, null, null, 7, null, null, null, 10]`
-> - **Explanation:** Walk: 5 (10 > 5, right) → 6 (10 > 6, right) → 7 (10 > 7, right) → null. Insert 10 as right child of 7.
-
-### Example 2
-
-> - **Input:** `root = [10, 8, 14, 5, null, 12, 17]`, `data = 9`
-> - **Output:** `[10, 8, 14, 5, 9, 12, 17]`
-> - **Explanation:** Walk: 10 (9 < 10, left) → 8 (9 > 8, right) → null. Insert 9 as right child of 8.
-
-<details>
-<summary><h2>The Solution</h2></summary>
-
-
+> ▶ Run it, then click **Visualise** — `6` searches down (5→8→7) and attaches as `7`'s left child; nothing else moves.
 
 ```python run viz=binary-tree viz-root=root
-from typing import Optional, List
-from collections import deque
-
-
-class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
-        self.val = val
-        self.left = left
-        self.right = right
-
-
-def from_level_order(values):
-    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
-    if not values:
-        return None
-    root = TreeNode(values[0])
-    queue = [root]
-    i = 1
-    while queue and i < len(values):
-        node = queue.pop(0)
-        if i < len(values) and values[i] is not None:
-            node.left = TreeNode(values[i])
-            queue.append(node.left)
-        i += 1
-        if i < len(values) and values[i] is not None:
-            node.right = TreeNode(values[i])
-            queue.append(node.right)
-        i += 1
-    return root
-
-
-def to_level_order(root):
-    if not root:
-        return []
-    result, q = [], deque([root])
-    while q:
-        node = q.popleft()
-        result.append(node.val)
-        if node.left:
-            q.append(node.left)
-        if node.right:
-            q.append(node.right)
-    return result
-
-
-class Solution:
-    def recursive_insertion(
-        self, root: Optional[TreeNode], data: int
-    ) -> Optional[TreeNode]:
-
-        # If the root is None, it means the tree is empty,
-        # so create a new node and return it as the new root
-        if root is None:
-            return TreeNode(data)
-
-        # If the data is less than the value of the current root node,
-        # it should be inserted in the left subtree of the current root
-        if data < root.val:
-            root.left = self.recursive_insertion(root.left, data)
-
-        # If the data is greater than or equal to the value of the
-        # current root node,it should be inserted in the right subtree
-        # of the current root
-        else:
-            root.right = self.recursive_insertion(root.right, data)
-
-        # Return the root of the tree after insertion
-        return root
-
-
-# Examples from the problem statement
-t1 = from_level_order([5, 4, 6, 2, None, None, 7])
-r1 = Solution().recursive_insertion(t1, 10)
-print(to_level_order(r1))                          # [5, 4, 6, 2, 7, 10]
-
-t2 = from_level_order([10, 8, 14, 5, None, 12, 17])
-r2 = Solution().recursive_insertion(t2, 9)
-print(to_level_order(r2))                          # [10, 8, 14, 5, 9, 12, 17]
-
-# Edge cases
-r3 = Solution().recursive_insertion(None, 5)       # insert into empty tree
-print(to_level_order(r3))                          # [5]
-
-t4 = TreeNode(10)                                  # single node, insert smaller
-r4 = Solution().recursive_insertion(t4, 5)
-print(to_level_order(r4))                          # [10, 5]
-
-t5 = TreeNode(10)                                  # single node, insert larger
-r5 = Solution().recursive_insertion(t5, 15)
-print(to_level_order(r5))                          # [10, 15]
-
-t6 = from_level_order([5, 3, 7])
-r6 = Solution().recursive_insertion(t6, 1)         # insert at leftmost position
-print(to_level_order(r6))                          # [5, 3, 7, 1]
-
-t7 = from_level_order([5, 3, 7])
-r7 = Solution().recursive_insertion(t7, 5)         # insert duplicate (goes right)
-print(to_level_order(r7))                          # [5, 3, 7, 5]
-```
-
-```java run viz=binary-tree viz-root=root
-import java.util.*;
-
-public class Main {
-    static class TreeNode {
-        int val;
-        TreeNode left;
-        TreeNode right;
-        TreeNode() {}
-        TreeNode(int val) { this.val = val; }
-    }
-
-    static TreeNode fromLevelOrder(Integer... values) {
-        if (values.length == 0 || values[0] == null) return null;
-        TreeNode root = new TreeNode(values[0]);
-        Deque<TreeNode> queue = new ArrayDeque<>();
-        queue.add(root);
-        int i = 1;
-        while (!queue.isEmpty() && i < values.length) {
-            TreeNode node = queue.poll();
-            if (i < values.length && values[i] != null) {
-                node.left = new TreeNode(values[i]);
-                queue.add(node.left);
-            }
-            i++;
-            if (i < values.length && values[i] != null) {
-                node.right = new TreeNode(values[i]);
-                queue.add(node.right);
-            }
-            i++;
-        }
-        return root;
-    }
-
-    static List<Integer> toLevelOrder(TreeNode root) {
-        List<Integer> result = new ArrayList<>();
-        if (root == null) return result;
-        Deque<TreeNode> q = new ArrayDeque<>();
-        q.add(root);
-        while (!q.isEmpty()) {
-            TreeNode node = q.poll();
-            result.add(node.val);
-            if (node.left != null) q.add(node.left);
-            if (node.right != null) q.add(node.right);
-        }
-        return result;
-    }
-
-    static class Solution {
-        public TreeNode recursiveInsertion(TreeNode root, int data) {
-
-            // If the root is null, it means the tree is empty,
-            // so create a new node and return it as the new root
-            if (root == null) {
-                return new TreeNode(data);
-            }
-
-            // If the data is less than the value of the current root node,
-            // it should be inserted in the left subtree of the current root
-            if (data < root.val) {
-                root.left = recursiveInsertion(root.left, data);
-            }
-
-            // If the data is greater than or equal to the value of the
-            // current root node,it should be inserted in the right subtree
-            // of the current root
-            else {
-                root.right = recursiveInsertion(root.right, data);
-            }
-
-            // Return the root of the tree after insertion
-            return root;
-        }
-    }
-
-    public static void main(String[] args) {
-        // Examples from the problem statement
-        TreeNode t1 = fromLevelOrder(5, 4, 6, 2, null, null, 7);
-        System.out.println(toLevelOrder(new Solution().recursiveInsertion(t1, 10)));  // [5, 4, 6, 2, 7, 10]
-
-        TreeNode t2 = fromLevelOrder(10, 8, 14, 5, null, 12, 17);
-        System.out.println(toLevelOrder(new Solution().recursiveInsertion(t2, 9)));   // [10, 8, 14, 5, 9, 12, 17]
-
-        // Edge cases
-        System.out.println(toLevelOrder(new Solution().recursiveInsertion(null, 5))); // [5]
-
-        TreeNode t4 = new TreeNode(10);                                               // insert smaller
-        System.out.println(toLevelOrder(new Solution().recursiveInsertion(t4, 5)));   // [10, 5]
-
-        TreeNode t5 = new TreeNode(10);                                               // insert larger
-        System.out.println(toLevelOrder(new Solution().recursiveInsertion(t5, 15)));  // [10, 15]
-
-        TreeNode t6 = fromLevelOrder(5, 3, 7);
-        System.out.println(toLevelOrder(new Solution().recursiveInsertion(t6, 1)));   // [5, 3, 7, 1]
-
-        TreeNode t7 = fromLevelOrder(5, 3, 7);
-        System.out.println(toLevelOrder(new Solution().recursiveInsertion(t7, 5)));   // [5, 3, 7, 5]
-    }
-}
-```
-
-</details>
-
-### Step through the execution
-
-Click **Trace** to step through the recursive insertion. The locals panel shows `root` (a heap object with `val`, `left`, and `right` fields) and `data` at each call. Watch the call stack grow three frames deep as the algorithm descends — `main` → `recursiveInsertion (root=5)` → `recursiveInsertion (root=3)` → `recursiveInsertion (root=null)` — then pop back as the new node bubbles up.
-
-```python trace
 class TreeNode:
     def __init__(self, val):
         self.val = val
         self.left = None
         self.right = None
 
-
-def recursive_insertion(root, data):
+def insert(root, val):
     if root is None:
-        return TreeNode(data)
-    if data < root.val:
-        root.left = recursive_insertion(root.left, data)
-    else:
-        root.right = recursive_insertion(root.right, data)
+        return TreeNode(val)             # search fell off here → this is the spot; new leaf
+    if val < root.val:
+        root.left = insert(root.left, val)
+    elif val > root.val:
+        root.right = insert(root.right, val)
+    # val == root.val → duplicate; ignore (a policy choice)
     return root
 
+def inorder(n):
+    return inorder(n.left) + [n.val] + inorder(n.right) if n else []
 
-root = TreeNode(5)
-root.left = TreeNode(3)
-root.right = TreeNode(7)
-root = recursive_insertion(root, 4)
-print(root.left.right.val)  # 4
+root = None
+for v in [5, 3, 8, 1, 4, 7, 9]:
+    root = insert(root, v)
+root = insert(root, 6)                   # 6 < 5? no → 6 < 8 → 6 < 7 → empty → leaf
+print(inorder(root))                     # [1, 3, 4, 5, 6, 7, 8, 9] — still sorted
 ```
 
-Same insertion in Java — `main` builds the same three-node tree and calls `recursiveInsertion`. Each recursive call pushes a new frame; the caption flips as the algorithm descends and pops back on return. The `TreeNode` fields `val`, `left`, and `right` expand on the heap at each step. The **Kotlin** and **Scala** tabs show equivalent source.
+## How It Works
 
-```java trace
-public class Main {
-    static class TreeNode {
-        int val;
-        TreeNode left;
-        TreeNode right;
+`insert(node, val)` is recursive search with one twist — the empty base case *creates* the node instead of reporting a miss:
 
-        TreeNode(int val) {
-            this.val = val;
-        }
-    }
-
-    static TreeNode recursiveInsertion(TreeNode root, int data) {
-        if (root == null) {
-            return new TreeNode(data);
-        }
-        if (data < root.val) {
-            root.left = recursiveInsertion(root.left, data);
-        } else {
-            root.right = recursiveInsertion(root.right, data);
-        }
-        return root;
-    }
-
-    public static void main(String[] args) {
-        TreeNode root = new TreeNode(5);
-        root.left = new TreeNode(3);
-        root.right = new TreeNode(7);
-        root = recursiveInsertion(root, 4);
-        System.out.println(root.left.right.val);  // 4
-    }
-}
-```
-
-```kotlin trace
-class TreeNode(val value: Int, var left: TreeNode? = null, var right: TreeNode? = null)
-
-fun recursiveInsertion(root: TreeNode?, data: Int): TreeNode {
-    if (root == null) return TreeNode(data)
-    if (data < root.value) root.left  = recursiveInsertion(root.left, data)
-    else                   root.right = recursiveInsertion(root.right, data)
-    return root
-}
-
-fun main() {
-    var root: TreeNode? = TreeNode(5, TreeNode(3), TreeNode(7))
-    root = recursiveInsertion(root, 4)
-    println(root.left!!.right!!.value)  // 4
-}
-```
-
-```scala trace
-class TreeNode(val value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-def recursiveInsertion(root: TreeNode, data: Int): TreeNode =
-  if root == null then TreeNode(data)
-  else if data < root.value then
-    root.left = recursiveInsertion(root.left, data)
-    root
-  else
-    root.right = recursiveInsertion(root.right, data)
-    root
-
-@main def run(): Unit =
-  var root = TreeNode(5, TreeNode(3), TreeNode(7))
-  root = recursiveInsertion(root, 4)
-  println(root.left.right.value)  // 4
-```
-
-***
-
-# Understanding iterative insertion
-
-The iterative version is the same descent, but instead of letting recursion remember the parent pointer, we keep a `current` pointer and look one step ahead before descending.
-
-## Algorithm
-
-> **Algorithm**
->
-> - **Step 1:** If `root` is `null`, create and return a new node — done.
-> - **Step 2:** Let `current = root`.
-> - **Step 3:** Loop:
->   - If `data < current.val`:
->     - If `current.left == null`, set `current.left = new TreeNode(data)`, return root.
->     - Else `current = current.left`.
->   - Else:
->     - If `current.right == null`, set `current.right = new TreeNode(data)`, return root.
->     - Else `current = current.right`.
-> - **Step 4:** Return `root`.
-
-The trick is checking the *child* before stepping into it. If the child is `null`, that's the slot — attach the new node and return. Otherwise, descend.
+1. **`node is None`** → the search has reached an empty slot; return a new leaf with `val`. The caller wires it in as a child.
+2. **`val < node.val`** → recurse left and reattach: `node.left = insert(node.left, val)`.
+3. **`val > node.val`** → recurse right and reattach.
+4. **`val == node.val`** → a duplicate; the usual policy is to ignore it (or keep a count) — never insert a second equal key, or the invariant blurs.
 
 ```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    A["root == null?"] -->|Yes| B["return new TreeNode(data)"]
-    A -->|No| C["current = root"]
-    C --> D{"data &lt; current.val?"}
-    D -->|Yes| E{"current.left == null?"}
-    E -->|Yes| F["current.left = new TreeNode(data)<br/>return root"]
-    E -->|No| G["current = current.left"]
-    G --> D
-    D -->|No| H{"current.right == null?"}
-    H -->|Yes| I["current.right = new TreeNode(data)<br/>return root"]
-    H -->|No| J["current = current.right"]
-    J --> D
-    style B fill:#bbf7d0,stroke:#16a34a
-    style F fill:#bbf7d0,stroke:#16a34a
-    style I fill:#bbf7d0,stroke:#16a34a
+flowchart TB
+  Q{"node?"} -->|"None"| C["create leaf, return it"]
+  Q -->|"&lt; val → left · &gt; val → right"| R["node.child = insert(child, val)"]
+  R --> Q
 ```
 
-<p align="center"><strong>Iterative insertion descends until it finds a null child. The new node attaches to the current node directly — no extra memory beyond a single pointer.</strong></p>
+<p align="center"><strong>search down by comparison; where the search falls off (an empty child), splice in the new leaf. Only one new link is added.</strong></p>
 
-## Complexity
+Insertion is `O(h)` — a search down plus an `O(1)` attach. The crucial property: **new keys are always added as leaves; existing nodes never move.** (That's the opposite of [deletion](/cortex/data-structures-and-algorithms/trees-binary-search-tree-deletion-in-binary-search-trees), which may restructure.) The price of this simplicity is that the *insertion order alone* fixes the shape: insert in random/balanced order and the tree stays bushy (`h ≈ log n`); insert sorted data and every key becomes a right child, giving a height-`n` chain. Plain BSTs can't prevent this — self-balancing trees rotate *during* insertion to keep `h = O(log n)`.
 
-| Case | Time | Space |
+### Key Takeaway
+
+Insert by searching for the key; the empty slot where the search fails is where it belongs — attach a new leaf there, `O(h)`. Existing nodes never move, and duplicates are ignored by policy. But insertion order alone determines balance, which is why self-balancing trees rebalance on insert.
+
+## Trace It
+
+Inserting `6` into the tree (root `5`):
+
+| at node | compare `6` | go |
 |---|---|---|
-| Best (balanced) | O(log n) | **O(1)** |
-| Worst (skewed) | O(n) | **O(1)** |
+| `5` | `6 > 5` | right |
+| `8` | `6 < 8` | left |
+| `7` | `6 < 7` | left → **empty** |
+| — | attach | `6` becomes `7`'s left child (a leaf) |
 
-Same time as recursive, but constant extra space — no call stack to worry about.
+Before you read on: insertion always adds a leaf and never moves an existing node — beautifully simple. Yet the *order* of insertion completely determines the tree's shape. Insert `[5,3,8,1,4,7,9]` and you get a balanced tree of height 2; insert the *sorted* sequence `[1,2,3,4,…]` and you get a chain of height `n−1`. Why does an operation that "never moves anything" still produce wildly different — and sometimes terrible — trees?
 
-***
+Because each key is placed *relative to the keys already there*, and "always attach a leaf" gives the structure no chance to *correct* a lopsided history. With sorted input, every new key is larger than all existing ones, so the search always turns right and the key attaches at the far-right tip — extending a chain that can never re-balance itself, since insertion only ever *adds* at the bottom and never *rearranges*. The very simplicity that makes insertion `O(h)` (no restructuring) is also what makes a plain BST defenseless against bad input: it faithfully records the order it received. Fixing this requires *breaking* the "never move a node" rule — which is exactly what AVL/red-black trees do with **rotations** during insertion, trading a little restructuring work for a guaranteed `O(log n)` height. So this lesson's elegance and the next balancing lesson's necessity are two sides of the same fact.
 
-# Iterative insertion
+## Your Turn
 
-## Problem Statement
+The reusable insert — note how order changes the shape:
 
-Given the **root** of a binary search tree and a **data** value, insert a new node with the given value and return the root of the updated tree.
-
-You must do this **iteratively**.
-
-### Example 1
-
-> - **Input:** `root = [5, 4, 6, 2, null, null, 7]`, `data = 10`
-> - **Output:** `[5, 4, 6, 2, null, null, 7, null, null, null, 10]`
-
-### Example 2
-
-> - **Input:** `root = [10, 8, 14, 5, null, 12, 17]`, `data = 9`
-> - **Output:** `[10, 8, 14, 5, 9, 12, 17]`
-
-<details>
-<summary><h2>The Solution</h2></summary>
-
-
-
-```python run viz=binary-tree viz-root=root
-from typing import Optional
-from collections import deque
-
-
+```python run
 class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
+    def __init__(self, val):
         self.val = val
-        self.left = left
-        self.right = right
+        self.left = None
+        self.right = None
 
-
-def from_level_order(values):
-    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
-    if not values:
-        return None
-    root = TreeNode(values[0])
-    queue = [root]
-    i = 1
-    while queue and i < len(values):
-        node = queue.pop(0)
-        if i < len(values) and values[i] is not None:
-            node.left = TreeNode(values[i])
-            queue.append(node.left)
-        i += 1
-        if i < len(values) and values[i] is not None:
-            node.right = TreeNode(values[i])
-            queue.append(node.right)
-        i += 1
+def insert(root, val):
+    if root is None:
+        return TreeNode(val)
+    if val < root.val: root.left = insert(root.left, val)
+    elif val > root.val: root.right = insert(root.right, val)
     return root
 
+def height(n):
+    return -1 if n is None else 1 + max(height(n.left), height(n.right))
 
-def to_level_order(root):
-    if not root:
-        return []
-    result, queue = [], deque([root])
-    while queue:
-        node = queue.popleft()
-        result.append(node.val)
-        if node.left:
-            queue.append(node.left)
-        if node.right:
-            queue.append(node.right)
-    return result
-
-
-class Solution:
-    def iterative_insertion(
-        self, root: Optional[TreeNode], data: int
-    ) -> Optional[TreeNode]:
-
-        # If the root is None, create a new node with data and make it
-        # the root
-        if root is None:
-            return TreeNode(data)
-
-        # Initialize a pointer current to traverse the tree starting
-        # from the root
-        current = root
-
-        # Traverse the tree until we find the appropriate position to
-        # insert the data
-        while current:
-
-            # If the data is less than the current node's value, move to
-            # the left subtree
-            if data < current.val:
-
-                # If the left child of the current node is None, insert
-                # data as the left child. Otherwise, move to the left
-                # child and continue searching
-                if current.left is None:
-                    current.left = TreeNode(data)
-                    return root
-
-                # Move to the left child
-                else:
-                    current = current.left
-
-            # If data is greater than or equal to the current node's
-            # valueIf the right child of the current node is None,
-            # insert data as the right child. Otherwise, move to the
-            # right child and continue searching.
-            else:
-                if current.right is None:
-                    current.right = TreeNode(data)
-                    return root
-
-                # Move to the right child
-                else:
-                    current = current.right
-
-        # Return the root of the tree after all insertions
-        return root
-
-
-# Example 1: insert 10 into [5, 4, 6, 2, null, null, 7]
-t1 = from_level_order([5, 4, 6, 2, None, None, 7])
-print(to_level_order(Solution().iterative_insertion(t1, 10)))  # [5, 4, 6, 2, 7, 10]
-
-# Example 2: insert 9 into [10, 8, 14, 5, null, 12, 17]
-t2 = from_level_order([10, 8, 14, 5, None, 12, 17])
-print(to_level_order(Solution().iterative_insertion(t2, 9)))   # [10, 8, 14, 5, 9, 12, 17]
-
-# Insert into empty tree
-print(to_level_order(Solution().iterative_insertion(None, 5))) # [5]
-
-# Insert into single-node tree
-t3 = TreeNode(10)
-print(to_level_order(Solution().iterative_insertion(t3, 3)))   # [10, 3]
-
-# Insert larger value into single-node tree
-t4 = TreeNode(10)
-print(to_level_order(Solution().iterative_insertion(t4, 15)))  # [10, 15]
-
-# Insert into left-skew tree (all lefts)
-t5 = from_level_order([10, 8, None, 6, None, 4])
-print(to_level_order(Solution().iterative_insertion(t5, 5)))   # [10, 8, 6, 4, 5]
-
-# Insert duplicate (goes right)
-t6 = from_level_order([5, 3, 7])
-print(to_level_order(Solution().iterative_insertion(t6, 5)))   # [5, 3, 7, 5]
+balanced = None
+for v in [4, 2, 6, 1, 3, 5, 7]:        # near-balanced insertion order
+    balanced = insert(balanced, v)
+chain = None
+for v in [1, 2, 3, 4, 5, 6, 7]:        # sorted order → degenerate
+    chain = insert(chain, v)
+print(height(balanced), height(chain))   # 2 6  (same 7 keys, very different height)
 ```
 
-```java run viz=binary-tree viz-root=root
-import java.util.*;
-
+```java run
 public class Main {
-    static class TreeNode {
-        int val;
-        TreeNode left;
-        TreeNode right;
-        TreeNode() {}
-        TreeNode(int val) { this.val = val; }
-    }
-
-    static TreeNode fromLevelOrder(Integer... values) {
-        if (values.length == 0 || values[0] == null) return null;
-        TreeNode root = new TreeNode(values[0]);
-        Deque<TreeNode> queue = new ArrayDeque<>();
-        queue.add(root);
-        int i = 1;
-        while (!queue.isEmpty() && i < values.length) {
-            TreeNode node = queue.poll();
-            if (i < values.length && values[i] != null) {
-                node.left = new TreeNode(values[i]);
-                queue.add(node.left);
-            }
-            i++;
-            if (i < values.length && values[i] != null) {
-                node.right = new TreeNode(values[i]);
-                queue.add(node.right);
-            }
-            i++;
-        }
-        return root;
-    }
-
-    static List<Integer> toLevelOrder(TreeNode root) {
-        if (root == null) return new ArrayList<>();
-        List<Integer> result = new ArrayList<>();
-        Deque<TreeNode> queue = new ArrayDeque<>();
-        queue.add(root);
-        while (!queue.isEmpty()) {
-            TreeNode node = queue.poll();
-            result.add(node.val);
-            if (node.left != null) queue.add(node.left);
-            if (node.right != null) queue.add(node.right);
-        }
-        return result;
-    }
-
-    static class Solution {
-        public TreeNode iterativeInsertion(TreeNode root, int data) {
-
-            // If the root is null, create a new node with data and make it
-            // the root
-            if (root == null) {
-                return new TreeNode(data);
-            }
-
-            // Initialize a pointer current to traverse the tree starting
-            // from the root
-            TreeNode current = root;
-
-            // Traverse the tree until we find the appropriate position to
-            // insert the data
-            while (current != null) {
-
-                // If the data is less than the current node's value, move to
-                // the left subtree
-                if (data < current.val) {
-
-                    // If the left child of the current node is null, insert
-                    // data as the left child. Otherwise, move to the left
-                    // child and continue searching
-                    if (current.left == null) {
-                        current.left = new TreeNode(data);
-                        return root;
-                    }
-
-                    // Move to the left child
-                    else {
-                        current = current.left;
-                    }
-                }
-
-                // If data is greater than or equal to the current node's
-                // valueIf the right child of the current node is null,
-                // insert data as the right child. Otherwise, move to the
-                // right child and continue searching.
-                else {
-                    if (current.right == null) {
-                        current.right = new TreeNode(data);
-                        return root;
-                    }
-
-                    // Move to the right child
-                    else {
-                        current = current.right;
-                    }
-                }
-            }
-
-            // Return the root of the tree after all insertions
-            return root;
-        }
-    }
-
-    public static void main(String[] args) {
-        // Example 1: insert 10 into [5, 4, 6, 2, null, null, 7]
-        TreeNode t1 = fromLevelOrder(5, 4, 6, 2, null, null, 7);
-        System.out.println(toLevelOrder(new Solution().iterativeInsertion(t1, 10)));  // [5, 4, 6, 2, 7, 10]
-
-        // Example 2: insert 9 into [10, 8, 14, 5, null, 12, 17]
-        TreeNode t2 = fromLevelOrder(10, 8, 14, 5, null, 12, 17);
-        System.out.println(toLevelOrder(new Solution().iterativeInsertion(t2, 9)));   // [10, 8, 14, 5, 9, 12, 17]
-
-        // Insert into empty tree
-        System.out.println(toLevelOrder(new Solution().iterativeInsertion(null, 5))); // [5]
-
-        // Insert into single-node tree
-        TreeNode t3 = new TreeNode(10);
-        System.out.println(toLevelOrder(new Solution().iterativeInsertion(t3, 3)));   // [10, 3]
-
-        // Insert larger value into single-node tree
-        TreeNode t4 = new TreeNode(10);
-        System.out.println(toLevelOrder(new Solution().iterativeInsertion(t4, 15)));  // [10, 15]
-
-        // Insert into left-skew tree (all lefts)
-        TreeNode t5 = fromLevelOrder(10, 8, null, 6, null, 4);
-        System.out.println(toLevelOrder(new Solution().iterativeInsertion(t5, 5)));   // [10, 8, 6, 4, 5]
-
-        // Insert duplicate (goes right)
-        TreeNode t6 = fromLevelOrder(5, 3, 7);
-        System.out.println(toLevelOrder(new Solution().iterativeInsertion(t6, 5)));   // [5, 3, 7, 5]
-    }
+  static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } }
+  static TreeNode insert(TreeNode r, int v) {
+    if (r == null) return new TreeNode(v);
+    if (v < r.val) r.left = insert(r.left, v);
+    else if (v > r.val) r.right = insert(r.right, v);
+    return r;
+  }
+  static int height(TreeNode n) { return n == null ? -1 : 1 + Math.max(height(n.left), height(n.right)); }
+  public static void main(String[] args) {
+    TreeNode balanced = null;
+    for (int v : new int[]{4, 2, 6, 1, 3, 5, 7}) balanced = insert(balanced, v);
+    TreeNode chain = null;
+    for (int v : new int[]{1, 2, 3, 4, 5, 6, 7}) chain = insert(chain, v);
+    System.out.println(height(balanced) + " " + height(chain));   // 2 6
+  }
 }
 ```
 
+This is a structural lesson — insertion plus search are the building blocks for construction, deletion, and the BST patterns.
 
-<details>
-<summary><strong>Trace — root = [50, 30, 70, 20, 40], data = 25</strong></summary>
+## Reflect & Connect
 
-```
-Step 1 │ current = 50 │ 25 < 50  → check current.left (30) → not null → current = 30
-Step 2 │ current = 30 │ 25 < 30  → check current.left (20) → not null → current = 20
-Step 3 │ current = 20 │ 25 ≥ 20  → check current.right (null) → SLOT FOUND
-        attach: 20.right = new TreeNode(25)
-Result: tree now has 25 as the right child of 20 ✓
-```
+Insertion is "search, then attach a leaf" — simple, with one consequential side effect:
 
-</details>
+- **New keys are always leaves** — insertion only adds a link; it never relocates an existing node. This is the cleanest BST mutation, and the conceptual opposite of deletion, which must fill the hole left by a removed node.
+- **Order determines shape** — the same keys produce a balanced tree or a chain depending on insertion order. Bulk-loading *sorted* data into a plain BST is the classic mistake; insert in random or median-first order to stay bushy, or use a self-balancing tree.
+- **Balancing breaks the "never move" rule** — [AVL](/cortex/data-structures-and-algorithms/trees-avl-tree-introduction-to-avl-trees) and [red-black](/cortex/data-structures-and-algorithms/trees-red-black-tree-introduction-to-red-black-trees) trees do the same search-and-attach, then perform `O(1)` **rotations** back up the path to restore balance, guaranteeing `h = O(log n)` regardless of order. Plain-BST insertion is the foundation they build on.
 
-</details>
-<details>
-<summary><h2>Final Takeaway</h2></summary>
+**Prerequisites:** [Recursive Searching in BSTs](/cortex/data-structures-and-algorithms/trees-binary-search-tree-recursive-searching-in-binary-search-trees).
+**What's next:** the hard inverse — removing a key and filling the hole — [Deletion in BSTs](/cortex/data-structures-and-algorithms/trees-binary-search-tree-deletion-in-binary-search-trees).
 
+## Recall
 
-Insertion in a BST is just **search that doesn't fail** — instead of returning `null` when the descent walks off the tree, we *create a node* and wire it into the parent's child pointer. Single root-to-leaf path. O(h) time. The recursive version returns the (possibly new) subtree at every level so the parent can re-attach it; the iterative version peeks at the child before descending so it can attach in-place.
+> **Mnemonic:** *Insert = search for the key; the empty slot where the search fails is its spot — attach a new leaf. `O(h)`. Existing nodes never move. Insertion order alone fixes the shape.*
 
-Two patterns worth keeping:
+| | |
+|---|---|
+| Method | search down; at the empty child, create a new leaf |
+| Property | new keys are always leaves; no existing node moves |
+| Duplicates | ignore (or count) by policy — never two equal keys |
+| Cost | `O(h)` (search + `O(1)` attach) |
+| Caveat | insertion order determines balance; sorted input → height-`n` chain |
 
-1. **Search that creates on miss** — the same shape powers insert in tries, hash chains, and even disk B-trees.
-2. **"Return the subtree, parent re-attaches"** — a recursion idiom you'll use again in deletion (next lesson) and in tree-reshaping problems generally.
+- **Q:** Where does a new key get attached? **A:** At the empty child slot where a search for it falls off the tree — as a new leaf.
+- **Q:** Does insertion move existing nodes? **A:** No — it only adds one link; new keys are always leaves.
+- **Q:** How are duplicates handled? **A:** By policy — usually ignored (or counted); never inserted as a second equal key.
+- **Q:** Why does insertion order matter so much? **A:** Each key attaches relative to existing keys with no re-balancing, so sorted input builds a degenerate chain; balancing trees use rotations to prevent this.
 
-Two non-obvious points to remember:
+## Sources & Verify
 
-- **Insertion order matters.** Inserting the same set of values in different orders gives different tree shapes — *and* different heights. Sorted input → skewed disaster. Random input → roughly balanced. We'll quantify this in the next lesson on construction.
-- **Duplicates have no canonical home.** Some libraries reject them, some send them right (this lesson), some send them left, some allow multi-sets. Whichever rule you pick, *be consistent* — every operation (insert, delete, search) must agree.
-
-Now that we can grow a BST, the next reasonable question is: how do we *shrink* it? Removing a value is much trickier than adding one — especially when the doomed node has two children. That's the next lesson.
-
-</details>
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
-
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
-
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
-
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
-
-<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
-<!--       Guidance: bulleted list of gotchas -->
-
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
-
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
-
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
-
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
-
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
-
-<!-- TODO: Final Takeaway — missing, needs to be written -->
-<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->
+- **CLRS**, *Introduction to Algorithms*, 4th ed., §12.3 — `TREE-INSERT` and the leaf-attachment property.
+- **Sedgewick & Wayne**, *Algorithms*, 4th ed., §3.2 — BST insertion and the effect of insertion order on shape.
+- The search-and-attach insertion and order-dependent shape are standard; both runnable blocks are verified by running (in-order stays sorted after inserting `6`; balanced vs sorted orders give heights `2` vs `6`).

@@ -62,7 +62,6 @@ adjacent equal values count.
 
 Keep a hash map `element_index` from each value to the **most recent index** at which it appeared. When the right pointer reaches `arr[end]`, look the value up: if it's in the map *and* the gap to its stored index is `≤ k`, the two occurrences are a twin within distance `k` — return `true`. Otherwise overwrite the map entry with the current index. Conceptually the map's live entries are a sliding set of the last `k + 1` values; the window is kept that size by deleting `arr[start]`'s entry once `end − start ≥ k` and advancing `start`.
 
-> 🖼 Diagram — Twin in proximity — maintain a set of the last k+1 values; if the new element is already in the set, a twin exists within distance k.
 ```d2
 direction: right
 
@@ -211,7 +210,7 @@ public class Main {
 
 </details>
 <details>
-<summary><h2>Final Takeaway</h2></summary>
+<summary><h2>Key Takeaway</h2></summary>
 
 
 The variable-sized sliding window is the most flexible hash-table technique in this section. It handles a vast family of "find the longest/shortest contiguous something with property P" problems in **O(N)**, replacing nested-loop brute force with a single pass of two pointers.

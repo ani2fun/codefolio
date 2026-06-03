@@ -2,7 +2,7 @@
 title: "Memorize: Prefix Sum"
 summary: "Pattern recognition triggers, template code, common mistakes, and quick recall."
 prereqs:
-  - 11-pattern-prefix-sum/02-problems
+  - 11-pattern-prefix-sum/01-pattern
 ---
 
 # Memorize: Prefix Sum
@@ -30,8 +30,6 @@ Picture a bank statement with a running balance printed after every transaction.
 ---
 
 ## Visual Summary
-
-> 🖼 Diagram — TODO: 3 frames — the array with its prefix-sum row beneath / a hash map filling with prefix-value → index as the sweep advances / two equal (or K-apart) prefix values highlighted, with the slice between them boxed as the answer.
 
 ---
 

@@ -2,7 +2,7 @@
 title: "Memorize: Two Pointers"
 summary: "Pattern recognition triggers, template code, common mistakes, and quick recall."
 prereqs:
-  - 08-pattern-two-pointers/02-problems
+  - 08-pattern-two-pointers/01-pattern
 ---
 
 # Memorize: Two Pointers (DLL)
@@ -30,8 +30,6 @@ Picture proofreaders walking a printed list from opposite ends. One reads top-do
 ---
 
 ## Visual Summary
-
-> 🖼 Diagram — TODO: 3 frames — initial state with `left` at `head` and `right` at `tail`, mid-traversal with both stepped one inward, final state with pointers meeting (odd length) or crossing (even length).
 
 ---
 

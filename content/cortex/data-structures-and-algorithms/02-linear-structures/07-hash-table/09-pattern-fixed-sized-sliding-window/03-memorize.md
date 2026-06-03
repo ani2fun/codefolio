@@ -2,7 +2,7 @@
 title: "Memorize: Fixed-Sized Sliding Window"
 summary: "Pattern recognition triggers, template code, common mistakes, and quick recall."
 prereqs:
-  - 09-pattern-fixed-sized-sliding-window/02-problems
+  - 09-pattern-fixed-sized-sliding-window/01-pattern
 ---
 
 # Memorize: Fixed-Sized Sliding Window
@@ -30,8 +30,6 @@ Picture a security desk watching a corridor exactly `k` people long. As the queu
 ---
 
 ## Visual Summary
-
-> 🖼 Diagram — TODO: 3 frames — initial window `[0..k−1]` with its frequency map filled; one slide showing the left element's count decremented (key deleted at zero) and the right element's count incremented; the window at the end of the sequence with the final map and the per-window answer read off it.
 
 ---
 

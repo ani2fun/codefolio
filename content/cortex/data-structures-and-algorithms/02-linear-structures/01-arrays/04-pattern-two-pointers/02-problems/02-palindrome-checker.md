@@ -64,7 +64,6 @@ Place `left` at index `0` and `right` at index `n − 1`. At each step, the algo
 
 The naive alternative wastes both time and memory. You could filter the string, lowercase it, then build a reversed copy and compare the two strings character by character — `O(n)` time but also `O(n)` extra space for the filtered and reversed copies. Two pointers do the work in one pass with `O(1)` extra space and gain an early-exit bonus: a mismatch at index `0` stops the algorithm before it touches the rest of the string.
 
-> ▶ Interactive Diagram — Checking "racecar" for palindrome — every mirror pair matches; when pointers meet at the centre, the check passes.
 ```d3 widget=array-1d
 {
   "steps": [
@@ -446,7 +445,6 @@ The structure is identical to Flip Characters — the only difference is the loo
 <summary><h2>What Failure Looks Like</h2></summary>
 
 
-> 🖼 Diagram — The check fails immediately on the first pair — 'h' ≠ 'o' is enough to return False without looking at the rest.
 ```mermaid
 ---
 config:

@@ -6,15 +6,15 @@ Use this page as the chapter map for hash table. The guides are ordered from fun
 
 ## Start Here — the learning path
 
-- [Introduction To Hash Tables](/cortex/data-structures-and-algorithms/linear-structures-hash-table-introduction-to-hash-tables)
+- [Hash Tables](/cortex/data-structures-and-algorithms/linear-structures-hash-table-what-is-a-hash-table)
 - [Separate Chaining](/cortex/data-structures-and-algorithms/linear-structures-hash-table-separate-chaining)
 - [Linear Probing](/cortex/data-structures-and-algorithms/linear-structures-hash-table-linear-probing)
 - [Quadratic Probing](/cortex/data-structures-and-algorithms/linear-structures-hash-table-quadratic-probing)
 - [Double Hashing](/cortex/data-structures-and-algorithms/linear-structures-hash-table-double-hashing)
 - [Pattern: Counting](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting-pattern)
 - [Pattern: Key Generation](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-pattern-generation-pattern)
-- [Pattern: Fixed-Sized Sliding Window](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-fixed-sized-sliding-window-pattern)
-- [Pattern: Variable-Sized Sliding Window](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-variable-sized-sliding-window-pattern)
+- [Pattern: Fixed-Size Sliding Window](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-fixed-sized-sliding-window-pattern)
+- [Pattern: Variable-Size Sliding Window](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-variable-sized-sliding-window-pattern)
 - [Pattern: Prefix Sum](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-prefix-sum-pattern)
 
 ## Practice

@@ -2,7 +2,7 @@
 title: "Memorize: Two Pointers"
 summary: "Pattern recognition triggers, template code, common mistakes, and quick recall."
 prereqs:
-  - 04-pattern-two-pointers/02-problems
+  - 04-pattern-two-pointers/01-pattern
 ---
 
 # Memorize: Two Pointers
@@ -30,8 +30,6 @@ Imagine two readers standing at opposite ends of a long shelf of books, walking 
 ---
 
 ## Visual Summary
-
-> 🖼 Diagram — Three frames of a two-pointer traversal — start with pointers at the ends, mid-traversal with both moved inward by one, end with the pointers meeting in the middle.
 
 ---
 

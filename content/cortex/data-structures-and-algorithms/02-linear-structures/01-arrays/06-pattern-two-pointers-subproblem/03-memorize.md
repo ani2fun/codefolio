@@ -2,7 +2,7 @@
 title: "Memorize: Two Pointers Subproblem"
 summary: "Pattern recognition triggers, template code, common mistakes, and quick recall."
 prereqs:
-  - 06-pattern-two-pointers-subproblem/02-problems
+  - 06-pattern-two-pointers-subproblem/01-pattern
 ---
 
 # Memorize: Two Pointers Subproblem
@@ -30,8 +30,6 @@ Picture seating guests at a long banquet table to satisfy a budget rule — ever
 ---
 
 ## Visual Summary
-
-> 🖼 Diagram — TODO: 3 frames showing (1) the outer driver picking the first fixed element on a sorted array, (2) the inner two-pointer mid-sweep over the suffix with `left` and `right` markers, (3) the outer driver advancing to the next fixed element and the inner pointers resetting to the new suffix.
 
 ---
 

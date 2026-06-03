@@ -60,7 +60,6 @@ After sorting, place `left = 0` and `right = n − 1`; track `max_sum = −1` as
 
 What breaks without sorting? The greedy `left++` after a valid pair relies on `arr[right]` being the largest available partner. On an unsorted array that guarantee is gone — a larger value could be anywhere, so advancing `left` would discard a candidate that hadn't actually exhausted its best option. Restoring correctness would require scanning all remaining values for each `left`, collapsing back to O(n²) time.
 
-> 🖼 Diagram — Target Limited Two Sum — record the best valid sum on each match, then push left forward to search for something even larger.
 ```mermaid
 ---
 config:

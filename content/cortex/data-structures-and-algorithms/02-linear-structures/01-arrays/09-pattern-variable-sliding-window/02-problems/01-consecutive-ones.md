@@ -210,7 +210,6 @@ public class Main {
 ```
 
 
-> ▶ Interactive Diagram — TODO: add caption
 ```d3 widget=array-1d
 {
   "steps": [

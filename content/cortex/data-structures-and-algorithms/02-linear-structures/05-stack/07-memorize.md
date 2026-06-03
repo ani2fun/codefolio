@@ -29,8 +29,6 @@ Picture a stack of clean plates on a kitchen counter. You add a washed plate by 
 
 ## Visual Summary
 
-> 🖼 Diagram — TODO: 3 frames — empty stack / one push / several pushes with TOP marked
-
 ---
 
 ## Key Operations

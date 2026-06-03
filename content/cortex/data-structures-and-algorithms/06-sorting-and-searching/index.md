@@ -2,18 +2,18 @@
 
 Two of the oldest problems in computing, and still two of the most heavily used. Most "real" algorithm work in production code is one of these two operations, hidden behind a method call. Knowing which sort or search is running underneath — and why — is the difference between debugging in seconds and debugging for hours.
 
-> How to read this chapter: follow **Start Here** top to bottom — that is the teaching path. Drill it in **Practice** once it clicks. Use **Reference** (recall cards, synthesis, design) for review, not first reading.
+> How to read this chapter: follow **Start Here** top to bottom — that is the teaching path. Drill it in **Practice** once it clicks.
 
 ## Start Here — the learning path
 
-- [Introduction To Sorting](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-introduction-to-sorting)
+- [Introduction to Sorting](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-introduction-to-sorting)
 - [Bubble Sort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-bubble-sort)
 - [Selection Sort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-selection-sort)
 - [Insertion Sort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-insertion-sort)
 - [Counting Sort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-counting-sort)
 - [Quicksort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-quicksort)
 - [Dutch National Flag Sort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-dutch-national-flag-sort)
-- [Three Way Quicksort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-three-way-quicksort)
+- [Three-Way Quicksort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-three-way-quicksort)
 - [Merge Sort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-merge-sort)
 - [Heapsort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-heapsort)
 - [Pattern: Quickselect](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-quickselect-pattern)
@@ -66,7 +66,7 @@ Do these after the matching pattern in Start Here.
 
 ### Minimum Predicate Search
 - [Punctual Arrival Speed](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search-problems-punctual-arrival-speed)
-- [Penalty With Balls](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search-problems-penalty-with-balls)
+- [Penalty with Balls](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search-problems-penalty-with-balls)
 - [Minimum Shipping Capacity](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search-problems-minimum-shipping-capacity)
 - [Trip Completion Frenzy](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search-problems-trip-completion-frenzy)
 
@@ -75,19 +75,3 @@ Do these after the matching pattern in Start Here.
 - [Build Staircase](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-maximum-predicate-search-problems-build-staircase)
 - [K Ribbons](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-maximum-predicate-search-problems-k-ribbons)
 - [Equalise Water](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-maximum-predicate-search-problems-equalise-water)
-
-## Reference
-
-Quick-recall and design material. Skim, don't study top to bottom.
-
-- [Memorize: Sorting](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-memorize)
-- [Memorize: Quickselect](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-quickselect-memorize)
-- [Memorize: Custom Compare](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-custom-compare-memorize)
-- [Pattern Synthesis: Sorting](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-synthesis)
-- [Memorize: Searching](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-memorize)
-- [Memorize: Binary Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-binary-search-memorize)
-- [Memorize: Lower Bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-lower-bound-memorize)
-- [Memorize: Upper Bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-upper-bound-memorize)
-- [Memorize: Minimum Predicate Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search-memorize)
-- [Memorize: Maximum Predicate Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-maximum-predicate-search-memorize)
-- [Pattern Synthesis: Searching](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-synthesis)

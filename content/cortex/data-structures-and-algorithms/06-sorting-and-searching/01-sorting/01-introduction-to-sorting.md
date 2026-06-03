@@ -1,600 +1,130 @@
 ---
-title: "Introduction To Sorting"
-summary: "<!-- TODO: summary -->"
+title: "Introduction to Sorting"
+summary: "Sorting is the universal preprocessing step: a one-time O(n log n) investment that turns search into O(log n) and unlocks dedup, range queries, median, and merging. This overview frames the section — the classification axes (comparison vs counting, stable, in-place, adaptive) and the Ω(n log n) lower bound for comparison sorts."
+prereqs:
+  - 02-linear-structures/01-arrays/01-what-is-an-array
 ---
 
-# 1. Introduction to Sorting
+# Introduction to Sorting
 
-Your phone has ten contacts. Finding "Sarah" takes a second; you scan the list and there she is. Now imagine your phone has *ten thousand* contacts, dropped in randomly, no order at all. The same act of finding Sarah just turned into "scroll past nine hundred and ninety-nine other names hoping you don't miss her." The list got 1,000 times bigger; the work got 1,000 times worse. **The cost of disorder grows in lockstep with the size of the data.**
+## Why It Exists
 
-Sorting is the fix. By imposing one simple rule — *every element comes before the next when ordered by some criterion* — we collapse a problem that scales linearly with `n` (find one item by scanning all of them) into one that scales logarithmically with `n` (binary search a sorted list). At interview scale, that's a 30× speed-up. At Google scale, it's the difference between "search returns in milliseconds" and "search times out."
+Disorder gets more expensive as data grows. Finding one value in an *unsorted* array means checking every element — `O(n)`. In a *sorted* array, binary search finds it in `O(log n)`: a million items go from a million comparisons to twenty.
 
-By the end of this lesson you'll know what sorting is, why it's the silent foundation under most algorithms in this course, the six dimensions sorting algorithms get classified along (and the trade-offs they expose), and how to write the simplest sorting-related function: a verifier that checks if an array is already sorted.
+That's why sorting is the most common preprocessing step in computing. You pay `O(n log n)` *once* to order the data, and a whole class of operations becomes cheap forever after: membership and predecessor/successor queries (binary search), removing duplicates (equal items sit adjacent), range queries ("all values in [a, b]"), finding the median or `k`-th smallest, and merging two datasets. Sorting doesn't solve those problems — it makes them *easy*. This section builds the sorting toolkit; this lesson is the map.
 
-## Table of contents
+## See It Work
 
-1. [Why disorder gets worse with scale](#why-disorder-gets-worse-with-scale)
-2. [Sorting as a universal fix](#sorting-as-a-universal-fix)
-3. [Classification of sorting algorithms](#classification-of-sorting-algorithms)
-4. [Order check](#order-check)
-
-***
-
-# Why Disorder Gets Worse With Scale
-
-Disorganised information feels harmless when there's a little of it. When there's a lot, it becomes the bottleneck. Three concrete examples show why.
-
----
-
-## Finding a Contact in Your Phone
-
-Imagine your phone has only ten contacts. Finding "Sarah" takes seconds — you scan, she's there, done. Even if the names are stored in random order, there aren't many places for her to hide. At this scale, the absence of order is invisible.
-
-```d2
-direction: right
-
-phone_small: "Phone — 10 contacts" {
-  grid-rows: 5
-  grid-columns: 2
-  grid-gap: 0
-  c1: "Mike"
-  c2: "Aaron"
-  c3: "Sarah" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  c4: "Tom"
-  c5: "Lisa"
-  c6: "Kevin"
-  c7: "Bob"
-  c8: "Emma"
-  c9: "Alex"
-  c10: "Cara"
-}
-```
-
-<p align="center"><strong>Ten random contacts. Sarah is highlighted. Scanning is fast — there are only nine other places to check.</strong></p>
-
-Now imagine your phone has *ten thousand* contacts, all saved randomly. Suddenly the same task — *find Sarah* — is overwhelming. You're scrolling through page after page; even if Sarah is on page 47, you've scrolled through pages 1–46 to confirm she's not there.
-
-```d2
-direction: right
-
-phone_big: "Phone — 10,000 contacts (random order)" {
-  page: "page 1\n— Mike, Aaron, Tom, Bob..."
-  dots: "...500 pages..."
-  here: "page 47\n— ...Sarah..." {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  more: "...pages 48-1000"
-}
-```
-
-<p align="center"><strong>The same task with 10,000 random entries. Finding Sarah requires scanning, on average, half the list — about 5,000 names.</strong></p>
-
-That's a *thousand-fold* increase in work for a hundred-fold increase in data. The blow-up is *super-linear* because we have to do more work *per element* on top of having more elements. Sorting fixes this.
-
----
-
-## Online Stores Showing Products
-
-A small store with ten products lets a shopper compare every option at a glance. A massive marketplace with millions of products forces tools — filters, search, sort by price — onto the user just to make the inventory navigable.
-
-```d2
-direction: right
-
-small: "Store — 10 products" {
-  shape: oval
-  label: "every item visible\nat a glance"
-  style.fill: "#bbf7d0"
-  style.stroke: "#16a34a"
-}
-
-big: "Store — 10 million products" {
-  shape: oval
-  label: "without filters / sort,\nthe inventory is unusable"
-  style.fill: "#fecaca"
-  style.stroke: "#dc2626"
-}
-```
-
-<p align="center"><strong>The qualitative jump from "browse-able" to "unusable" happens somewhere around the scale where you can no longer hold the inventory in working memory. Sorting + filtering is the workaround.</strong></p>
-
-For the store *owner*, the gap is even larger. Updating inventory, tracking trends, identifying dead stock — all of these become exponentially harder if the underlying data isn't ordered.
-
----
-
-## Organising Student Grades
-
-A class of ten students lets a teacher manually identify top performers and stragglers. A university with hundreds of thousands of students requires *systems* — and those systems lean entirely on sort-based algorithms (rank, top-K, distribution analysis) to surface the relevant subset.
-
-```d2
-direction: right
-
-class_small: "Class — 10 students" {
-  grid-rows: 1
-  grid-columns: 5
-  grid-gap: 0
-  s1: "84"
-  s2: "76"
-  s3: "92" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  s4: "68"
-  s5: "(...5 more)"
-}
-
-uni_big: "University — 200,000 students\n(without sorting, top-100 is impossible)" {style.fill: "#fecaca"; style.stroke: "#dc2626"}
-```
-
-<p align="center"><strong>The same task — "show me the top performers" — collapses from "look at the list" to "run a sort over a database" as scale grows. The algorithm doesn't change; the cost of doing it manually does.</strong></p>
-
-> *Pause and predict — for each of the three scenarios, sketch what the work looks like with sorted data instead of random. How does the per-query cost change?*
-
-With sorted contacts: jump straight to the "S" section — Sarah is among ~400 names, scannable in seconds. With sorted products by price: skip directly to the price range you care about, ignore the rest. With sorted grades: top performers are at the top of the list, no scanning required.
-
-The pattern is the same in all three cases. **Sorting changes the per-query cost from linear to logarithmic** — the difference between "look at every item" and "binary-search to the right spot."
-
----
-
-## Key Takeaway
-
-The cost of disorder scales worse than linearly with data size. Sorting fixes this once, ahead of time, so every later query pays a much smaller price. Next, we'll formalise what sorting *is* and why it's hiding inside almost every other algorithm in this course.
-
-***
-
-# Sorting as a Universal Fix
-
-> **Sorting** is the arrangement of items in a specific order — typically ascending or descending — based on some comparison criterion (numeric value, alphabetical order, custom rule, etc.).
-
-That's the definition. The leverage comes from what *follows* sorting. A sorted list is the foundation for:
-
-- **Binary search** — `O(log n)` lookups instead of `O(n)`. We saw this in the Searching chapter's Binary Search lesson.
-- **Median, percentiles, top-K** — `O(1)` after sorting; otherwise `O(n)` per query.
-- **Merging multiple datasets** — sorted inputs merge in a single pass; unsorted inputs need a second sort or a hash join.
-- **Detecting duplicates / running uniqueness checks** — adjacent equal elements after sorting; constant-space scan.
-- **Range queries** — sorted indices let you answer "all items between X and Y" in `O(log n + k)` where k is the count.
-
-Most non-trivial software has *something* sorted somewhere. Database indexes, search engines, file systems, query optimisers, machine-learning preprocessing pipelines — all rely on sort-based primitives.
-
----
-
-## What Comes Out of This Section
-
-The next 11 lessons cover the canonical sorting algorithms, in roughly this order:
-
-| File | Algorithm | Family | When to use |
-|---|---|---|---|
-| 02 | Bubble sort | Comparison-based, in-place | Teaching, very small inputs |
-| 03 | Selection sort | Comparison-based, in-place | When swap count is the bottleneck (memory writes are expensive) |
-| 04 | Insertion sort | Comparison-based, in-place, adaptive | Almost-sorted inputs, small inputs |
-| 05 | Counting sort | Counting-based, out-of-place | Small integer ranges |
-| 06–08 | Quicksort variants | Comparison-based, in-place, divide-and-conquer | General-purpose, average `O(n log n)` |
-| 09 | Merge sort | Comparison-based, out-of-place, divide-and-conquer | When stability is required, external sorting |
-| 10 | Heap sort | Comparison-based, in-place | When worst-case `O(n log n)` matters |
-| 11 | Quickselect (pattern) | Quicksort variant for top-K | Finding `k`-th element in `O(n)` average |
-| 12 | Custom compare (pattern) | Adapter for any sort | Sorting by composite or custom criteria |
-
-Each algorithm makes specific trade-offs across **time complexity**, **space complexity**, **stability**, and **adaptiveness**. The next section names those trade-offs precisely so you can talk about them with the right vocabulary.
-
----
-
-## Key Takeaway
-
-Sorting is the universal pre-processing step that turns expensive per-query work into a one-time cost. The next 11 lessons are 11 different ways to do the same thing — each optimised for a different set of trade-offs. Before we look at any of them, we need a vocabulary for the trade-offs.
-
-***
-
-# Classification of Sorting Algorithms
-
-Sorting algorithms differ along **six axes**. Knowing all six lets you read any algorithm's complexity table at a glance and predict whether it's the right tool for a given input. We'll re-encounter every one of these properties when we discuss specific algorithms in the upcoming files.
-
----
-
-## Axis 1 — Comparison-Based vs Counting-Based
-
-A **comparison-based** algorithm decides ordering by *comparing pairs of elements* (less-than, greater-than, equal). The output is a permutation of the input that satisfies the comparison rule.
-
-A **counting-based** algorithm doesn't compare elements — it counts how many elements have each possible value, then reconstructs the sorted list from the counts. This works only when the value range is small (e.g., integers in `[0, 1000]`).
-
-```d2
-direction: right
-
-comp: "Comparison sort" {
-  shape: oval
-  label: "uses < / > / ==\nworks on any orderable type\nO(n log n) lower bound"
-  style.fill: "#dbeafe"
-  style.stroke: "#3b82f6"
-}
-
-count: "Counting sort" {
-  shape: oval
-  label: "counts values, reconstructs\nworks on bounded integer ranges\nO(n + k) where k = range size"
-  style.fill: "#fde68a"
-  style.stroke: "#d97706"
-}
-```
-
-<p align="center"><strong>Comparison sort vs counting sort. Comparison sort is universal but bounded by <code>O(n log n)</code>; counting sort beats this bound when the value range is bounded.</strong></p>
-
-**Examples** — Bubble, Selection, Insertion, Quicksort, Merge sort, Heapsort are all comparison-based. Counting sort (the Counting Sort lesson) is the canonical counting-based example.
-
----
-
-## Axis 2 — Stable vs Unstable
-
-A **stable** sort preserves the relative order of equal elements. If two records have equal keys and one came first in the input, that one comes first in the output too.
-
-An **unstable** sort makes no such guarantee. Equal elements may end up in any order relative to each other.
-
-```d2
-direction: down
-
-input: "Input (sort by grade)" {
-  grid-rows: 1
-  grid-columns: 3
-  grid-gap: 0
-  a: "(Alice, 85)"
-  b: "(Bob, 85)"
-  c: "(Carol, 80)"
-}
-
-stable: "Stable sort output" {
-  grid-rows: 1
-  grid-columns: 3
-  grid-gap: 0
-  a: "(Carol, 80)"
-  b: "(Alice, 85)"
-  c: "(Bob, 85)"
-}
-
-unstable: "Unstable sort output" {
-  grid-rows: 1
-  grid-columns: 3
-  grid-gap: 0
-  a: "(Carol, 80)"
-  b: "(Bob, 85)"
-  c: "(Alice, 85)"
-}
-
-input -> stable: stable sort (Alice before Bob, as in input)
-input -> unstable: unstable sort (order of equal-key elements can flip)
-```
-
-<p align="center"><strong>Stability matters when sorting by multiple keys in sequence. Stable sort preserves the relative order of equal elements; unstable sort does not.</strong></p>
-
-**Why stability matters.** When you sort by *two* keys (say, first by grade, then by name), stability preserves the secondary order. With an unstable sort you'd have to sort by name first then grade, and even then it's not always reliable.
-
-**Examples** — Bubble, Insertion, Merge sort are stable. Selection, Quicksort, Heapsort are unstable.
-
----
-
-## Axis 3 — In-Place vs Out-of-Place
-
-An **in-place** algorithm sorts the input array directly, using only `O(1)` (or `O(log n)` for recursive variants) extra memory.
-
-An **out-of-place** algorithm allocates auxiliary memory proportional to the input size — typically `O(n)`.
-
-```d2
-direction: right
-
-in_place: "In-place" {
-  shape: oval
-  label: "mutates input directly\nO(1) extra memory"
-  style.fill: "#bbf7d0"
-  style.stroke: "#16a34a"
-}
-
-out_of_place: "Out-of-place" {
-  shape: oval
-  label: "allocates auxiliary array\nO(n) extra memory"
-  style.fill: "#fecaca"
-  style.stroke: "#dc2626"
-}
-```
-
-<p align="center"><strong>In-place vs out-of-place. The trade-off is between memory cost and algorithmic flexibility — out-of-place often allows simpler / cleaner divide-and-conquer.</strong></p>
-
-**Why it matters.** On embedded systems, in-place algorithms are non-negotiable — there isn't memory to spare. On modern systems with abundant RAM, the trade-off is often won by out-of-place algorithms because their cleaner structure makes them easier to parallelise.
-
-**Examples** — Bubble, Selection, Insertion, Heapsort, Quicksort are in-place. Merge sort and Counting sort are out-of-place.
-
----
-
-## Axis 4 — Adaptive vs Non-Adaptive
-
-An **adaptive** algorithm runs faster on inputs that are partially or fully sorted. Some adaptive algorithms recognise sorted prefixes and skip work; others detect "no swaps needed" and exit early.
-
-A **non-adaptive** algorithm runs in the same time regardless of input order — sorted or random or reverse-sorted, the work is identical.
-
-**Why it matters.** Real-world data is often *almost* sorted (a stream that's mostly chronological with a few latencies, a list with one element out of place). Adaptive algorithms exploit this for big speed-ups in practice.
-
-**Examples** — Bubble (with the early-exit optimisation), Insertion sort are adaptive. Selection sort, Merge sort, Heapsort are non-adaptive.
-
----
-
-## Axis 5 — Internal vs External
-
-An **internal** sort assumes the entire dataset fits in main memory.
-
-An **external** sort handles datasets too large for memory, streaming through disk or cloud storage in chunks.
-
-We won't focus on external sorting in this section, but mention it because it's a major engineering concern at scale (think log analysis, batch ETL pipelines). External sort is typically a variant of merge sort.
-
----
-
-## Axis 6 — Recursive vs Iterative
-
-A **recursive** algorithm uses divide-and-conquer or self-similar reduction (mergesort, quicksort). Stack depth is `O(log n)` typically.
-
-An **iterative** algorithm uses simple loops. Stack depth is `O(1)`.
-
-The line is blurry — most recursive algorithms have iterative equivalents (often using an explicit stack) and vice versa. The choice is usually about clarity vs. constant-factor performance.
-
----
-
-## Putting It All Together
-
-Below is the full classification table for the algorithms covered in this section. Use it as a reference when choosing a sort.
-
-| Algorithm | Comparison? | Stable? | In-place? | Adaptive? | Best | Avg | Worst |
-|---|---|---|---|---|---|---|---|
-| Bubble sort | ✓ | ✓ | ✓ | ✓ | `O(n)` | `O(n²)` | `O(n²)` |
-| Selection sort | ✓ | ✗ | ✓ | ✗ | `O(n²)` | `O(n²)` | `O(n²)` |
-| Insertion sort | ✓ | ✓ | ✓ | ✓ | `O(n)` | `O(n²)` | `O(n²)` |
-| Counting sort | ✗ | ✓ | ✗ | ✗ | `O(n+k)` | `O(n+k)` | `O(n+k)` |
-| Quicksort | ✓ | ✗ | ✓ | ✗ | `O(n log n)` | `O(n log n)` | `O(n²)` |
-| Merge sort | ✓ | ✓ | ✗ | ✗ | `O(n log n)` | `O(n log n)` | `O(n log n)` |
-| Heapsort | ✓ | ✗ | ✓ | ✗ | `O(n log n)` | `O(n log n)` | `O(n log n)` |
-
-There's no "best" algorithm — only the right choice for a given combination of input size, value range, stability requirements, memory constraints, and worst-case guarantees. The next 11 files unpack each algorithm and the conditions under which it wins.
-
----
-
-## Key Takeaway
-
-Six axes — comparison-vs-counting, stable-vs-unstable, in-place-vs-out-of-place, adaptive-vs-non-adaptive, internal-vs-external, recursive-vs-iterative — describe every sorting algorithm. Knowing the axis values is enough to predict whether a given algorithm fits a given problem. Now we'll write the simplest sort-adjacent function: a verifier.
-
-***
-
-# Order Check
-
-A warm-up that sets up the rest of the section. Before we sort, we need a way to *verify* that an array is sorted — both as a building block (some algorithms terminate when the input is detected as sorted) and as a sanity check (we'll use this to validate every sort we write later).
-
----
-
-## The Problem
-
-Given an integer array `arr`, return `true` if it's sorted in non-decreasing order, else `false`. ("Non-decreasing" means duplicates are allowed; `[1, 1, 2]` is non-decreasing.)
-
-```
-Input:  arr = [1, 2, 3, 4, 5]
-Output: true
-
-Input:  arr = [1, 1, 1, 4, 5]
-Output: true
-
-Input:  arr = [1, 3, 1, 4, 5]
-Output: false
-```
-
----
-
-<details>
-<summary><h2>What Does "Sorted" Mean Operationally?</h2></summary>
-
-
-Non-decreasing order means every adjacent pair `(arr[i-1], arr[i])` satisfies `arr[i-1] ≤ arr[i]`. Equivalently: there's no pair where the left element is *strictly larger* than the right.
-
-```d2
-direction: right
-
-ok: "Sorted" {
-  grid-rows: 2
-  grid-columns: 5
-  grid-gap: 0
-  a0: "1"
-  a1: "2"
-  a2: "3"
-  a3: "4"
-  a4: "5"
-  c0: "✓"
-  c1: "✓"
-  c2: "✓"
-  c3: "✓"
-  c4: ""
-}
-
-bad: "Not sorted" {
-  grid-rows: 2
-  grid-columns: 5
-  grid-gap: 0
-  a0: "1"
-  a1: "3"
-  a2: "1" {style.fill: "#fecaca"; style.stroke: "#dc2626"}
-  a3: "4"
-  a4: "5"
-  c0: "✓"
-  c1: "✗" {style.fill: "#fecaca"; style.stroke: "#dc2626"}
-  c2: "✓"
-  c3: "✓"
-  c4: ""
-}
-```
-
-<p align="center"><strong>The check: every adjacent pair must satisfy <code>a[i-1] ≤ a[i]</code>. The first violation lets us return <code>false</code> immediately.</strong></p>
-
-</details>
-<details>
-<summary><h2>The Algorithm</h2></summary>
-
-
-A single linear scan. For each `i` from `1` to `n-1`, compare `arr[i]` with `arr[i-1]`. If we ever see `arr[i] < arr[i-1]`, return `false`. If the loop completes without finding a violation, the array is sorted.
-
-> *Predict before reading on — what should the algorithm return for an empty array? An array of length 1?*
-
-Both are vacuously sorted — there are no pairs to compare, so the loop body never executes and the function returns `true`. (This is the right convention; many sorts implicitly rely on it.)
-
-</details>
-<details>
-<summary><h2>Solution &amp; Analysis</h2></summary>
-
-### The Solution
+The payoff in one snippet: sort once, then answer membership queries in `O(log n)` with binary search (which only works *because* the data is ordered). Run it.
 
 ```python run
-from typing import List
+import bisect
 
-class Solution:
-    def order_check(self, arr: List[int]) -> bool:
+data = [37, 12, 95, 4, 60, 23]
+data.sort()                          # O(n log n) — paid once
+print(data)                          # [4, 12, 23, 37, 60, 95]
 
-        # Check each pair of adjacent elements
-        for i in range(1, len(arr)):
+def contains(sorted_data, x):        # O(log n) per query — only valid on sorted data
+    i = bisect.bisect_left(sorted_data, x)
+    return i < len(sorted_data) and sorted_data[i] == x
 
-            # If the current element is smaller than the previous
-            # element, the list is not sorted in non-decreasing order
-            if arr[i] < arr[i - 1]:
-                return False
-        return True
+print(contains(data, 60), contains(data, 50))   # True False
+```
 
+## How They Differ — the Classification Axes
 
-print(Solution().order_check([1, 2, 3, 4, 5]))    # True
-print(Solution().order_check([1, 1, 1, 4, 5]))    # True
-print(Solution().order_check([1, 3, 1, 4, 5]))    # False
-print(Solution().order_check([]))                  # True
-print(Solution().order_check([42]))                # True
-print(Solution().order_check([2, 1]))              # False
-print(Solution().order_check([1, 1]))              # True
-print(Solution().order_check([5, 4, 3, 2, 1]))    # False
+Every sort in this section is described by a few properties. Knowing the vocabulary is how you pick one:
+
+```mermaid
+flowchart TB
+  S["sorting algorithms"] --> C["comparison-based (compare pairs)"]
+  S --> K["counting-based (use key values as indices)"]
+  C --> E["elementary O(n²): bubble, selection, insertion"]
+  C --> F["efficient O(n log n): merge, quick, heap"]
+  K --> L["counting / radix: O(n + k), bounded keys only"]
+```
+
+<p align="center"><strong>the sorts split into comparison-based (bounded below by <code>Ω(n log n)</code>) and counting-based (linear for bounded keys); the elementary comparison sorts are <code>O(n²)</code>, the efficient ones <code>O(n log n)</code>.</strong></p>
+
+- **Comparison vs counting** — comparison sorts only ask "is `a < b`?"; counting sorts use the keys themselves as array indices. This matters because of a hard limit (below).
+- **Stable vs unstable** — a *stable* sort keeps equal elements in their original order. Essential when sorting by a secondary key (sort by date, then *stably* by name).
+- **In-place vs out-of-place** — in-place uses `O(1)` extra space (heapsort, quicksort); out-of-place needs `O(n)` scratch (merge sort).
+- **Adaptive vs not** — adaptive sorts run faster on nearly-sorted input (insertion sort, adaptive bubble → `O(n)`).
+
+The deepest fact: **comparison sorts cannot beat `O(n log n)`**. Counting/radix sorts can — but only because they *don't* compare; they exploit bounded key ranges.
+
+### Key Takeaway
+
+Sorting is an `O(n log n)` one-time investment that makes search (`O(log n)`), dedup, range queries, and median cheap. Classify every sort by comparison-vs-counting, stable, in-place, and adaptive — and remember comparison sorts are bounded below by `Ω(n log n)`.
+
+## Trace It
+
+The `Ω(n log n)` bound is worth understanding, not just memorizing.
+
+Before you read on: there are sorts that run in `O(n)` (counting sort). So why is it *proven* that no **comparison-based** sort — bubble, merge, quick, heap, any of them — can do better than `O(n log n)` in the worst case?
+
+A comparison sort learns about the order *only* through yes/no comparisons. Model its execution as a **decision tree**: each internal node is one comparison, each branch a yes/no outcome, each leaf one possible final ordering. To sort correctly, the tree must have a distinct leaf for every one of the `n!` possible input permutations — otherwise two different inputs would reach the same leaf and get the same output, and one would be wrong. A binary tree with `n!` leaves has height at least `log₂(n!)`, and by Stirling's approximation `log₂(n!) ≈ n log n`. The height *is* the worst-case number of comparisons, so any comparison sort needs `Ω(n log n)` comparisons. Counting sort escapes this only because it never compares elements — it uses key *values* as indices, sidestepping the decision-tree model entirely (at the cost of needing bounded keys).
+
+## Your Turn
+
+See **stability** for yourself — sort records by one key and watch equal keys keep their input order:
+
+```python run
+# a STABLE sort preserves the input order of equal-key elements
+records = [("alice", 2), ("bob", 1), ("carol", 2), ("dave", 1)]
+records.sort(key=lambda r: r[1])     # sort by the number only
+print(records)
+# [('bob', 1), ('dave', 1), ('alice', 2), ('carol', 2)]
+# bob before dave (both 1), alice before carol (both 2) — input order kept
 ```
 
 ```java run
 import java.util.*;
 
 public class Main {
-    static class Solution {
-        public boolean orderCheck(int[] arr) {
-
-            // Check each pair of adjacent elements
-            for (int i = 1; i < arr.length; i++) {
-
-                // If the current element is smaller than the previous
-                // element, the array is not sorted in non-decreasing order
-                if (arr[i] < arr[i - 1]) {
-                    return false;
-                }
-            }
-            return true;
-        }
-    }
-
-    public static void main(String[] args) {
-        System.out.println(new Solution().orderCheck(new int[]{1, 2, 3, 4, 5}));    // true
-        System.out.println(new Solution().orderCheck(new int[]{1, 1, 1, 4, 5}));    // true
-        System.out.println(new Solution().orderCheck(new int[]{1, 3, 1, 4, 5}));    // false
-        System.out.println(new Solution().orderCheck(new int[]{}));                  // true
-        System.out.println(new Solution().orderCheck(new int[]{42}));                // true
-        System.out.println(new Solution().orderCheck(new int[]{2, 1}));              // false
-        System.out.println(new Solution().orderCheck(new int[]{1, 1}));              // true
-        System.out.println(new Solution().orderCheck(new int[]{5, 4, 3, 2, 1}));    // false
-    }
+  public static void main(String[] args) {
+    // Arrays.sort on objects is a stable merge sort
+    String[][] records = {{"alice", "2"}, {"bob", "1"}, {"carol", "2"}, {"dave", "1"}};
+    Arrays.sort(records, Comparator.comparingInt(r -> Integer.parseInt(r[1])));
+    System.out.println(Arrays.deepToString(records));
+    // [[bob, 1], [dave, 1], [alice, 2], [carol, 2]]
+  }
 }
 ```
 
+## Reflect & Connect
 
-<details>
-<summary><strong>Trace — arr = [1, 3, 1, 4, 5]</strong></summary>
+This section's lessons map onto the classification above:
 
-```
-i=1: arr[1]=3, arr[0]=1 → 3 < 1? no, continue
-i=2: arr[2]=1, arr[1]=3 → 1 < 3? YES → return false
+- **Elementary `O(n²)`** — [bubble](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-bubble-sort), selection, insertion: simple, stable/in-place, good for tiny or nearly-sorted inputs.
+- **Efficient `O(n log n)`** — merge (stable, out-of-place), quick (in-place, fast in practice), heap (in-place, worst-case `O(n log n)`).
+- **Non-comparison** — counting sort: `O(n + k)` for bounded integer keys, beating the comparison lower bound.
+- **Partition family** — Dutch-national-flag, three-way quicksort, and quickselect all build on quicksort's partition step.
 
-Result: false (violation found at index 2)
-```
+A practical note: real-world libraries don't pick one — they *combine*. Python's Timsort and Java's `Arrays.sort` use insertion sort for small runs and merge/quick for the bulk, getting adaptivity *and* `O(n log n)`. The lessons ahead are the building blocks those hybrids assemble.
 
-</details>
+**Prerequisites:** [What Is an Array?](/cortex/data-structures-and-algorithms/linear-structures-arrays-what-is-an-array).
+**What's next:** the simplest sort, swapping adjacent pairs — [Bubble Sort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-bubble-sort).
 
-### Complexity Analysis
+## Recall
 
-| Resource | Cost | Why |
-|---|---|---|
-| **Time** | `O(n)` worst case | Single linear scan. |
-| **Space** | `O(1)` | No auxiliary data structures. |
-| **Time (best case)** | `O(1)` | If the very first pair violates, we return immediately. |
+> **Mnemonic:** *Sort once (`O(n log n)`), search forever (`O(log n)`). Classify by comparison/counting, stable, in-place, adaptive. Comparison sorts can't beat `Ω(n log n)`.*
 
-This is as efficient as any verifier can be — you fundamentally have to look at every adjacent pair (or detect a violation early) to know whether the array is sorted.
+| | |
+|---|---|
+| Why sort | enables `O(log n)` search, dedup, range queries, median, merge |
+| Comparison sorts | only ask `a < b`; bounded below by `Ω(n log n)` |
+| Counting sorts | key-as-index; `O(n + k)`, bounded keys only |
+| Key properties | stable · in-place · adaptive |
+| Lower bound | decision tree with `n!` leaves → height `≈ n log n` |
 
-### Edge Cases
+- **Q:** Why is sorting worth an `O(n log n)` upfront cost? **A:** It makes search `O(log n)` and unlocks dedup, range queries, and median — paid once, cheap forever.
+- **Q:** What does it mean for a sort to be stable, and why care? **A:** Equal elements keep their input order — essential when sorting by a secondary key.
+- **Q:** Why can't any comparison sort beat `O(n log n)`? **A:** It must distinguish `n!` orderings via yes/no comparisons; a decision tree with `n!` leaves has height `≈ n log n`.
+- **Q:** How does counting sort achieve `O(n)`? **A:** It uses key values as indices instead of comparing, sidestepping the decision-tree bound — but needs bounded keys.
 
-| Case | Example | Expected | Reasoning |
-|---|---|---|---|
-| Empty | `[]` | `true` | No pairs to check; vacuously sorted. |
-| Single element | `[5]` | `true` | No pairs; vacuously sorted. |
-| Two equal | `[3, 3]` | `true` | `3 < 3` is false; non-decreasing allows duplicates. |
-| Two reversed | `[3, 1]` | `false` | First and only pair violates. |
-| All equal | `[5, 5, 5, 5]` | `true` | Every adjacent pair satisfies `≤`. |
-| Strictly descending | `[5, 4, 3, 2, 1]` | `false` | First pair already violates. |
+## Sources & Verify
 
-</details>
-<details>
-<summary><h2>Final Takeaway</h2></summary>
-
-
-Order check is a single linear scan — the simplest sort-adjacent function. We'll use this as the validator for every sorting algorithm in the next 11 files, and several adaptive sorts (like the optimised bubble sort in the Bubble Sort lesson) use this idea internally to detect "the array is now sorted, exit early."
-
-You came in suspecting sorting was a single algorithm. You're leaving with the vocabulary for six classification axes, an understanding of why sorting is the silent foundation under most algorithms in this course, and a working verifier you'll use to validate every sort that follows.
-
-**Transfer challenge — try before the Bubble Sort lesson:** Write a function that returns the index of the *first* violation in a non-decreasing array, or `-1` if the array is sorted. (Same algorithm, different return value.) Then think about how this fits into an "early-exit" optimisation for bubble sort.
-
-<details>
-<summary><strong>Answer — open after you've written it</strong></summary>
-
-```python run
-class Solution:
-    def first_violation(self, arr):
-        for i in range(1, len(arr)):
-            if arr[i] < arr[i - 1]:
-                return i
-        return -1
-
-
-print(Solution().first_violation([1, 3, 1, 4, 5]))   # 2
-print(Solution().first_violation([1, 2, 3, 4, 5]))   # -1
-```
-
-The change: instead of `return False`, return the index `i`. Same time and space.
-
-This generalises the verifier into a tool that can be used by adaptive sorts. Bubble sort, for instance, can use a variant of this to detect when no swaps were needed in a pass and exit early — the optimisation introduced in the Bubble Sort lesson. The sorted-prefix-detection that adaptive sorts rely on is *exactly* this kind of incremental check.
-
-</details>
-
-</details>
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: The Hook — missing, needs to be written -->
-<!--       Guidance: real-world story opening before any definition -->
-
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
-
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
-
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
-
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
-
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
-
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
-
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
-
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
-
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
-
-<!-- TODO: Final Takeaway — missing, needs to be written -->
-<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->
+- **CLRS**, *Introduction to Algorithms*, 4th ed., §8.1 — the `Ω(n log n)` decision-tree lower bound for comparison sorts.
+- **Sedgewick & Wayne**, *Algorithms*, 4th ed., §2.1 — sorting overview, stability, and in-place definitions.
+- The lower bound and stability behavior are standard; both runnable blocks are verified by running (sorted binary-search membership; stable sort preserves equal-key input order in Python and Java).

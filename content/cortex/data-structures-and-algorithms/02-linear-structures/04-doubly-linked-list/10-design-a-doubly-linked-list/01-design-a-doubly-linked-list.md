@@ -2,26 +2,11 @@
 title: "Design a Doubly Linked List"
 summary: "Implement a DoublyLinkedList class that exposes prepend, append, insert, remove, search, size, and empty using bidirectional node links."
 prereqs:
-  - 02-linear-structures/04-doubly-linked-list/03-insertion-in-doubly-linked-lists
-  - 02-linear-structures/04-doubly-linked-list/04-deletion-in-doubly-linked-lists
+  - 02-linear-structures/04-doubly-linked-list/01-doubly-linked-lists
 difficulty: hard
 ---
 
-## The Hook
-
-You've spent eight lessons learning the *parts*. Now we put them together. By the end of this section you'll have a working **`DoublyLinkedList` class** — the same kind of object that lives behind Python's `collections.deque`, Java's `LinkedList`, every LRU cache in production, every undo stack, every browser history list. The eight operations below aren't separate ideas anymore. They're recombinations of three primitives you already own: **traversal, insertion, deletion**.
-
-The interesting question isn't "can I implement this?" — by now you can. The interesting question is "how do I keep the bookkeeping correct under every edge case?" Every method below has at least one boundary condition where the wrong update silently corrupts the chain. The discipline is the same as in lessons 03 and 04: **save before clobber, mirror every link, update size last**.
-
----
-
-## Table of contents
-
-1. [Design a doubly linked list](#design-a-doubly-linked-list)
-
-***
-
-# Design a doubly linked list
+A working **`DoublyLinkedList` class** is the object behind Python's `collections.deque`, Java's `LinkedList`, every LRU cache, every undo stack, and every browser history list. Its eight operations are recombinations of three primitives you already own — **traversal, insertion, deletion** — and the whole challenge is keeping the bookkeeping correct at every boundary. The discipline throughout: **save before clobber, mirror every link, update size last**.
 
 ## The Problem
 
@@ -70,7 +55,6 @@ Trace:
 
 Every method below is a thin wrapper around primitives you already know. Three pieces of internal state hold the entire structure together — `head`, `tail`, and `size`:
 
-> 🖼 Diagram — Three fields are enough to support every operation in O(1) at the boundaries — head and tail for endpoint access, size for instant size() / empty() queries.
 ```d2
 direction: right
 
@@ -592,34 +576,24 @@ The `DoublyLinkedList` you built is the literal foundation of:
 Whenever you see "constant-time insertion and removal at known positions, with bidirectional iteration" in a system design question, the answer starts with a doubly linked list.
 
 </details>
-<details>
-<summary><h2>Final Takeaway</h2></summary>
+## Key Takeaway
 
+Every method is a recombination of three primitives — **walk, wire, unwire** — held together by one discipline: **save before clobber, mirror every link, update size last**. Before compiling any mutating method, answer the six-question design checklist:
 
-You started this section staring at empty stub files for nine lessons. Now you have a complete working implementation of the data structure — and more importantly, you understand *why each pointer is where it is*. Every method above is a recombination of three primitives: **walk, wire, unwire**. The discipline that ties them together is the same one we drilled in lessons 03 and 04 — **save before clobber, mirror every link, update size last**.
+1. **Empty-list case** — does the code handle `head == null`?
+2. **Single-node case** — when the list grows from or shrinks to one node, are head *and* tail both set/cleared?
+3. **Boundary mutations** — when the head or tail itself moves, are both references updated?
+4. **Mirror updates** — for every `a.next = b`, is there a matching `b.prev = a`?
+5. **Size invariant** — does the counter change exactly once per mutation?
+6. **Return contract** — does the method return what its signature promises?
 
-> **The Design Checklist** — every method that mutates a doubly linked list answers the same six questions:
->
-> 1. **Empty-list case** — does my code handle `head == null`?
-> 2. **Single-node case** — when the list shrinks to or grows from one node, are head AND tail both set/cleared?
-> 3. **Boundary mutations** — when the head or tail itself moves, are both references updated?
-> 4. **Mirror updates** — for every `a.next = b`, is there a matching `b.prev = a`?
-> 5. **Size invariant** — does the counter increment/decrement exactly once per mutation?
-> 6. **Return contract** — does the method return what its signature promises (the new head, a boolean, void)?
->
-> Answer all six on paper before you compile, and the implementation will be right on the first try.
-
-> **Transfer challenge:** Extend this `DoublyLinkedList` with a method `removeLast()` that removes and returns the value at the tail in **O(1)**. Then use the extended class to build an `LRUCache` (combining a `DoublyLinkedList` with a hash map): `get(key)` and `put(key, val)` both run in O(1), and when the cache exceeds its capacity, the least-recently-used entry — at the *tail* of the list — is evicted in O(1) using your new `removeLast()`.
+> **Transfer challenge:** Extend this `DoublyLinkedList` with `removeLast()` that removes and returns the tail value in **O(1)**, then build an `LRUCache` on top (a `DoublyLinkedList` + a hash map): `get` and `put` both O(1), evicting the least-recently-used entry — at the *tail* — in O(1) via `removeLast()`.
 >
 > <details>
 > <summary>Solution sketch</summary>
 >
-> `removeLast()` is a near-copy of `remove()` specialised to the tail: capture `tail.val`, set `tail = tail.prev`, set `tail.next = null` (or both head/tail to null if the list emptied), decrement size, return the captured value.
+> `removeLast()` is a near-copy of `remove()` specialised to the tail: capture `tail.val`, set `tail = tail.prev`, set `tail.next = null` (or clear both head/tail if the list emptied), decrement size, return the captured value.
 >
-> For the LRU cache: keep a `HashMap<key, Node>` so `get` looks up the node in O(1). On `get`, splice the node out of the DLL and re-insert it at the head (the "most-recently-used" end). On `put`, if the key exists update + move-to-head, otherwise prepend a new node and (if size > capacity) call `removeLast()` and remove that key from the map. Both operations are O(1) because the hash map locates the node and the DLL's `prev` pointer makes splicing O(1).
+> For the LRU cache: keep a `HashMap<key, Node>` so `get` looks up the node in O(1). On `get`, splice the node out and re-insert it at the head (the most-recently-used end). On `put`, update + move-to-head if the key exists, else prepend a new node and (if size > capacity) call `removeLast()` and drop that key from the map. Both are O(1) because the hash map locates the node and `prev` makes splicing O(1).
 >
 > </details>
-
-You now own the doubly linked list. The next section in your DSA journey is the **hash table** — and you've already met its most powerful sidekick. Whenever someone says "I need O(1) average lookup *and* ordered access," your answer is now reflexive: **DLL + hash map**. The two are stronger together than either is alone.
-
-</details>

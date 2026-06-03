@@ -30,7 +30,6 @@ Example 2
 
 The output interleaves the **first half** with the **reversed second half**. That's the whole insight — and it's the moment three primitives stack: find the middle, reverse the right half, alternate-merge.
 
-> 🖼 Diagram — Shuffle = three primitives stacked. Each is something you've already mastered; the algorithm is the choreography of stacking them in order.
 ```mermaid
 ---
 config:

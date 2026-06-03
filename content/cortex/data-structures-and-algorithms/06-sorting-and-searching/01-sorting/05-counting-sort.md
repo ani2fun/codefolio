@@ -1,640 +1,156 @@
 ---
 title: "Counting Sort"
-summary: "<!-- TODO: summary -->"
+summary: "Sort integers in a known small range without comparing: tally how many times each value occurs, then read the tallies back out in order. O(n + k) time for range k — beating the Ω(n log n) comparison bound when k is O(n). The basis of radix sort."
+prereqs:
+  - 02-linear-structures/01-arrays/01-what-is-an-array
 ---
 
-# 5. Counting Sort
+# Counting Sort
 
-You're a teacher with thousands of answer sheets, each scored from 0 to 100, that need sorting by score. You could use insertion sort, selection sort, or any of the comparison-based sorts from the previous lessons — but they'd all do millions of comparisons. **There's a faster way that doesn't compare any two scores against each other.** Just count how many sheets got each score (0, 1, 2, ..., 100), then walk through the score range in order and pull out the right number of sheets at each score. The total work is proportional to *the number of sheets plus the range of scores* — not `n log n`, not `n²`. **Linear time when the range is small.**
+## Why It Exists
 
-This is counting sort. It breaks the `Ω(n log n)` lower bound that limits all comparison-based sorts because it doesn't *compare* — it *counts*. The price: you need to know the range of values upfront, and the algorithm uses `O(n + k)` extra memory where `k` is the range. For small `k` (small integer ranges, characters in an alphabet, dates within a year), counting sort is unbeatable.
+Every comparison sort is stuck at `Ω(n log n)` — that's a *proven* floor (see the [intro](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-introduction-to-sorting)). But that floor only applies to sorts that learn the order by *comparing* elements. If your keys are integers in a small, known range, you can skip comparison entirely.
 
-By the end of this lesson you'll know the three-phase counting sort algorithm, why the cumulative-sum step is the load-bearing trick that makes it stable, why it can't be in-place, and the precise conditions under which counting sort beats every comparison-based algorithm in this section.
+Counting sort does. Instead of asking "is `a < b`?", it uses each value **as an index**: tally how many times every value appears, then walk the tallies from smallest to largest, emitting each value as many times as it occurred. No element is ever compared to another. The cost is `O(n + k)` for `n` elements spanning a range of `k` — and when `k` is `O(n)` (say, exam scores 0–100 for a million students), that's linear, comfortably beating `n log n`.
 
-## Table of contents
+## See It Work
 
-1. [Understanding counting sort](#understanding-counting-sort)
-2. [The three phases — count, accumulate, place](#the-three-phases--count-accumulate-place)
-3. [Why counting sort is stable](#why-counting-sort-is-stable)
-4. [Implementation](#implementation)
-5. [Complexity analysis](#complexity-analysis)
-6. [Counting sort problem](#counting-sort-problem)
+Sort `[2, 5, 3, 0, 2, 3, 0, 3]` (values in `0..5`) by counting. Run it — notice there's not a single comparison between elements.
 
-***
+```python run
+def counting_sort(arr):
+    if not arr:
+        return arr
+    lo, hi = min(arr), max(arr)
+    count = [0] * (hi - lo + 1)        # one bucket per possible value
+    for x in arr:
+        count[x - lo] += 1             # tally — value used as an index, no comparisons
+    out = []
+    for i, c in enumerate(count):
+        out.extend([i + lo] * c)       # read buckets back in ascending order
+    return out
 
-# Understanding Counting Sort
-
-Counting sort exploits a single fact: **if you know how many elements have each possible value, you know the position of every element in the sorted output.** It avoids comparisons entirely; it just counts and places.
-
-The algorithm works in three phases:
-
-1. **Count** — for each possible value `v` in the input range, count how many elements equal `v`.
-2. **Accumulate** — turn the count array into a *cumulative count* array, so `count[v]` tells you how many elements are `≤ v` (i.e., the position where the last element of value `v` should go in the sorted output).
-3. **Place** — walk the input array from the back, looking up each element's position in the cumulative count array, and place it in the output.
-
-```d2
-direction: right
-
-input: "Input\narr = [2, 5, 3, 0, 2, 3, 0, 3]" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
-count: "Count phase\ncount = [2, 0, 2, 3, 0, 1]\n(indices 0..5)" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-cumul: "Cumulative phase\ncount = [2, 2, 4, 7, 7, 8]\n(positions in output)" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
-output: "Place phase\nresult = [0, 0, 2, 2, 3, 3, 3, 5]" {style.fill: "#ede9fe"; style.stroke: "#7c3aed"}
-
-input -> count: count occurrences
-count -> cumul: prefix sum
-cumul -> output: walk input back-to-front, place each element
+print(counting_sort([2, 5, 3, 0, 2, 3, 0, 3]))   # [0, 0, 2, 2, 3, 3, 3, 5]
 ```
 
-<p align="center"><strong>The three phases of counting sort. Phase 1 counts; phase 2 turns counts into positions; phase 3 places elements directly. No comparisons, no swaps.</strong></p>
+## How It Works
 
----
+Three steps:
 
-## The Answer-Sheet Walkthrough
+1. **Find the range** `[lo, hi]` and allocate a `count` array of size `k = hi − lo + 1`, one bucket per possible value.
+2. **Tally** — for each element `x`, increment `count[x − lo]`. The value itself selects the bucket; this is the move that sidesteps comparison.
+3. **Emit** — walk `count` from low to high, outputting each value `i + lo` exactly `count[i]` times.
 
-Imagine sorting 8 answer sheets with scores `[2, 5, 3, 0, 2, 3, 0, 3]` where scores range from 0 to 5.
-
-**Phase 1 — Count.** Walk the input once and tally each score:
-- score 0: 2 sheets
-- score 1: 0 sheets
-- score 2: 2 sheets
-- score 3: 3 sheets
-- score 4: 0 sheets
-- score 5: 1 sheet
-
-`count = [2, 0, 2, 3, 0, 1]`.
-
-**Phase 2 — Accumulate.** Convert counts to cumulative positions. After this transformation, `count[v]` represents the number of elements `≤ v` — i.e., where the *last* element with score `v` should be placed (well, one past it, but we'll handle that with the decrement in phase 3).
-
-| Index | Original count | After accumulation |
-|---|---|---|
-| 0 | 2 | 2 |
-| 1 | 0 | 2 + 0 = 2 |
-| 2 | 2 | 2 + 2 = 4 |
-| 3 | 3 | 4 + 3 = 7 |
-| 4 | 0 | 7 + 0 = 7 |
-| 5 | 1 | 7 + 1 = 8 |
-
-`count = [2, 2, 4, 7, 7, 8]`. Reading off: 2 elements are `≤ 0`, so they occupy output positions 0 and 1. 4 elements are `≤ 2`, so position 3 is the last spot for a `2`. And so on.
-
-**Phase 3 — Place.** Walk the input *in reverse*. For each element `v`, its target position in the output is `count[v] - 1`. After placing, decrement `count[v]` so the next instance of `v` (which we encounter earlier in the reverse walk) goes one slot to the left.
-
-```
-Input (reverse): 3 0 3 2 0 3 5 2
-
-For each element, look up count[v] - 1, place, then decrement count[v]:
-
-  3 → count[3] = 7 → place at index 6, count[3] = 6
-  0 → count[0] = 2 → place at index 1, count[0] = 1
-  3 → count[3] = 6 → place at index 5, count[3] = 5
-  2 → count[2] = 4 → place at index 3, count[2] = 3
-  0 → count[0] = 1 → place at index 0, count[0] = 0
-  3 → count[3] = 5 → place at index 4, count[3] = 4
-  5 → count[5] = 8 → place at index 7, count[5] = 7
-  2 → count[2] = 3 → place at index 2, count[2] = 2
-
-Result: [0, 0, 2, 2, 3, 3, 3, 5] ✓
+```mermaid
+flowchart LR
+  IN["input: 2 5 3 0 2 3 0 3"] -->|"tally: count[v]++"| C["counts  0:2  2:2  3:3  5:1"]
+  C -->|"emit each value count[v] times"| OUT["0 0 2 2 3 3 3 5"]
 ```
 
----
+<p align="center"><strong>each element increments its value's bucket (no comparisons); then the buckets are read low-to-high, emitting each value as many times as it was counted.</strong></p>
 
-## What Makes Counting Sort Different
+Time is **`O(n + k)`** — `O(n)` to tally, `O(k)` to walk the buckets — and space is `O(k)`. The trade-off is the **range `k`**: counting sort shines when `k = O(n)` but becomes wasteful when the range dwarfs the count (sorting three values that happen to be `0`, `5`, and `1{,}000{,}000` allocates a million buckets). It also only works for keys that map to array indices — integers, or things reducible to bounded integers.
 
-Every sort we've seen so far compares pairs of elements: bubble compares adjacent, insertion compares `key` with sorted prefix, selection compares to find the minimum. Counting sort never compares two input elements. It compares each element against the count array's index — but that's an array lookup, not a comparison. **The comparison-sort lower bound of `Ω(n log n)` doesn't apply.**
+For sorting *records* by an integer key (where you must keep satellite data and preserve order), the production form uses **prefix sums**: turn the counts into ending positions, then place elements from right to left into an output array. That variant is **stable**, which is the property [radix sort](#reflect--connect) relies on.
 
-The trade-off: counting sort needs `O(k)` extra memory where `k` is the value range, and it needs to know `k` upfront. For unbounded inputs (arbitrary integers, floats, strings), counting sort doesn't apply directly — though it's used as a building block in algorithms like radix sort that do.
+### Key Takeaway
 
-> *Pause and predict — for an array of 1,000,000 integers, would you use counting sort if the values are in <code>[0, 100]</code>? What about <code>[0, 1,000,000,000]</code>?*
+Counting sort tallies each value into a bucket (value-as-index, no comparisons) and reads the buckets back in order: `O(n + k)`, beating `Ω(n log n)` when `k = O(n)`. Best for bounded integer keys; the prefix-sum variant is stable and underpins radix sort.
 
-For `[0, 100]`: counting sort wins by orders of magnitude. `O(n + k) = O(1,000,000 + 100) = O(n)`. For `[0, 1,000,000,000]`: counting sort would allocate a billion-cell array — almost certainly out of memory. `O(n + k) = O(n + 10⁹)` is dominated by `k`. Use a comparison sort instead.
+## Trace It
 
----
+Tallying `[2, 5, 3, 0, 2, 3, 0, 3]` over the range `0..5`:
 
-## Strengths and Limitations
-
-| Strength | Detail |
+| value | count |
 |---|---|
-| **Linear time when k is small** | `O(n + k)` total. For `k = O(n)`, this is `O(n)`. |
-| **Stable** | Phase 3's reverse walk + post-decrement preserves relative order of equal elements. |
-| **No comparisons** | Avoids the `Ω(n log n)` lower bound for comparison-based sorts. |
+| 0 | 2 |
+| 1 | 0 |
+| 2 | 2 |
+| 3 | 3 |
+| 4 | 0 |
+| 5 | 1 |
 
-| Limitation | Detail |
-|---|---|
-| **Not in-place** | Needs `O(n + k)` extra memory. |
-| **Range-dependent** | Memory grows with `k`. Impractical for large value ranges. |
-| **Integer-only (in pure form)** | Works on integers (or anything that maps to a small integer range). Doesn't directly handle floats or arbitrary objects. |
-| **Not adaptive** | Always does the same `O(n + k)` work. |
+Emit low→high: `0 0`, (skip 1), `2 2`, `3 3 3`, (skip 4), `5` → `[0, 0, 2, 2, 3, 3, 3, 5]`.
 
-In practice, counting sort is used:
-1. As a standalone sort when values are small integers (counts, ages, scores, days of year).
-2. As a sub-routine in radix sort, which handles larger integer ranges by sorting digit-by-digit with counting sort as the inner loop.
-3. In histograms, frequency tables, and data summary operations where the count array is itself the desired output.
+Before you read on: this sorted 8 values in range `0..5` beautifully. Now suppose the same 8 values were `[0, 5, 3, 0, 2, 3, 1{,}000{,}000, 3]`. What goes wrong, and what does it tell you about *when* counting sort is the right tool?
 
----
+The single outlier `1{,}000{,}000` forces the `count` array to span `0..1{,}000{,}000` — a **million buckets** to sort eight numbers, almost all of them empty. Time and space both blow up to `O(k)` = `O(10⁶)`, far worse than an `O(n log n)` comparison sort on 8 elements. The lesson: counting sort's cost is governed by the *range* `k`, not just the count `n`. It's the right tool only when `k` is comparable to `n` (bounded, dense keys — ages, scores, byte values, small enum codes). When keys are sparse or unbounded, either the comparison sorts win, or you decompose the keys digit-by-digit — which is exactly what radix sort does to extend counting sort to large numbers.
 
-## Key Takeaway
+## Your Turn
 
-Counting sort: count occurrences → cumulative sum → place by lookup. No comparisons. Linear time when the value range is small. The trade-off is `O(k)` extra memory. Now we'll formalise the three phases.
+The reusable counting sort:
 
-***
+```python run
+def counting_sort(arr):
+    if not arr:
+        return arr
+    lo, hi = min(arr), max(arr)
+    count = [0] * (hi - lo + 1)
+    for x in arr:
+        count[x - lo] += 1
+    out = []
+    for i, c in enumerate(count):
+        out.extend([i + lo] * c)
+    return out
 
-# The Three Phases — Count, Accumulate, Place
-
-The algorithm has three nested but conceptually distinct phases. Each one does something specific; getting any one of them wrong (especially phase 2) breaks the whole sort.
-
----
-
-## Phase 1 — Count
-
-Allocate a `count` array of size `k + 1` (where `k` is the maximum value in the input). Initialise to `0`. Walk the input once, incrementing `count[arr[i]]` for each element.
-
-After this phase: `count[v]` = number of times `v` appears in the input.
-
-```d2
-direction: down
-
-before: "count[] starts at zero" {
-  grid-rows: 1
-  grid-columns: 6
-  grid-gap: 0
-  c0: "0"
-  c1: "0"
-  c2: "0"
-  c3: "0"
-  c4: "0"
-  c5: "0"
-}
-
-after: "After phase 1 (input was [2, 5, 3, 0, 2, 3, 0, 3])" {
-  grid-rows: 1
-  grid-columns: 6
-  grid-gap: 0
-  c0: "2"
-  c1: "0"
-  c2: "2"
-  c3: "3"
-  c4: "0"
-  c5: "1"
-}
-
-before -> after: "O(n) walk over input, increment count[arr[i]]"
+print(counting_sort([5, 2, 8, 1, 9, 3]))             # [1, 2, 3, 5, 8, 9]
+print(counting_sort([2, 5, 3, 0, 2, 3, 0, 3]))       # [0, 0, 2, 2, 3, 3, 3, 5]
 ```
 
-<p align="center"><strong>Phase 1: count occurrences. <code>count[v]</code> stores the frequency of <code>v</code> in the input.</strong></p>
+```java run
+import java.util.*;
 
-**Why allocate size `k + 1`?** We use values `0..k` as direct indices into the count array. To safely access `count[k]`, the array must have size at least `k + 1`.
-
----
-
-## Phase 2 — Accumulate (Prefix Sum)
-
-Convert the count array into a *cumulative sum*. For each `i` from `1` to `k`:
-
-```
-count[i] = count[i] + count[i - 1]
-```
-
-After this phase: `count[v]` = number of elements `≤ v` = the position (one past the last) in the sorted output where elements with value `v` end.
-
-```d2
-direction: down
-
-before: "After phase 1 — frequencies" {
-  grid-rows: 1
-  grid-columns: 6
-  grid-gap: 0
-  c0: "2"
-  c1: "0"
-  c2: "2"
-  c3: "3"
-  c4: "0"
-  c5: "1"
-}
-
-after: "After phase 2 — cumulative" {
-  grid-rows: 1
-  grid-columns: 6
-  grid-gap: 0
-  c0: "2"
-  c1: "2"
-  c2: "4"
-  c3: "7"
-  c4: "7"
-  c5: "8"
-}
-
-before -> after: prefix sum, O(k) walk
-```
-
-<p align="center"><strong>Phase 2: prefix sum. Now <code>count[v]</code> tells us where the last element with value <code>v</code> goes in the output.</strong></p>
-
-**Why is this the load-bearing step?** Without it, we'd know how many of each value we have but not *where* to put them. The cumulative sum turns the count array into a *position index* — the bridge between counting and placement.
-
----
-
-## Phase 3 — Place
-
-Walk the input *in reverse*. For each element `v`:
-1. Look up `count[v]`.
-2. Place the element at output index `count[v] - 1`.
-3. Decrement `count[v]`.
-
-After this phase: the output array holds the sorted elements.
-
-```d2
-direction: down
-
-step1: "step 1 — process arr[7]=2 (going right-to-left)\ncount[2] = 4 → place at index 3, count[2] becomes 3" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
-step2: "step 2 — process arr[6]=0\ncount[0] = 2 → place at index 1, count[0] becomes 1" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-step3: "...continue for all 8 elements..."
-final: "Final result = [0, 0, 2, 2, 3, 3, 3, 5]" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
-
-step1 -> step2 -> step3 -> final
-```
-
-<p align="center"><strong>Phase 3: place by lookup. Each element finds its slot in <code>O(1)</code> via the cumulative count.</strong></p>
-
-**Why walk in reverse?** This is what makes counting sort *stable*. We'll explain this in the next section.
-
----
-
-## Putting the Phases Together
-
-```
-function counting_sort(arr, k):
-    # Phase 1: count
-    count = array of size k+1, all zeros
-    for v in arr:
-        count[v] += 1
-
-    # Phase 2: accumulate
-    for i from 1 to k:
-        count[i] += count[i - 1]
-
-    # Phase 3: place
-    result = array of size n
-    for i from n-1 down to 0:
-        result[count[arr[i]] - 1] = arr[i]
-        count[arr[i]] -= 1
-
-    return result
-```
-
-Three loops, total work `O(n + k)`. No comparisons. Done.
-
----
-
-## Key Takeaway
-
-Three phases: count → accumulate → place. The cumulative sum in phase 2 is the magic that turns a frequency table into a position index. Now we'll see why phase 3's reverse walk is what makes the algorithm stable.
-
-***
-
-# Why Counting Sort Is Stable
-
-Stability matters when the elements are *records* with multiple fields (e.g., `(score, name)` tuples). Counting sort is stable — and the *reason* is the deliberate reverse walk in phase 3 combined with the post-decrement.
-
----
-
-## A Concrete Example with Records
-
-Suppose we sort student records by score, where two students share a score:
-
-```
-Input:  [(85, Alice), (80, Bob), (85, Carol)]
-        ──────────────────────────────────────
-        Indices:    0         1         2
-```
-
-For stability, we want Alice (score 85, originally at index 0) to come *before* Carol (also score 85, originally at index 2) in the output.
-
-**Phase 1** — count[85] = 2, count[80] = 1.
-**Phase 2** — count[80] = 1, count[85] = 1 + 2 = 3.
-
-**Phase 3 — reverse walk:**
-
-```
-i=2: arr[2] = (85, Carol)
-  count[85] = 3 → place at index 2, count[85] = 2
-  result = [_, _, (85, Carol)]
-
-i=1: arr[1] = (80, Bob)
-  count[80] = 1 → place at index 0, count[80] = 0
-  result = [(80, Bob), _, (85, Carol)]
-
-i=0: arr[0] = (85, Alice)
-  count[85] = 2 → place at index 1, count[85] = 1
-  result = [(80, Bob), (85, Alice), (85, Carol)]
-```
-
-Alice ended up before Carol in the output, **preserving their input order**. ✓
-
----
-
-## What Goes Wrong with a Forward Walk?
-
-If we walked the input in forward order (`i = 0, 1, ..., n-1`), the *first* element with each value would be placed at the *highest* available slot for that value. Subsequent elements with the same value would be placed at progressively lower slots — flipping their order.
-
-```
-Forward walk on the same input:
-
-i=0: arr[0] = (85, Alice) → count[85] = 3 → place at index 2, count[85] = 2
-i=1: arr[1] = (80, Bob)   → count[80] = 1 → place at index 0, count[80] = 0
-i=2: arr[2] = (85, Carol) → count[85] = 2 → place at index 1, count[85] = 1
-
-result = [(80, Bob), (85, Carol), (85, Alice)]
-```
-
-Alice ends up *after* Carol — **instability**. The reverse walk avoids this by ensuring earlier-indexed elements get lower slots. *That's* why phase 3 walks the input from the back.
-
----
-
-## When Stability Matters
-
-Stability is essential when sorting by *multiple keys*. For example:
-
-1. Sort by name (stable).
-2. Sort by score (stable).
-
-If both sorts are stable, the final output is sorted by score with ties broken alphabetically by name — *automatically*, without writing any custom comparator. With an unstable sort in step 2, you'd have to combine the keys explicitly.
-
-This makes stable sorts (counting sort, merge sort, insertion sort, optimised bubble sort) the natural choice for multi-key sorting pipelines.
-
----
-
-## Key Takeaway
-
-Counting sort is stable because phase 3 walks the input in reverse and uses post-decrement on the cumulative count. The reverse walk is *deliberate*; flipping it to forward breaks stability. Now we'll write the implementation in Python and Java.
-
-***
-
-# Implementation
-
-
-```python run viz=array viz-root=arr
-from typing import List
-
-class Solution:
-    def counting_sort(self, arr: List[int], k: int) -> List[int]:
-        n: int = len(arr)
-
-        # Create a count array to store the frequency of each key
-        count: List[int] = [0] * (k + 1)
-
-        # Store the frequency of each key in the count array
-        for i in range(n):
-            count[arr[i]] += 1
-
-        # Modify the count array to store the actual position of each key
-        # in the sorted array
-        for i in range(1, k + 1):
-            count[i] += count[i - 1]
-
-        # Create a temporary array to store the sorted result
-        result = [0] * n
-
-        # Build the sorted result array
-        for i in range(n - 1, -1, -1):
-            result[count[arr[i]] - 1] = arr[i]
-            count[arr[i]] -= 1
-
-        return result
-
-
-if __name__ == "__main__":
-    print(Solution().counting_sort([2, 5, 3, 0, 2, 3, 0, 3], 5))   # [0, 0, 2, 2, 3, 3, 3, 5]
-```
-
-```java run viz=array viz-root=arr
 public class Main {
-    static class Solution {
-        public int[] countingSort(int[] arr, int k) {
-            int n = arr.length;
+  static int[] countingSort(int[] arr) {
+    if (arr.length == 0) return arr;
+    int lo = Arrays.stream(arr).min().getAsInt(), hi = Arrays.stream(arr).max().getAsInt();
+    int[] count = new int[hi - lo + 1];
+    for (int x : arr) count[x - lo]++;
+    int[] out = new int[arr.length];
+    int idx = 0;
+    for (int v = 0; v < count.length; v++)
+      for (int c = 0; c < count[v]; c++) out[idx++] = v + lo;
+    return out;
+  }
 
-            // Create a count array to store the frequency of each key
-            int[] count = new int[k + 1];
-
-            // Store the frequency of each key in the count array
-            for (int i = 0; i < n; i++) {
-                count[arr[i]]++;
-            }
-
-            // Modify the count array to store the actual position of each
-            // key in the sorted array
-            for (int i = 1; i <= k; i++) {
-                count[i] += count[i - 1];
-            }
-
-            // Create a temporary array to store the sorted result
-            int[] result = new int[n];
-
-            // Build the sorted result array
-            for (int i = n - 1; i >= 0; i--) {
-                result[count[arr[i]] - 1] = arr[i];
-                count[arr[i]]--;
-            }
-
-            return result;
-        }
-    }
-
-    public static void main(String[] args) {
-        int[] r = new Solution().countingSort(new int[]{2, 5, 3, 0, 2, 3, 0, 3}, 5);
-        for (int x : r) System.out.print(x + " ");
-        System.out.println();
-    }
+  public static void main(String[] args) {
+    System.out.println(Arrays.toString(countingSort(new int[]{2, 5, 3, 0, 2, 3, 0, 3})));   // [0, 0, 2, 2, 3, 3, 3, 5]
+  }
 }
 ```
 
+This is a structural lesson — drill sorting in the pattern sets.
 
-<details>
-<summary><strong>Trace — arr = [2, 5, 3, 0, 2, 3, 0, 3], k = 5</strong></summary>
+## Reflect & Connect
 
-```
-Phase 1 — count occurrences
-  Initial: count = [0, 0, 0, 0, 0, 0]
-  After: count = [2, 0, 2, 3, 0, 1]
+Counting sort is the gateway to the non-comparison sorts:
 
-Phase 2 — cumulative sum
-  count = [2, 2, 4, 7, 7, 8]
+- **Its niche is bounded, dense integer keys** — ages, exam scores, byte values, small category codes. When `k = O(n)` it's linear; when keys are sparse or huge it's the wrong tool. Always reason about `k` vs `n` before reaching for it.
+- **Stability + prefix sums = radix sort** — apply *stable* counting sort to one digit at a time, least-significant first, and you sort arbitrarily large integers (or fixed-length strings) in `O(d·(n + b))` for `d` digits in base `b`. Radix sort is just counting sort run `d` times — and it *needs* the stable variant so earlier-digit order survives later passes.
+- **It escapes the comparison lower bound by construction** — by using values as indices rather than comparing them, it isn't a "comparison sort" at all, so `Ω(n log n)` simply doesn't apply. Its cousin **bucket sort** generalizes the idea to real-valued keys by distributing into ranges and sorting each bucket.
 
-Phase 3 — place in reverse
-  result = [_, _, _, _, _, _, _, _]   (n = 8)
+**Prerequisites:** [What Is an Array?](/cortex/data-structures-and-algorithms/linear-structures-arrays-what-is-an-array).
+**What's next:** back to comparison sorts, but `O(n log n)` — partition around a pivot in [Quicksort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-quicksort).
 
-  i=7: arr[7]=3, count[3]=7 → result[6]=3, count[3]=6
-  i=6: arr[6]=0, count[0]=2 → result[1]=0, count[0]=1
-  i=5: arr[5]=3, count[3]=6 → result[5]=3, count[3]=5
-  i=4: arr[4]=2, count[2]=4 → result[3]=2, count[2]=3
-  i=3: arr[3]=0, count[0]=1 → result[0]=0, count[0]=0
-  i=2: arr[2]=3, count[3]=5 → result[4]=3, count[3]=4
-  i=1: arr[1]=5, count[5]=8 → result[7]=5, count[5]=7
-  i=0: arr[0]=2, count[2]=3 → result[2]=2, count[2]=2
+## Recall
 
-  result = [0, 0, 2, 2, 3, 3, 3, 5] ✓
-```
+> **Mnemonic:** *Tally each value into a bucket (value = index, no compares), read buckets low→high. `O(n + k)`. Great when `k = O(n)`; disastrous when the range is huge. Prefix-sum variant is stable → radix sort.*
 
-</details>
-
-***
-
-# Complexity Analysis
-
-| Resource | Best | Average | Worst |
-|---|---|---|---|
-| **Time** | `O(n + k)` | `O(n + k)` | `O(n + k)` |
-| **Space** | `O(n + k)` | `O(n + k)` | `O(n + k)` |
-| **Stability** | ✓ | ✓ | ✓ |
-| **In-place** | ✗ | ✗ | ✗ |
-
----
-
-## Why `O(n + k)` and Not Just `O(n)`?
-
-Three loops:
-1. Count loop: walks the `n`-element input → `O(n)`.
-2. Accumulate loop: walks the `k+1`-element count array → `O(k)`.
-3. Place loop: walks the `n`-element input → `O(n)`.
-
-Total: `O(n) + O(k) + O(n) = O(n + k)`.
-
-When `k = O(n)` (e.g., `k = 100` and `n = 100,000`), this collapses to `O(n)`. When `k >> n` (e.g., `k = 10⁹`, `n = 1000`), the algorithm becomes `O(k)` — and almost certainly out of memory.
-
----
-
-## When Counting Sort Wins
-
-| Scenario | Why counting sort wins |
+| | |
 |---|---|
-| Small integer range | `O(n + k)` beats `O(n log n)` when `k ≤ n log n`. |
-| Histograms / frequency tables | The count array *is* the desired output. |
-| Radix sort sub-routine | Counting sort is the inner loop of radix sort, which extends counting sort to large integer ranges. |
-| Stable sort with known integer keys | One of the few linear-time stable sorts. |
+| Mechanism | bucket per value; tally, then emit in order |
+| Cost | `O(n + k)` time, `O(k)` space (`k` = value range) |
+| Sweet spot | bounded, dense integer keys (`k = O(n)`) |
+| Pitfall | sparse/huge range → `O(k)` blowup |
+| Stable variant | prefix sums + right-to-left placement → enables radix sort |
 
-| Scenario | Why counting sort loses |
-|---|---|
-| Large value range | `O(k)` memory blows up. |
-| Floats or arbitrary objects | Counting sort needs integer indices. |
-| Memory-constrained systems | Out-of-place: needs `O(n + k)` extra memory. |
+- **Q:** How does counting sort beat the `Ω(n log n)` comparison bound? **A:** It never compares elements — it uses values as array indices to tally, so the lower bound (which assumes comparisons) doesn't apply.
+- **Q:** What governs counting sort's cost? **A:** The value range `k`: it's `O(n + k)`, so it's only efficient when `k` is comparable to `n`.
+- **Q:** When is counting sort the wrong choice? **A:** When keys are sparse or unbounded — a huge range allocates mostly-empty buckets and blows up time and space.
+- **Q:** How does counting sort lead to radix sort? **A:** Radix sort applies *stable* counting sort digit-by-digit (LSD first), extending linear-time sorting to large integers; it relies on counting sort's stability.
 
----
+## Sources & Verify
 
-## Key Takeaway
-
-Counting sort: `O(n + k)` time and space, stable, not in-place. The fastest sort when the value range is small. The first non-comparison sort in this section. Now we'll apply it to the canonical problem.
-
-***
-
-# Counting Sort Problem
-
----
-
-## The Problem
-
-Given an integer array `arr` and a positive integer `k` (the maximum value in `arr`), return a new array containing the elements of `arr` sorted in non-decreasing order.
-
-```
-Input:  arr = [2, 3, 2, 1, 5, 6], k = 6
-Output: [1, 2, 2, 3, 5, 6]
-
-Input:  arr = [6, 5, 4, 4, 4, 3, 2, 1], k = 8
-Output: [1, 2, 3, 4, 4, 4, 5, 6]
-
-Input:  arr = [1, 2, 3, 4, 5, 6], k = 7
-Output: [1, 2, 3, 4, 5, 6]
-```
-
----
-
-<details>
-<summary><h2>Solution &amp; Analysis</h2></summary>
-
-### The Solution
-
-Implementation matches the version above (already shown in the [Implementation](#implementation) section).
-
-### Edge Cases
-
-| Case | Example | Expected |
-|---|---|---|
-| Empty | `[]` | `[]` |
-| All same | `[3, 3, 3]` | `[3, 3, 3]` |
-| Includes zero | `[0, 0, 2]` | `[0, 0, 2]` |
-| Already sorted | `[1, 2, 3]` | `[1, 2, 3]` (still does full `O(n + k)` work) |
-| `k` much larger than `n` | `arr = [0, 1, 2], k = 1000000` | `[0, 1, 2]` (works but wastes memory on a 1M-cell count array) |
-
-</details>
-<details>
-<summary><h2>Final Takeaway</h2></summary>
-
-
-Counting sort is the first algorithm in this section that breaks the `O(n log n)` lower bound. By trading memory for speed and limiting itself to small integer ranges, it achieves linear time. The price: `O(k)` extra memory, integers only, not in-place.
-
-The next algorithm — quicksort — returns to the comparison-sort family but goes faster than `O(n²)` by using a fundamentally different strategy: **divide and conquer**. Instead of one big sort, quicksort partitions the array into two halves and sorts each half recursively. The result: `O(n log n)` average, the gold standard for general-purpose sorting.
-
-**Transfer challenge — try before the Quicksort lesson:** Modify counting sort to handle arrays with negative integers in a known range `[min_val, max_val]`. (Hint: shift all values to be non-negative, sort, then shift back.) What happens to the time and space complexity?
-
-</details>
-<details>
-<summary><strong>Answer — open after you've thought about it</strong></summary>
-
-```python run viz=array viz-root=arr
-class Solution:
-    def counting_sort_general(self, arr):
-        if not arr: return []
-        mn, mx = min(arr), max(arr)
-        offset = -mn                                       # shift to non-negative
-        k = mx - mn                                         # range size
-        count = [0] * (k + 1)
-        for v in arr:
-            count[v + offset] += 1
-        for i in range(1, k + 1):
-            count[i] += count[i - 1]
-        result = [0] * len(arr)
-        for i in range(len(arr) - 1, -1, -1):
-            count[arr[i] + offset] -= 1
-            result[count[arr[i] + offset]] = arr[i]
-        return result
-
-
-print(Solution().counting_sort_general([3, -2, 7, -1, 0, 3]))   # [-2, -1, 0, 3, 3, 7]
-```
-
-Time: still `O(n + k)` where `k = max - min`. Space: `O(n + k)`. Same big-O, but `k` is now the *range size*, not the maximum value. **You just generalised counting sort to any bounded integer range.** The same offset trick is used inside radix sort to handle signed integers.
-
-</details>
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: The Hook — missing, needs to be written -->
-<!--       Guidance: real-world story opening before any definition -->
-
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
-
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
-
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
-
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
-
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
-
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
-
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
-
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
-
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
-
-<!-- TODO: Final Takeaway — missing, needs to be written -->
-<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->
+- **CLRS**, *Introduction to Algorithms*, 4th ed., §8.2–8.3 — counting sort (with the stable prefix-sum version) and radix sort.
+- **Sedgewick & Wayne**, *Algorithms*, 4th ed., §5.1 — key-indexed counting and LSD radix sort.
+- Counting sort's `O(n + k)` bound, range sensitivity, and role in radix sort are standard; both runnable blocks are verified by running (`[2,5,3,0,2,3,0,3] ⇒ [0,0,2,2,3,3,3,5]`; `[5,2,8,1,9,3] ⇒ [1,2,3,5,8,9]`).

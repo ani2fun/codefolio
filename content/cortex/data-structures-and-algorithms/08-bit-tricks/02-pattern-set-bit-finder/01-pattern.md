@@ -1,15 +1,35 @@
 ---
 title: "Pattern: Set-Bit Finder"
-summary: "The n & (n−1) identity strips the lowest set bit; applications: isolate the only set bit and find the rightmost set bit."
+summary: "Two two's-complement identities: n & (n-1) clears the lowest set bit, n & -n isolates it. From these fall the power-of-2 test, Brian Kernighan's popcount, and set-bit iteration — all O(1) (or O(set bits))."
 prereqs:
   - 08-bit-tricks/01-pattern-kth-bit/01-pattern
 ---
 
-# The `n & (n - 1)` Identity
+# Pattern: Set-Bit Finder
 
-Subtracting 1 from a binary number flips its **rightmost set bit** to 0 and sets every bit below it to 1.
+## Why It Exists
 
-> 🖼 Diagram — Subtracting 1 from n ripples through the trailing zeros, turning them all to 1, and clears the lowest set bit. AND-ing the two together cancels both the original lowest bit and the freshly-flipped trailing 1s.
+You often need the **lowest set bit** of a number — to isolate it, clear it, count how many bits are set, or iterate over the set bits one at a time. The obvious way loops over all 32 positions checking each, `O(bits)` even when only one bit is set.
+
+Two two's-complement identities do the core moves in a single operation. Subtracting `1` flips the lowest set bit to `0` and turns every trailing `0` into `1`; so `n & (n - 1)` **clears the lowest set bit** (and leaves higher bits alone). Its dual, `n & -n` — where `-n` is `~n + 1` in two's complement — keeps *only* the lowest set bit, **isolating** it as a power of 2. Clear or isolate the lowest set bit in one instruction; everything else in this lesson is built from those two.
+
+## See It Work
+
+For `n = 12` (`0b1100`, lowest set bit is position 3): clear it, isolate it, and use the clear-identity to test "is `n` a power of 2?". Run it.
+
+```python run
+n = 12                              # 0b1100
+
+print(n & (n - 1))                  # 8 — clears the lowest set bit (bit 3)
+print(n & -n)                       # 4 — isolates the lowest set bit (a power of 2)
+print(n > 0 and (n & (n - 1)) == 0) # False — 12 has two set bits, not a power of 2
+print(8 > 0 and (8 & 7) == 0)       # True  — 8 = 0b1000 is a power of 2
+```
+
+## How It Works
+
+The whole pattern rests on what `n - 1` does to the bits:
+
 ```d2
 direction: right
 flow: "n = 12 → n - 1 = 11" {
@@ -29,88 +49,99 @@ flow: "n = 12 → n - 1 = 11" {
 }
 ```
 
-<p align="center"><strong>Subtracting 1 from <code>n</code> ripples through the trailing zeros, turning them all to 1, and clears the lowest set bit. AND-ing the two together cancels both the original lowest bit and the freshly-flipped trailing 1s.</strong></p>
+<p align="center"><strong>subtracting 1 clears the lowest set bit and flips every trailing zero to 1; AND-ing <code>n</code> with <code>n-1</code> therefore cancels the lowest set bit and all the bits below it.</strong></p>
 
-So `n & (n - 1)` clears the rightmost set bit but leaves every higher set bit untouched. That single fact powers two complementary tricks:
+So the two identities, and what they unlock:
 
-- **Diagnostic** — `(n & (n - 1)) == 0` exactly when `n` has *zero or one* set bits. For non-zero `n`, this is the one-line "is `n` a power of 2?" test.
-- **Iterative bit removal** — repeated `n = n & (n - 1)` strips set bits one at a time. Counting iterations until `n == 0` gives the population count (Brian Kernighan's algorithm — used in lesson 4).
+- **`n & (n - 1)` — clear the lowest set bit.** Used for the **power-of-2 test** (`n > 0 and n & (n-1) == 0`: a power of 2 has exactly one set bit, so clearing it gives `0`), and for **Brian Kernighan's popcount** — repeat `n = n & (n - 1)` and count iterations until `n == 0`, which loops once per *set* bit, not per bit position.
+- **`n & -n` — isolate the lowest set bit.** Returns a power of 2 marking that bit, so its position is `(n & -n).bit_length()` (or `numberOfTrailingZeros + 1`). Used to find the lowest set bit's position and to partition values by their lowest bit.
 
-The dual is `n & -n` (using two's complement): instead of *clearing* the rightmost set bit, it **isolates** it, returning a power of 2 marking that bit's position.
+Each identity is `O(1)`; Kernighan's popcount is `O(set bits)` — faster than the `O(32)` position scan when bits are sparse.
 
-```
-n = 12        ⇒ n & (n - 1) = 8     (clears bit 3)
-n = 12        ⇒ n & -n       = 4    (isolates bit 3)
-n = 0b101000  ⇒ n & (n - 1) = 0b100000   (clears bit 4)
-n = 0b101000  ⇒ n & -n       = 0b001000  (isolates bit 4)
-```
+### Key Takeaway
 
-> *Predict before reading on — for <code>n = 7</code> (binary <code>0111</code>), what does <code>n & (n - 1)</code> give? What about <code>n & -n</code>?*
+`n & (n - 1)` clears the lowest set bit; `n & -n` isolates it. From these come the one-line power-of-2 test and Kernighan's `O(set bits)` popcount — the two most-reused identities in bit manipulation.
 
-`n & (n - 1) = 6` (binary `0110`) — clears the lowest set bit (bit 1). `n & -n = 1` (binary `0001`) — isolates the lowest set bit.
+## Trace It
 
----
+For `n = 7` (`0b0111`):
 
-## Key Takeaway
-
-`n & (n - 1)` clears the rightmost set bit. `n & -n` isolates it. Together they're the most-used pair of one-liners in bit manipulation.
-
-# Final Takeaway
-
-`n & (n - 1)` and `n & -n` are the two most-reused identities in all of bit manipulation:
-
-| Trick | Effect | Use |
+| expression | result | meaning |
 |---|---|---|
-| `n & (n - 1)` | Clears rightmost set bit | Power-of-2 test, popcount loop, set-bit iteration |
-| `n & -n` | Isolates rightmost set bit | Find position of lowest 1, partition by lowest bit |
+| `n & (n - 1)` = `7 & 6` | `6` (`0b0110`) | cleared the lowest set bit (bit 1) |
+| `n & -n` = `7 & -7` | `1` (`0b0001`) | isolated the lowest set bit |
+| popcount via repeated clear | `3` | `7 → 6 → 4 → 0`: three iterations |
 
-**You didn't just solve two find-the-bit problems. You learned the two trickiest one-liners in bit manipulation — and the dozens of algorithms built on top of them. From here on, you'll see them used as primitives, not derived: "clear lowest bit" and "isolate lowest bit" become single steps in larger compositions.**
+Before you read on: Kernighan's popcount loops `n = n & (n - 1)` until `n` is `0`. For `n = 7` that's 3 iterations; for `n = 8` (`0b1000`) it's just 1. Why does this loop run once per *set bit* rather than once per bit *position* — and when does that actually matter?
 
-> *Transfer challenge for the next lesson:* Reverse the bits of a 32-bit integer end-to-end (bit 1 becomes bit 32, bit 2 becomes bit 31, …). Predict whether you can do it without an explicit loop. (Hint: yes, but the trick involves divide-and-conquer with magic mask constants.)
+Because each iteration clears exactly *one* set bit (the lowest), so the loop body runs precisely as many times as there are set bits — `3` for `7`, `1` for `8`. A naive popcount checks all 32 positions regardless. The difference is huge for **sparse** integers: a 64-bit number with two bits set takes 2 iterations here versus 64 checks naively. That "work proportional to the answer, not the word size" is why Kernighan's trick is the textbook popcount — and a clean example of how the right identity changes the complexity, not just the constant.
 
-<details>
-<summary><strong>Answer</strong></summary>
+## Your Turn
 
-The straightforward solution is a 32-iteration loop: shift result left, OR in the LSB of `num`, shift `num` right. The next lesson uses this approach. There's also a clever divide-and-conquer version using "swap adjacent pairs, then adjacent quads, then bytes" with magic constants like `0xAAAAAAAA` and `0x55555555` — the same magic constants appear in lesson 5 for pairwise swaps. Both are O(1) but the loop is more readable; the divide-and-conquer is faster when bit-reversal is a hot loop.
+The reusable lowest-bit utilities:
 
-</details>
+```python run
+def lowest_set_bit(n):       return n & -n            # isolate (power of 2)
+def lowest_set_position(n):  return (n & -n).bit_length()   # 1-indexed position
+def is_power_of_two(n):      return n > 0 and (n & (n - 1)) == 0
+def popcount(n):
+    c = 0
+    while n:
+        n &= n - 1           # strip the lowest set bit
+        c += 1
+    return c
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+print(lowest_set_bit(12), lowest_set_position(12), is_power_of_two(16), popcount(13))
+# 4 3 True 3
+```
 
-<!-- TODO: Understanding the Pattern — missing, needs to be written -->
-<!--       Guidance: umbrella H2 with the subsections below -->
+```java run
+public class Main {
+  static int lowestSetBit(int n)      { return n & -n; }
+  static int lowestSetPosition(int n) { return Integer.numberOfTrailingZeros(n & -n) + 1; }
+  static boolean isPowerOfTwo(int n)  { return n > 0 && (n & (n - 1)) == 0; }
+  static int popcount(int n) { int c = 0; while (n != 0) { n &= n - 1; c++; } return c; }
 
-<!-- TODO: Why Naive Isn't Enough — missing, needs to be written -->
-<!--       Guidance: motivation for why the obvious approach fails -->
+  public static void main(String[] args) {
+    System.out.println(lowestSetBit(12) + " " + lowestSetPosition(12) + " "
+                       + isPowerOfTwo(16) + " " + popcount(13));
+    // 4 3 true 3
+  }
+}
+```
 
-<!-- TODO: The Core Idea — missing, needs to be written -->
-<!--       Guidance: one paragraph: the central trick -->
+Drill the family in **Practice** — [Only Set Bit](/cortex/data-structures-and-algorithms/bit-tricks-pattern-set-bit-finder-problems-only-set-bit) and [Rightmost Set Bit](/cortex/data-structures-and-algorithms/bit-tricks-pattern-set-bit-finder-problems-rightmost-set-bit).
 
-<!-- TODO: How the Pointers/Window Move — missing, needs to be written -->
-<!--       Guidance: mechanics of the moving parts -->
+## Reflect & Connect
 
-<!-- TODO: The Generic Algorithm — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
+These two identities are *primitives* you'll use without re-deriving:
 
-<!-- TODO: Generic Implementation — missing, needs to be written -->
-<!--       Guidance: Python block + Java block of the skeleton -->
+- **The family** — isolate the lowest set bit (`n & -n`), clear it (`n & (n-1)`), test power-of-2, count set bits (Kernighan), iterate over set bits, and partition numbers by their lowest set bit.
+- **Two's complement is the engine** — `-n == ~n + 1`, which is exactly why `n & -n` keeps only the lowest set bit. Understanding the negation makes the trick obvious rather than magic.
+- **They compose upward** — `n & (n-1)` is the heart of popcount, which feeds parity and Hamming-distance problems; `n & -n` underlies Fenwick (binary-indexed) trees, where the isolated lowest bit *is* the index step. You'll meet both again as single steps in bigger algorithms.
 
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table -->
+**Prerequisites:** [Kth-Bit Operations](/cortex/data-structures-and-algorithms/bit-tricks-pattern-kth-bit-pattern).
+**What's next:** rearrange the bits of a number wholesale — [Bit Restructuring](/cortex/data-structures-and-algorithms/bit-tricks-pattern-restructuring-pattern).
 
-<!-- TODO: Variants / Taxonomy — missing, needs to be written -->
-<!--       Guidance: enumerate sub-shapes of this pattern -->
+## Recall
 
-<!-- TODO: Identifying — missing, needs to be written -->
-<!--       Guidance: per-variant: recognition checklist + canonical example -->
+> **Mnemonic:** *`n & (n-1)` clears the lowest set bit · `n & -n` isolates it. Power-of-2: `n>0 and n&(n-1)==0`. Kernighan popcount: loop the clear, `O(set bits)`.*
 
-<!-- TODO: Recognition Checklist — missing, needs to be written -->
-<!--       Guidance: 4-question diagnostic — the source of the Problem-section Diagnostic Questions -->
+| | |
+|---|---|
+| Clear lowest set bit | `n & (n - 1)` |
+| Isolate lowest set bit | `n & -n` (a power of 2) |
+| Power-of-2 test | `n > 0 and (n & (n-1)) == 0` |
+| Popcount (Kernighan) | loop `n &= n-1`, count — `O(set bits)` |
+| Engine | `-n == ~n + 1` (two's complement) |
 
-<!-- TODO: Canonical Example — missing, needs to be written -->
-<!--       Guidance: fully worked example: brute force → optimised → template fit -->
+- **Q:** What do `n & (n-1)` and `n & -n` each do? **A:** Clear the lowest set bit, and isolate it (as a power of 2), respectively.
+- **Q:** How does the power-of-2 test work? **A:** A power of 2 has exactly one set bit, so clearing it with `n & (n-1)` yields `0` (for `n > 0`).
+- **Q:** Why is Kernighan's popcount `O(set bits)`? **A:** Each iteration clears exactly one set bit, so the loop runs once per set bit, not once per position.
+- **Q:** Why does `n & -n` isolate the lowest set bit? **A:** `-n = ~n + 1` (two's complement) matches `n` only at the lowest set bit, so the AND keeps just that bit.
 
-<!-- TODO: Problems in This Category — missing, needs to be written -->
-<!--       Guidance: table with links to the 02-problems/ files -->
+## Sources & Verify
+
+- **Warren**, *Hacker's Delight*, 2nd ed., ch. 2 — `x & (x-1)`, `x & -x`, and population count.
+- **CLRS**, *Introduction to Algorithms*, 4th ed. — Fenwick/binary-indexed trees use `n & -n`.
+- The two identities, the power-of-2 test, and Kernighan's popcount are standard; both runnable blocks are verified by running (`12 ⇒ clear 8, isolate 4`; utilities ⇒ `4 3 True 3`; `popcount(7)=3`).

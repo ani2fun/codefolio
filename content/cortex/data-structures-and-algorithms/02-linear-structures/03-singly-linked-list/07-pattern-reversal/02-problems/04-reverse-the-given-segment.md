@@ -348,7 +348,7 @@ Return head = 5.
 
 </details>
 <details>
-<summary><h2>Final Takeaway</h2></summary>
+<summary><h2>Key Takeaway</h2></summary>
 
 
 Every reversal problem reduces to the same six-line loop:

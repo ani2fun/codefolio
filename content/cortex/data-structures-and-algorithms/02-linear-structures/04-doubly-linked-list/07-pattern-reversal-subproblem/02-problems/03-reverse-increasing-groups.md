@@ -77,7 +77,6 @@ What **breaks if you reach for a recursive solution**? A recursive formulation `
 
 Same template, dynamic window. The K-segments problem fixed `k` for every iteration. Here, `k` grows: 1 on iteration 1, 2 on iteration 2, 3 on iteration 3. The loop guard becomes "do I have at least `groupSize` nodes left?"
 
-> 🖼 Diagram — Reverse increasing groups — group size grows by 1 each iteration. The cumulative coverage is 1 + 2 + 3 + … = n(n+1)/2.
 ```mermaid
 ---
 config:
@@ -138,7 +137,6 @@ What breaks if you don't increment `groupSize` after each iteration: you've redu
 <summary><h2>The Increasing-Group Strategy (Visualised)</h2></summary>
 
 
-> 🖼 Diagram — The Increasing-Group Strategy — same skeleton as K-segments with two new bookkeeping lines: shrink length, grow groupSize.
 ```mermaid
 ---
 config:

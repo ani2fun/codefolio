@@ -6,8 +6,9 @@ Use this page as the chapter map for arrays. The guides are ordered from fundame
 
 ## Start Here — the learning path
 
-- [Introduction to Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-introduction)
-- [Multidimensional](/cortex/data-structures-and-algorithms/linear-structures-arrays-multidimensional)
+- [Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-what-is-an-array)
+- [Dynamic Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-dynamic-arrays)
+- [Multidimensional Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-multidimensional)
 - [Pattern: Two Pointers](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-pattern)
 - [Pattern: Two Pointers Reduction](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-reduction-pattern)
 - [Pattern: Two Pointers Subproblem](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-subproblem-pattern)
@@ -57,7 +58,7 @@ Do these after the matching pattern in Start Here.
 - [Consecutive Ones](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-variable-sliding-window-problems-consecutive-ones)
 - [Product Conundrum](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-variable-sliding-window-problems-product-conundrum)
 - [Maximum Subarray Sum](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-variable-sliding-window-problems-maximum-subarray-sum)
-- [Consecutive Ones With K Flips](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-variable-sliding-window-problems-consecutive-ones-with-k-flips)
+- [Consecutive Ones with K Flips](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-variable-sliding-window-problems-consecutive-ones-with-k-flips)
 
 ### Interval Merging
 - [Verify Schedule](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-interval-merging-problems-verify-schedule)
@@ -75,7 +76,6 @@ Do these after the matching pattern in Start Here.
 
 Quick-recall and design material. Skim, don't study top to bottom.
 
-- [Memorize: Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-memorize)
 - [Memorize: Two Pointers](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-memorize)
 - [Memorize: Two Pointers Reduction](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-reduction-memorize)
 - [Memorize: Two Pointers Subproblem](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-subproblem-memorize)
@@ -87,3 +87,4 @@ Quick-recall and design material. Skim, don't study top to bottom.
 - [Design a Dynamic Array](/cortex/data-structures-and-algorithms/linear-structures-arrays-design-a-dynamic-array-design-a-dynamic-array)
 - [Pattern Synthesis: Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-synthesis)
 - [Binary Search — full trace](/cortex/data-structures-and-algorithms/linear-structures-arrays-binary-search-visualise)
+- [Memorize: Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-memorize)

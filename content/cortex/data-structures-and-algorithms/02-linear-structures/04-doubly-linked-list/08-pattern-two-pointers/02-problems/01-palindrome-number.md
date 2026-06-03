@@ -98,7 +98,6 @@ Run the converging two-pointer loop until the pointers meet or cross.
 
 Plant `left` at the start, `right` at the end. At each step, compare the two values; if they ever differ, return `false`. Otherwise step inward and keep going until the pointers meet (odd length) or cross (even length).
 
-> 🖼 Diagram — Palindrome check — mirror comparison from both ends until pointers meet or cross.
 ```mermaid
 ---
 config:

@@ -67,7 +67,6 @@ So slide the window; track frequencies; track `maxFreq` (the highest count any l
 
 A subtle but allowed shortcut: when contracting, we *don't* need to shrink `maxFreq` — even a stale `maxFreq` is a valid lower bound, and the answer only cares about the maximum window seen, which only grows when `maxFreq` grows. This makes the algorithm clean and still correct.
 
-> 🖼 Diagram — Maximal character swap — replacements needed = window size − count of most frequent letter. As long as that count is ≤ K, the window is achievable.
 ```d2
 direction: right
 

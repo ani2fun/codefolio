@@ -47,8 +47,6 @@ Run the tree on a one-line problem for each of the four patterns to confirm the 
 
 So the key idea is: structure-or-position narrows to one of two branches; cardinality (one segment vs many vs all-through-buckets) picks the leaf of the structural branch.
 
-> 🖼 Diagram — TODO: decision-tree visualisation — root question (structure vs node-pair), the structure branch fanning into Reversal / Reversal Subproblem / Reorder by cardinality, the node-pair branch landing on Two Pointers; mirror-write callouts on every structural leaf.
-
 ---
 
 ## Pattern Comparison Table

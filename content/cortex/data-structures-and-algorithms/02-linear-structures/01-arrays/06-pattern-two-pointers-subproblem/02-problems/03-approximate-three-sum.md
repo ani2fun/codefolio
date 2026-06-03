@@ -62,7 +62,6 @@ This problem is Three Sum's sibling — fix one element, two-pointer the rest �
 
 At each step of the two-pointer pass you compute `total = arr[i] + arr[left] + arr[right]`. Instead of checking `total == 0`, you compare `|total − target|` against the best distance seen so far and update your answer when you find something closer. If you ever hit `total == target` the distance is zero — return immediately.
 
-> 🖼 Diagram — Approximate Three Sum — fix one element, two-pointer the rest, track the minimum-distance sum seen so far.
 ```mermaid
 ---
 config:

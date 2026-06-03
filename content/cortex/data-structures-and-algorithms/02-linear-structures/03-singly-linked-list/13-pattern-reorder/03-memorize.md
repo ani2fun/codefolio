@@ -2,7 +2,7 @@
 title: "Memorize: Reorder"
 summary: "Pattern recognition triggers, template code, common mistakes, and quick recall."
 prereqs:
-  - 13-pattern-reorder/02-problems
+  - 13-pattern-reorder/01-pattern
 ---
 
 # Memorize: Reorder
@@ -30,8 +30,6 @@ Picture a postal sorting room with one input belt and two outgoing slots. A cler
 ---
 
 ## Visual Summary
-
-> 🖼 Diagram — TODO: 3 frames — (1) initial state with the input list `1 → 2 → 3 → 4 → 5 → 6` flowing into a classifier `f1` and two empty sub-lists with their dummy heads; (2) split-complete state showing two sub-lists (e.g. odd-indexed `1, 3, 5` and even-indexed `2, 4, 6`) with their respective tails terminated, ready for the merge pass; (3) terminal state with the selector `f2` having woven them into the output `1, 6, 2, 5, 3, 4` (or whatever target order the variant dictates), with `head` pointing at the new first node.
 
 ---
 

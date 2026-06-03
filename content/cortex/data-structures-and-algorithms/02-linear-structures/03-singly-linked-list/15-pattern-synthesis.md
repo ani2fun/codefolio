@@ -56,8 +56,6 @@ Run the tree on a one-line problem for each of the seven patterns to confirm the
 
 So the key idea is: direction-of-rewrite narrows to one of two branches; cardinality and position-vs-structure pick the leaf.
 
-> 🖼 Diagram — TODO: decision-tree visualisation — root question (structure vs position), the structure branch fanning into Reversal / Reversal Subproblem / Split / Merge / Reorder, the position branch fanning into Sliding Window Traversal / Fast-and-Slow Pointers.
-
 ---
 
 ## Pattern Comparison Table

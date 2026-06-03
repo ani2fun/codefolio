@@ -2,7 +2,7 @@
 title: "Memorize: Reversal"
 summary: "Pattern recognition triggers, template code, common mistakes, and quick recall for doubly-linked list reversal."
 prereqs:
-  - 06-pattern-reversal/02-problems
+  - 06-pattern-reversal/01-pattern
 ---
 
 # Memorize: Reversal
@@ -30,8 +30,6 @@ Picture a two-way conga line where every dancer is holding the shoulders of both
 ---
 
 ## Visual Summary
-
-> 🖼 Diagram — TODO: 3 frames — (1) initial state with `current = head` on a 5-node doubly-linked list, both pointer chains visible; (2) mid-walk with two nodes already swapped (their `prev` and `next` fields have flipped) and `current` pointing at the third node; (3) terminal state with every node swapped, `current = null`, and the original tail highlighted as the new head, both chains pointing in the reversed direction.
 
 ---
 

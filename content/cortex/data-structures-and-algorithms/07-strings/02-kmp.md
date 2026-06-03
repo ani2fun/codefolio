@@ -1,340 +1,230 @@
 ---
 title: KMP (Knuth-Morris-Pratt)
-summary: O(n + m) string matching via the failure function. Precompute "how much of the pattern's prefix is also a suffix?" so a mismatch lets you skip ahead instead of restarting.
+summary: "O(n + m) string matching that cures naive's amnesia. Precompute the failure function (longest prefix that is also a suffix) so a mismatch jumps the pattern ahead instead of restarting — the text pointer never moves backward."
 prereqs:
   - strings-string-matching-naive
 ---
 
-# 2. KMP (Knuth-Morris-Pratt)
+## Why It Exists
 
-## The Hook
+[Naive matching](/cortex/data-structures-and-algorithms/strings-string-matching-naive) has amnesia: mismatch after a partial match, and it slides one step right and re-compares from scratch — `O(n·m)` on repetitive text. But a partial match is *information*. If the pattern is `ABCDABE` and you matched `ABCDAB` before failing on `E`, you already know the last two matched text characters were `AB` — which happen to be the pattern's first two characters. So you can resume the match at pattern index 2 *without re-reading the text*.
 
-In naive matching, when you mismatch at position `j` in the pattern, you slide the pattern by one position and start over from `j = 0`. That's wasteful. If the pattern is `ABCDABE` and you've matched the first six characters before mismatching on `E`, *you already know the next characters of the text are `ABCDABx`*. The pattern's first two characters are `AB`, which match positions 4–5 of the substring you already have. So instead of restarting at the next `T` position, you can skip ahead and resume the match at `j = 2`.
+KMP turns that observation into an algorithm. It precomputes, from the **pattern alone**, a *failure function* that says "on a mismatch after matching `k` characters, how far can I safely jump?" The result is `O(n + m)` with the text pointer **never moving backward** — exactly the amnesia cure naive was missing.
 
-KMP precomputes this table — *for each pattern position `j`, what's the largest proper prefix of `P[0..j-1]` that is also a suffix?* The table is called the **failure function** (or **`pi` array**). With it, the matching loop runs in `O(n + m)`: each character of `T` is examined at most twice (once moving forward, once being skipped).
+## See It Work
 
-This chapter walks through the failure function, the matching algorithm, and the proof that both run in linear time.
+The failure function `lps[i]` (longest proper prefix that is also a suffix of `P[0..i]`) is the whole trick. Build it once, then scan the text: on a mismatch, fall the pattern index back to `lps[j-1]` instead of 0.
 
----
-
-## Table of contents
-
-1. [The failure function](#the-failure-function)
-2. [Building the failure function](#building-the-failure-function)
-3. [The matching algorithm](#the-matching-algorithm)
-4. [Implementation](#implementation)
-5. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
-6. [Production reality](#production-reality)
-7. [Practice ladder](#practice-ladder)
-8. [Cross-links](#cross-links)
-9. [Final takeaway](#final-takeaway)
-
-***
-
-# The Failure Function
-
-For pattern `P`, the failure function `pi` is an array of length `m`:
-
-> `pi[i]` = length of the longest *proper* prefix of `P[0..i]` that is also a suffix of `P[0..i]`.
-
-"Proper" means shorter than `P[0..i]` itself.
-
-Examples for `P = "ABABC"`:
-
-```
-i:    0  1  2  3  4
-P[i]: A  B  A  B  C
-pi:   0  0  1  2  0
-```
-
-- `pi[0] = 0`: trivially.
-- `pi[1] = 0`: `AB` has no proper prefix-suffix overlap.
-- `pi[2] = 1`: `ABA` has prefix `A` matching suffix `A`.
-- `pi[3] = 2`: `ABAB` has prefix `AB` matching suffix `AB`.
-- `pi[4] = 0`: `ABABC` has no nontrivial overlap.
-
-The intuition: `pi[i]` tells you, "if you've matched `P[0..i]` against `T[0..n]` and the next character mismatches, how much of `P` you can keep matching by sliding the pattern forward."
-
-***
-
-# Building the failure function
-
-**Key insight.** When extending from `pi[i-1]` to `pi[i]`, we maintain `k` = "current candidate prefix length". If `P[k] == P[i]`, the prefix extends by one character. If not, we fall back to the next-shorter prefix that *is* also a suffix — `pi[k-1]` — and try again.
-
-**Cost.** `O(m)`. The amortised analysis: `k` is incremented at most `m` times (once per `i`). Each `while` iteration *decreases* `k`. So total `while` iterations are bounded by total increments — at most `m`.
-
-***
-
-# The matching algorithm
-
-**Cost.** `O(n)`. Same amortised argument: `j` is incremented at most `n` times; each `while` iteration decreases `j`; total iterations bounded by `n`.
-
-**Combined cost.** `O(n + m)`. Beats naive's worst case `O(nm)` by a factor of `min(n, m)`.
-
-***
-
-# Implementation
-
-```python run viz=array viz-root=pi
-def build_failure(P):
-    m = len(P)
-    pi = [0] * m
-    k = 0
+```python run
+def build_lps(p):
+    m = len(p)
+    lps = [0] * m
+    k = 0                                            # length of current prefix that is also a suffix
     for i in range(1, m):
-        while k > 0 and P[k] != P[i]:
-            k = pi[k - 1]
-        if P[k] == P[i]:
+        while k > 0 and p[i] != p[k]:
+            k = lps[k - 1]                           # fall back to a shorter prefix-suffix
+        if p[i] == p[k]:
             k += 1
-        pi[i] = k
-    return pi
+        lps[i] = k
+    return lps
 
-def kmp_match(T, P):
-    pi = build_failure(P)
-    n, m = len(T), len(P)
-    matches = []
-    j = 0
-    for i in range(n):
-        while j > 0 and T[i] != P[j]:
-            j = pi[j - 1]
-        if T[i] == P[j]:
+def kmp_search(text, pattern):
+    lps = build_lps(pattern)
+    n, m = len(text), len(pattern)
+    hits, j = [], 0                                  # j = chars of pattern matched so far
+    for i in range(n):                               # i (text pointer) only ever moves FORWARD
+        while j > 0 and text[i] != pattern[j]:
+            j = lps[j - 1]                           # JUMP, don't restart
+        if text[i] == pattern[j]:
             j += 1
         if j == m:
-            matches.append(i - m + 1)
-            j = pi[j - 1]
-    return matches
+            hits.append(i - m + 1)
+            j = lps[j - 1]                           # keep going (handles overlaps)
+    return hits
 
-
-if __name__ == "__main__":
-    print(f"failure for 'ABABC': {build_failure('ABABC')}")          # [0, 0, 1, 2, 0]
-    print(f"failure for 'AABAACAABAA': {build_failure('AABAACAABAA')}")  # [0, 1, 0, 1, 2, 0, 1, 2, 3, 4, 5]
-
-    print(f"matches: {kmp_match('ABABDABACDABABCABAB', 'ABABCABAB')}")
-    print(f"adversarial: {kmp_match('a'*100 + 'b', 'a'*50 + 'b')}")
+print(build_lps("ababaca"))                          # [0, 0, 1, 2, 3, 0, 1]
+print(kmp_search("abxabcabcaby", "abcaby"))          # [6]
 ```
 
-```java run viz=array viz-root=pi
+```java run
+import java.util.*;
 public class Main {
-    static int[] buildFailure(String P) {
-        int m = P.length();
-        int[] pi = new int[m];
-        int k = 0;
+    static int[] buildLps(String p) {
+        int m = p.length(); int[] lps = new int[m]; int k = 0;
         for (int i = 1; i < m; i++) {
-            while (k > 0 && P.charAt(k) != P.charAt(i)) k = pi[k - 1];
-            if (P.charAt(k) == P.charAt(i)) k++;
-            pi[i] = k;
+            while (k > 0 && p.charAt(i) != p.charAt(k)) k = lps[k - 1];
+            if (p.charAt(i) == p.charAt(k)) k++;
+            lps[i] = k;
         }
-        return pi;
+        return lps;
     }
-
-    static java.util.List<Integer> kmpMatch(String T, String P) {
-        int[] pi = buildFailure(P);
-        int n = T.length(), m = P.length();
-        java.util.List<Integer> matches = new java.util.ArrayList<>();
-        int j = 0;
+    static List<Integer> kmpSearch(String text, String pattern) {
+        int[] lps = buildLps(pattern);
+        int n = text.length(), m = pattern.length(), j = 0;
+        List<Integer> hits = new ArrayList<>();
         for (int i = 0; i < n; i++) {
-            while (j > 0 && T.charAt(i) != P.charAt(j)) j = pi[j - 1];
-            if (T.charAt(i) == P.charAt(j)) j++;
-            if (j == m) { matches.add(i - m + 1); j = pi[j - 1]; }
+            while (j > 0 && text.charAt(i) != pattern.charAt(j)) j = lps[j - 1];
+            if (text.charAt(i) == pattern.charAt(j)) j++;
+            if (j == m) { hits.add(i - m + 1); j = lps[j - 1]; }
         }
-        return matches;
+        return hits;
     }
-
     public static void main(String[] args) {
-        System.out.println(kmpMatch("ABABDABACDABABCABAB", "ABABCABAB"));
+        System.out.println(Arrays.toString(buildLps("ababaca")));   // [0, 0, 1, 2, 3, 0, 1]
+        System.out.println(kmpSearch("abxabcabcaby", "abcaby"));    // [6]
     }
 }
 ```
 
-***
+Both print the `lps` array `[0, 0, 1, 2, 3, 0, 1]` then `[6]`. The pattern `"abcaby"` matches only at index 6 — the same answer naive gives, but the text pointer here never rewinds. Build `O(m)`, search `O(n)`, total `O(n + m)`.
 
-# Edge cases and pitfalls
+## How It Works
 
-- **Off-by-one in the failure-function recurrence.** `pi[i]` represents prefix-suffix length *for the substring `P[0..i]`*. Easy to confuse with "length of the prefix matched so far" (which is `pi[i-1]` after a mismatch).
-- **Pattern of length 1.** `pi = [0]`. The matching loop's `j` only takes values 0 and 1; works correctly.
-- **Empty pattern.** Conventionally matches everywhere, or undefined; handle as a special case.
-- **Pattern starts with a unique character.** Then `pi` is all zeros, and KMP behaves like naive (no skip benefit). KMP is at its best on patterns with internal repetition.
-- **Overlapping matches.** When a match is found at position `i - m + 1`, KMP sets `j = pi[m - 1]` to allow the *next* match to overlap. This is correct for "find all matches"; if you only want non-overlapping, set `j = 0` instead.
-- **Building a flawed failure function.** Manual debugging is hard. Test with a known-good reference (Python's `re` module's underlying behaviour, for instance).
+On a mismatch, the matched prefix `P[0..j-1]` is also (by definition) the text just read. The longest part of that prefix which is *also a suffix* can stay aligned — so the pattern slides forward by `j - lps[j-1]` and the comparison resumes at `lps[j-1]`:
 
-***
-
-# Production reality
-
-- **`re` module in Python and `java.util.regex`.** Most regex engines compile patterns to NFAs/DFAs that subsume KMP's logic. KMP is a special case — for *literal* patterns (no metacharacters), some implementations switch to KMP or a similar dedicated algorithm.
-- **`grep` (in literal mode).** Uses Boyer-Moore-Horspool by default for literal patterns; falls back to KMP-like algorithms for some cases.
-- **DNA sequence search.** BLAST and similar tools use indexed methods (suffix arrays, BWT) for whole-genome work. For small queries, KMP-like linear-time scanning is one option among many.
-- **Plagiarism detection.** "Find this 50-word phrase in a corpus of 10M documents" reduces to KMP per document. The total work is `O(sum(n_i) + m * num_docs)`.
-- **Educational ubiquity.** KMP is taught as the canonical "stop being naive about string matching" algorithm. Knowing it cold is interview-table-stakes for systems and infrastructure roles.
-
-***
-
-# Practice ladder
-
-1. **Implement strStr() / find().** ([LeetCode 28](https://leetcode.com/problems/find-the-index-of-the-first-occurrence-in-a-string/)) — find the first occurrence of a pattern in a string.
-   > *Hint:* the chapter's KMP, returning the first match.
-
-2. **Build the failure function on paper.** Compute `pi` for `P = "AABAACAABAA"`.
-   > *Hint:* the answer is `[0, 1, 0, 1, 2, 0, 1, 2, 3, 4, 5]`. Check against the algorithm.
-
-3. **Repeated Substring Pattern** ([LeetCode 459](https://leetcode.com/problems/repeated-substring-pattern/)) — does the string consist of a substring repeated multiple times?
-   > *Hint:* compute the KMP failure function. The string is a repeated substring iff `n` is divisible by `n - pi[n - 1]` and `pi[n - 1] > 0`.
-
-4. **Shortest Palindrome** ([LeetCode 214](https://leetcode.com/problems/shortest-palindrome/)) — find the shortest palindrome obtainable by adding characters in front of `s`.
-   > *Hint:* let `s' = s + '#' + reverse(s)`. Compute KMP failure for `s'`. The longest palindromic prefix of `s` has length `pi[len(s') - 1]`.
-
-5. **Find All Occurrences (overlapping).** Given `T` and `P`, return all starting indices including overlapping ones.
-   > *Hint:* the chapter's `kmp_match`. Don't reset `j = 0` after a match; use `j = pi[m - 1]`.
-
-***
-
-# Memorize
-
-The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. KMP is a procedural algorithm; if you can write the failure-function build and the match loop cold, you can solve every literal-pattern problem in linear time.
-
-## Quick recall
-
-Click any question to reveal the answer.
-
-<details>
-<summary><strong>Q:</strong> Total time complexity of KMP matching of pattern <code>P</code> (length <code>m</code>) in text <code>T</code> (length <code>n</code>)?</summary>
-
-**A:** `O(n + m)`. The failure-function build is `O(m)`; the match loop is `O(n)`.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Worst-case time of naive substring matching?</summary>
-
-**A:** `O(nm)`. KMP beats this by a factor of `min(n, m)`.
-
-</details>
-<details>
-<summary><strong>Q:</strong> What does <code>pi[i]</code> represent in the failure function?</summary>
-
-**A:** The length of the longest *proper* prefix of `P[0..i]` that is also a suffix of `P[0..i]`. *Proper* means strictly shorter than `P[0..i]`.
-
-</details>
-<details>
-<summary><strong>Q:</strong> What does the failure function tell you on a mismatch?</summary>
-
-**A:** How much of the matched prefix you can keep without restarting the comparison from `j = 0`.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Why are both the build and the match loop <code>O(m)</code> and <code>O(n)</code> respectively, despite the inner <code>while</code>?</summary>
-
-**A:** Amortised: `j` (or `k`) is incremented at most `n` (or `m`) times across the whole loop; each `while` iteration *decreases* it; total iterations ≤ total increments.
-
-</details>
-<details>
-<summary><strong>Q:</strong> What's <code>pi[0]</code>?</summary>
-
-**A:** `0`. A single-character prefix has no proper prefix-suffix overlap.
-
-</details>
-<details>
-<summary><strong>Q:</strong> After matching the entire pattern (<code>j == m</code>), what do you set <code>j</code> to in order to find <em>overlapping</em> matches?</summary>
-
-**A:** `j = pi[m - 1]`. Setting `j = 0` would skip overlapping occurrences.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Compute <code>pi</code> for <code>P = "AABAACAABAA"</code>.</summary>
-
-**A:** `[0, 1, 0, 1, 2, 0, 1, 2, 3, 4, 5]`.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Sibling algorithm with the same <code>O(n + m)</code> cost via a different array?</summary>
-
-**A:** Z-algorithm. The Z-array stores prefix-match lengths starting at each index.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Generalisation to multi-pattern matching?</summary>
-
-**A:** Aho-Corasick — KMP failure function on a trie of patterns.
-
-</details>
-
-## Code template
-
-```python
-def build_failure(P):
-    """O(m) — pi[i] = longest proper prefix of P[0..i] that is also a suffix."""
-    m = len(P)
-    pi = [0] * m
-    k = 0
-    for i in range(1, m):
-        while k > 0 and P[k] != P[i]:
-            k = pi[k - 1]                       # fall back
-        if P[k] == P[i]:
-            k += 1
-        pi[i] = k
-    return pi
-
-def kmp_match(T, P):
-    """O(n + m) — return all starting indices where P occurs in T."""
-    pi = build_failure(P)
-    n, m = len(T), len(P)
-    matches, j = [], 0
-    for i in range(n):
-        while j > 0 and T[i] != P[j]:
-            j = pi[j - 1]                       # fall back
-        if T[i] == P[j]:
-            j += 1
-        if j == m:
-            matches.append(i - m + 1)
-            j = pi[j - 1]                       # for overlapping; set 0 for non-overlapping
-    return matches
+```d2
+direction: right
+matched: "matched j chars of P against text\n(then text[i] != pattern[j])" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
+naive: "NAIVE: shift pattern by 1, j -> 0\nre-compare from scratch" {style.fill: "#fecaca"; style.stroke: "#dc2626"}
+kmp: "KMP: j -> lps[j-1]\nthe matched prefix's longest prefix=suffix\nstays aligned; text pointer i does NOT move" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
+why: "lps[j-1] = how much we can KEEP\n-> never re-read a matched text char -> O(n+m)" {style.fill: "#fde68a"; style.stroke: "#d97706"}
+matched -> naive
+matched -> kmp
+kmp -> why
 ```
 
-## Pattern triggers
+<p align="center"><strong>Naive resets <code>j</code> to 0 on a mismatch and re-reads text; KMP falls <code>j</code> back to <code>lps[j-1]</code> — the length of the longest pattern-prefix that's also a suffix of what just matched — keeping that overlap aligned and leaving the text pointer where it is.</strong></p>
 
-- **Find this substring in this string** → `string.find` for a one-shot; KMP if you'll repeat or analyse the pattern
-- **Repeated substring pattern — does `S` equal `(sub)ᵏ`?** → KMP failure function: yes iff `n` is divisible by `n − pi[n-1]` and `pi[n-1] > 0`
-- **Shortest palindrome by adding chars in front** → KMP on `s + '#' + reverse(s)`; answer length is `pi[len-1]`
-- **Stream matches against many fixed patterns** → Aho-Corasick (KMP generalised to a trie)
-- **Find pattern with at most one wildcard** → KMP variant or two passes
-- **Period of a string** → `n − pi[n-1]` is the shortest period; or use Z-array (`Z[p] + p ≥ n`)
-- **Longest border / longest prefix that's also a suffix** → `pi[n-1]` directly
-- **Substring search that beats `O(nm)`** → KMP, Z, or Rabin-Karp depending on whether you also need rolling hash
+Three load-bearing facts:
 
-***
+- **`lps[i]` = longest proper prefix of `P[0..i]` that is also a suffix.** "Proper" means not the whole thing. For `"ababaca"`: `lps[3] = 2` because `"abab"`'s longest prefix=suffix is `"ab"`. This is computed from the pattern *only* — no text needed — in `O(m)` by matching the pattern against itself.
+- **The text pointer never moves backward.** In `kmp_search`, `i` only increments; all the "rewinding" happens on `j` (the pattern pointer) via `lps`. Each text character is examined a bounded number of times, giving `O(n)` for the scan. That's the precise sense in which KMP "remembers."
+- **The failure function is built by the same self-matching trick.** `build_lps` runs the matching idea on the pattern against itself: `k` tracks the current prefix-suffix length and falls back via `lps[k-1]` on a mismatch — the recursion that makes the precompute itself `O(m)`, not `O(m²)`.
 
-# Cross-links
+> **Key takeaway.** KMP matches in `O(n + m)` using the failure function `lps[i]` = longest proper prefix of `P[0..i]` that is also a suffix. On a mismatch after matching `j` chars, set `j = lps[j-1]` (jump) instead of `j = 0` (restart); the text pointer never rewinds. It's naive matching with the partial-match information *kept* instead of discarded.
 
-- **Prerequisite:** [Naive String Matching](/cortex/data-structures-and-algorithms/strings-string-matching-naive) — the floor KMP beats.
-- **Sibling:** [Z-Algorithm](/cortex/data-structures-and-algorithms/strings-z-algorithm) — same `O(n + m)` cost via a different mental model.
-- **Generalisation:** [Aho-Corasick](/cortex/data-structures-and-algorithms/strings-aho-corasick) — KMP extended to *multiple* patterns simultaneously.
+## Trace It
 
-***
+The failure function is most surprising on the very input that wrecked naive matching: a run of identical characters.
 
-# Final takeaway
+**Predict before you run:** what is the failure function `lps` of `"aaaa"` — is it `[0, 0, 0, 0]` (a single repeated character, "no structure"), or something else?
 
-KMP is the canonical linear-time string matcher. Three patterns to internalise:
+```python run
+def build_lps(p):
+    m = len(p); lps = [0] * m; k = 0
+    for i in range(1, m):
+        while k > 0 and p[i] != p[k]:
+            k = lps[k - 1]
+        if p[i] == p[k]:
+            k += 1
+        lps[i] = k
+    return lps
 
-1. **The failure function is the algorithm's brain.** Once you've internalised "how much prefix is also suffix", every operation in KMP makes sense.
-2. **Linear time via amortisation.** Both the failure-function build and the matching loop are `O(m)` and `O(n)` respectively because the `while` loops can only decrease `j` (or `k`), bounded by the total increments.
-3. **Beats naive on patterns with internal repetition.** For random patterns, naive is usually fast enough. KMP's wins are on adversarial-shaped or repetitive patterns — common in DNA, log files, and compressed text.
+print("lps('aaaa') :", build_lps("aaaa"))
+print("lps('aaaab'):", build_lps("aaaab"))
+```
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+<details>
+<summary><strong>Reveal</strong></summary>
 
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
+`lps("aaaa")` is `[0, 1, 2, 3]`, not `[0, 0, 0, 0]`. A run of identical characters is *maximally* self-similar: every proper prefix `"a"`, `"aa"`, `"aaa"` is also a suffix of the string so far, so `lps` climbs `0, 1, 2, 3`. This is the mirror image of why naive matching *died* on `"aaaa…a"` text — the pattern overlaps itself everywhere. But for KMP that same self-similarity is *exploited*, not suffered: on `"aaaab"` (`lps = [0, 1, 2, 3, 0]`), a mismatch on the `b` after matching four `a`s falls `j` back to `lps[3] = 3`, so KMP re-uses three already-matched `a`s and only re-checks the new position — turning naive's `O(n·m)` re-scanning into a single forward sweep. On the exact adversarial input from the last lesson (`"a"*20` searching `"aaaab"`), KMP does about 36 character comparisons versus naive's 80, and the gap widens linearly with text length. The structure naive *suffered from* is the structure KMP *runs on*.
 
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
+</details>
 
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
+## Your Turn
 
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
+**Repeated Substring Pattern** ([LeetCode 459](https://leetcode.com/problems/repeated-substring-pattern/)) — does the string consist of a smaller substring repeated? The failure function answers it for free: `n - lps[n-1]` is the string's shortest *period*, and the string is a clean repetition iff that period divides `n` (and there's a nontrivial overlap).
 
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+```python run
+def build_lps(s):
+    m = len(s); lps = [0] * m; k = 0
+    for i in range(1, m):
+        while k > 0 and s[i] != s[k]:
+            k = lps[k - 1]
+        if s[i] == s[k]:
+            k += 1
+        lps[i] = k
+    return lps
 
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+def repeated_substring(s):
+    n = len(s)
+    lps = build_lps(s)
+    period = n - lps[n - 1]                           # shortest period candidate
+    return lps[n - 1] > 0 and n % period == 0
+
+print(repeated_substring("abab"))        # True   ("ab" x 2)
+print(repeated_substring("aba"))         # False
+print(repeated_substring("abcabcabc"))   # True   ("abc" x 3)
+```
+
+```java run
+public class Main {
+    static int[] buildLps(String s) {
+        int m = s.length(); int[] lps = new int[m]; int k = 0;
+        for (int i = 1; i < m; i++) {
+            while (k > 0 && s.charAt(i) != s.charAt(k)) k = lps[k - 1];
+            if (s.charAt(i) == s.charAt(k)) k++;
+            lps[i] = k;
+        }
+        return lps;
+    }
+    static boolean repeatedSubstring(String s) {
+        int n = s.length(); int[] lps = buildLps(s); int period = n - lps[n - 1];
+        return lps[n - 1] > 0 && n % period == 0;
+    }
+    public static void main(String[] args) {
+        System.out.println(repeatedSubstring("abab"));        // true
+        System.out.println(repeatedSubstring("aba"));         // false
+        System.out.println(repeatedSubstring("abcabcabc"));   // true
+    }
+}
+```
+
+Both print `true`, `false`, `true`. `"abab"` has period `4 - 2 = 2` (`"ab"` repeats); `"aba"` has period `3 - 1 = 2`, which doesn't divide 3, so it's not a clean repetition; `"abcabcabc"` has period 3. The failure function encodes the deepest self-overlap, and that overlap *is* the period — a slick reuse of KMP's precompute for a problem that has nothing obviously to do with searching.
+
+## Reflect & Connect
+
+- **The failure function is the whole algorithm.** `lps[i]` = longest proper prefix that is also a suffix, computed from the pattern alone in `O(m)`. Everything else is bookkeeping around "on a mismatch, jump to `lps[j-1]`."
+- **The text pointer never rewinds.** That's the formal reason for `O(n)` matching — and why KMP streams: it can match against input it reads once and can't seek back through (a network socket, a huge file).
+- **Self-similarity is fuel, not friction.** The repetitive patterns that force naive's worst case are exactly the ones KMP exploits, because a high `lps` means a long safe jump. `lps("aaaa") = [0,1,2,3]` is the extreme.
+- **The period falls out for free.** `n - lps[n-1]` is the shortest period; this powers repeated-substring detection and string-rotation checks with zero extra work.
+- **It generalises.** The [Z-algorithm](/cortex/data-structures-and-algorithms/strings-z-algorithm) computes related prefix-match lengths for the whole string; [Aho-Corasick](/cortex/data-structures-and-algorithms/strings-aho-corasick) extends the failure-function idea to *many* patterns at once (a failure-link trie). KMP is the gateway to all of them.
+
+## Recall
+
+<details>
+<summary><strong>Q:</strong> What does <code>lps[i]</code> mean?</summary>
+
+**A:** The length of the longest *proper* prefix of `P[0..i]` that is also a suffix of `P[0..i]` ("proper" = not the whole substring). It's computed from the pattern alone, in `O(m)`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> On a mismatch after matching <code>j</code> characters, what does KMP do?</summary>
+
+**A:** It sets `j = lps[j-1]` (fall back to the longest prefix-suffix overlap) instead of `j = 0`, and does *not* move the text pointer. The matched overlap stays aligned, so no already-read text character is re-examined.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is KMP <code>O(n + m)</code>?</summary>
+
+**A:** Building `lps` is `O(m)`; the search is `O(n)` because the text pointer only moves forward and total `j`-decreases are bounded by total `j`-increases. No backtracking on the text.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What is the failure function of <code>"aaaa"</code>, and why?</summary>
+
+**A:** `[0, 1, 2, 3]`. A run of identical characters is maximally self-similar — every proper prefix is also a suffix — so `lps` increases by 1 each position. (Not `[0,0,0,0]`.)
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does the failure function reveal a string's period?</summary>
+
+**A:** `n - lps[n-1]` is the shortest period. The string is a clean repetition of a smaller block iff that period divides `n` and `lps[n-1] > 0` — the basis for repeated-substring detection.
+
+</details>
+
+## Sources & Verify
+
+- **CLRS** (Cormen, Leiserson, Rivest, Stein), *Introduction to Algorithms*, 3rd ed., §32.4 — the Knuth-Morris-Pratt algorithm, the prefix (failure) function, and the `O(n + m)` amortized analysis.
+- **Knuth, Morris & Pratt** (1977), "Fast Pattern Matching in Strings", *SIAM J. Comput.* — the original.
+- **LeetCode** 28 (Find the Index of the First Occurrence) and 459 (Repeated Substring Pattern) are the canonical drills; the `[0,0,1,2,3,0,1]` failure function, the `[6]` match, the `lps("aaaa") = [0,1,2,3]`, and the `true`/`false`/`true` repetition checks above come from the runnable blocks — re-run to verify.

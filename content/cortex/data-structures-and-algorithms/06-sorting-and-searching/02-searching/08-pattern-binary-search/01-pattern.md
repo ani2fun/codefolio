@@ -1,79 +1,154 @@
 ---
 title: "Pattern: Binary Search"
-summary: "Classic binary search on a fully sorted or recoverable sorted array — find a target, validate, or locate a shared element."
+summary: "The recognition pattern: when the data is sorted (or a per-step yes/no decision can rule out half the search space), reach for binary search — O(log n). This lesson is about spotting the trigger and reusing one template across the whole binary-search family."
 prereqs:
   - 06-sorting-and-searching/02-searching/01-binary-search
 ---
 
-# Identifying the Binary Search Pattern
+# Pattern: Binary Search
 
-Two diagnostic questions decide whether plain binary search applies.
+## Why It Exists
 
-| # | Question | If "yes," binary search fits because... |
-|---|---|---|
-| **Q1** | Is the data sorted (ascending or descending)? | Binary search needs a monotone sequence to halve the search space. |
-| **Q2** | Are we looking up *whether/where* a specific target exists, not transforming it? | Binary search returns position; lookups are its native use case. |
+You learned the [mechanics of binary search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-binary-search) — `lo`/`hi`/`mid`, halve each step. This lesson is about **recognition**: when does a problem call for it, and what's the one template you reuse?
 
-If both are "yes," `O(log n)` per query is the best you can do.
+The trigger is simple. If the data is **sorted** (or you can decide, in `O(1)`, which half of the search space to discard), binary search turns an `O(n)` scan into `O(log n)`. That covers far more than "find `x` in a sorted array": validating membership, finding a shared/intersecting element of two sorted arrays, locating a position — and, with the variants, boundaries, rotations, and "binary search on the answer." Learn to *see* the sorted/monotone structure, and the template does the rest.
 
----
+## See It Work
 
-## Common Disguises
+The classic template, finding a target's index in a sorted array. Run it.
 
-Binary search problems often *look* like nested loops or hash lookups at first. Watch for:
+```python run
+def binary_search(arr, target):
+    lo, hi = 0, len(arr) - 1
+    while lo <= hi:
+        mid = lo + (hi - lo) // 2        # overflow-safe midpoint
+        if arr[mid] == target:
+            return mid
+        elif arr[mid] < target:
+            lo = mid + 1                 # discard the left half
+        else:
+            hi = mid - 1                 # discard the right half
+    return -1
 
-- **"Sorted" + "search for"** — direct application.
-- **"Sorted in descending order"** — reverse the comparison; algorithm is otherwise identical.
-- **"Each row is sorted"** — binary search per row turns `O(n)` into `O(log n)` per row.
-- **"Find common elements"** — iterate one collection, binary-search each in the other.
-- **Multi-key lookup** — binary search on the key field; verify other fields after.
+print(binary_search([2, 4, 6, 8, 10, 12], 8))   # 3
+print(binary_search([2, 4, 6, 8, 10, 12], 7))   # -1
+```
 
-The trade-off: binary search needs sorted input. If the data isn't sorted but is queried many times, sorting once (`O(n log n)`) and then binary-searching (`O(log n)` per query) beats repeated linear scans (`O(n)` per query) after roughly `log n` queries.
+## How It Works
 
----
+The recognition checklist — reach for binary search when **all** of these hold:
 
-## Strategy
+1. There's a **search space** that's ordered or monotone (a sorted array, a range of candidate answers, a `false…true` predicate).
+2. One **`O(1)` (or cheap) test** at the midpoint tells you which half to keep.
+3. You want a single element / boundary / decision, not the whole structure.
 
-When you see a search-style problem on sorted data:
-1. Identify the sort axis.
-2. Identify the target.
-3. Apply binary search (or its variants) with the right comparison.
+The reusable template is always the same three moves — probe the middle, test, discard a half:
 
-The four worked problems below show this strategy applied in different settings: a single sorted array (recovery), a descending array (reverse search), a sorted-row matrix with column-wise checks (shared element), and the same with multi-result extraction (intersection).
+```mermaid
+flowchart TB
+  R["ordered search space + O(1) midpoint test"] --> M["probe mid"]
+  M --> Q{"which half?"}
+  Q -->|"answer left"| L["hi = mid - 1"]
+  Q -->|"answer right"| H["lo = mid + 1"]
+  Q -->|"found"| F(["done"])
+  L --> M
+  H --> M
+```
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+<p align="center"><strong>recognize the ordered search space, probe the middle, and discard the half that can't contain the answer; one template, many variants.</strong></p>
 
-<!-- TODO: Understanding the Pattern — missing, needs to be written -->
-<!--       Guidance: umbrella H2 with the subsections below -->
+Every member of the family is this template with a different midpoint test: exact match (`== target`), first `≥`/`>` ([lower](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-lower-bound)/[upper bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-upper-bound)), which-half-is-sorted ([rotated array](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-sorted-rotated-array)), or `feasible(mid)` ([predicate search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search)). All are `O(log n)` (or `O(log(range) × cost(test))`).
 
-<!-- TODO: Why Naive Isn't Enough — missing, needs to be written -->
-<!--       Guidance: motivation for why the obvious approach fails -->
+### Key Takeaway
 
-<!-- TODO: The Core Idea — missing, needs to be written -->
-<!--       Guidance: one paragraph: the central trick -->
+Recognize binary search by its trigger: an ordered/monotone search space plus a cheap midpoint test that discards half. Then apply the one template (probe `mid`, test, shrink). The variants differ only in the test — exact, boundary, rotated, or predicate.
 
-<!-- TODO: How the Pointers/Window Move — missing, needs to be written -->
-<!--       Guidance: mechanics of the moving parts -->
+## Trace It
 
-<!-- TODO: The Generic Algorithm — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
+Searching `8` in `[2, 4, 6, 8, 10, 12]`:
 
-<!-- TODO: Generic Implementation — missing, needs to be written -->
-<!--       Guidance: Python block + Java block of the skeleton -->
+| `lo` | `hi` | `mid` | `arr[mid]` | vs 8 | action |
+|---|---|---|---|---|---|
+| 0 | 5 | 2 | `6` | `<` | `lo = 3` |
+| 3 | 5 | 4 | `10` | `>` | `hi = 3` |
+| 3 | 3 | 3 | `8` | `==` | **return 3** |
 
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table -->
+Before you read on: a problem says "two sorted arrays — find their smallest common element." There's no single sorted array to search. Why is this *still* a binary-search problem, and what's the search space?
 
-<!-- TODO: Variants / Taxonomy — missing, needs to be written -->
-<!--       Guidance: enumerate sub-shapes of this pattern -->
+Because binary search doesn't require *one array* — it requires an ordered search space and a cheap "which half" test. Here you can walk the smaller array and, for each candidate, **binary-search the other array** for it (the search space is the second sorted array, the test is the comparison) — or two-pointer both. The recognition is: "the inputs are *sorted*, and I need to *locate/decide*" → binary search is on the table, even when you have to construct the search space (one array, a range, a predicate) yourself. Spotting that the *structure* — not the literal data layout — is what binary search needs is the whole pattern; the mechanics never change.
 
-<!-- TODO: Recognition Checklist — missing, needs to be written -->
-<!--       Guidance: 4-question diagnostic — the source of the Problem-section Diagnostic Questions -->
+## Your Turn
 
-<!-- TODO: Canonical Example — missing, needs to be written -->
-<!--       Guidance: fully worked example: brute force → optimised → template fit -->
+The reusable binary-search template:
 
-<!-- TODO: Problems in This Category — missing, needs to be written -->
-<!--       Guidance: table with links to the 02-problems/ files -->
+```python run
+def binary_search(arr, target):
+    lo, hi = 0, len(arr) - 1
+    while lo <= hi:
+        mid = lo + (hi - lo) // 2
+        if arr[mid] == target:
+            return mid
+        elif arr[mid] < target:
+            lo = mid + 1
+        else:
+            hi = mid - 1
+    return -1
+
+a = [2, 4, 6, 8, 10, 12]
+print(binary_search(a, 2), binary_search(a, 12), binary_search(a, 5))   # 0 5 -1
+```
+
+```java run
+public class Main {
+  static int binarySearch(int[] arr, int target) {
+    int lo = 0, hi = arr.length - 1;
+    while (lo <= hi) {
+      int mid = lo + (hi - lo) / 2;
+      if (arr[mid] == target) return mid;
+      else if (arr[mid] < target) lo = mid + 1;
+      else hi = mid - 1;
+    }
+    return -1;
+  }
+  public static void main(String[] args) {
+    int[] a = {2, 4, 6, 8, 10, 12};
+    System.out.println(binarySearch(a, 8) + " " + binarySearch(a, 7));   // 3 -1
+  }
+}
+```
+
+Drill the family in **Practice** — [Recovery Validation](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-binary-search-problems-recovery-validation), [Reverse Binary Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-binary-search-problems-reverse-binary-search), [Minimum Shared Element](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-binary-search-problems-minimum-shared-element), and [Intersecting Elements](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-binary-search-problems-intersecting-elements).
+
+## Reflect & Connect
+
+This pattern is the umbrella; the rest of the section is its variants:
+
+- **The family, by midpoint test** — exact match (this lesson), first `≥`/`>` ([lower](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-lower-bound) / [upper bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-upper-bound)), which-half-is-sorted ([rotated array](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-sorted-rotated-array)), and `feasible(mid)` ([min](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search) / [max predicate](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-maximum-predicate-search)).
+- **Recognition beats memorization** — you don't memorize five algorithms; you learn one template and the trigger ("ordered space + cheap halving test"), then swap the midpoint test. Most "I didn't see it was binary search" misses are failures to spot a *constructible* monotone search space.
+- **Invariant discipline carries across all variants** — choose inclusive `[lo, hi]` or half-open `[lo, hi)` and keep `mid`, the loop test, and the updates consistent; that single habit prevents the off-by-one bugs binary search is infamous for.
+
+**Prerequisites:** [Binary Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-binary-search).
+**What's next:** the boundary variant — first position where a condition becomes true — [Lower Bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-lower-bound-pattern).
+
+## Recall
+
+> **Mnemonic:** *Trigger = ordered space + cheap midpoint test that discards half. One template (probe/test/shrink); variants only change the test. `O(log n)`.*
+
+| | |
+|---|---|
+| Recognize | sorted/monotone search space + `O(1)` "which half" test |
+| Template | probe `mid`, test, discard a half |
+| Variants | exact · lower/upper bound · rotated · predicate |
+| Cost | `O(log n)` (or `O(log(range) × test)`) |
+| Habit | fix the invariant (inclusive vs half-open) and stay consistent |
+
+- **Q:** When should you reach for binary search? **A:** When the search space is ordered/monotone and a cheap midpoint test can discard half of it.
+- **Q:** What's common to every variant? **A:** The probe/test/shrink template — only the midpoint test changes (exact, boundary, rotated, predicate).
+- **Q:** Why is "two sorted arrays, find a common element" still binary search? **A:** Binary search needs an ordered search space, not one literal array — search one array for each element of the other.
+- **Q:** What prevents the classic off-by-one bugs? **A:** Picking one invariant (inclusive `[lo,hi]` or half-open `[lo,hi)`) and keeping `mid`, the loop test, and updates consistent with it.
+
+## Sources & Verify
+
+- **Bentley**, *Programming Pearls*, ch. 4 — binary search, its variants, and the discipline that prevents bugs.
+- **Sedgewick & Wayne**, *Algorithms*, 4th ed., §1.4 / §3.1 — binary search and ordered symbol tables.
+- The recognition trigger and one-template-many-variants framing are standard; both runnable blocks are verified by running (`8 ⇒ 3`, `7 ⇒ -1`; ends `⇒ 0, 5, -1`).

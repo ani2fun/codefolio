@@ -2,36 +2,15 @@
 title: "Design a Queue"
 summary: "Implement a Queue using at most two stacks, and a Stack using at most two queues — each with the standard API."
 prereqs:
-  - 02-linear-structures/06-queue/02-array-implementation-of-queues
-  - 02-linear-structures/06-queue/03-linked-list-implementation-of-queues
+  - 02-linear-structures/06-queue/01-what-is-a-queue
 difficulty: hard
 ---
 
-## The Hook
+Stacks are **LIFO**, queues are **FIFO** — each other's mirror image. Can you build a queue using only stacks? A stack using only queues? Both answers are *yes*, and the construction shows how *composition* of simple primitives simulates behaviour none of them has alone: pouring a stack into another stack reverses order, and reversing twice restores it, so two stacks simulate FIFO. This lesson builds three such constructions end-to-end — **queue from two stacks**, **stack from two queues**, **stack from one queue** — each testing whether you understand FIFO and LIFO as *contracts* you can compose.
 
-Stacks are *LIFO*. Queues are *FIFO*. They're each other's mirror image — and at first glance you might think one cannot become the other, since their access disciplines are exactly opposite. The fun question is: **can you build a queue using only stacks? Can you build a stack using only queues?**
+## Design a Queue Using Stacks
 
-Both answers are *yes*, and the construction is more than a puzzle. It's a textbook demonstration of how *composition* of simple primitives can simulate behaviour that none of them has individually. A single stack is LIFO. *Two* stacks, with elements ferried between them, can simulate FIFO — because pouring a stack into another stack reverses the order, and reversing twice gets you back to the original. Combine "push everything into stack A" with "transfer to stack B when needed", and stack B's top is the queue's front.
-
-The reverse direction — stack out of queues — is uglier but the same *idea*: shuffle elements through one or two queues so that the most-recently-pushed item ends up at the front, where dequeue can fish it out. It costs O(N) per push (or per pop), but it works.
-
-These three constructions — **queue from two stacks**, **stack from two queues**, **stack from one queue** — show up in interview cycles year after year. They test whether you really understand FIFO and LIFO as *contracts*, and whether you can reason about composing data structures without reaching for new primitives.
-
-This lesson builds all three end-to-end in Python and Java.
-
----
-
-## Table of contents
-
-1. [Design a queue using stacks](#design-a-queue-using-stacks)
-2. [Design a stack using queues](#design-a-stack-using-queues)
-3. [Design a stack using a single queue](#design-a-stack-using-a-single-queue)
-
-***
-
-# Design a queue using stacks
-
-## Problem Statement
+### Problem Statement
 
 Implement a `Queue` class using **at most two stacks** as the only internal storage. All standard queue operations must be supported.
 
@@ -65,7 +44,6 @@ Concretely:
 - **outStack** is where dequeues happen. Its top is the *oldest* enqueue (the queue's *front*).
 - When `outStack` is empty and we need to dequeue, we **lazily transfer** everything from `inStack` to `outStack`, popping from one and pushing to the other. The pour reverses the order — so what was at the bottom of `inStack` (oldest) becomes the top of `outStack` (next out).
 
-> 🖼 Diagram — Pour-and-reverse — inStack's bottom (oldest) becomes outStack's top after the transfer. From then on, dequeue is O(1) for as long as outStack still has items. Only when outStack drains again does another batch transfer happen.
 ```mermaid
 ---
 config:
@@ -418,9 +396,9 @@ For a workload that mixes enqueues and dequeues without interleaved `back()` cal
 
 ***
 
-# Design a stack using queues
+## Design a Stack Using Queues
 
-## Problem Statement
+### Problem Statement
 
 Implement a `Stack` class using **at most two queues** as the only internal storage.
 
@@ -448,7 +426,6 @@ A queue dequeues from the *front*. A stack pops from the *top*. So the construct
 
 To achieve that with two queues: when pushing `v`, enqueue `v` into the *empty* queue (call it `q2`), then drain the *full* queue (`q1`) into `q2` in order. Now `q2`'s front is `v` (which we just pushed), followed by all the previous items in their original order. Swap the names `q1` and `q2` (so that `q1` is always "the queue with the data") and we're done.
 
-> 🖼 Diagram — Two-queue stack — every push pays O(N) to relocate everything; in return, pop and top are O(1). The "newest in front" invariant is what makes the stack discipline emerge from queue primitives.
 ```mermaid
 ---
 config:
@@ -724,9 +701,9 @@ Push is genuinely O(N) here — there's no amortisation, because every push relo
 
 ***
 
-# Design a stack using a single queue
+## Design a Stack Using a Single Queue
 
-## Problem Statement
+### Problem Statement
 
 Same interface as above, but with **only one queue** internally.
 
@@ -743,7 +720,6 @@ The two-queue solution moved data between containers to keep "newest at front". 
 
 Concretely: after enqueueing `v` (which lands at the *back*), rotate the queue by `size − 1` positions: dequeue from the front and immediately re-enqueue at the back, `size − 1` times. The net effect: `v` ends up at the front, and the rest are behind it in their original relative order.
 
-> 🖼 Diagram — Single-queue stack — push enqueues then rotates so the new item lands at the front. Pop and top are then O(1) (just dequeue / front). The whole stack discipline emerges from O(N) work per push.
 ```mermaid
 ---
 config:
@@ -1008,16 +984,10 @@ public class Main {
 Same shape as the two-queue version — push pays for the abstraction; everything else is free. The single-queue version uses *less memory* (only one underlying queue) and is arguably the more elegant of the two.
 
 </details>
-<details>
-<summary><h2>Final Takeaway</h2></summary>
+## Key Takeaway
 
+Each construction simulates one access discipline using primitives that support only the opposite — and you pay for it:
 
-The three problems in this lesson all answer the same question: *can you simulate one access discipline using primitives that only support the opposite discipline?* The answer in each case is yes — but you pay for it.
-
-1. **Queue from two stacks — amortised O(1).** The lazy transfer is the gem. Every item moves at most twice; the worst-case O(N) dequeue is paid back by the cheap dequeues that follow. This is the canonical interview answer for "queue out of stacks", and the pattern (lazy transfer) recurs in real systems — most notably in functional persistent queues (Okasaki's banker's queue uses two lazy lists with the same idea).
-2. **Stack from queues — push pays the price.** Whether you use one queue or two, the cost is the same: O(N) per push, O(1) per pop. There's no clever amortisation here because the rotation/relocation has to happen on *every* push, not just occasionally. The trade-off is between memory (one queue vs two) and code clarity.
-3. **The structures are duals, not equivalents.** Stacks and queues can simulate each other, but never for free. The asymmetry of cost — amortised O(1) one way, worst-case O(N) the other — reflects the fact that LIFO and FIFO are genuinely different access disciplines, and one of them has to do extra work to mimic the other. Picking the right primitive *first* is always cheaper than retrofitting.
-
-> *Up next — the queue chapter ends here. The next chapter introduces the **binary tree** — a fundamentally different shape of data, where each node has multiple children and "first" and "last" stop being meaningful in the linear sense. The queue we just built will resurface there as the engine of breadth-first traversal — yet another reason FIFO sits at the heart of so much algorithmic work.*
-
-</details>
+1. **Queue from two stacks — amortised O(1).** The lazy transfer is the gem: every item moves at most twice, so the worst-case O(N) dequeue is paid back by the cheap dequeues after it. (The same idea powers Okasaki's banker's queue.)
+2. **Stack from queues — push pays the price.** One queue or two, the cost is O(N) per push, O(1) per pop; the rotation happens on *every* push, so there's no amortisation — only a memory-vs-clarity trade-off.
+3. **Stacks and queues are duals, not equivalents.** They can simulate each other, but never for free — amortised O(1) one way, worst-case O(N) the other. Picking the right primitive *first* is always cheaper than retrofitting.

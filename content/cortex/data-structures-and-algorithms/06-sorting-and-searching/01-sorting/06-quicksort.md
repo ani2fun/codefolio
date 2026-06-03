@@ -1,814 +1,180 @@
 ---
 title: "Quicksort"
-summary: "<!-- TODO: summary -->"
+summary: "Divide and conquer: pick a pivot, partition so smaller elements go left and larger go right (the pivot lands in its final spot), then recurse on each side. O(n log n) average and the fastest comparison sort in practice; O(n²) worst case, dodged by random or median-of-three pivots. In-place, not stable."
+prereqs:
+  - 02-linear-structures/01-arrays/01-what-is-an-array
 ---
 
-# 6. Quicksort
+# Quicksort
 
-The four sorts before this one — bubble, selection, insertion, counting — work on the whole array at once. Each pass touches every element. The work scales as `O(n²)` (or `O(n + k)` for counting sort, but that one needs a small value range).
+## Why It Exists
 
-Quicksort takes a fundamentally different approach: **divide the work in half, recurse on both halves, combine.** The trick is the divide step: pick one element (the *pivot*) and partition the array so everything smaller ends up on the left and everything larger on the right. The pivot lands in its final sorted position. Now recurse on the two halves — each one a smaller sorting problem of the same shape.
+The elementary sorts are `O(n²)` because they move elements only short distances — one swap or shift at a time. To break the quadratic barrier you need to rearrange the array in *big* strokes. Quicksort's stroke is **partitioning**: choose one element as the **pivot**, then rearrange so everything `≤` the pivot is to its left and everything `>` it is to its right. After one `O(n)` partition pass, the pivot sits in its *final* sorted position, and the problem splits into two independent smaller subarrays.
 
-The result: `O(n log n)` average time. Doubling the array size adds *one* more level of recursion. For a million elements, quicksort does ~20 million operations; bubble sort does ~10¹². That's the difference between a millisecond and a week.
+Recurse on each side and the whole array sorts. When the pivot splits the array roughly in half each time, you get `log n` levels of `O(n)` work — `O(n log n)`. And because partitioning is a tight in-place scan with excellent cache behavior and a small constant factor, quicksort is usually the **fastest comparison sort in practice**, which is why it (or a hybrid built on it) backs many standard libraries.
 
-By the end of this lesson you'll know the divide-and-conquer paradigm that powers quicksort (and merge sort, the Merge Sort lesson), the partition algorithm, why pivot selection matters, the `O(n²)` worst-case trap, and the trade-offs that make quicksort the most-used sort in production despite its non-existent stability.
+## See It Work
 
-## Table of contents
+Sort `[5, 2, 8, 1, 9, 3]` by partitioning around a pivot and recursing. Run it, then **Visualise** the partition swaps.
 
-1. [Divide and conquer](#divide-and-conquer)
-2. [Understanding quicksort](#understanding-quicksort)
-3. [The partition step — Lomuto's scheme](#the-partition-step--lomutos-scheme)
-4. [Implementation](#implementation)
-5. [Complexity analysis](#complexity-analysis)
-6. [Quicksort problem](#quicksort-problem)
+> ▶ Run it, then click **Visualise** — each partition drags elements `≤` pivot to the left, then drops the pivot into its final slot before recursing on both halves.
 
-***
+```python run viz=array viz-root=arr
+def partition(arr, lo, hi):
+    pivot = arr[hi]                       # last element as pivot
+    i = lo - 1                            # boundary of the "≤ pivot" region
+    for j in range(lo, hi):
+        if arr[j] <= pivot:
+            i += 1
+            arr[i], arr[j] = arr[j], arr[i]
+    arr[i + 1], arr[hi] = arr[hi], arr[i + 1]   # pivot into its final slot
+    return i + 1
 
-# Divide and Conquer
+def quicksort(arr, lo=0, hi=None):
+    if hi is None:
+        hi = len(arr) - 1
+    if lo < hi:
+        p = partition(arr, lo, hi)        # pivot now permanently placed at p
+        quicksort(arr, lo, p - 1)         # sort the left side
+        quicksort(arr, p + 1, hi)         # sort the right side
+    return arr
 
-Divide-and-conquer is an algorithmic paradigm that solves a problem by:
+print(quicksort([5, 2, 8, 1, 9, 3]))      # [1, 2, 3, 5, 8, 9]
+```
 
-1. **Divide** — split the problem into smaller subproblems of the same kind.
-2. **Conquer** — solve the subproblems (recursively, until they're trivial).
-3. **Combine** — merge the subproblem solutions into a solution for the whole.
+## How It Works
+
+**Partition** (Lomuto scheme) is the engine. With the pivot at `arr[hi]`, keep a boundary index `i` marking the end of the "`≤` pivot" region. Scan `j` across the rest; whenever `arr[j] ≤ pivot`, extend the region (`i++`) and swap `arr[j]` into it. Finally swap the pivot just past the boundary — now everything left of it is `≤` and everything right is `>`, and the pivot is in its final place. Return its index `p`.
+
+**Quicksort** then recurses on `[lo, p−1]` and `[p+1, hi]`. The pivot itself is done forever, so it's excluded from both recursions.
 
 ```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#777777"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
 flowchart TB
-  P["Problem"]
-  P -->|"Divide"| L["Subproblem 1"]
-  P -->|"Divide"| R["Subproblem 2"]
-  L --> LL["..."]
-  R --> RR["..."]
-  LL -.->|"solve directly"| LS["Solution 1"]
-  RR -.->|"solve directly"| RS["Solution 2"]
-  LS -->|"Combine"| FINAL["Final solution"]
-  RS -->|"Combine"| FINAL
+  P["partition around pivot"] --> L["left: all ≤ pivot"]
+  P --> M["pivot — final position"]
+  P --> R["right: all > pivot"]
+  L --> QL["quicksort(left)"]
+  R --> QR["quicksort(right)"]
 ```
 
-<p align="center"><strong>The divide-and-conquer pattern. Break the problem in half (or into a few pieces); solve each piece recursively; combine. Both quicksort (this lesson) and merge sort (the Merge Sort lesson) use this pattern.</strong></p>
+<p align="center"><strong>partition around the pivot (smaller left, larger right, pivot fixed), then recurse independently on each side.</strong></p>
 
-The everyday example: studying for an exam by breaking the syllabus into chapters, mastering each chapter independently, then connecting the ideas at the end. The whole becomes manageable because each piece is small.
+The cost depends entirely on **how evenly the pivot splits**:
 
-For sorting:
-- **Quicksort** divides the array around a pivot, sorts each half recursively, *combines* by doing nothing — the array is already sorted because of how the partition step worked.
-- **Merge sort** (the Merge Sort lesson) divides the array in half by index, sorts each half recursively, *combines* by merging the two sorted halves.
+- **Balanced** (pivot near the median): `log n` levels × `O(n)` partition work = **`O(n log n)` average**.
+- **Unbalanced** (pivot is the min or max every time): one side is empty, giving `n` levels × `O(n)` = **`O(n²)` worst case**. With the last-element pivot, an *already-sorted* array triggers exactly this.
 
-The two algorithms have different *divide* and *combine* strategies but the same overall shape. Both achieve `O(n log n)` average time.
+The fix is the pivot choice: pick a **random** element or the **median of three** (first, middle, last) as the pivot. That makes the `O(n²)` case astronomically unlikely on real input. Quicksort is **in-place** (`O(log n)` recursion stack) but **not stable** — partition swaps can reorder equal elements.
 
----
+### Key Takeaway
 
-## Why Divide and Conquer Beats `O(n²)`
+Quicksort partitions around a pivot (smaller left, larger right, pivot fixed) and recurses on each side: `O(n log n)` average, `O(n²)` worst when pivots split badly. Use random or median-of-three pivots to dodge the worst case. In-place, not stable, and the fastest comparison sort in practice.
 
-A quadratic algorithm does `n` passes of `n` work each. Divide-and-conquer does `log n` levels of `n` work each — exponentially fewer levels.
+## Trace It
 
-```d2
-direction: down
+One partition of `[5, 2, 8, 1, 9, 3]` with pivot `3` (last element), boundary `i` starting at `-1`:
 
-quad: "Quadratic — O(n²)\nn passes × n work = n²" {style.fill: "#fecaca"; style.stroke: "#dc2626"}
-dac: "Divide and conquer — O(n log n)\nlog n levels × n work per level = n log n" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
+| `j` | `arr[j]` | `≤ 3`? | action | array |
+|---|---|---|---|---|
+| 0 | `5` | no | — | `[5,2,8,1,9,3]` |
+| 1 | `2` | yes | `i=0`, swap 5↔2 | `[2,5,8,1,9,3]` |
+| 2 | `8` | no | — | `[2,5,8,1,9,3]` |
+| 3 | `1` | yes | `i=1`, swap 5↔1 | `[2,1,8,5,9,3]` |
+| 4 | `9` | no | — | `[2,1,8,5,9,3]` |
+| end | — | — | place pivot at `i+1=2` | `[2,1,3,5,9,8]` |
 
-quad -> dac: each level halves the per-call problem size
+Pivot `3` is now at index 2, with `{2,1} ≤ 3` left and `{5,9,8} > 3` right.
+
+Before you read on: this partition put `3` at its final index `2` in a single `O(n)` pass. The elementary sorts also place one element per pass — bubble fixes the max, selection fixes the min. So what makes quicksort `O(n log n)` while they're `O(n²)`, if all three "finalize one element per pass"?
+
+Because quicksort's pass does far more than finalize the pivot — it *also splits the remaining work in two*. After partitioning, the left and right subarrays are independent and each is (on average) half the size, so the recursion depth is `log n`. Bubble and selection finalize one element but leave the *entire rest* as one undivided `n−1`-sized problem, giving `n` levels. Same "one element placed per pass," but quicksort's partition simultaneously *halves the problem*, turning `n` levels into `log n`. That divide-and-conquer split — not the placing — is where the speedup lives, which is also why a *bad* pivot (no split) collapses quicksort back to `O(n²)`.
+
+## Your Turn
+
+The reusable in-place quicksort:
+
+```python run
+def partition(arr, lo, hi):
+    pivot = arr[hi]
+    i = lo - 1
+    for j in range(lo, hi):
+        if arr[j] <= pivot:
+            i += 1
+            arr[i], arr[j] = arr[j], arr[i]
+    arr[i + 1], arr[hi] = arr[hi], arr[i + 1]
+    return i + 1
+
+def quicksort(arr, lo=0, hi=None):
+    if hi is None:
+        hi = len(arr) - 1
+    if lo < hi:
+        p = partition(arr, lo, hi)
+        quicksort(arr, lo, p - 1)
+        quicksort(arr, p + 1, hi)
+    return arr
+
+print(quicksort([5, 2, 8, 1, 9, 3]))   # [1, 2, 3, 5, 8, 9]
+print(quicksort([3, 3, 1, 2, 3]))      # [1, 2, 3, 3, 3]
 ```
 
-<p align="center"><strong>The leverage. Halving the problem each step caps the recursion depth at <code>log n</code>; each level still does <code>O(n)</code> total work, so the total is <code>O(n log n)</code>.</strong></p>
-
-For `n = 1,000,000`: `n² = 10¹²` operations vs `n log n ≈ 2 × 10⁷` operations — about 50,000× faster. The gap widens as `n` grows.
-
----
-
-## Strengths and Limitations of D&C
-
-| Strength | Detail |
-|---|---|
-| **Efficiency** | `O(n log n)` average for sorting; faster for many other problems too. |
-| **Parallelism** | Subproblems are independent — easy to parallelise across cores. |
-| **Scalability** | The same algorithm handles 100 elements or 100 billion. |
-
-| Limitation | Detail |
-|---|---|
-| **Stack depth** | Recursive depth `O(log n)` average, `O(n)` worst case. |
-| **Constant factor** | The recursion overhead can make D&C slower than `O(n²)` algorithms for small inputs (which is why hybrid sorts use insertion sort for tiny subarrays). |
-| **Worst case can be bad** | Quicksort degrades to `O(n²)` if the partition is consistently unbalanced. |
-
----
-
-## Key Takeaway
-
-Divide-and-conquer trades depth for breadth. Instead of `n` passes of `n` work, you do `log n` passes of `n` work. The savings are exponential. Now we'll see how quicksort applies the pattern.
-
-***
-
-# Understanding Quicksort
-
-Quicksort's core operation is the **partition**. Pick any element as the pivot. Rearrange the array so that:
-- Elements smaller than the pivot are on its left.
-- Elements larger than the pivot are on its right.
-- The pivot is in its **final sorted position** (it doesn't move again).
-
-Now the array is split into two regions — `left` and `right` of the pivot — and each can be sorted independently with the same algorithm. Recurse on both. When the recursion bottoms out (each region has 0 or 1 elements), the array is fully sorted.
-
-```d2
-direction: down
-
-before: "Before partition (pivot = 4)" {
-  grid-rows: 1
-  grid-columns: 6
-  grid-gap: 0
-  a0: "7"
-  a1: "2"
-  a2: "5"
-  a3: "1"
-  a4: "8"
-  a5: "4 (pivot)" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-}
-
-after: "After partition" {
-  grid-rows: 1
-  grid-columns: 6
-  grid-gap: 0
-  a0: "2"
-  a1: "1"
-  a2: "4 (pivot, in place)" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
-  a3: "7"
-  a4: "5"
-  a5: "8"
-}
-
-before -> after: partition
-```
-
-<p align="center"><strong>One partition step. The pivot ends up in its final sorted position; smaller elements left, larger right. The two halves can now be sorted independently.</strong></p>
-
----
-
-## The Library Walkthrough
-
-Imagine sorting books alphabetically. Pick a random book — say *Dracula*. Place all books with titles before *Dracula* on its left; all books after *Dracula* on its right. Now *Dracula* is in its correct alphabetical position. Recurse on each half. After recursion, the whole shelf is sorted.
-
-```d2
-direction: down
-
-step0: "All books unsorted, pick pivot 'Dracula'"
-step1: "Partition — pre-D books left, post-D books right\nLeft: ['Brave New World', 'Catch-22', 'Animal Farm']\nDracula\nRight: ['Frankenstein', 'War and Peace', 'Pride and Prejudice', 'Hobbit']"
-step2: "Recurse on left → sorted ['Animal Farm', 'Brave New World', 'Catch-22']"
-step3: "Recurse on right → sorted ['Frankenstein', 'Hobbit', 'Pride and Prejudice', 'War and Peace']"
-step4: "Combine → fully sorted shelf" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
-
-step0 -> step1 -> step2 -> step3 -> step4
-```
-
-<p align="center"><strong>Quicksort on books. Each recursion deals with a smaller shelf; combining is automatic because the partition already placed the pivot correctly.</strong></p>
-
----
-
-## Why It's Called "Partition-Exchange Sort"
-
-Quicksort's other name. The partition step *exchanges* elements (swaps them) to put smaller-than-pivot elements on the left and larger ones on the right. The whole algorithm is partition + recursion; partition + recursion. No merge step, no auxiliary array — the work is done in place via swaps.
-
-> *Pause and predict — for an array of 8 elements, how deep does the recursion go in the best case (perfectly balanced partitions)? In the worst case (the smallest or largest element is always picked as the pivot)?*
-
-Best case: depth `log₂(8) = 3` — each partition splits the work in half, so the recursion tree has 3 levels. Worst case: depth `7` — each partition only places one element correctly, leaving `n - 1` to sort recursively. The depth determines both the time complexity (`O(n log n)` vs `O(n²)`) and the stack depth.
-
----
-
-## Strengths and Limitations
-
-| Strength | Detail |
-|---|---|
-| **Fast on average** | `O(n log n)` with low constant factor — typically the fastest comparison sort on random data. |
-| **In-place** | `O(1)` extra memory beyond the recursion stack. |
-| **Cache-friendly** | Sequential access during partition; good locality. |
-| **Parallelisable** | Each partition's two halves are independent. |
-
-| Limitation | Detail |
-|---|---|
-| **`O(n²)` worst case** | Bad pivot choices on adversarial input (sorted, reverse-sorted) hit this. Mitigated by random pivots. |
-| **Not stable** | Long-distance swaps during partition can flip equal elements' relative order. |
-| **Recursive** | Stack depth `O(log n)` average, `O(n)` worst case. |
-
-In practice, quicksort is the workhorse of every standard library:
-- **C** — `qsort()`.
-- **C++** — `std::sort()` (IntroSort: quicksort + heapsort + insertion sort).
-- **Java** — `Arrays.sort(int[])` (Dual-Pivot Quicksort).
-- **Rust** — `slice::sort_unstable()` (PDQsort, a quicksort variant).
-
----
-
-## Key Takeaway
-
-Quicksort: pick a pivot, partition around it, recurse on both halves. `O(n log n)` average, `O(n²)` worst case. The fastest comparison sort on random data and the default in most production environments. Now we'll look at the partition step in detail.
-
-***
-
-# The Partition Step — Lomuto's Scheme
-
-The partition step is the heart of quicksort. There are two classic schemes:
-- **Lomuto's scheme** — simpler, slightly slower, the version we'll use.
-- **Hoare's scheme** — faster but trickier to get right (notably, the pivot doesn't necessarily end up at the partition index).
-
-We'll use Lomuto's. The intuition: scan the array left-to-right with two indices, `i` (the read pointer) and `nextSmallerIndex` (the boundary of "elements smaller than pivot, already partitioned"). Whenever `arr[i]` is smaller than the pivot, swap it into the smaller-than-pivot region by exchanging with `arr[nextSmallerIndex]` and incrementing `nextSmallerIndex`.
-
-After scanning, swap the pivot (sitting at the end) into its final position at `nextSmallerIndex`. Done.
-
----
-
-## Step-by-Step
-
-Setup: pick a random pivot, swap it to the rightmost position so it doesn't get swapped during scanning.
-
-```
-Initial:    [7, 2, 5, 1, 8, 4]      # arbitrary pivot positions
-            pivot = 4 (suppose arr[5] is chosen)
-
-After swap pivot to right:  already there in this case
-nextSmallerIndex = 0
-```
-
-Scan from left to right (excluding the pivot at the end):
-
-```
-i = 0: arr[0] = 7. 7 < 4? no. Skip.
-i = 1: arr[1] = 2. 2 < 4? yes. Swap arr[0] ↔ arr[1] → [2, 7, 5, 1, 8, 4]. nextSmallerIndex = 1.
-i = 2: arr[2] = 5. 5 < 4? no. Skip.
-i = 3: arr[3] = 1. 1 < 4? yes. Swap arr[1] ↔ arr[3] → [2, 1, 5, 7, 8, 4]. nextSmallerIndex = 2.
-i = 4: arr[4] = 8. 8 < 4? no. Skip.
-```
-
-Final swap: place the pivot at `nextSmallerIndex`.
-
-```
-Swap arr[nextSmallerIndex=2] ↔ arr[5]:  [2, 1, 4, 7, 8, 5]
-                                              ^
-                                              pivot in correct position
-```
-
-Return `nextSmallerIndex = 2`. The recursive calls will sort `[2, 1]` (positions 0–1) and `[7, 8, 5]` (positions 3–5).
-
-```d2
-direction: down
-
-s1: "i=0, arr[0]=7, 7<4? no, skip"
-s2: "i=1, arr[1]=2, 2<4? yes, swap arr[0]↔arr[1]"
-s3: "i=2, arr[2]=5, 5<4? no, skip"
-s4: "i=3, arr[3]=1, 1<4? yes, swap arr[1]↔arr[3]"
-s5: "i=4, arr[4]=8, 8<4? no, skip"
-final: "Final swap: arr[nextSmallerIndex=2] ↔ arr[right]\npivot 4 is now in position 2 (final sorted position)" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
-
-s1 -> s2 -> s3 -> s4 -> s5 -> final
-```
-
-<p align="center"><strong>The partition algorithm in motion. Two indices: <code>i</code> reads, <code>nextSmallerIndex</code> tracks the boundary. Swap whenever a smaller element is found.</strong></p>
-
----
-
-## Why Random Pivot Selection?
-
-A naive partition picks `arr[right]` (or `arr[left]`) as the pivot every time. This works fine on random data but is a disaster on already-sorted input: the pivot is always the largest (or smallest) element, and the partition is maximally unbalanced (`n - 1` elements on one side, `0` on the other). The recursion depth becomes `n`, and the time complexity collapses to `O(n²)`.
-
-**Random pivot selection** fixes this. With a randomly chosen pivot, the expected partition is balanced (around 50/50), and the average time complexity stays `O(n log n)` regardless of input order. The worst case is theoretically still `O(n²)`, but it requires an adversary who can predict the random number generator — vanishingly unlikely in practice.
-
-```d2
-direction: right
-
-bad: "Naive: pivot = arr[right]\non sorted input → always picks largest\n→ O(n²)" {style.fill: "#fecaca"; style.stroke: "#dc2626"}
-good: "Random pivot\non any input → expected balanced split\n→ O(n log n) expected" {style.fill: "#bbf7d0"; style.stroke: "#16a34a"}
-
-bad -> good: randomise pivot selection
-```
-
-<p align="center"><strong>Random pivot selection turns a potentially adversarial worst case into expected-case behaviour. The implementations below all use random pivots.</strong></p>
-
----
-
-## Key Takeaway
-
-Lomuto's partition: scan with two pointers, swap smaller-than-pivot elements left of the boundary, finally swap the pivot into its position. Random pivot selection is essential for `O(n log n)` average performance. Now the implementation.
-
-***
-
-# Implementation
-
-Two functions: `partition` (the rearrangement step) and `quicksort` (the recursive driver). We'll use Lomuto's partition with a random pivot.
-
-
-```python run viz=array viz-root=arr
-import random
-from typing import List
-
-class Solution:
-    def partition(self, arr: List[int], left: int, right: int) -> int:
-
-        # Randomly select a pivot index between left and right
-        pivot = left + random.randint(0, right - left)
-
-        # Get the pivot value
-        pivot_val = arr[pivot]
-
-        # Move the pivot to the end
-        arr[pivot], arr[right] = arr[right], arr[pivot]
-
-        # Index of smaller element
-        next_smaller_index: int = left
-
-        for i in range(left, right):
-            if arr[i] < pivot_val:
-
-                # Swap elements
-                arr[next_smaller_index], arr[i] = (
-                    arr[i],
-                    arr[next_smaller_index],
-                )
-                next_smaller_index += 1
-
-        # Swap pivot to its correct position
-        arr[next_smaller_index], arr[right] = (
-            arr[right],
-            arr[next_smaller_index],
-        )
-
-        # Return the pivot index
-        return next_smaller_index
-
-    def quicksort(self, arr: List[int], left: int, right: int) -> None:
-        if left < right:
-
-            # Partition the array
-            pivot: int = self.partition(arr, left, right)
-
-            # Recursively sort the left subarray
-            self.quicksort(arr, left, pivot - 1)
-
-            # Recursively sort the right subarray
-            self.quicksort(arr, pivot + 1, right)
-
-    def quick_sort(self, arr: List[int]) -> None:
-
-        # Call Quicksort function
-        self.quicksort(arr, 0, len(arr) - 1)
-
-
-if __name__ == "__main__":
-    arr = [7, 2, 5, 1, 8, 4]
-    Solution().quick_sort(arr)
-    print(arr)   # [1, 2, 4, 5, 7, 8]
-```
-
-```java run viz=array viz-root=arr
+```java run
 import java.util.*;
 
 public class Main {
-    static class Solution {
-
-        // Helper method to swap elements in the array
-        private void swap(int[] arr, int i, int j) {
-            int temp = arr[i];
-            arr[i] = arr[j];
-            arr[j] = temp;
-        }
-
-        private int partition(int[] arr, int left, int right) {
-
-            // Randomly select a pivot index between left and right
-            Random rand = new Random();
-            int pivot = left + rand.nextInt(right - left + 1);
-
-            // Get the pivot value
-            int pivotVal = arr[pivot];
-
-            // Move the pivot to the end
-            swap(arr, pivot, right);
-
-            // Index of smaller element
-            int nextSmallerIndex = left;
-
-            for (int i = left; i < right; i++) {
-                if (arr[i] < pivotVal) {
-
-                    // Swap elements
-                    swap(arr, nextSmallerIndex, i);
-                    nextSmallerIndex++;
-                }
-            }
-
-            // Swap pivot to its correct position
-            swap(arr, nextSmallerIndex, right);
-
-            // Return the pivot index
-            return nextSmallerIndex;
-        }
-
-        private void quicksort(int[] arr, int left, int right) {
-            if (left < right) {
-
-                // Partition the array
-                int pivot = partition(arr, left, right);
-
-                // Recursively sort the left subarray
-                quicksort(arr, left, pivot - 1);
-
-                // Recursively sort the right subarray
-                quicksort(arr, pivot + 1, right);
-            }
-        }
-
-        public void quickSort(int[] arr) {
-            int n = arr.length;
-
-            // Call Quicksort function
-            quicksort(arr, 0, n - 1);
-        }
+  static int partition(int[] arr, int lo, int hi) {
+    int pivot = arr[hi], i = lo - 1;
+    for (int j = lo; j < hi; j++)
+      if (arr[j] <= pivot) { i++; int t = arr[i]; arr[i] = arr[j]; arr[j] = t; }
+    int t = arr[i + 1]; arr[i + 1] = arr[hi]; arr[hi] = t;
+    return i + 1;
+  }
+  static void quicksort(int[] arr, int lo, int hi) {
+    if (lo < hi) {
+      int p = partition(arr, lo, hi);
+      quicksort(arr, lo, p - 1);
+      quicksort(arr, p + 1, hi);
     }
-
-    public static void main(String[] args) {
-        int[] arr = {7, 2, 5, 1, 8, 4};
-        new Solution().quickSort(arr);
-        for (int x : arr) System.out.print(x + " ");
-        System.out.println();
-    }
+  }
+  public static void main(String[] args) {
+    int[] arr = {5, 2, 8, 1, 9, 3};
+    quicksort(arr, 0, arr.length - 1);
+    System.out.println(Arrays.toString(arr));   // [1, 2, 3, 5, 8, 9]
+  }
 }
 ```
 
+This is a structural lesson — drill sorting in the pattern sets.
 
-<details>
-<summary><strong>Trace — arr = [7, 2, 5, 1, 8, 4], pivot is 4 (last element)</strong></summary>
+## Reflect & Connect
 
-```
-Initial: [7, 2, 5, 1, 8, 4], left=0, right=5
-Suppose random pivot picks index 5 (value 4). After swap: [7, 2, 5, 1, 8, 4] (no-op).
+Quicksort is the workhorse comparison sort, and its partition step seeds a whole family:
 
-Partition (Lomuto):
-  next_smaller_index=0
-  i=0: arr[0]=7, 7<4? no
-  i=1: arr[1]=2, 2<4? yes, swap arr[0]↔arr[1] → [2, 7, 5, 1, 8, 4], next_smaller_index=1
-  i=2: arr[2]=5, 5<4? no
-  i=3: arr[3]=1, 1<4? yes, swap arr[1]↔arr[3] → [2, 1, 5, 7, 8, 4], next_smaller_index=2
-  i=4: arr[4]=8, 8<4? no
+- **Pivot choice is everything** — random or median-of-three pivots make the `O(n²)` worst case practically impossible; a fixed end-pivot makes sorted input the worst case. Production "introsort" even watches recursion depth and falls back to heapsort if a pathological input pushes it too deep — guaranteeing `O(n log n)`.
+- **Partition is reused everywhere** — find the `k`-th smallest element in `O(n)` average by partitioning but recursing into only *one* side ([quickselect](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-quickselect)); sort arrays with many duplicates faster by partitioning into *three* regions ([Dutch national flag](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-dutch-national-flag-sort) and [three-way quicksort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-three-way-quicksort)).
+- **Quicksort vs merge sort** — quicksort is in-place and usually faster (better locality, smaller constant) but `O(n²)` worst case and unstable; [merge sort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-merge-sort) guarantees `O(n log n)` and is stable but needs `O(n)` scratch. In-memory arrays → quicksort; linked lists or external/stable sorting → merge sort.
 
-Final swap: arr[2]↔arr[5] → [2, 1, 4, 7, 8, 5]
-Return next_smaller_index=2. Pivot 4 is now in position 2 (final sorted position).
+**Prerequisites:** [What Is an Array?](/cortex/data-structures-and-algorithms/linear-structures-arrays-what-is-an-array).
+**What's next:** quicksort's partition specialized to three regions — [Dutch National Flag Sort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-dutch-national-flag-sort).
 
-Recurse left: sort [2, 1] (positions 0–1) → [1, 2]
-Recurse right: sort [7, 8, 5] (positions 3–5) → eventually [5, 7, 8]
+## Recall
 
-Result: [1, 2, 4, 5, 7, 8] ✓
-```
+> **Mnemonic:** *Partition around a pivot (≤ left, > right, pivot fixed), recurse both sides. `O(n log n)` avg, `O(n²)` worst — random/median-of-three pivot dodges it. In-place, not stable.*
 
-</details>
+| | |
+|---|---|
+| Partition | pivot at `hi`; boundary `i`; swap `≤` pivot left; place pivot at `i+1` |
+| Recurse | `[lo, p-1]` and `[p+1, hi]` (pivot excluded — already final) |
+| Average / worst | `O(n log n)` / `O(n²)` (bad pivot, e.g. sorted input + end pivot) |
+| Pivot fix | random or median-of-three |
+| Space / stability | `O(log n)` stack, in-place; **not** stable |
 
-***
+- **Q:** What does one partition pass accomplish? **A:** It places the pivot in its final position and splits the rest into `≤`-pivot (left) and `>`-pivot (right) regions.
+- **Q:** Why is quicksort `O(n log n)` average but `O(n²)` worst? **A:** Balanced pivots give `log n` levels; a pivot that's always the min/max gives `n` levels of `O(n)` work.
+- **Q:** How do you avoid the worst case? **A:** Choose the pivot randomly or as the median of three, so consistently bad splits become astronomically unlikely.
+- **Q:** Quicksort vs merge sort — when each? **A:** Quicksort for in-memory arrays (in-place, fast, but `O(n²)` worst and unstable); merge sort for stability or guaranteed `O(n log n)` (needs `O(n)` space).
 
-# Complexity Analysis
+## Sources & Verify
 
-| Resource | Best | Average | Worst |
-|---|---|---|---|
-| **Time** | `O(n log n)` | `O(n log n)` | `O(n²)` |
-| **Space (stack)** | `O(log n)` | `O(log n)` | `O(n)` |
-| **Stability** | ✗ | ✗ | ✗ |
-| **In-place** | ✓ | ✓ | ✓ |
-
----
-
-## When Each Case Hits
-
-**Best case (`O(n log n)`)** — Each partition splits the array into two equal halves. Recursion depth `log n`; each level does `O(n)` work; total `O(n log n)`. Achieved when the pivot is always the median.
-
-**Average case (`O(n log n)`)** — Random pivot on random data. Even unbalanced splits (say 25/75) still give `O(n log n)` — the recursion depth grows from `log₂ n` to `log_{4/3} n`, but it's still logarithmic.
-
-**Worst case (`O(n²)`)** — Pivot is always the smallest or largest element (e.g., naive `arr[right]` pivot on already-sorted input). Each partition only places one element correctly, so `n` levels of recursion are needed. Random pivot selection makes this case astronomically unlikely.
-
----
-
-## Why Stack Depth Matters
-
-In the average case, recursion depth is `O(log n)` ≈ 20 for `n = 1,000,000` — totally fine. In the worst case, depth is `O(n)` = 1,000,000 — guaranteed stack overflow on most systems.
-
-Modern quicksort implementations defend against this in two ways:
-1. **Random pivots** (already discussed) — make the worst case unreachable in practice.
-2. **Tail-call elimination** — recurse on the smaller partition, *iterate* on the larger one. This bounds the maximum stack depth to `O(log n)` even in the worst case.
-
-The Rust standard library's `slice::sort_unstable` does both, plus a fallback to heapsort if quicksort exceeds a depth threshold. Result: `O(n log n)` worst-case time *and* `O(log n)` worst-case space — the best of both worlds.
-
----
-
-## Why Quicksort Is Not Stable
-
-The partition step uses long-distance swaps. Two equal elements that started near each other can end up on opposite sides of the pivot, and their relative order is lost. Selection sort had the same problem (the Selection Sort lesson); merge sort (the Merge Sort lesson) avoids it.
-
-If stability matters, use merge sort. If not, quicksort is faster in practice.
-
----
-
-## Key Takeaway
-
-Quicksort: `O(n log n)` average, `O(n²)` worst, in-place, unstable. The fastest comparison sort on random data; standard-library default; degrades gracefully with random pivots and tail-call elimination. Now the canonical exercise.
-
-***
-
-# Quicksort Problem
-
----
-
-## The Problem
-
-Given an integer array `arr`, sort it in non-decreasing order **in place** using quicksort.
-
-```
-Input:  arr = [2, 3, 2, 1, 5, 6]
-Output: [1, 2, 2, 3, 5, 6]
-
-Input:  arr = [6, 5, 4, 4, 4, 3, 2, 1]
-Output: [1, 2, 3, 4, 4, 4, 5, 6]
-
-Input:  arr = [1, 2, 3, 4, 5, 6]
-Output: [1, 2, 3, 4, 5, 6]   (already sorted; random pivot prevents worst case)
-```
-
----
-
-<details>
-<summary><h2>Solution &amp; Analysis</h2></summary>
-
-### The Solution
-
-The implementation is identical to the version above. Run it against a spread of inputs — duplicates, reverse-sorted, already-sorted, empty, single-element — to confirm it sorts every case in place.
-
-```python run viz=array viz-root=arr
-import random
-from typing import List
-
-class Solution:
-    def partition(self, arr: List[int], left: int, right: int) -> int:
-
-        # Randomly select a pivot index between left and right
-        pivot = left + random.randint(0, right - left)
-
-        # Get the pivot value
-        pivot_val = arr[pivot]
-
-        # Move the pivot to the end
-        arr[pivot], arr[right] = arr[right], arr[pivot]
-
-        # Index of smaller element
-        next_smaller_index: int = left
-
-        for i in range(left, right):
-            if arr[i] < pivot_val:
-
-                # Swap elements
-                arr[next_smaller_index], arr[i] = (
-                    arr[i],
-                    arr[next_smaller_index],
-                )
-                next_smaller_index += 1
-
-        # Swap pivot to its correct position
-        arr[next_smaller_index], arr[right] = (
-            arr[right],
-            arr[next_smaller_index],
-        )
-
-        # Return the pivot index
-        return next_smaller_index
-
-    def quicksort(self, arr: List[int], left: int, right: int) -> None:
-        if left < right:
-
-            # Partition the array
-            pivot: int = self.partition(arr, left, right)
-
-            # Recursively sort the left subarray
-            self.quicksort(arr, left, pivot - 1)
-
-            # Recursively sort the right subarray
-            self.quicksort(arr, pivot + 1, right)
-
-    def quick_sort(self, arr: List[int]) -> None:
-
-        # Call Quicksort function
-        self.quicksort(arr, 0, len(arr) - 1)
-
-
-a1 = [2, 3, 2, 1, 5, 6]
-Solution().quick_sort(a1); print(a1)               # [1, 2, 2, 3, 5, 6]
-
-a2 = [6, 5, 4, 4, 4, 3, 2, 1]
-Solution().quick_sort(a2); print(a2)               # [1, 2, 3, 4, 4, 4, 5, 6]
-
-a3 = [1, 2, 3, 4, 5, 6]
-Solution().quick_sort(a3); print(a3)               # [1, 2, 3, 4, 5, 6]
-
-a4: List[int] = []
-Solution().quick_sort(a4); print(a4)               # []
-
-a5 = [42]
-Solution().quick_sort(a5); print(a5)               # [42]
-
-a6 = [2, 1]
-Solution().quick_sort(a6); print(a6)               # [1, 2]
-
-a7 = [3, 3, 3]
-Solution().quick_sort(a7); print(a7)               # [3, 3, 3]
-
-a8 = [5, 2, 8, 1, 9]
-Solution().quick_sort(a8); print(a8)               # [1, 2, 5, 8, 9]
-```
-
-```java run viz=array viz-root=arr
-import java.util.*;
-
-public class Main {
-    static class Solution {
-
-        // Helper method to swap elements in the array
-        private void swap(int[] arr, int i, int j) {
-            int temp = arr[i];
-            arr[i] = arr[j];
-            arr[j] = temp;
-        }
-
-        private int partition(int[] arr, int left, int right) {
-
-            // Randomly select a pivot index between left and right
-            Random rand = new Random();
-            int pivot = left + rand.nextInt(right - left + 1);
-
-            // Get the pivot value
-            int pivotVal = arr[pivot];
-
-            // Move the pivot to the end
-            swap(arr, pivot, right);
-
-            // Index of smaller element
-            int nextSmallerIndex = left;
-
-            for (int i = left; i < right; i++) {
-                if (arr[i] < pivotVal) {
-
-                    // Swap elements
-                    swap(arr, nextSmallerIndex, i);
-                    nextSmallerIndex++;
-                }
-            }
-
-            // Swap pivot to its correct position
-            swap(arr, nextSmallerIndex, right);
-
-            // Return the pivot index
-            return nextSmallerIndex;
-        }
-
-        private void quicksort(int[] arr, int left, int right) {
-            if (left < right) {
-
-                // Partition the array
-                int pivot = partition(arr, left, right);
-
-                // Recursively sort the left subarray
-                quicksort(arr, left, pivot - 1);
-
-                // Recursively sort the right subarray
-                quicksort(arr, pivot + 1, right);
-            }
-        }
-
-        public void quickSort(int[] arr) {
-            int n = arr.length;
-
-            // Call Quicksort function
-            quicksort(arr, 0, n - 1);
-        }
-    }
-
-    public static void main(String[] args) {
-        int[] a1 = {2, 3, 2, 1, 5, 6};
-        new Solution().quickSort(a1);
-        System.out.println(Arrays.toString(a1));   // [1, 2, 2, 3, 5, 6]
-
-        int[] a2 = {6, 5, 4, 4, 4, 3, 2, 1};
-        new Solution().quickSort(a2);
-        System.out.println(Arrays.toString(a2));   // [1, 2, 3, 4, 4, 4, 5, 6]
-
-        int[] a3 = {1, 2, 3, 4, 5, 6};
-        new Solution().quickSort(a3);
-        System.out.println(Arrays.toString(a3));   // [1, 2, 3, 4, 5, 6]
-
-        int[] a4 = {};
-        new Solution().quickSort(a4);
-        System.out.println(Arrays.toString(a4));   // []
-
-        int[] a5 = {42};
-        new Solution().quickSort(a5);
-        System.out.println(Arrays.toString(a5));   // [42]
-
-        int[] a6 = {2, 1};
-        new Solution().quickSort(a6);
-        System.out.println(Arrays.toString(a6));   // [1, 2]
-
-        int[] a7 = {3, 3, 3};
-        new Solution().quickSort(a7);
-        System.out.println(Arrays.toString(a7));   // [3, 3, 3]
-
-        int[] a8 = {5, 2, 8, 1, 9};
-        new Solution().quickSort(a8);
-        System.out.println(Arrays.toString(a8));   // [1, 2, 5, 8, 9]
-    }
-}
-```
-
-### Edge Cases
-
-| Case | Example | Expected |
-|---|---|---|
-| Empty | `[]` | `[]` (recursion doesn't enter). |
-| Single element | `[7]` | `[7]`. |
-| Already sorted | `[1, 2, 3, 4, 5]` | `[1, 2, 3, 4, 5]` (random pivot keeps it `O(n log n)`). |
-| Reverse sorted | `[5, 4, 3, 2, 1]` | `[1, 2, 3, 4, 5]` (random pivot prevents worst case). |
-| All equal | `[3, 3, 3, 3]` | `[3, 3, 3, 3]` — but Lomuto partition does `O(n²)` on this input! See the Dutch National Flag Sort lesson/08 for the Dutch flag fix. |
-| Duplicates | `[3, 1, 3, 2, 3]` | `[1, 2, 3, 3, 3]` (correctness OK; performance degrades on many duplicates). |
-
-> *Predict before reading on — for an array of all equal elements (<code>[3, 3, 3, ...]</code>), why does Lomuto's partition collapse to <code>O(n²)</code>? What would fix it?*
-
-When all elements equal the pivot, the `<` comparison is never true (the duplicates aren't strictly less than the pivot). The partition produces a maximally unbalanced split — `0` elements on the left, `n - 1` on the right. Recursion depth becomes `n`. **The fix is the Dutch National Flag partition (the Dutch National Flag Sort lesson) and three-way quicksort (the Three-Way Quicksort lesson), which handle equal elements as their own group.**
-
-</details>
-<details>
-<summary><h2>Final Takeaway</h2></summary>
-
-
-Quicksort is the production workhorse: `O(n log n)` average, in-place, fast constant factor. It's the algorithm `std::sort` uses by default in most languages. Random pivots and tail-call elimination defang the worst case in practice.
-
-But quicksort has a duplicate-element problem: when many elements equal the pivot, Lomuto's partition wastes time. The next two lessons solve this. **Dutch National Flag sort** (the Dutch National Flag Sort lesson) shows the three-way partition trick on its own, then **three-way quicksort** (the Three-Way Quicksort lesson) bolts that trick onto quicksort to handle duplicates in linear time.
-
-After that, **merge sort** (the Merge Sort lesson) gives us a stable `O(n log n)` alternative, **heapsort** (the Heapsort lesson) gives us a worst-case `O(n log n)` alternative, **quickselect** (the Quickselect lesson) reuses the partition step to find top-K elements in `O(n)`, and **custom compare** (the Custom Compare lesson) generalises sorting to arbitrary keys.
-
-**Transfer challenge — try before the Dutch National Flag Sort lesson:** What happens if you run quicksort on an array of 100,000 identical elements `[5, 5, 5, ..., 5]`? Sketch the recursion tree. Why is this `O(n²)`?
-
-</details>
-<details>
-<summary><strong>Answer — open after you've sketched it</strong></summary>
-
-With Lomuto's partition and the comparison `arr[i] < pivot_val`, equal elements never satisfy the condition. So no elements ever swap into the "less-than-pivot" region; `next_smaller_index` stays at `left`. The final swap places the pivot at position `left`, and the recursion calls:
-- `quicksort(arr, left, left - 1)` — empty, returns immediately.
-- `quicksort(arr, left + 1, right)` — `n - 1` elements.
-
-So each partition only "pays off" with one element placed; recursion depth becomes `n`. Each level does `O(n)` work. Total: `O(n²)` — exactly the worst case we tried to avoid.
-
-```
-sort([5,5,5,5,5,5])
-└─ pivot = 5, partition → [5 | 5,5,5,5,5], one element placed
-   └─ sort([5,5,5,5,5])
-      └─ pivot = 5, partition → [5 | 5,5,5,5], one element placed
-         └─ ... (n levels deep)
-```
-
-The fix: a **three-way partition** that puts equal elements in the *middle* (not the left or right). After partitioning, you have three regions: `< pivot`, `== pivot`, `> pivot`. The middle region is already in its final sorted position (all duplicates collapsed into it). Recurse only on the outer two regions. **You just rediscovered the Dutch National Flag algorithm.**
-
-</details>
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: The Hook — missing, needs to be written -->
-<!--       Guidance: real-world story opening before any definition -->
-
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
-
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
-
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
-
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
-
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
-
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
-
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
-
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
-
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
-
-<!-- TODO: Final Takeaway — missing, needs to be written -->
-<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->
+- **CLRS**, *Introduction to Algorithms*, 4th ed., §7 — quicksort, Lomuto/Hoare partition, randomization, and the average-case analysis.
+- **Sedgewick & Wayne**, *Algorithms*, 4th ed., §2.3 — quicksort, pivot selection, and the comparison with merge sort.
+- Quicksort's `O(n log n)`-average / `O(n²)`-worst bounds and the partition mechanics are standard; both runnable blocks are verified by running (`[5,2,8,1,9,3] ⇒ [1,2,3,5,8,9]`; duplicates `⇒ [1,2,3,3,3]`).

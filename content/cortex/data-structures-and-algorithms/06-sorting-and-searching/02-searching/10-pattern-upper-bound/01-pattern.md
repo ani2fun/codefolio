@@ -1,53 +1,163 @@
 ---
 title: "Pattern: Upper Bound"
-summary: "Find the rightmost position where a condition last holds — count elements in a range, find the ceiling, or locate the breaking index."
+summary: "The recognition pattern for 'just past the last match' — first index > x, the ceiling, range counts, and the breaking point of a true→false predicate. Paired with lower bound it brackets a value and counts a range, all in O(log n)."
 prereqs:
   - 06-sorting-and-searching/02-searching/03-upper-bound
 ---
 
-# Identifying the Upper Bound Pattern
+# Pattern: Upper Bound
 
-| # | Question | If "yes," upper bound fits because... |
+## Why It Exists
+
+[Upper bound's mechanics](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-upper-bound) — the same half-open template as lower bound with `≤` instead of `<` — land you on the first index *strictly greater* than the target. This lesson is about **recognizing** when that's what a problem needs.
+
+The triggers: "**first index `>` x**", "**just past the last** occurrence", "**how many** elements are in range `[a, b]`", "the **ceiling** (smallest element strictly greater)", or the **breaking index** of a `true → false` monotone condition. The headline use is **counting**: paired with [lower bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-lower-bound-pattern), `upper_bound − lower_bound` is the count of a value, and bounds of two endpoints count a range — all `O(log n)`.
+
+## See It Work
+
+In `[1, 3, 3, 5, 7]`, find the first index `> 3` and use the pair to count the 3s. Run it.
+
+```python run
+def lower_bound(arr, t):
+    lo, hi = 0, len(arr)
+    while lo < hi:
+        mid = lo + (hi - lo) // 2
+        if arr[mid] < t: lo = mid + 1
+        else: hi = mid
+    return lo
+
+def upper_bound(arr, target):
+    lo, hi = 0, len(arr)
+    while lo < hi:
+        mid = lo + (hi - lo) // 2
+        if arr[mid] <= target:           # <= : step past elements EQUAL to target
+            lo = mid + 1
+        else:
+            hi = mid
+    return lo                            # first index with arr[index] > target
+
+a = [1, 3, 3, 5, 7]
+print(upper_bound(a, 3))                          # 3  (just past the last 3)
+print(upper_bound(a, 3) - lower_bound(a, 3))      # 2  (count of 3s)
+```
+
+## How It Works
+
+The recognition checklist for upper bound:
+
+1. Data (or a derived value) is **sorted / monotone**.
+2. You want the position **just past** the last match — "first `> x`", the ceiling, or the `true → false` breaking point.
+3. Often the real goal is a **count** or a **range**, not the position itself.
+
+The template is lower bound with one operator changed (`≤`), so equal elements are skipped to the right and you land just past them.
+
+```mermaid
+flowchart LR
+  LB["lower_bound(x): first >= x"] --> EQ["equal-range [lb, ub)"]
+  UB["upper_bound(x): first > x"] --> EQ
+  EQ --> C["count of x = ub - lb · range count via two bounds"]
+```
+
+<p align="center"><strong>upper bound returns the boundary just past the last match; with lower bound it brackets the equal-range, whose width is the count.</strong></p>
+
+The pair `[lower_bound(x), upper_bound(x))` is exactly the block of elements equal to `x`, so its width is the count; `lower_bound(b) − lower_bound(a)` counts `[a, b)`. The **ceiling** of `x` (smallest element strictly greater) sits at `upper_bound(x)` (when that index is in range). All `O(log n)`, `O(1)` space — the same template, just read differently.
+
+### Key Takeaway
+
+Recognize upper bound by "first `> x` / ceiling / count / range / breaking point of `true→false`." It's lower bound with `≤`. Its real power is paired counting: `upper_bound − lower_bound` is a value's count, and two bounds count any range — all `O(log n)`.
+
+## Trace It
+
+Counting elements in the range `[3, 5]` of `[1, 3, 3, 5, 7]` using the bounds:
+
+| call | result | meaning |
 |---|---|---|
-| **Q1** | Is the data sorted ascending? | Upper bound needs monotone non-decreasing input. |
-| **Q2** | Are we looking for the *first index where the element exceeds a threshold*? | Upper bound returns exactly that. |
-| **Q3** | Could "no element exceeds" be a possible answer? | Upper bound returns `n` in that case — caller can interpret. |
+| `lower_bound(a, 3)` | `1` | first index `≥ 3` |
+| `upper_bound(a, 5)` | `4` | first index `> 5` |
+| difference | `4 − 1 = 3` | count in `[3, 5]` (the values `3, 3, 5`) |
 
-Common phrasings: "count of elements ≤ X", "first index after target", "first element greater than X", "ceiling of X", "first index satisfying f(i) > threshold."
+Before you read on: counting the *single* value `3` uses `upper_bound(3) − lower_bound(3)`, but counting the *range* `[3, 5]` uses `upper_bound(5) − lower_bound(3)` — note it mixes an upper bound of one endpoint with a lower bound of the other. Why that particular combination?
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+Because you want everything `≥ 3` **and** `≤ 5`. `lower_bound(3)` is the first index `≥ 3` — the left edge of "in range." `upper_bound(5)` is the first index `> 5` — i.e. just past the right edge of "≤ 5." So `[lower_bound(3), upper_bound(5))` is exactly the half-open span of elements in `[3, 5]`, and its width is the count. Using `lower_bound(5)` instead would *exclude* the 5s (it stops at the first 5), and `upper_bound(3)` would exclude the 3s' right neighbors incorrectly. The rule: **lower bound for the inclusive *left* edge, upper bound for the inclusive *right* edge** — each bound is chosen so the half-open interval `[lb(left), ub(right))` captures precisely the closed range `[left, right]`. Getting this pairing right is the whole art of range-counting with binary search.
 
-<!-- TODO: Understanding the Pattern — missing, needs to be written -->
-<!--       Guidance: umbrella H2 with the subsections below -->
+## Your Turn
 
-<!-- TODO: Why Naive Isn't Enough — missing, needs to be written -->
-<!--       Guidance: motivation for why the obvious approach fails -->
+The reusable upper bound + range count:
 
-<!-- TODO: The Core Idea — missing, needs to be written -->
-<!--       Guidance: one paragraph: the central trick -->
+```python run
+def lower_bound(arr, t):
+    lo, hi = 0, len(arr)
+    while lo < hi:
+        mid = lo + (hi - lo) // 2
+        if arr[mid] < t: lo = mid + 1
+        else: hi = mid
+    return lo
 
-<!-- TODO: How the Pointers/Window Move — missing, needs to be written -->
-<!--       Guidance: mechanics of the moving parts -->
+def upper_bound(arr, t):
+    lo, hi = 0, len(arr)
+    while lo < hi:
+        mid = lo + (hi - lo) // 2
+        if arr[mid] <= t: lo = mid + 1
+        else: hi = mid
+    return lo
 
-<!-- TODO: The Generic Algorithm — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
+def count_in_range(arr, a, b):           # number of elements in [a, b]
+    return upper_bound(arr, b) - lower_bound(arr, a)
 
-<!-- TODO: Generic Implementation — missing, needs to be written -->
-<!--       Guidance: Python block + Java block of the skeleton -->
+a = [1, 3, 3, 5, 7, 7, 7]
+print(upper_bound(a, 7), count_in_range(a, 3, 5), count_in_range(a, 7, 7))   # 7 3 3
+```
 
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table -->
+```java run
+public class Main {
+  static int lowerBound(int[] a, int t) {
+    int lo = 0, hi = a.length;
+    while (lo < hi) { int m = lo + (hi - lo) / 2; if (a[m] < t) lo = m + 1; else hi = m; }
+    return lo;
+  }
+  static int upperBound(int[] a, int t) {
+    int lo = 0, hi = a.length;
+    while (lo < hi) { int m = lo + (hi - lo) / 2; if (a[m] <= t) lo = m + 1; else hi = m; }
+    return lo;
+  }
+  public static void main(String[] args) {
+    int[] a = {1, 3, 3, 5, 7, 7, 7};
+    System.out.println(upperBound(a, 7) + " " + (upperBound(a, 5) - lowerBound(a, 3)));   // 7 3
+  }
+}
+```
 
-<!-- TODO: Variants / Taxonomy — missing, needs to be written -->
-<!--       Guidance: enumerate sub-shapes of this pattern -->
+Drill the family in **Practice** — [Limit Count](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-upper-bound-problems-limit-count), [Positive Index](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-upper-bound-problems-positive-index), [Ceiling Index](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-upper-bound-problems-ceiling-index), and [Breaking Index](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-upper-bound-problems-breaking-index).
 
-<!-- TODO: Recognition Checklist — missing, needs to be written -->
-<!--       Guidance: 4-question diagnostic — the source of the Problem-section Diagnostic Questions -->
+## Reflect & Connect
 
-<!-- TODO: Canonical Example — missing, needs to be written -->
-<!--       Guidance: fully worked example: brute force → optimised → template fit -->
+Upper bound completes the boundary-search toolkit:
 
-<!-- TODO: Problems in This Category — missing, needs to be written -->
-<!--       Guidance: table with links to the 02-problems/ files -->
+- **The family** — first `> x`, the ceiling (`upper_bound(x)`), count of a value (`upper − lower`), count in a range (`upper_bound(b) − lower_bound(a)`), and the breaking point of a `true → false` condition.
+- **Pairing is the power** — almost no one needs upper bound *alone*; it earns its keep with [lower bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-lower-bound-pattern) to bracket and count. Memorize the left=lower, right=upper rule for closed ranges.
+- **`< ` vs `≤` is the one decision** — lower bound (`<`) lands on the first match, upper bound (`≤`) lands just past the last. Picking the wrong one is the classic off-by-one in counts; tie the choice to "do I want the first equal element, or one past the last?"
+
+**Prerequisites:** [Upper Bound](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-upper-bound).
+
+## Recall
+
+> **Mnemonic:** *"First > x / ceiling / count / range / true→false break" → upper bound (lower bound with `≤`). `upper − lower` = count. Range `[a,b]`: `upper(b) − lower(a)`.*
+
+| | |
+|---|---|
+| Recognize | "first `> x` / ceiling / count / range / breaking index" |
+| Predicate | `arr[mid] <= target` → go right (skip equals) |
+| Returns | first index `> target` (just past the last match) |
+| Counting | value: `upper(x) − lower(x)`; range `[a,b]`: `upper(b) − lower(a)` |
+| Cost | `O(log n)`, `O(1)` space |
+
+- **Q:** What signals an upper-bound problem? **A:** "First `> x`," the ceiling, a count of a value or range, or the `true → false` breaking point.
+- **Q:** How do you count elements in the closed range `[a, b]`? **A:** `upper_bound(b) − lower_bound(a)` — lower bound for the inclusive left edge, upper bound for the inclusive right edge.
+- **Q:** What's the only code difference from lower bound? **A:** `arr[mid] <= target` (instead of `<`), so equal elements are skipped to the right.
+- **Q:** Why is upper bound rarely used alone? **A:** Its power is in the *pair* with lower bound — bracketing a value and counting ranges.
+
+## Sources & Verify
+
+- **Sedgewick & Wayne**, *Algorithms*, 4th ed., §3.1 — rank / range queries in ordered symbol tables.
+- **C++ STL / Python `bisect`** — `upper_bound` / `bisect_right` and `equal_range` define these contracts.
+- The recognition triggers and range-count pairing are standard; both runnable blocks are verified by running (`upper_bound(·,3)=3`, count of 3s `=2`; `[1,3,3,5,7,7,7]` ⇒ `7, 3, 3`).

@@ -1,5 +1,5 @@
 ---
-title: "Consecutive Ones With K Flips"
+title: "Consecutive Ones with K Flips"
 summary: "Given a binary array arr and a non-negative integer k, find and return the maximum number of consecutive 1s in the array if you can flip at most k 0s."
 prereqs:
   - 09-pattern-variable-sliding-window/01-pattern
@@ -288,7 +288,7 @@ The leap variants trade a potential slow shrink for a single jump; the `while` v
 
 </details>
 <details>
-<summary><h2>Final Takeaway</h2></summary>
+<summary><h2>Key Takeaway</h2></summary>
 
 
 Consecutive Ones with K flips is the capstone — a window that tolerates a bounded amount of "badness" and uses that tolerance to find a longer run. The `while`-loop contraction is the general-purpose tool; the single leap (seen in problems 1 and 3) is an optimised special case. If you can answer **"what is my invariant?"** and **"how do I restore it after a bad element enters?"**, every variable-window problem on the rest of this course — and most on any interview whiteboard — will yield to the same two-pointer dance.

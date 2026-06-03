@@ -58,7 +58,6 @@ The structural property is *set intersection* — the answer is the set of value
 
 The naive approach is a nested loop with a `seen` set — for every element of `arr1`, scan `arr2` looking for a match, and consult the set to suppress duplicates. The brute force costs `O(N × M)` time and `O(k)` space for the set. The simultaneous walk replaces the nested scan with two pointers that each make at most one pass over their array — collapsing `O(N × M)` to `O(N + M)` for the walk itself (sorting still dominates at `O(N log N + M log M)`).
 
-> 🖼 Diagram — Unique Intersections — sort both, then walk with two pointers. On a match, record only if the value is new. On a mismatch, advance the smaller pointer.
 ```mermaid
 ---
 config:

@@ -88,7 +88,6 @@ Slide a window of size `k`, and report the map's key count each time the window 
 
 The number of *distinct* elements in the window is exactly `len(freq_map)` — the number of keys with non-zero count. The trick: when a frequency drops to zero on contraction, **delete the key** from the map so the size reflects only currently-present elements.
 
-> 🖼 Diagram — Distinct count via map size — every distinct element is one key in the map. Maintain the map's invariant that "count is non-zero" by deleting zero-count keys on contraction, and len(map) is your answer.
 ```d2
 direction: right
 

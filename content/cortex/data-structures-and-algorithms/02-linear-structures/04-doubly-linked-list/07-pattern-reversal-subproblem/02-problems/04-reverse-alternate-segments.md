@@ -77,7 +77,6 @@ What **breaks if you reach for a single-pass value-copy**? Reading values into a
 
 Same template as K-segments, plus a boolean flag that flips each iteration. When the flag is `true`, reverse and advance one node (the same `start.next` move as before — because `start` is now the segment tail). When the flag is `false`, **don't** reverse — but still advance `start` past the entire untouched segment, then one more node to land at the next group's head.
 
-> 🖼 Diagram — Reverse alternate segments — green = reversed, plain = skipped. The flag toggles every iteration.
 ```mermaid
 ---
 config:
@@ -146,7 +145,6 @@ What breaks if you advance like the reverse case (`start = start.next`) without 
 <summary><h2>The Alternating Strategy (Visualised)</h2></summary>
 
 
-> 🖼 Diagram — The Alternating Strategy — the only branch is "reverse vs skip". Both paths end in the same advance-and-toggle.
 ```mermaid
 ---
 config:
@@ -535,7 +533,7 @@ This trace highlights the key asymmetry in how `left_bound` advances: on a rever
 
 </details>
 <details>
-<summary><h2>Final Takeaway</h2></summary>
+<summary><h2>Key Takeaway</h2></summary>
 
 
 The reversal-subproblem family looks intimidating from the outside — pairwise swap, k-segment reversal, increasing groups, alternate segments — and beginners write a different bespoke loop for each one. Don't. **They are the same algorithm with one knob turned.** Find the length, decide the window (`k = 2`, fixed `k`, growing `k`, or alternating `k`-with-skip), and call `reverse(start, end)` in a loop. Track the new head with the `end.prev == null` trick. That's it. The hardest part isn't the code — it's *seeing the windowing pattern*. Once you see it, dozens of "medium" linked-list problems collapse into a half-page solution you can write from memory.

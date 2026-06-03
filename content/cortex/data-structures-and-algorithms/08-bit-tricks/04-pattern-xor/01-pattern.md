@@ -1,23 +1,36 @@
 ---
 title: "Pattern: XOR"
-summary: "XOR self-cancels paired values — swap without temp, toggle bits, detect lone odd-occurring elements, and find missing/duplicate pairs."
+summary: "XOR is self-inverse (a^a=0), has identity (a^0=a), and is commutative + associative — so XOR-ing a whole sequence cancels every even-count value and leaves the odd-occurring ones. Turns 'find the unpaired element' into an O(1)-space scan."
 prereqs:
   - 08-bit-tricks/01-pattern-kth-bit/01-pattern
 ---
 
-# Why XOR Cancels
+# Pattern: XOR
 
-Three identities form the algebraic foundation for everything in this lesson:
+## Why It Exists
 
-| Identity | Why it matters |
-|---|---|
-| `a ^ a = 0` | Same-with-same cancels |
-| `a ^ 0 = a` | Identity element |
-| `(a ^ b) ^ c = a ^ (b ^ c)` and `a ^ b = b ^ a` | Order doesn't matter |
+XOR is the most algebraically useful bitwise operator, and three identities are why: `a ^ a = 0` (a value cancels itself), `a ^ 0 = a` (zero is the identity), and it's **commutative and associative** (order and grouping don't matter). Put them together and a remarkable thing falls out: **XOR-ing an entire sequence cancels every value that appears an even number of times**, regardless of order, leaving the XOR of the odd-occurring ones.
 
-The combination means that XORing a sequence in *any* order, with arbitrary regrouping, gives the same answer. So if numbers come in pairs (each appearing twice), the pairs cancel pairwise — regardless of how they're interleaved. Whatever's left after all the cancellation is the XOR of the *unpaired* elements.
+That collapses a whole class of problems. "Every element appears twice except one — find it" would naively need a hash map (`O(n)` space). XOR everything into a single accumulator and the pairs annihilate, leaving the loner — `O(n)` time, `O(1)` space, one line.
 
-> 🖼 Diagram — For arr = [2, 2, 2, 1, 3, 1, 3], the XOR of all elements collapses pairs (the two 1s cancel, both 3s cancel, two of the three 2s cancel) — leaving just the unpaired 2. Order doesn't matter because XOR is commutative and associative.
+## See It Work
+
+In `[2, 2, 2, 1, 3, 1, 3]`, the `1`s and `3`s appear in pairs and the `2` appears three times (odd). XOR everything and only the odd-occurring `2` survives. Run it.
+
+```python run
+def find_odd_occurring(nums):
+    x = 0
+    for n in nums:
+        x ^= n           # pairs cancel (a ^ a = 0); the odd-count value survives
+    return x
+
+print(find_odd_occurring([2, 2, 2, 1, 3, 1, 3]))   # 2
+```
+
+## How It Works
+
+The three identities combine into one fact: because XOR is commutative and associative, you can mentally reorder the sequence to put equal values adjacent; each equal pair becomes `a ^ a = 0`; and `0` drops out via `a ^ 0 = a`. So whatever appears an *even* number of times vanishes, and the XOR of the array equals the XOR of its *odd-occurring* values.
+
 ```d2
 direction: right
 ex: "XOR cancels pairs across an array" {
@@ -41,79 +54,105 @@ ex: "XOR cancels pairs across an array" {
 }
 ```
 
-<p align="center"><strong>For <code>arr = [2, 2, 2, 1, 3, 1, 3]</code>, the XOR of all elements collapses pairs (the two 1s cancel, both 3s cancel, two of the three 2s cancel) — leaving just the unpaired <code>2</code>. Order doesn't matter because XOR is commutative and associative.</strong></p>
+<p align="center"><strong>XOR over the array cancels paired values (the two 1s, the two 3s, two of the three 2s), leaving the unpaired 2. Order is irrelevant because XOR is commutative and associative.</strong></p>
 
-> *Predict before reading on — for <code>[5, 5, 5, 5, 7]</code>, what's the XOR of all elements?*
+Two more moves ride on the same identities:
 
-`7`. Four 5s pair off and cancel completely (`5 ^ 5 ^ 5 ^ 5 = 0`); then `0 ^ 7 = 7`. The number of times each value appears determines whether it cancels (even count) or survives (odd count).
+- **Swap without a temp** — `a ^= b; b ^= a; a ^= b` exchanges two values using only XOR (each step substitutes via self-inversion).
+- **Two odd-occurring values** — XOR-all gives `x = a ^ b`; any set bit of `x` is a position where `a` and `b` *differ*, so `x & -x` (isolate that bit — the [set-bit-finder](/cortex/data-structures-and-algorithms/bit-tricks-pattern-set-bit-finder-pattern) trick) **partitions** the array into two groups, one containing `a` and one containing `b`. XOR each group separately to recover both.
 
----
+A single accumulator means **`O(n)` time, `O(1)` space**.
 
-## Key Takeaway
+### Key Takeaway
 
-XOR + commutative + associative + self-inverse = pairs cancel regardless of order. The XOR of an array is the XOR of its *odd-occurring* values.
+XOR-ing a sequence cancels every even-count value and leaves the odd-occurring ones — `O(1)` space, order-free. It also swaps without a temp, and `x & -x` partitions when *two* values are unpaired. The three identities (`a^a=0`, `a^0=a`, commutative/associative) are the whole story.
 
-# Final Takeaway
+## Trace It
 
-Seven problems, one operator. The XOR pattern's recipe:
+XOR over `[5, 5, 5, 5, 7]`:
 
-| Problem | What XOR cancels | What survives |
-|---|---|---|
-| Opposite signs | (none — direct sign-bit comparison) | sign-difference flag |
-| Swap | self-inversion | the swapped values |
-| Toggle count | matching bits | a value whose popcount = differences |
-| Odd-occurring | even-count pairs | the odd-count value |
-| Two odd-occurring | even-count pairs | partition into two singletons |
-| Duplicate | unique values | the doubled-and-once-more = three-times value |
-| Missing + duplicated | matched values | partition into missing + duplicated |
+| step | accumulator |
+|---|---|
+| `^5` | `5` |
+| `^5` | `0` |
+| `^5` | `5` |
+| `^5` | `0` |
+| `^7` | `7` |
 
-**You didn't just learn seven tricks. You internalised the most algebraically elegant operator in computing — XOR — and saw how its three properties (commutative, associative, self-inverse) collapse seemingly hard problems into linear scans. From here on, "XOR everything together" is a tool in your toolkit, and `xor & -xor` to isolate a differing bit is the partition primitive that handles the two-unknown case.**
+Result `7`.
 
-> *Transfer challenge for the next lesson:* You have a 32-bit integer and want to swap *every adjacent pair* of bits — bit 1 with bit 2, bit 3 with bit 4, etc. — without an explicit loop. Predict how the magic constants `0x55555555` and `0xAAAAAAAA` come into play.
+Before you read on: there are *four* `5`s here, not two. The pattern is usually stated as "every value appears **twice** except one." Why does XOR still cancel all four `5`s and leave `7` — what property of the count actually matters?
 
-<details>
-<summary><strong>Answer</strong></summary>
+What matters is **parity of the count, not the number two**. `5 ^ 5 = 0`, and `0 ^ 5 ^ 5 = 0` again — any *even* number of copies XOR to `0` (they pair off completely), while any *odd* number leaves one `5` behind. Four `5`s is even, so they vanish; the single `7` is odd, so it survives. The "appears twice" framing is just the common case of "appears an even number of times." This is why XOR solves "find the element with odd occurrence count" in full generality, not only the exactly-twice version.
 
-`0x55555555` masks the odd-positioned bits (1, 3, 5, …); `0xAAAAAAAA` masks the even-positioned bits. Take `(num & 0x55555555) << 1` to slide odd-positioned bits up by one, and `(num & 0xAAAAAAAA) >> 1` to slide even-positioned bits down by one. OR them together — adjacent pairs are now swapped. The next lesson formalises this as the **bitmasking pattern** and uses similar ideas to enumerate every subset of an array.
+## Your Turn
 
-</details>
+The reusable odd-occurring finder and the temp-free swap:
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+```python run
+def find_odd_occurring(nums):
+    x = 0
+    for n in nums:
+        x ^= n
+    return x
 
-<!-- TODO: Understanding the Pattern — missing, needs to be written -->
-<!--       Guidance: umbrella H2 with the subsections below -->
+print(find_odd_occurring([4, 1, 2, 1, 2]))   # 4
 
-<!-- TODO: Why Naive Isn't Enough — missing, needs to be written -->
-<!--       Guidance: motivation for why the obvious approach fails -->
+a, b = 5, 9
+a ^= b; b ^= a; a ^= b      # swap with no temporary
+print(a, b)                  # 9 5
+```
 
-<!-- TODO: The Core Idea — missing, needs to be written -->
-<!--       Guidance: one paragraph: the central trick -->
+```java run
+public class Main {
+  static int findOddOccurring(int[] nums) {
+    int x = 0;
+    for (int n : nums) x ^= n;
+    return x;
+  }
 
-<!-- TODO: How the Pointers/Window Move — missing, needs to be written -->
-<!--       Guidance: mechanics of the moving parts -->
+  public static void main(String[] args) {
+    System.out.println(findOddOccurring(new int[]{4, 1, 2, 1, 2}));   // 4
 
-<!-- TODO: The Generic Algorithm — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
+    int a = 5, b = 9;
+    a ^= b; b ^= a; a ^= b;     // swap with no temporary
+    System.out.println(a + " " + b);   // 9 5
+  }
+}
+```
 
-<!-- TODO: Generic Implementation — missing, needs to be written -->
-<!--       Guidance: Python block + Java block of the skeleton -->
+Drill the family in **Practice** — [Have Opposite Signs](/cortex/data-structures-and-algorithms/bit-tricks-pattern-xor-problems-have-opposite-signs), [Swap Without a Temporary](/cortex/data-structures-and-algorithms/bit-tricks-pattern-xor-problems-swap-numbers-without-a-temporary), [Odd-Occurring Element](/cortex/data-structures-and-algorithms/bit-tricks-pattern-xor-problems-odd-occurring-element), [Duplicate Element](/cortex/data-structures-and-algorithms/bit-tricks-pattern-xor-problems-duplicate-element), and [Missing and Duplicated Elements](/cortex/data-structures-and-algorithms/bit-tricks-pattern-xor-problems-missing-and-duplicated-elements).
 
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table -->
+## Reflect & Connect
 
-<!-- TODO: Variants / Taxonomy — missing, needs to be written -->
-<!--       Guidance: enumerate sub-shapes of this pattern -->
+XOR's self-inverse property is a Swiss-army knife for "things that come in pairs":
 
-<!-- TODO: Identifying — missing, needs to be written -->
-<!--       Guidance: per-variant: recognition checklist + canonical example -->
+- **The family** — one odd-occurring element (XOR all), **two** odd-occurring (XOR all, then `x & -x` partition), the **missing number** in `0..n` (XOR all values with all indices — the present ones cancel), find a duplicate, swap-without-temp, and parity/toggle counting.
+- **`x & -x` is the partition primitive** — when two unknowns survive the XOR, isolating any bit where they differ splits the data into two single-unknown subproblems. That's the [set-bit-finder](/cortex/data-structures-and-algorithms/bit-tricks-pattern-set-bit-finder-pattern) identity doing real work.
+- **XOR is addition without carry** — it's bitwise parity, which is why it cancels in pairs and shows up in error-detecting codes, Gray codes, and cryptographic mixing. "XOR everything together" belongs in your reflexes.
 
-<!-- TODO: Recognition Checklist — missing, needs to be written -->
-<!--       Guidance: 4-question diagnostic — the source of the Problem-section Diagnostic Questions -->
+**Prerequisites:** [Kth-Bit Operations](/cortex/data-structures-and-algorithms/bit-tricks-pattern-kth-bit-pattern).
+**What's next:** treat an integer as a *set* and enumerate subsets — [Bitmasking](/cortex/data-structures-and-algorithms/bit-tricks-pattern-bitmasking-pattern).
 
-<!-- TODO: Canonical Example — missing, needs to be written -->
-<!--       Guidance: fully worked example: brute force → optimised → template fit -->
+## Recall
 
-<!-- TODO: Problems in This Category — missing, needs to be written -->
-<!--       Guidance: table with links to the 02-problems/ files -->
+> **Mnemonic:** *`a^a=0`, `a^0=a`, order-free. XOR the whole array ⇒ even-count values vanish, odd-count survive. Two survivors? Split on `x & -x`.*
+
+| | |
+|---|---|
+| Identities | `a^a=0`, `a^0=a`, commutative + associative |
+| One odd-occurring | XOR everything → the loner |
+| Two odd-occurring | XOR all → `x`; partition on `x & -x`; XOR each group |
+| Swap no temp | `a^=b; b^=a; a^=b` |
+| Cost | `O(n)` time, `O(1)` space |
+
+- **Q:** Why does XOR-ing an array leave only the odd-occurring values? **A:** Even counts pair off to `0` (`a^a=0`), and order doesn't matter (commutative/associative), so only odd-count values survive.
+- **Q:** Does the value need to appear *exactly twice* to cancel? **A:** No — any *even* count cancels; parity of the count is what matters.
+- **Q:** How do you find *two* odd-occurring values? **A:** XOR all to get `x = a^b`, isolate a differing bit with `x & -x`, partition the array by that bit, and XOR each group.
+- **Q:** How does XOR find the missing number in `0..n`? **A:** XOR all the values with all the indices `0..n`; every present number cancels its index, leaving the missing one.
+
+## Sources & Verify
+
+- **Warren**, *Hacker's Delight*, 2nd ed. — XOR identities and the XOR swap.
+- **CLRS**, *Introduction to Algorithms*, 4th ed. — bitwise operations; XOR as parity / addition without carry.
+- The XOR-cancellation technique (odd-occurring, two-odd partition, missing number) is standard; both runnable blocks are verified by running (`[2,2,2,1,3,1,3] ⇒ 2`, `[4,1,2,1,2] ⇒ 4`, swap ⇒ `9 5`).

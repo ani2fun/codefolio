@@ -32,11 +32,19 @@ session plan, not here; this ADR is the durable *what and why*.
    through a prerequisite DAG. Every concept has explicit prerequisites; depth
    (extra problems, advanced variants) hangs off the spine *without blocking*
    forward progress.
-2. **Fresh spine + complete the stubs + promote + link.** Author a new lean spine;
-   complete all 14 stubs to full depth; promote existing strong lessons onto the
-   spine; link the deep problems/code/widgets as a frozen `practice`/`reference`
-   archive. Not a blank-slate rewrite; not an in-place re-fit of 600 files (that
-   was the migration that produced the pain).
+2. **Cherry-pick & retire — one clean source per topic.** *(Revised 2026-05-30;
+   supersedes the earlier "keep originals as a frozen reference archive", which
+   re-created the very duplication this redesign exists to kill.)* Author a new
+   lean spine lesson per concept. For each existing chapter on the **same** topic,
+   **mine its genuine gems** (best worked examples, production-reality, sharp
+   analysis, diagrams) into the lean lesson or a short focused supplement — then
+   **retire** the bloated original as a chapter. It survives in git history;
+   nothing of value is lost, because the good parts move into the lean lesson and
+   the `02-problems/` sets **always stay** as the practice tier. An existing
+   chapter that is a **distinct** topic not yet on the spine is not retired — it
+   awaits its own lean lesson (write/refit later). Net: **no parallel duplicate
+   chapters.** Not a blank-slate discard (problems + best prose are preserved);
+   not an in-place re-fit of 600 monoliths.
 3. **Understanding first, then fluency.** Build mental models + tradeoff judgment
    first; layer interview/competitive pattern-fluency and speed on top.
 4. **Scope = senior + selected advanced.** Complete everything that exists + the

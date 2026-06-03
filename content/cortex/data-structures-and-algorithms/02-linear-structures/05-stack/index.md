@@ -6,12 +6,10 @@ Use this page as the chapter map for stack. The guides are ordered from fundamen
 
 ## Start Here — the learning path
 
-- [Introduction To Stacks](/cortex/data-structures-and-algorithms/linear-structures-stack-introduction-to-stacks)
-- [Array Implementation Of Stacks](/cortex/data-structures-and-algorithms/linear-structures-stack-array-implementation-of-stacks)
-- [Linked List Implementation Of Stacks](/cortex/data-structures-and-algorithms/linear-structures-stack-linked-list-implementation-of-stacks)
-- [Infix Postfix And Prefix Notations](/cortex/data-structures-and-algorithms/linear-structures-stack-infix-postfix-and-prefix-notations)
-- [Evaluating Expressions Using Stack](/cortex/data-structures-and-algorithms/linear-structures-stack-evaluating-expressions-using-stack)
-- [Converting Expressions Using Stack](/cortex/data-structures-and-algorithms/linear-structures-stack-converting-expressions-using-stack)
+- [Stacks](/cortex/data-structures-and-algorithms/linear-structures-stack-what-is-a-stack)
+- [Infix, Postfix, and Prefix Notations](/cortex/data-structures-and-algorithms/linear-structures-stack-infix-postfix-and-prefix-notations)
+- [Evaluating Expressions Using a Stack](/cortex/data-structures-and-algorithms/linear-structures-stack-evaluating-expressions-using-stack)
+- [Converting Expressions Using a Stack](/cortex/data-structures-and-algorithms/linear-structures-stack-converting-expressions-using-stack)
 - [Pattern: Reversal](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-reversal-pattern)
 - [Pattern: Previous Closest Occurrence](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-previous-closest-occurrence-pattern)
 - [Pattern: Next Closest Occurrence](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-next-closest-occurrence-pattern)

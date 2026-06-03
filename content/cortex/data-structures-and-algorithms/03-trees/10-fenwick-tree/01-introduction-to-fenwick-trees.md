@@ -1,147 +1,86 @@
 ---
 title: Introduction to Fenwick Trees (BIT)
-summary: Half the lines, half the memory, half the constant factor of a segment tree. The cleanest way to do prefix sum + point update in O(log n), via a bit-twiddling trick that turns the implementation into a six-line loop.
+summary: Prefix-sum + point-update in O(log n) from a single array and one bit trick (i & -i). Half the code, memory, and constant factor of a segment tree — when all you need is invertible prefix aggregates.
 prereqs:
   - trees-segment-tree-introduction-to-segment-trees
-  - bit-tricks-pattern-kth-bit
 ---
 
-# 1. Introduction to Fenwick Trees (BIT)
+# Introduction to Fenwick Trees (BIT)
 
-## The Hook
+## Why It Exists
 
-Peter Fenwick published a five-page paper in 1994 titled "A new data structure for cumulative frequency tables". It described an algorithm for prefix-sum queries with point updates that ran in `O(log n)` and fit in *one array of size n* — no tree, no nodes, no pointers. The whole implementation was six lines per operation.
+The [segment tree](/cortex/data-structures-and-algorithms/trees-segment-tree-introduction-to-segment-trees) solves range queries with updates in `O(log n)` — but it's a few hundred lines, a `4n` array, two recursive functions, and lazy bookkeeping. For the *specific, common* case of **prefix sums with point updates** ("sum of `A[1..i]`" and "`A[i] += δ`"), that's overkill.
 
-The trick was a single bit-manipulation expression: `i & (-i)`. That expression isolates the **lowest set bit** of `i`, and Fenwick noticed that *jumping by the lowest set bit*, repeatedly, walks an implicit binary tree over the array. Updates climb up; queries descend. The tree is never built; it's an artefact of the bit pattern of integers from 1 to n.
+The **Fenwick tree** (or **Binary Indexed Tree**, BIT) does exactly that case in **six lines per operation**, one flat array, no recursion. The whole structure rests on one identity from two's-complement arithmetic: `i & (-i)` isolates the **lowest set bit** of `i`. That single expression both defines which range each array cell covers *and* drives the `O(log n)` walks for query and update. Less general than a segment tree (no range-min, no arbitrary monoid), but half the code, half the memory, and a smaller constant — the default when prefix sums are all you need.
 
-The Fenwick tree (also called a **BIT** for Binary Indexed Tree) does exactly what a segment tree does for prefix sums and point updates — *and* does it with half the code, half the memory, and a smaller constant factor. The catch: it only works for **invertible** operations (sum, XOR), not min or max. For sum-with-point-update, it's the cleanest implementation in any data-structure textbook. This chapter is the introduction.
+## See It Work
 
----
+A Fenwick tree over `[1..8]`. Query any prefix or range sum, do a point update, and re-query — all in `O(log n)` with a single `bit[]` array. Run it.
 
-## Table of contents
+```python run
+class Fenwick:
+    def __init__(self, n):
+        self.n = n
+        self.bit = [0] * (n + 1)              # 1-indexed; bit[0] unused
 
-1. [The lowest-set-bit trick](#the-lowest-set-bit-trick)
-2. [How the implicit tree works](#how-the-implicit-tree-works)
-3. [Operations: prefix sum, point update, range sum](#operations-prefix-sum-point-update-range-sum)
-4. [Implementation](#implementation)
-5. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
-6. [Production reality](#production-reality)
-7. [Practice ladder](#practice-ladder)
-8. [Cross-links](#cross-links)
-9. [Final takeaway](#final-takeaway)
+    def update(self, i, delta):               # A[i] += delta  — walk UP
+        while i <= self.n:
+            self.bit[i] += delta
+            i += i & -i                       # jump to the next cell that covers i
 
-***
+    def prefix_sum(self, i):                  # sum of A[1..i] — walk DOWN
+        s = 0
+        while i > 0:
+            s += self.bit[i]
+            i -= i & -i                       # jump to the previous disjoint slice
+        return s
 
-# The lowest-set-bit trick
+    def range_sum(self, l, r):
+        return self.prefix_sum(r) - self.prefix_sum(l - 1)
 
-In two's-complement integer arithmetic, `i & (-i)` returns the lowest set bit of `i`. For example:
+arr = [1, 2, 3, 4, 5, 6, 7, 8]
+bit = Fenwick(len(arr))
+for i, v in enumerate(arr, start=1):
+    bit.update(i, v)                          # build by n point-updates
 
-```
-i  =     12  =  0000 1100
--i =          1111 0100      (two's complement)
-i & -i  =    0000 0100  =  4
-```
-
-The lowest set bit of `12` is `4`. The lowest set bit of `13` is `1`. The lowest set bit of `8` is `8`. The lowest set bit of any power-of-2 is the number itself.
-
-This expression is the *one* trick that powers everything in this chapter. Memorise it — it'll show up in [Bit Tricks](/cortex/data-structures-and-algorithms/bit-tricks-index) too.
-
-***
-
-# How the implicit tree works
-
-A Fenwick tree of size `n` is a single array `bit[1..n]` (1-indexed throughout). Each `bit[i]` stores the sum of a *specific range* of the underlying array `A`:
-
-> `bit[i]` stores the sum of `A[i - lowbit(i) + 1 .. i]`.
-
-That is, each cell stores a sum of `lowbit(i)` consecutive `A` values, ending at index `i`.
-
-```
-i:        1     2     3     4     5     6     7     8
-A[i]:     a₁    a₂    a₃    a₄    a₅    a₆    a₇    a₈
-lowbit(i):1     2     1     4     1     2     1     8
-bit[i]:   a₁  a₁+a₂   a₃   a₁+a₂+a₃+a₄   a₅  a₅+a₆   a₇   a₁+...+a₈
-                                                          (full sum)
+print("sum[1..8]:", bit.range_sum(1, 8))      # 36
+print("sum[3..6]:", bit.range_sum(3, 6))      # 18
+bit.update(5, 100)                            # A[5] += 100
+print("after A[5]+=100  sum[1..8]:", bit.range_sum(1, 8))   # 136
+print("                 sum[3..6]:", bit.range_sum(3, 6))   # 118
 ```
 
-Visualised as ranges, each `bit[i]` covers a power-of-2-sized slice ending at `i`. The slices form a forest of implicit trees:
+## How It Works
+
+The one trick: in two's complement, `i & (-i)` is `i`'s **lowest set bit**. `12 = 1100` → `12 & -12 = 0100 = 4`; `13 → 1`; `8 → 8`. Each BIT cell uses it to define its range:
+
+> `bit[i]` stores the sum of `A[i − lowbit(i) + 1 .. i]` — a power-of-2-sized slice ending at `i`.
+
+```
+i:          1     2     3       4       5     6     7        8
+lowbit(i):  1     2     1       4       1     2     1        8
+bit[i]:     a₁  a₁+a₂   a₃  a₁+…+a₄    a₅  a₅+a₆   a₇   a₁+…+a₈
+```
+
+Those slices form an **implicit forest** — the edges are never stored; they emerge from the index bit patterns:
 
 ```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
 flowchart TB
-  N8["bit[8] = a₁+…+a₈"]
-  N4["bit[4] = a₁+…+a₄"]
-  N6["bit[6] = a₅+a₆"]
-  N7["bit[7] = a₇"]
-  N2["bit[2] = a₁+a₂"]
-  N3["bit[3] = a₃"]
-  N5["bit[5] = a₅"]
-  N1["bit[1] = a₁"]
-  N8 --> N4
-  N8 --> N6
-  N8 --> N7
-  N4 --> N2
-  N4 --> N3
-  N2 --> N1
-  N6 --> N5
+  N8["bit[8] = a₁..a₈"] --> N4["bit[4] = a₁..a₄"]
+  N8 --> N6["bit[6] = a₅+a₆"]
+  N8 --> N7["bit[7] = a₇"]
+  N4 --> N2["bit[2] = a₁+a₂"]
+  N4 --> N3["bit[3] = a₃"]
+  N2 --> N1["bit[1] = a₁"]
+  N6 --> N5["bit[5] = a₅"]
   style N8 fill:#fef9c3,stroke:#f59e0b
 ```
 
-<p align="center"><strong>The implicit tree inside a Fenwick array. Each node's range covers a power of 2 slots; the tree's edges aren't stored — they emerge from the bit pattern of indices.</strong></p>
+<p align="center"><strong>each cell covers a power-of-2 slice ending at its index; parent links emerge from <code>lowbit</code>.</strong></p>
 
-> ▶ Interactive Diagram — Fenwick tree over n=8, A=[1..8]
+Two `O(log n)` walks, both driven by `lowbit`: **prefix_sum(i)** walks *down* — add `bit[i]`, then `i -= lowbit(i)`, until `i = 0` — accumulating disjoint slices that exactly tile `[1..i]`. **update(i, δ)** walks *up* — add δ to `bit[i]`, then `i += lowbit(i)`, until `i > n` — hitting every cell whose slice contains index `i`. Range sum is just `prefix_sum(r) − prefix_sum(l−1)`, which is why the aggregate must be **invertible** (subtraction is required) — sums and XORs work, min/max don't.
 
-```d3 widget=fenwick
-{
-  "title": "Fenwick tree over A = [1, 2, 3, 4, 5, 6, 7, 8]",
-  "steps": [
-    {
-      "nodes": [
-        {"id": "1", "label": "1",  "kind": "node", "slot": 1, "meta": [{"name": "range", "value": "[1,1]"}], "cardId": "", "layoutKind": ""},
-        {"id": "2", "label": "3",  "kind": "node", "slot": 2, "meta": [{"name": "range", "value": "[1,2]"}], "cardId": "", "layoutKind": ""},
-        {"id": "3", "label": "3",  "kind": "node", "slot": 3, "meta": [{"name": "range", "value": "[3,3]"}], "cardId": "", "layoutKind": ""},
-        {"id": "4", "label": "10", "kind": "node", "slot": 4, "meta": [{"name": "range", "value": "[1,4]"}], "cardId": "", "layoutKind": ""},
-        {"id": "5", "label": "5",  "kind": "node", "slot": 5, "meta": [{"name": "range", "value": "[5,5]"}], "cardId": "", "layoutKind": ""},
-        {"id": "6", "label": "11", "kind": "node", "slot": 6, "meta": [{"name": "range", "value": "[5,6]"}], "cardId": "", "layoutKind": ""},
-        {"id": "7", "label": "7",  "kind": "node", "slot": 7, "meta": [{"name": "range", "value": "[7,7]"}], "cardId": "", "layoutKind": ""},
-        {"id": "8", "label": "36", "kind": "node", "slot": 8, "meta": [{"name": "range", "value": "[1,8]"}], "cardId": "", "layoutKind": ""}
-      ],
-      "edges": [],
-      "cursor": [], "highlight": [], "changed": [], "removed": [],
-      "annotation": "BIT over A=[1,2,3,4,5,6,7,8]. Each cell i stores the prefix sum of A[i−lowbit(i)+1..i]. Odd-indexed cells cover 1 element; even-indexed cells cover a power-of-2 span.",
-      "line": 0, "frames": [], "cardCursor": []
-    }
-  ]
-}
-```
-
-<p align="center"><strong>Fenwick tree over n=8. Each cell i covers the range [i−lowbit(i)+1, i].</strong></p>
-
-The tree is never materialised. The array `bit[]` is the entire data structure.
-
-***
-
-# Operations: prefix sum, point update, range sum
-
-## Prefix sum (`sum of A[1..i]`)
-
-Walk *down* the tree by repeatedly subtracting the lowest set bit until reaching 0. At each step add the current cell to the running sum.
-
-For `i = 13` (binary `1101`), the walk visits `13, 12, 8, 0`: subtract 1, then 4, then 8.
-
-`O(log n)` — at most one bit removed per iteration, so at most `log₂(i)` iterations.
-
-> ▶ Interactive Diagram — Prefix sum query sum(1..5) traversal
+> ▶ Run it, then Visualise — prefix sum `sum(1..5)`: the LSB-jump path from 5 down to 0.
 
 ```d3 widget=fenwick
 {
@@ -201,267 +140,91 @@ For `i = 13` (binary `1101`), the walk visits `13, 12, 8, 0`: subtract 1, then 4
 }
 ```
 
-<p align="center"><strong>Prefix sum query [1..5] — LSB-jump path from 5 to 0.</strong></p>
+### Key Takeaway
 
-## Point update (`A[i] += delta`)
+A Fenwick tree is one `bit[]` array where `bit[i]` holds the sum of a `lowbit(i)`-sized slice ending at `i`. `prefix_sum` walks down (`i -= i & -i`) over disjoint slices that tile `[1..i]`; `update` walks up (`i += i & -i`) over every cell that contains `i`. Both `O(log n)`, six lines each, no recursion — for **invertible** prefix aggregates (range sum needs subtraction).
 
-Walk *up* the tree by repeatedly adding the lowest set bit until reaching beyond `n`. At each step add `delta` to the current cell.
+## Trace It
 
-For `i = 5` (binary `101`), the walk visits `5, 6, 8, 16, …`: add 1, then 2, then 8, …
+The two operations move in *opposite* directions: `update` does `i += i & -i` (upward), `prefix_sum` does `i -= i & -i` (downward).
 
-`O(log n)`.
+Before you read on: that asymmetry looks like a quirk — why not make both walk the same way? Trace the cells each visits for index 5 (`update(5)` vs `prefix_sum(5)`) and figure out *why* they must go opposite directions to both be correct.
 
-## Range sum (`sum of A[l..r]`)
+`update(5)` visits **`5 → 6 → 8`** (each `+= lowbit`), while `prefix_sum(5)` visits **`5 → 4`** (each `−= lowbit`), then stops. They traverse *complementary* sets of cells, and that's exactly the point. `prefix_sum(i)` needs the cells whose slices **disjointly tile `[1..i]`**: `bit[5]` covers `[5,5]` and `bit[4]` covers `[1,4]` — together exactly `[1,5]`, no overlap, no gap. Subtracting the low bit peels off one slice at a time, marching down to 0. `update(i)` needs the opposite relation — *every* cell whose slice **contains** index `i`, because all of them must absorb the delta: `bit[5]` (`[5,5]`), `bit[6]` (`[5,6]`), `bit[8]` (`[1,8]`) all include index 5, and adding the low bit jumps to the next-larger enclosing slice. So "what tiles my prefix" (go down, disjoint) and "who contains me" (go up, nested) are genuinely different cell sets, and the `i & -i` jump is the same primitive read two ways: subtract to *shrink the prefix to the previous slice boundary*, add to *grow to the next enclosing parent*. Make them go the same direction and one of the two relations breaks — you'd either miss cells that must be updated or double-count slices in the sum. The opposite-direction duality is what makes a single tiny array serve both queries and updates correctly.
 
-`O(log n)` — two prefix-sum calls.
+## Your Turn
 
-***
+Fenwick build, range sum, and point update in both languages:
 
-# Implementation
-
-```python run viz=array viz-root=arr
+```python run
 class Fenwick:
     def __init__(self, n):
-        self.n = n
-        self.bit = [0] * (n + 1)                                   # 1-indexed; bit[0] unused
-
+        self.n = n; self.bit = [0]*(n+1)
     def update(self, i, delta):
-        """Add `delta` to A[i] (1-indexed)."""
-        while i <= self.n:
-            self.bit[i] += delta
-            i += i & -i
-
+        while i <= self.n: self.bit[i] += delta; i += i & -i
     def prefix_sum(self, i):
-        """Return sum of A[1..i]."""
         s = 0
-        while i > 0:
-            s += self.bit[i]
-            i -= i & -i
+        while i > 0: s += self.bit[i]; i -= i & -i
         return s
+    def range_sum(self, l, r): return self.prefix_sum(r) - self.prefix_sum(l-1)
 
-    def range_sum(self, l, r):
-        return self.prefix_sum(r) - self.prefix_sum(l - 1)
-
-
-if __name__ == "__main__":
-    arr = [1, 2, 3, 4, 5, 6, 7, 8]
-    bit = Fenwick(len(arr))
-    for i, v in enumerate(arr, start=1):
-        bit.update(i, v)
-
-    print(f"sum [1..8] = {bit.range_sum(1, 8)}    (expected {sum(arr)})")
-    print(f"sum [3..6] = {bit.range_sum(3, 6)}    (expected {sum(arr[2:6])})")
-
-    bit.update(5, 100)                                              # A[5] += 100
-    print(f"after A[5] += 100:")
-    print(f"  sum [1..8] = {bit.range_sum(1, 8)}    (expected {sum(arr) + 100})")
-    print(f"  sum [3..6] = {bit.range_sum(3, 6)}    (expected {sum(arr[2:6]) + 100})")
+bit = Fenwick(8)
+for i, v in enumerate([1,2,3,4,5,6,7,8], start=1): bit.update(i, v)
+print(bit.range_sum(1,8), bit.range_sum(3,6))     # 36 18
+bit.update(5, 100)
+print(bit.range_sum(1,8), bit.range_sum(3,6))     # 136 118
 ```
 
-```java run viz=array viz-root=arr
+```java run
 public class Main {
-    static int n;
-    static long[] bit;
-
-    static void update(int i, long delta) {
-        while (i <= n) { bit[i] += delta; i += i & -i; }
-    }
-
-    static long prefixSum(int i) {
-        long s = 0;
-        while (i > 0) { s += bit[i]; i -= i & -i; }
-        return s;
-    }
-
-    static long rangeSum(int l, int r) { return prefixSum(r) - prefixSum(l - 1); }
-
-    public static void main(String[] args) {
-        int[] arr = {1, 2, 3, 4, 5, 6, 7, 8};
-        n = arr.length;
-        bit = new long[n + 1];
-        for (int i = 1; i <= n; i++) update(i, arr[i - 1]);
-        System.out.println("sum [1..8] = " + rangeSum(1, 8));
-        update(5, 100);
-        System.out.println("after A[5] += 100, sum [1..8] = " + rangeSum(1, 8));
-    }
+  static int n; static long[] bit;
+  static void update(int i, long d) { while (i <= n) { bit[i] += d; i += i & -i; } }
+  static long prefixSum(int i) { long s = 0; while (i > 0) { s += bit[i]; i -= i & -i; } return s; }
+  static long rangeSum(int l, int r) { return prefixSum(r) - prefixSum(l - 1); }
+  public static void main(String[] a) {
+    int[] arr = {1,2,3,4,5,6,7,8}; n = arr.length; bit = new long[n + 1];
+    for (int i = 1; i <= n; i++) update(i, arr[i - 1]);
+    System.out.println(rangeSum(1, 8) + " " + rangeSum(3, 6));   // 36 18
+    update(5, 100);
+    System.out.println(rangeSum(1, 8) + " " + rangeSum(3, 6));   // 136 118
+  }
 }
 ```
 
-That's the entire structure. Six lines for `update`, six lines for `prefix_sum`, one line for `range_sum`. Compare to the segment tree, which needs hundreds of lines for the same functionality.
+Then climb the ladder: build in `O(n)` (add `bit[i]` into `bit[i + lowbit(i)]`) instead of `n` updates; count inversions in an array with a BIT over value ranks; do range-update/point-query with a difference BIT; extend to a 2D Fenwick for grid prefix sums.
 
-***
+## Reflect & Connect
 
-# Edge cases and pitfalls
+The Fenwick tree is the specialist where the segment tree is the generalist:
 
-- **1-indexed.** Fenwick trees are *always* 1-indexed. The `i & -i` trick relies on `i ≠ 0`, and `bit[0]` would be the loop's terminating sentinel. Convert from 0-indexed input arrays at the boundary.
-- **Range update + point query** is also possible, with the *difference array* trick — we'd update at `l` (delta) and `r + 1` (-delta), then prefix-sum to read `A[i]`. The roles of update and query are swapped.
-- **Range update + range query** is possible with *two* Fenwick trees, but the algebra is more involved. For range-update-range-query workloads, segment trees with lazy propagation are usually clearer.
-- **Only invertible operations.** Fenwick trees work for sum (`+`/`−`), XOR (`^` is its own inverse), product modulo a prime (`*`/inverse). They *don't* work for min or max — there's no "subtract a value" operation that gives you back the min if you remove that value. For range-min queries with point updates, use a segment tree.
-- **2D Fenwick trees** exist — `bit[i][j]` indexed by both axes; the loops are nested. They support range queries on a 2D grid in `O(log² n)`. Used in some image-processing and matrix-statistics workloads.
-- **Coordinate compression** for non-integer or sparse keys. If your queries are over arbitrary `int64` keys (timestamps, IDs), index them by *rank* (their sorted position among all queried values) before feeding to the Fenwick tree.
-- **Building from an array in O(n).** Naive build is `O(n log n)` (call `update` for each element). The trick: `bit[i] = sum of A[i - lowbit(i) + 1..i]`; compute by accumulating the *partial sums* of `A` and reading the right slice for each `i`. Or: incrementally, add `bit[i]`'s contribution to `bit[i + lowbit(i)]`. Either gets to `O(n)`.
+- **vs Segment tree** — same `O(log n)`, but Fenwick is ~half the code/memory and a smaller constant *for prefix-sum-style queries only*. The price of that economy: the aggregate must be **invertible** (range = `prefix(r) − prefix(l−1)`), so sum and xor work but min/max don't — those need a [segment tree](/cortex/data-structures-and-algorithms/trees-segment-tree-introduction-to-segment-trees) or a sparse table.
+- **The lowbit trick is the whole structure** — `i & -i` (the [set-bit-finder](/cortex/data-structures-and-algorithms/bit-tricks-pattern-set-bit-finder-pattern) identity) defines each cell's range and drives both walks. No node objects, no pointers, no recursion — just index arithmetic over one array. It's the cleanest example of "a clever index scheme replaces an explicit tree" (the same idea as the implicit binary heap).
+- **Classic uses** — counting inversions (BIT over value ranks while scanning), order statistics / rank queries, range-add with point-query via a difference array, and 2D prefix sums. It's a staple of competitive programming precisely because it's so short to type correctly under time pressure.
 
-***
+**Prerequisites:** [Segment Tree](/cortex/data-structures-and-algorithms/trees-segment-tree-introduction-to-segment-trees), [Set-Bit Finder](/cortex/data-structures-and-algorithms/bit-tricks-pattern-set-bit-finder-pattern).
+**What's next:** leave trees-as-ordered-data behind for trees-as-connectivity — near-`O(1)` union and find over disjoint sets — the [Disjoint Set Union](/cortex/data-structures-and-algorithms/trees-disjoint-set-union-introduction-to-disjoint-set-union).
 
-# Production reality
+## Recall
 
-- **Competitive programming.** Fenwick trees are *the* go-to for prefix-sum-with-updates problems. The implementation is short enough to memorise; you can write it during a contest in a minute.
-- **Time-series databases and metrics systems.** Internal storage of time-bucketed counters often uses Fenwick-tree-like structures for fast cumulative queries.
-- **Histograms.** Building a cumulative-distribution function (CDF) over a stream of observations: each new value is a point update, and percentile queries are prefix sums (compared to a target frequency).
-- **Range counting in geometry.** "How many points are in this rectangle?" → after coordinate compression, a 2D Fenwick tree answers in `O(log² n)`.
-- **Linux's perf event infrastructure** uses cumulative counters with locking around updates; conceptually the same prefix-sum-with-updates problem, though not directly a BIT. Any "running total over time" structure is in spirit a Fenwick tree.
-- **Order statistics**: a Fenwick tree indexed by *value* can answer "rank of value `x`" or "value at rank `k`" in `O(log n)`. This is the same role an *order-statistic BST* fills, with simpler code.
-- **Why not in standard libraries?** Fenwick trees solve a niche problem (range query with invertible operation + point update). Most code that needs that ends up with a segment tree (more general) or a `numpy.cumsum` (when no updates). Fenwick stays specialised.
+> **Mnemonic:** *`bit[i]` = sum of a lowbit(i) slice ending at i. Query walks DOWN (`i -= i&-i`, disjoint slices tiling [1..i]); update walks UP (`i += i&-i`, every cell containing i). One array, six-line loops, O(log n). Invertible aggregates only.*
 
-***
+| | |
+|---|---|
+| The trick | `i & -i` = lowest set bit (two's complement) |
+| `bit[i]` covers | `A[i − lowbit(i) + 1 .. i]` |
+| prefix_sum(i) | walk **down**: `i -= i & -i` until 0 (disjoint tiling) |
+| update(i, δ) | walk **up**: `i += i & -i` until `> n` (enclosing cells) |
+| range_sum(l,r) | `prefix(r) − prefix(l−1)` — needs an **invertible** op |
+| vs segment tree | half the code/memory; prefix-only, no min/max |
 
-# Practice ladder
+- **Q:** What does `i & -i` compute, and why does it matter? **A:** The lowest set bit of `i`; it defines each cell's slice size and drives both the query and update walks.
+- **Q:** Why do update and prefix_sum walk in opposite directions? **A:** prefix_sum needs the disjoint slices that *tile* `[1..i]` (go down); update needs every cell whose slice *contains* `i` (go up) — complementary cell sets.
+- **Q:** What aggregates can a Fenwick tree handle? **A:** Invertible ones (sum, xor) — range = `prefix(r) − prefix(l−1)` requires subtraction; min/max need a segment tree.
+- **Q:** Fenwick vs segment tree — when each? **A:** Fenwick for prefix-sum + point-update (shorter, smaller constant); segment tree for arbitrary monoids, range-min/max, or range updates.
+- **Q:** Name two classic Fenwick applications. **A:** Counting inversions and rank/order-statistic queries (BIT over value ranks).
 
-1. **Range Sum Query - Mutable** ([LeetCode 307](https://leetcode.com/problems/range-sum-query-mutable/)) — implement with a Fenwick tree. Compare LOC and runtime to the segment-tree solution.
-   > *Hint:* the chapter's BIT class is sufficient. The LeetCode solution will be ~10 lines.
+## Sources & Verify
 
-2. **Count of Smaller Numbers After Self** ([LeetCode 315](https://leetcode.com/problems/count-of-smaller-numbers-after-self/)) — for each `i`, count how many `j > i` have `A[j] < A[i]`.
-   > *Hint:* coordinate-compress the values to dense integers. Walk `A` from right to left. For each value, query the BIT for "count of values seen so far that are less than this one" (prefix sum up to `value - 1`), then update the BIT with this value.
-
-3. **Reverse Pairs** ([LeetCode 493](https://leetcode.com/problems/reverse-pairs/)) — count pairs `(i, j)` with `i < j` and `A[i] > 2 * A[j]`.
-   > *Hint:* same idea as above, with a slight twist: query for `count of values > 2 * A[j]` while walking left to right.
-
-4. **Range Sum Query 2D - Mutable** ([LeetCode 308](https://leetcode.com/problems/range-sum-query-2d-mutable/)) — point update on a 2D grid; range sum query over a rectangular region.
-   > *Hint:* 2D Fenwick tree. `bit[i][j] += delta` walks both axes by their lowest-bit jumps. The query is two-dimensional inclusion-exclusion of prefix sums.
-
-5. **K-th Smallest after each insertion.** Maintain a stream of integers. After each insertion, return the k-th smallest element seen so far.
-   > *Hint:* Fenwick tree indexed by value (after coordinate compression). Each insertion updates by 1 at position `value`. To find the k-th smallest, *binary lift* down the BIT structure: descend from the highest bit looking for the smallest prefix sum ≥ k. `O(log n)` per query.
-
-***
-
-# Memorize
-
-The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. The Fenwick tree is six lines per operation; if you can write it cold, you can solve every prefix-sum-with-updates problem.
-
-## Quick recall
-
-Click any question to reveal the answer.
-
-<details>
-<summary><strong>Q:</strong> What single bit-trick is the entire Fenwick tree built on?</summary>
-
-**A:** `i & (−i)` — isolates the lowest set bit of `i`.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Update direction vs query direction?</summary>
-
-**A:** **Update** walks *up*: `i += i & −i` until past `n`. **Query** walks *down*: `i -= i & −i` until 0.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Time complexity of update and prefix-sum query?</summary>
-
-**A:** Both `O(log n)`. Each step strips or adds one bit.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Why is Fenwick 1-indexed?</summary>
-
-**A:** The `i & −i` trick relies on `i ≠ 0`. `bit[0]` is the loop's terminating sentinel.
-
-</details>
-<details>
-<summary><strong>Q:</strong> When can Fenwick replace segment tree?</summary>
-
-**A:** When the operation is *invertible* (sum, XOR, product mod prime) and you need point updates + prefix/range queries. Half the code, half the memory, half the constant factor.
-
-</details>
-<details>
-<summary><strong>Q:</strong> When can Fenwick <em>not</em> replace segment tree?</summary>
-
-**A:** Min, max, GCD — there's no "subtract a value" inverse. Range update + range query is also more natural in segment tree.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Range sum from <code>l</code> to <code>r</code>?</summary>
-
-**A:** `prefix_sum(r) − prefix_sum(l − 1)`. Two prefix-sum calls, `O(log n)` total.
-
-</details>
-<details>
-<summary><strong>Q:</strong> Build cost from a length-<code>n</code> array — naive vs optimal?</summary>
-
-**A:** Naive (call `update` for each): `O(n log n)`. Optimal (incremental partial-sum trick): `O(n)`.
-
-</details>
-
-## Code template
-
-```python
-class Fenwick:
-    def __init__(self, n):
-        self.n = n
-        self.bit = [0] * (n + 1)                                    # 1-indexed
-
-    def update(self, i, delta):                                     # O(log n)
-        while i <= self.n:
-            self.bit[i] += delta
-            i += i & -i                                             # walk up
-
-    def prefix_sum(self, i):                                        # O(log n)
-        s = 0
-        while i > 0:
-            s += self.bit[i]
-            i -= i & -i                                             # walk down
-        return s
-
-    def range_sum(self, l, r):                                      # O(log n)
-        return self.prefix_sum(r) - self.prefix_sum(l - 1)
-```
-
-## Pattern triggers
-
-- **"Prefix sum that needs to support point updates"** → Fenwick
-- **"Count inversions in an array"** → Fenwick over coordinate-compressed values
-- **"Count smaller elements after self / Count of range sum"** → Fenwick
-- **"K-th smallest in a stream"** → Fenwick indexed by value + binary-lift descent
-- **"2D range counting after coordinate compression"** → 2D Fenwick, `O(log² n)`
-- **"Range sum + point update"** → Fenwick (over segment tree's overhead)
-- **"Range update + point query"** → Fenwick on a difference array
-- **"Min/max/GCD over a range"** → segment tree, not Fenwick
-
-***
-
-# Cross-links
-
-- **Sibling structure:** [Segment Tree](/cortex/data-structures-and-algorithms/trees-segment-tree-introduction-to-segment-trees) — more general, more complex, more memory.
-- **Bit-trick reference:** [Pattern: Kth Bit](/cortex/data-structures-and-algorithms/bit-tricks-pattern-kth-bit) — the `i & -i` move comes from there.
-- **Foundations:** [Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis), [Recurrence Relations](/cortex/data-structures-and-algorithms/foundations-recurrence-relations-and-master-theorem) (the BIT operation cost is the recurrence `T(n) = T(n/2) + O(1) → O(log n)`).
-
-***
-
-# Final Takeaway
-
-The Fenwick tree is the one-trick wonder of competitive programming. Three patterns to internalise:
-
-1. **`i & (-i)` is the whole structure.** That single bit-trick is what turns the implicit tree into a flat array. Once you've internalised the trick, the algorithm is six lines.
-2. **Restricted to invertible operations.** Sum, XOR, product modulo a prime work. Min, max, GCD don't. For non-invertible operations, use a segment tree.
-3. **Half the cost of a segment tree.** Half the memory (`n` instead of `4n`), half the constant factor in operations (no recursion, simpler memory access pattern), an order of magnitude less code. When the problem fits, the BIT wins.
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
-
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
-
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
-
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
-
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
-
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+- **Fenwick, P. (1994)**, *A New Data Structure for Cumulative Frequency Tables* (Software: Practice & Experience) — the original paper.
+- **CP-Algorithms**, *Fenwick Tree* (cp-algorithms.com) and **Competitive Programmer's Handbook** (Laaksonen), ch. 9 — the canonical references; this implementation follows them.
+- Both runnable blocks are verified by running (`[1..8]`: sum[1..8]=36, sum[3..6]=18; after `A[5]+=100` ⇒ 136, 118). The `lowbit` walks are verified: `prefix_sum(5)` visits `[5,4]`, `update(5)` visits `[5,6,8]`.
