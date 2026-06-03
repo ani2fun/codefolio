@@ -1,6 +1,6 @@
 ---
 title: "Reverse a List"
-summary: "Given the head of a doubly linked list, write a function to reverse the list in place and return the head of the reversed list."
+summary: "Walk every node, swap its prev and next pointers in one stroke, and return the original tail — the new head of the reversed doubly linked list."
 prereqs:
   - 06-pattern-reversal/01-pattern
 difficulty: easy
@@ -8,20 +8,85 @@ difficulty: easy
 
 # Reverse a list
 
-## The Problem
+## Problem Statement
 
-> Given the **head** of a doubly linked list, write a function to reverse the list in place and return the head of the reversed list.
+Given the **head** of a doubly linked list, write a function to reverse the list in place and return the head of the reversed list.
 
+You need to reverse the list in place.
+
+<details>
+<summary><strong>Examples</strong></summary>
+
+**Example 1:**
 ```
 Input:  head = [5, 7, 3, 10, 3]
 Output: [3, 10, 3, 7, 5]
 ```
 
+**Example 2:**
+```
+Input:  head = [1]
+Output: [1]
+```
+
+**Example 3:**
+```
+Input:  head = []
+Output: []
+```
+
+</details>
+
+---
+
+## Intuition
+
+The **structural property** that makes this a reversal problem is that the entire list is a single contiguous segment whose `prev` and `next` pointers all need to swap. A doubly linked list already encodes both directions — node `i` knows about both node `i-1` and node `i+1` — so reversing it does not require reconstructing a missing back-link. The work is purely structural; node values are never read or written. After the swap loop runs, every node's old `next` sits in `prev` and every node's old `prev` sits in `next`, which is exactly the reversed list.
+
+The **pointer placement** is the simplest of the whole pattern. A single cursor `current` walks the list, plus an optional `previous` reference that trails one step behind. Per tick, the body has two operations in this order: save `current.next` into a local `next_node` (because the swap is about to overwrite it), then swap `current.prev` and `current.next`. Advancing is `current = next_node` — equivalent to following the original forward chain. When `current` falls off the end, `previous` is sitting on the original tail, which is the reversed list's new head.
+
+What **breaks if you reach for a naive approach**? Copying values into an array, reversing the array, and writing values back works in `O(n)` time but uses `O(n)` extra space — and it does not generalise to splicing a reversed segment back into a larger list. Recursion runs the same algorithm in `O(n)` time but uses `O(n)` stack space; for a 10-million-node list that overflows the default stack on most language runtimes. Only the iterative per-node swap hits the `O(n)` time / `O(1)` space target.
+
+---
+
+## Applying the Diagnostic Questions
+
+| Check | Answer for Reverse a List |
+|---|---|
+| **Q1.** Does the problem ask for reversed order across a contiguous segment? | **Yes** — the entire list is the segment, from `head` to the tail. |
+| **Q2.** Are the segment endpoints identifiable? | **Yes** — `start = head`, and the end is reached when `current` becomes `null`. No positional walk is needed. |
+| **Q3.** Is the work strictly structural (only `prev`/`next` pointers change)? | **Yes** — node values are never inspected; only the two pointer fields swap each tick. |
+| **Q4.** Is `O(1)` extra space required? | **Yes** — a constant number of references (`current`, `previous`, `next_node`) regardless of list length. |
+
+---
+
+## Brute Force: Copy Values into an Array
+
+Walk the list and append each value to a Python list (or Java `ArrayList`). Reverse the array. Walk the list a second time and assign each reversed value back into the corresponding node's `val` field. Neither direction of the pointer chain (`prev` or `next`) is touched; only the values move.
+
+This is correct but costs `O(n)` time AND `O(n)` extra space. It also misses the point of the pattern: reversal is a pointer-rewiring operation, not a value-shuffling operation. The moment a later problem asks you to reverse a sublist and splice it back, the array-copy approach has no natural place to slot in the splice.
+
+## Key Insight: Swap `prev` and `next` on Every Node
+
+The chain `5 ⇄ 7 ⇄ 3 ⇄ 10 ⇄ 3` becomes `3 ⇄ 10 ⇄ 3 ⇄ 7 ⇄ 5` by swapping every node's two pointer fields. The catch is that the swap is about to overwrite `current.next`, so the forward link must be saved into a local variable *before* the swap if we want a clean way to advance. Three references suffice: `current` (the node being swapped), `next_node` (the snapshot of `current.next` taken at the top of the tick), and `previous` (which tracks the most recently swapped node so we can return it as the new head when the walk ends).
+
+---
+
+## Approach
+
+Run the per-node swap loop from the head until `current` becomes `null`.
+
+1. **Handle the trivial guards.** If `head` is `null`, or the list has a single node (`head.prev is null AND head.next is null`), return `head` unchanged. The single-node case is its own reverse.
+2. **Initialise the references.** Set `current = head` and `previous = null`. The original `head` reference will become the new tail after the swap; `previous` will track the most recently swapped node.
+3. **Snapshot the forward link.** Inside the loop body, set `next_node = current.next` *first*, before any swap. This is the only line that keeps the rest of the list reachable after the swap on the next line clobbers `current.next`.
+4. **Swap `prev` and `next` on the current node.** A single assignment `current.prev, current.next = current.next, current.prev` (or a three-line temp-variable swap in Java) flips both pointer fields. Forward and backward chains both reverse at this node.
+5. **Advance both references.** Set `previous = current`, then `current = next_node`. The `previous` reference is the new head candidate (it will be the loop's final value); the `current` reference walks forward through the original list using the snapshot.
+6. **Return the new head.** When the loop exits (`current is null`), `previous` is the former tail and the new head of the reversed list. Return it.
+
 <details>
-<summary><h2>The Solution</h2></summary>
+<summary><strong>Solution &amp; Analysis</strong></summary>
 
-
-This is the whole-list special case. Walk every node with a `current`/`previous` pair; at each node **swap its `prev` and `next` pointers** so both chains flip at once, and return `previous` — once the walk ends, it holds the original tail, which is the new head.
+### Solution
 
 
 ```python run viz=linked-list viz-root=head
@@ -102,7 +167,7 @@ print(to_list(Solution().reverse_a_list(from_list([5, 5, 5]))))           # [5, 
 print(to_list(Solution().reverse_a_list(from_list([1, 2, 3, 2, 1]))))    # [1, 2, 3, 2, 1]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -187,8 +252,7 @@ public class Main {
 ```
 
 
-<details>
-<summary><strong>Trace — head = [5, 7, 3, 10, 3]</strong></summary>
+### Dry Run
 
 ```
 Initial: head → 5 ⇄ 7 ⇄ 3 ⇄ 10 ⇄ 3,   current = 5,   previous = null
@@ -205,39 +269,26 @@ Result: head → 3 ⇄ 10 ⇄ 3 ⇄ 7 ⇄ 5  ✓
 
 Each step swaps the node's `prev` and `next` in one stroke — `next_node` is saved *before* the swap because the swap overwrites `current.next`. Both chains flip together: the original tail ends with `prev = null` (it is the new head), and `previous` walks one step behind `current`, so it lands on that tail the moment `current` falls off the end.
 
-</details>
+### Complexity Analysis
+
+| | Complexity | Reason |
+|---|---|---|
+| **Time** | `O(n)` | Every node is visited exactly once — one snapshot, one swap, one advance per node. |
+| **Space** | `O(1)` | Three local references (`current`, `previous`, `next_node`) regardless of list length. |
+
+### Edge Cases
+
+| Case | What happens |
+|---|---|
+| Empty list (`head is null`) | The trivial guard fires immediately; `null` is returned without entering the loop. |
+| Single node | The trivial guard catches `head.prev is null AND head.next is null` and returns `head` unchanged — a single node is its own reverse. |
+| Two nodes (`a ⇄ b`) | Tick 1 swaps `a`'s pointers (`prev = b, next = null`); tick 2 swaps `b`'s pointers (`prev = null, next = a`). Return `b`. |
+| All equal values (`5 ⇄ 5 ⇄ 5`) | Values are never inspected; the same three swaps run, producing a list with identical values but reversed node identity. |
+| Palindrome by value (`1 ⇄ 2 ⇄ 3 ⇄ 2 ⇄ 1`) | The algorithm still swaps every node; the result reads identically but every node is now in the mirror position. |
+| Very long list (10⁷ nodes) | Iterative `O(1)` space — no stack overflow. The recursive variant would crash here. |
 
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+## Key Takeaway
 
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
-
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
-
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
-
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
-
-<!-- TODO: Solution — missing, needs to be written -->
-<!--       Guidance: Python block then Java block -->
-
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
-
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table: time / space / why -->
-
-<!-- TODO: Edge Cases — missing, needs to be written -->
-<!--       Guidance: table, min 5 rows -->
-
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->
+The full-list reversal is the simplest instance of the pattern — `start = head`, `end = tail`, swap every node's `prev` and `next` exactly once. Because a doubly linked list already encodes both directions, the loop body collapses to one swap per node — no three-pointer dance is needed.

@@ -44,7 +44,7 @@ The comparator is "compare by frequency, ascending" (for a min-heap of size K â†
 
 
 
-```python run
+```python run viz=array viz-root=heap
 from typing import List
 import heapq
 from collections import Counter
@@ -100,7 +100,7 @@ print(Solution().k_most_frequent_elements([4, 4, 4, 4, 4], 1))              # [4
 print(sorted(Solution().k_most_frequent_elements([1, 2, 3, 4, 5], 3)))      # 3 elements each freq=1
 ```
 
-```java run
+```java run viz=array viz-root=heap
 import java.util.*;
 
 public class Main {

@@ -6,7 +6,7 @@ summary: Four tiers, four strategies, two eviction families — and the two real
 # 8. Caching
 
 ## TL;DR
-> A cache is a copy of expensive state placed somewhere cheap. Caches exist at four tiers (client, CDN, application, distributed) and use four strategies (cache-aside, write-through, write-back, write-around). Eviction is policy (LRU / LFU / ARC). The two hard problems — Phil Karlton called them out forty years ago — are **invalidation** and **naming**, but every production engineer knows the *real* second hard problem is the **cache stampede**: a popular key expires and a hundred concurrent reads all miss together and hammer the origin. We're going to feel the stampede in a widget and fix it in a working `docker compose` stack.
+> A cache is a copy of expensive state placed somewhere cheap. Caches exist at four tiers (client, CDN, application, distributed) and use four strategies (cache-aside, write-through, write-back, write-around). Eviction is policy (LRU / LFU / ARC). The two hard problems — Phil Karlton called them out decades ago — are **invalidation** and **naming**, but every production engineer knows the *real* second hard problem is the **cache stampede**: a popular key expires and a hundred concurrent reads all miss together and hammer the origin. We're going to feel the stampede in a widget and fix it in a working `docker compose` stack.
 
 ## 1. Motivation
 
@@ -94,7 +94,7 @@ Caches have finite memory. When full, they must throw something out. Three polic
 - **LFU (least frequently used)** — evict the item read the fewest times. Better when popularity is stable and skewed; LRU loses to one-off scans.
 - **ARC (adaptive replacement)** — dynamically blends LRU and LFU, tracking both recency and frequency. Used in ZFS and a few other systems where workload mix shifts.
 
-In practice the most-used cache library you've heard of (Memcached, Redis, NGINX, browser HTTP cache) defaults to LRU. The most-used database I/O cache (PostgreSQL's `shared_buffers`) uses a clock-sweep approximation of LRU. ARC was patented for years (until 2020 expiry) and is now seeing renewed interest.
+In practice the most-used cache library you've heard of (Memcached, Redis, NGINX, browser HTTP cache) defaults to LRU. The most-used database I/O cache (PostgreSQL's `shared_buffers`) uses a clock-sweep approximation of LRU. ARC was patented for years (the patent has since expired) and is seeing renewed interest.
 
 ### 3.4 The two hard problems
 
@@ -269,7 +269,7 @@ Option 1 is the production-grade answer. The general principle: **health checks 
 
 ## 8. In the Wild
 
-- **[Nishtala et al., *Scaling Memcache at Facebook*, NSDI 2013](https://www.usenix.org/system/files/conference/nsdi13/nsdi13-final170_update.pdf)** — the canonical write-up. Read §3 (regional caching), §4 (cross-region) and §5 (single-server optimisations). The lease pattern is in §3.2.2.
+- **[Nishtala et al., *Scaling Memcache at Facebook*, NSDI 2013](https://www.usenix.org/system/files/conference/nsdi13/nsdi13-final170_update.pdf)** — the canonical write-up. Read §3 (regional caching), §4 (cross-region) and §5 (single-server optimisations). The lease pattern is in §3.2 (Reducing Load).
 - **[Nick Craver, *How we do app caching at Stack Overflow*](https://nickcraver.com/blog/2019/08/06/stack-overflow-how-we-do-app-caching/)** (2019). Real architecture write-up with the L1/L2 split, Redis primitives, and the cache-key naming conventions they evolved.
 - **[Cloudflare — *Cache stampede prevention with the Workers Cache API*](https://blog.cloudflare.com/scalably-serving-resources-from-a-cache/)**. Edge-side coalescing at CDN scale; introduces the same primitives in a different shape.
 - **[RFC 5861 — HTTP `stale-while-revalidate` and `stale-if-error`](https://datatracker.ietf.org/doc/html/rfc5861)**. The HTTP-level standard for serving stale content while asynchronously refreshing. Every CDN supports it.

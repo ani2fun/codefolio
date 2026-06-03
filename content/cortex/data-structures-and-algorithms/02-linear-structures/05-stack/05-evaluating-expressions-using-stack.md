@@ -1,6 +1,6 @@
 ---
 title: "Evaluating Expressions Using Stack"
-summary: "<!-- TODO: summary -->"
+summary: "Evaluate postfix, prefix, and infix arithmetic with one operand stack. Push operands, pop two and push the result on each operator, return the lone survivor — O(N) time, O(N) space. Postfix scans left-to-right, prefix right-to-left, and infix converts to postfix first."
 ---
 
 # 5. Evaluating Expressions Using a Stack
@@ -23,11 +23,37 @@ By the end you'll have a calculator core that handles `(2+3)*(4/2)` with the sam
 
 ## Table of contents
 
-1. [Understanding the evaluation of postfix expressions](#understanding-the-evaluation-of-postfix-expressions)
-2. [Evaluate a postfix expression](#evaluate-a-postfix-expression)
-3. [Understanding the evaluation of prefix expressions](#understanding-the-evaluation-of-prefix-expressions)
-4. [Evaluate a prefix expression](#evaluate-a-prefix-expression)
-5. [Evaluate an infix expression](#evaluate-an-infix-expression)
+1. [Understanding the problem](#understanding-the-problem)
+2. [Understanding the evaluation of postfix expressions](#understanding-the-evaluation-of-postfix-expressions)
+3. [Evaluate a postfix expression](#evaluate-a-postfix-expression)
+4. [Understanding the evaluation of prefix expressions](#understanding-the-evaluation-of-prefix-expressions)
+5. [Evaluate a prefix expression](#evaluate-a-prefix-expression)
+6. [Evaluate an infix expression](#evaluate-an-infix-expression)
+7. [Supported operations](#supported-operations)
+8. [Internal mechanics](#internal-mechanics)
+9. [Working example](#working-example)
+10. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
+11. [Production reality](#production-reality)
+12. [Practice ladder](#practice-ladder)
+13. [Quiz](#quiz)
+14. [Further reading](#further-reading)
+15. [Cross-links](#cross-links)
+16. [Final takeaway](#final-takeaway)
+
+***
+
+# Understanding the Problem
+
+A stack-based evaluator exists to close one gap: humans write arithmetic for reading, but a CPU runs one binary operation at a time and needs the operations handed to it in execution order. The previous lesson defined postfix and prefix as notations that encode that order by position alone. This lesson turns that property into running code — an evaluator that reads a notation once and returns its numeric value.
+
+The job splits into two distinct difficulties, and they map onto the three notations:
+
+- **Reading the order off the tokens** — postfix and prefix already encode it, so the evaluator is a single scan with one stack.
+- **Recovering the order first** — infix hides it behind precedence and parentheses, so the evaluator needs a conversion pass before it can scan.
+
+To make this concrete: evaluating postfix `231*+9-` is a left-to-right walk that folds `(2 + 3*1) - 9` to `-4` with no precedence lookups. Evaluating infix `(1+2)*(3/4)` cannot start until the parentheses and precedence are resolved into postfix `12+34/*` first. The notation decides whether evaluation is one pass or two.
+
+So the key idea is: **the stack is the working memory of an arithmetic evaluator, and the input notation decides how much work happens before the stack can do its job** — none for postfix and prefix, one conversion pass for infix.
 
 ***
 
@@ -100,7 +126,7 @@ The input is the postfix form of `(2 + 3*1) - 9 = -4`. Walk it:
 ## Implementation
 
 
-```python run
+```python run viz=array viz-root=stack viz-kind=stack
 from typing import List
 
 class Solution:
@@ -155,7 +181,7 @@ class Solution:
         return stack[-1]
 ```
 
-```java run
+```java run viz=array viz-root=stack viz-kind=stack
 import java.util.*;
 
 class Solution {
@@ -246,7 +272,7 @@ Given a string `postfix` representing a postfix expression with single-digit ope
 The full evaluator from above, written compactly. Same code, just packaged as the answer to the problem.
 
 
-```python run
+```python run viz=array viz-root=stack viz-kind=stack
 from typing import List
 
 class Solution:
@@ -314,7 +340,7 @@ print(Solution().evaluate_a_postfix_expression("34+2*"))     # 14.0 — (3+4)*2
 print(Solution().evaluate_a_postfix_expression("72+3*"))     # 27.0 — (7+2)*3
 ```
 
-```java run
+```java run viz=array viz-root=stack viz-kind=stack
 import java.util.*;
 
 public class Main {
@@ -463,7 +489,7 @@ Given a string `prefix` (single-digit operands, operators `+`, `-`, `*`, `/`), e
 
 ### Solution
 
-```python run
+```python run viz=array viz-root=stack viz-kind=stack
 from typing import List
 
 class Solution:
@@ -536,7 +562,7 @@ print(Solution().evaluate_a_prefix_expression("*+342"))     # 14.0 — (3+4)*2
 print(Solution().evaluate_a_prefix_expression("*+723"))     # 27.0 — (7+2)*3
 ```
 
-```java run
+```java run viz=array viz-root=stack viz-kind=stack
 import java.util.*;
 
 public class Main {
@@ -685,7 +711,7 @@ flowchart LR
 
 
 
-```python run
+```python run viz=array viz-root=stack viz-kind=stack
 from typing import List
 
 class Solution:
@@ -834,7 +860,7 @@ print(Solution().evaluate_an_infix_expression("2+3*4"))         # 14.0 — prece
 print(Solution().evaluate_an_infix_expression("(2+3)*4"))       # 20.0 — parens override precedence
 ```
 
-```java run
+```java run viz=array viz-root=stack viz-kind=stack
 import java.util.*;
 
 public class Main {
@@ -1032,39 +1058,173 @@ Three lessons:
 
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+***
 
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
+# Supported Operations
 
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
+An evaluator is not a data structure, so the operations worth comparing are the moves the algorithm makes on each token, plus the arithmetic each operator triggers. Two token classes and one terminal read cover the whole engine, and their costs are identical across all three notations.
 
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
+| Operation | What it does | Time | Space |
+|---|---|---|---|
+| **Read operand** | push the numeric value onto the stack | `O(1)` | `O(1)` per push |
+| **Read operator** | pop two values, apply `+`/`-`/`*`/`/`, push the result | `O(1)` | `O(1)` net (two off, one on) |
+| **Apply operator** | one binary arithmetic op on the popped pair | `O(1)` | `O(1)` |
+| **Return result** | read the lone survivor on the stack | `O(1)` | `O(1)` |
+| **Full evaluation** | scan all `N` tokens once, folding as it goes | `O(N)` | `O(N)` |
 
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
+The per-token operations are all constant. Each operand is pushed exactly once, and each operator pops twice and pushes once, so the total work is bounded by the token count `N`. The stack's depth never exceeds the number of operands, which is itself bounded by `N`.
 
-<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
-<!--       Guidance: bulleted list of gotchas -->
+To make this concrete: evaluating postfix `2 3 1 * + 9 -` performs four pushes (`2`, `3`, `1`, `9`), three operator folds (`*`, `+`, `-`), and one final read. Every one of those eight moves is `O(1)`, and the stack peaks at three entries — never more than the operand count.
 
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+So the key idea is: **an evaluator has exactly two per-token moves — push an operand or fold an operator — and both are `O(1)`, which is why the whole scan is `O(N)` time and `O(N)` space regardless of notation.**
 
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+***
 
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
+# Internal Mechanics
 
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+The engine underneath all three evaluators is one stack of operands, driven by a single scan that classifies each token as operand or operator. An operand has nothing to compute yet, so it waits on the stack; an operator needs its two most recent operands, which sit on top by construction. That "most recent operands are on top" guarantee is what makes the stack the natural — not bolted-on — shape for evaluation.
 
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
+The mechanism has three moving parts, identical for postfix and prefix:
 
-<!-- TODO: Final Takeaway — missing, needs to be written -->
-<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->
+- **Operand → push.** The value is set aside on the stack as a pending operand. No arithmetic happens yet.
+- **Operator → pop two, apply, push one.** The operator pops its two operands off the top, applies itself, and pushes the single result back as a new pending operand.
+- **End of scan → the lone survivor is the answer.** A well-formed expression collapses to exactly one value on the stack, which the evaluator returns.
+
+To make this concrete: in postfix `2 3 1 * + 9 -`, the scan reaches `*` while the stack holds `[2, 3, 1]`. The `*` folds the top two (`3` and `1`) into `3`, leaving `[2, 3]`; then `+` folds those into `5`; then `9` pushes; then `-` folds `5` and `9` into `-4`. No precedence rule was consulted — the position of each operator in the stream *was* the precedence.
+
+One subtlety separates a correct evaluator from a subtly-broken one: **operand order on the pop**. For commutative operators (`+`, `*`) the two pops can return in either order with the same result. For non-commutative operators (`-`, `/`, `^`) the order is load-bearing, and it flips between notations. Under a **left-to-right postfix scan**, the most recent operand seen is the *rightmost*, so the first value popped is the *right* operand and the second pop is the *left* operand. Under a **right-to-left prefix scan**, the most recent operand seen is the *leftmost*, so the first value popped is the *left* operand and the second pop is the *right* operand. Infix sidesteps the question entirely by converting to postfix first, then reusing the postfix rule.
+
+So the core insight is: **one stack, two scan directions — postfix scans left-to-right and pops right-then-left, prefix scans right-to-left and pops left-then-right, and infix converts to postfix before scanning at all.**
+
+***
+
+# Working Example
+
+One expression carried end-to-end makes the mechanics tangible. Take the infix expression `(1+2)*(3/4)`, whose value is `3 * 0.75 = 2.25`. The infix evaluator cannot scan it directly — it converts to postfix first, then runs the postfix scan on the result.
+
+**Stage 1 — convert `(1+2)*(3/4)` to postfix.** The converter (lesson 6's algorithm) walks the infix string with an operator stack, emitting operands immediately and deferring operators by precedence. The output is `12+34/*`. The two parenthesised folds appear first, the top-level multiply last.
+
+**Stage 2 — evaluate the postfix `12+34/*` left-to-right with one operand stack:**
+
+| Step | Token | Action (first pop = right operand) | Stack (top right) |
+|---:|:---:|---|---|
+| 1 | `1` | push | `[1]` |
+| 2 | `2` | push | `[1, 2]` |
+| 3 | `+` | pop `2`, pop `1`, push `1+2=3` | `[3]` |
+| 4 | `3` | push | `[3, 3]` |
+| 5 | `4` | push | `[3, 3, 4]` |
+| 6 | `/` | pop `4`, pop `3`, push `3/4=0.75` | `[3, 0.75]` |
+| 7 | `*` | pop `0.75`, pop `3`, push `3*0.75=2.25` | `[2.25]` |
+| — | end | result is the lone item | **`2.25`** |
+
+<p align="center"><strong>Evaluating <code>(1+2)*(3/4)</code> — convert to postfix <code>12+34/*</code>, then fold left-to-right. Each operator collapses two stack entries into one, so the stack peaks at three entries and the lone survivor <code>2.25</code> is the answer.</strong></p>
+
+Notice the division at step 6: the first pop (`4`) is the right operand and the second pop (`3`) is the left, so the operation is `3 / 4`, not `4 / 3`. Reverse that and the answer becomes `1.33`, silently wrong. The same expression in raw infix never gets this clean walk. An evaluator would have to find the two parenthesised groups, evaluate each as a sub-expression, hold both partial results, then multiply.
+
+So the key idea is: **infix evaluation is two stages — convert once, then scan once — and both stages are `O(N)` time and `O(N)` space, so the composite handles parentheses and precedence in two linear passes over one stack each.**
+
+***
+
+# Edge Cases and Pitfalls
+
+The algorithm is short; the bugs cluster in a handful of places. Keep this checklist open when you write or review an evaluator.
+
+- **Operand order on non-commutative operators.** This is the single most common bug. `+` and `*` survive a swapped pop; `-`, `/`, and `^` do not. In **postfix** (left-to-right scan), the first value popped is the *right* operand, so `a b -` means `a - b`. In **prefix** (right-to-left scan), the first value popped is the *left* operand. Get it wrong and `+`/`*` look correct while `-`/`/` silently return garbage.
+- **Single-digit assumption.** These evaluators read one character per operand, so `42 3 +` is read as `4`, `2`, `3` — three operands, not two. Multi-digit operands need an explicit tokenizer that groups consecutive digits before the scan. The single-digit contract is a teaching simplification, not a production-ready parser.
+- **Division semantics.** `/` here is float division, so `8 4 /` returns `2.0` and `3 4 /` returns `0.75`. An integer-division evaluator would truncate `3 / 4` to `0` — a different answer for the same tokens. Decide float vs. integer before the first `/` runs.
+- **Malformed expressions underflow or overflow the stack.** Too many operators (`2 + +`) pops an empty stack; too few (`2 3 4 +`) leaves more than one value at the end. A hardened evaluator checks the stack has at least two operands before each operator and exactly one value at the end; the teaching version assumes well-formed input.
+- **Empty input.** An empty token stream leaves an empty stack, so the final `stack[-1]` read fails — there is no lone survivor. Decide whether empty input is an error or returns a neutral value before the first read runs.
+- **Prefix is not the reverse of postfix.** Reversing the *string* and reusing the postfix loop works only because the prefix evaluator also flips its operand-pop order. Reversing without flipping the pop order gives correct `+`/`*` and wrong `-`/`/`. The reversal and the pop-order swap are a matched pair.
+- **Unary operators break the two-operand assumption.** A unary minus consumes one operand, not two. An evaluator that always pops two will underflow the stack or grab an unrelated operand. Either disallow unary operators or detect them explicitly before the pop.
+
+***
+
+# Production Reality
+
+Stack-based evaluation is not an academic exercise — it runs inside compilers, calculators, and virtual machines billions of times a day. The systems below put the operand-stack scan on a hot path.
+
+**[The JVM bytecode interpreter]** — uses **a per-frame operand stack evaluated in postfix order** — because `javac` compiles infix source into postfix bytecode (`iload`, `iload`, `imul`, `iadd`), so the interpreter is exactly the pop-two-push-one scan from this lesson with no runtime precedence parsing.
+
+**[Reverse Polish calculators (HP-12C and successors)]** — uses **postfix entry over a four-register operand stack** — because RPN lets the user evaluate any expression with no parenthesis or equals key, feeding one operand or operator at a time straight into the scan.
+
+**[Spreadsheet formula engines]** — uses **shunting-yard conversion to postfix, then a stack evaluator** — because users type infix in a cell, but the engine caches the postfix form so recalculation is a fast stack walk rather than a re-parse. <!-- VERIFY: many spreadsheet engines compile formulas to an internal postfix/bytecode form; exact representation varies by implementation. -->
+
+**[Forth and PostScript interpreters]** — uses **postfix as the language syntax itself, with the operand stack as the execution model** — because a stack machine interpreter fits in a few kilobytes, which is why PostScript drives printers and Forth drives boot ROMs and constrained firmware.
+
+**[Database SQL expression evaluators]** — uses **a parse-to-postfix step then a stack-based fold per row** — because a `WHERE` or `SELECT` arithmetic expression is parsed once and then evaluated row-by-row, where a precompiled postfix scan beats re-parsing the infix every time. <!-- VERIFY: query engines compile scalar expressions to an internal evaluable form; postfix/bytecode/tree-walk representation varies by engine. -->
+
+***
+
+# Practice Ladder
+
+This lesson turns the notation rules into running evaluators, so the closest practice is the stack problems that scan once and let the stack remember pending work. Try each unaided; reach for the hint after ten minutes; do not open a solution until you have written something runnable.
+
+| # | Problem | Pattern | Difficulty | Hint |
+|---|---------|---------|------------|------|
+| 1 | [Reverse the String](./08-pattern-reversal/02-problems/02-reverse-the-string.md) | [Reversal](./08-pattern-reversal/01-pattern.md) | Easy | Push every character, then pop them all. The LIFO order is the reversal — `O(n)` time, `O(n)` space. Same push-then-pop reflex the evaluator runs on operands. |
+| 2 | [Parentheses Checker](./11-pattern-sequence-validation/02-problems/01-parentheses-checker.md) | [Sequence Validation](./11-pattern-sequence-validation/01-pattern.md) | Easy | Push openers, pop on closers, check the match. A balanced expression empties the stack — the well-formed precondition every evaluator assumes about its input. |
+| 3 | [Redundant Parentheses](./11-pattern-sequence-validation/02-problems/03-redundant-parentheses.md) | [Sequence Validation](./11-pattern-sequence-validation/01-pattern.md) | Medium | A bracket pair with no operator between its borders is redundant. Tracking operators on the stack between brackets is a direct cousin of the infix-to-postfix conversion this lesson leans on. |
+| 4 | [Formula Parsing](./12-pattern-linear-evaluation/02-problems/04-formula-parsing.md) | [Linear Evaluation](./12-pattern-linear-evaluation/01-pattern.md) | Hard | Scan left-to-right, hold operands and a running operator on stacks, fold on precedence boundaries. This *is* postfix evaluation fused with the shunting-yard idea. |
+| 5 | [String Expansion](./12-pattern-linear-evaluation/02-problems/03-string-expansion.md) | [Linear Evaluation](./12-pattern-linear-evaluation/01-pattern.md) | Medium | Push context on `[`, fold it on `]`. The stack stores deferred work exactly as the evaluator stores pending operands until an operator fires. |
+
+Work these until the push-then-fold reflex is automatic; the postfix evaluator then reads as one more application of the same move.
+
+***
+
+# Quiz
+
+Commit to an answer before reading the response — that is the test of whether the idea has landed.
+
+**[Recall] Q: After the scan finishes on a well-formed expression, how many values are left on the stack, and what is it?**
+Exactly one — the result of the whole expression, which the evaluator returns.
+
+**[Recall] Q: What are the time and space complexities of evaluating an `N`-token postfix expression with a stack?**
+`O(N)` time (each token is scanned once and triggers `O(1)` work) and `O(N)` space (the stack holds up to `O(N)` pending operands).
+
+**[Reasoning] Q: Why does the first value popped represent the *right* operand in postfix but the *left* operand in prefix?**
+Operands are always written left-to-right, so the left-to-right scan pops the right operand first and the right-to-left scan pops the left operand first.
+
+**[Reasoning] Q: Why can the prefix evaluator reverse the input string and reuse the postfix loop, yet still produce correct answers?**
+The reversal makes the scan effectively right-to-left, and the loop also swaps which pop is the left operand — the reversal and the pop-order flip are a matched pair.
+
+**[Tradeoff] Q: Why convert infix to postfix and evaluate, instead of building a direct infix evaluator?**
+A direct infix evaluator must parse precedence and parentheses while evaluating; converting to postfix first splits the work into two simple single-stack passes of `O(N)` time and `O(N)` space.
+
+***
+
+# Further Reading
+
+Curated entries, not a syllabus. The annotation tells you which to open first.
+
+- **[Converting Expressions Using Stack](/cortex/data-structures-and-algorithms/linear-structures-stack-converting-expressions-using-stack)**
+  ★ Essential — the next lesson; builds the infix-to-postfix converter that the infix evaluator here calls but does not teach.
+- **[Wikipedia — Reverse Polish notation](https://en.wikipedia.org/wiki/Reverse_Polish_notation)**
+  ★ Essential — a concise, example-heavy tour of postfix evaluation with the calculator and Forth history in one place.
+- **[The Java Virtual Machine Specification — Operand Stacks](https://docs.oracle.com/javase/specs/jvms/se21/html/jvms-2.html#jvms-2.6.2)**
+  → Reference — how a real production stack machine evaluates compiled expressions in postfix order; read alongside the Production Reality section.
+- **[Sedgewick & Wayne — *Algorithms* (4th ed), §1.3 Stacks and Queues](https://algs4.cs.princeton.edu/13stacks/)**
+  ◆ Advanced — Dijkstra's two-stack evaluator implemented and analysed; the cleanest companion to both this lesson and lesson 6.
+- **[CLRS — Chapter 10: Elementary Data Structures](https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/)**
+  → Reference — the canonical treatment of the stack, the structure that makes postfix and prefix evaluation `O(N)` time and `O(N)` space.
+
+***
+
+# Cross-Links
+
+**Prerequisites**
+
+- [Infix, Postfix, and Prefix Notations](/cortex/data-structures-and-algorithms/linear-structures-stack-infix-postfix-and-prefix-notations) — defines the three notations and why position-based ones need no precedence rules; this lesson turns that property into code.
+- [Introduction to Stacks](/cortex/data-structures-and-algorithms/linear-structures-stack-introduction-to-stacks) — the LIFO push/pop contract that is the entire engine behind every evaluator here.
+- [Array Implementation of Stacks](/cortex/data-structures-and-algorithms/linear-structures-stack-array-implementation-of-stacks) — the concrete operand stack the evaluators run on.
+
+**What comes next**
+
+- [Converting Expressions Using Stack](/cortex/data-structures-and-algorithms/linear-structures-stack-converting-expressions-using-stack) — the two-stack shunting-yard algorithm that produces the postfix this lesson's infix evaluator depends on.
+
+***
+
+## Final Takeaway
+
+1. **Core mechanic:** evaluate an expression by scanning its tokens once over a single operand stack — push each operand, pop two and push the result on each operator, and return the lone survivor — in `O(N)` time and `O(N)` space.
+2. **Dominant tradeoff:** postfix and prefix evaluate in one direct scan, while infix needs a conversion pass first; you trade infix's human readability for the position-based notations' parse-free, single-stack evaluation.
+3. **One thing to remember:** operand order on the pop is load-bearing for `-`, `/`, and `^` — postfix pops the right operand first, prefix pops the left operand first — and getting it backwards leaves `+` and `*` correct while silently breaking the rest.

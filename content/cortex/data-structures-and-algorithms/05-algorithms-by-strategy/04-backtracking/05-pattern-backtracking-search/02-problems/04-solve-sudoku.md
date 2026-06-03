@@ -60,7 +60,7 @@ If a digit doesn't lead to a solution, we have to clear that cell so we can try 
 
 ### The Solution
 
-```python run
+```python run viz=grid viz-root=board1
 from typing import List
 
 class Solution:
@@ -206,7 +206,7 @@ Solution().solve_sudoku(board3)
 print(board3[0][0])                                   # 5
 ```
 
-```java run
+```java run viz=grid viz-root=board1
 import java.util.*;
 
 public class Main {

@@ -59,48 +59,455 @@ The loop terminates when `left >= right`. At that point, every pair of equidista
 Here is the full picture of a single traversal on an array of size 7:
 
 > ▶ Interactive Diagram — Iteration-by-iteration view of the two-pointer traversal on a 7-element array — each step processes one pair of equidistant elements and closes the gap by one on each side.
-```d3 widget=array-traversal
+```d3 widget=array-1d
 {
-  "items": ["A", "B", "C", "D", "E", "F", "G"],
-  "title": "Two-pointer traversal on a 7-element array",
   "steps": [
     {
-      "markers": [
-        { "name": "left",  "index": 0, "color": "#3b82f6" },
-        { "name": "right", "index": 6, "color": "#f59e0b" }
+      "nodes": [
+        {
+          "id": "0",
+          "label": "A",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "B",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "C",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "D",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "E",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "F",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "G",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "range":   { "lo": 0, "hi": 6 },
-      "msg": "Initial state — left = 0, right = 6. The whole array lies between the pointers."
+      "edges": [],
+      "cursor": [
+        {
+          "name": "left",
+          "target": "0",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "right",
+          "target": "6",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "Initial state — left = 0, right = 6. The whole array lies between the pointers.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "markers": [
-        { "name": "left",  "index": 1, "color": "#3b82f6" },
-        { "name": "right", "index": 5, "color": "#f59e0b" }
+      "nodes": [
+        {
+          "id": "0",
+          "label": "A",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "B",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "C",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "D",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "E",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "F",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "G",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "range":   { "lo": 1, "hi": 5 },
-      "msg": "After iteration 1 — A and G have been processed; left++, right--."
+      "edges": [],
+      "cursor": [
+        {
+          "name": "left",
+          "target": "1",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "right",
+          "target": "5",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "After iteration 1 — A and G have been processed; left++, right--.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "markers": [
-        { "name": "left",  "index": 2, "color": "#3b82f6" },
-        { "name": "right", "index": 4, "color": "#f59e0b" }
+      "nodes": [
+        {
+          "id": "0",
+          "label": "A",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "B",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "C",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "D",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "E",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "F",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "G",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "range":   { "lo": 2, "hi": 4 },
-      "msg": "After iteration 2 — B and F processed; left++, right--."
+      "edges": [],
+      "cursor": [
+        {
+          "name": "left",
+          "target": "2",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "right",
+          "target": "4",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "2",
+        "3",
+        "4"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "After iteration 2 — B and F processed; left++, right--.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "markers": [
-        { "name": "left",  "index": 3, "color": "#3b82f6" },
-        { "name": "right", "index": 3, "color": "#f59e0b" }
+      "nodes": [
+        {
+          "id": "0",
+          "label": "A",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "B",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "C",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "D",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "E",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "F",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "G",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "range":   { "lo": 3, "hi": 3 },
-      "msg": "After iteration 3 — C and E processed; left = right = 3."
+      "edges": [],
+      "cursor": [
+        {
+          "name": "left",
+          "target": "3",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "right",
+          "target": "3",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "3"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "After iteration 3 — C and E processed; left = right = 3.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "markers": [],
-      "msg": "left ≥ right — loop ends. The centre element D is handled separately if the problem requires it."
+      "nodes": [
+        {
+          "id": "0",
+          "label": "A",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "B",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "C",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "D",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "E",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "F",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "G",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "left ≥ right — loop ends. The centre element D is handled separately if the problem requires it.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Two-pointer traversal on a 7-element array"
 }
 ```
 
@@ -110,123 +517,168 @@ Here is the full picture of a single traversal on an array of size 7:
 
 ## The Generic Algorithm
 
-The two-pointer pattern follows this skeleton for every problem that uses it directly:
+The variable-size sliding window pattern follows this skeleton for every problem that uses it directly:
 
-**Step 1.** Initialise `left = 0`, `right = n − 1` (or whatever starting positions the problem requires, as long as `left < right`).
+**Step 1.** Decide what you maintain:
+- `window_state` — the minimal info needed to test validity (e.g. zero count, char→count map, running sum)
+- `result` — the answer accumulator (e.g. max length, min length, count)
+- `start`, `end` — the window boundaries; both move only forward
 
-**Step 2.** Loop while `left < right`:
-- **Step 2.1** — do some work on `arr[left]` and `arr[right]`
-- **Step 2.2** — move `left` forward by some number of steps (if the problem requires it)
-- **Step 2.3** — move `right` backward by some number of steps (if the problem requires it)
+**Step 2.** Define two operations that *must be exact inverses* of each other:
+- `add(arr[end])` — fold the new element into `window_state`
+- `remove(arr[start])` — undo exactly what `add` did
 
-**Step 3.** Return the result.
+**Step 3.** Loop with `end` from `0` to `n − 1`:
+- **Step 3.1** — `add(arr[end])`: always expand the right edge
+- **Step 3.2** — while `CONTRACT_CONDITION` holds: `remove(arr[start])` then `start += 1` (repair / shrink from the left)
+- **Step 3.3** — update `result`: measure the current window
+- **Step 3.4** — `end` advances via the loop
 
-The specific "work" and "step size" in steps 2.1–2.3 change per problem. Everything else stays the same.
+**Step 4.** Return `result`.
 
----
+What changes per problem is just `window_state`, the `CONTRACT_CONDITION` in Step 3.2, and what Step 3.3 measures — longest valid window contracts while *invalid* and measures after; shortest valid window contracts while *still valid* and measures inside that loop; counting adds `end − start + 1` per valid window. Everything else stays the same, and the inverse-operation requirement in Step 2 is what makes the technique apply at all.
 
 ## Generic Implementation
 
 
-```python run
-from typing import List
+```python
+from typing import List, Any
 
 class Solution:
-    # Generic code for two-pointer traversal
-    def two_pointer(self, arr: List[int]) -> None:
+    # Generic code for the variable-size sliding window
+    def sliding_window(self, arr: List[int]) -> Any:
 
-        # Initialize left and right to the ends of the array
-        left = 0
-        right = len(arr) - 1
+        # Step 1: window boundaries (both move only forward),
+        #         window_state (the info needed to test validity),
+        #         and result (the answer accumulator)
+        start = 0
+        end = 0
+        self.window_state = self.init_state()
+        self.result = self.init_result()
 
-        while left < right:
-            left_val = arr[left]
-            right_val = arr[right]
+        # Step 3: expand `end` from 0 to n - 1
+        while end < len(arr):
 
-            # Check if the left pointer should be incremented
-            if self.increment_left(left_val, right_val):
-                # Increment the left pointer by some steps
-                left += self.left_step(left_val, right_val)
+            # Step 3.1: fold arr[end] into window_state -- always expand the right edge
+            self.add(arr[end])
 
-            # Check if the right pointer should be decremented
-            if self.decrement_right(left_val, right_val):
-                # Decrement the right pointer by some steps
-                right -= self.right_step(left_val, right_val)
+            # Step 3.2: while CONTRACT_CONDITION holds, shrink from the left.
+            #           remove() must be the EXACT INVERSE of add()
+            while self.should_contract():
+                self.remove(arr[start])
+                start += 1
 
-    # Decide whether to move the left pointer
-    def increment_left(self, left_val: int, right_val: int) -> bool:
-        # Example condition: move left if sum < 10
-        return left_val + right_val < 10
+            # Step 3.3: measure the current window and update result
+            self.update_result(start, end)
 
-    # Decide whether to move the right pointer
-    def decrement_right(self, left_val: int, right_val: int) -> bool:
-        # Example condition: move right if sum > 10
-        return left_val + right_val > 10
+            # Step 3.4: advance the right edge
+            end += 1
 
-    # Steps to move the left pointer
-    def left_step(self, left_val: int, right_val: int) -> int:
-        return 1  # Example: move 1 step
+        # Step 4: return the answer
+        return self.result
 
-    # Steps to move the right pointer
-    def right_step(self, left_val: int, right_val: int) -> int:
-        return 1  # Example: move 1 step
+    # Step 1: initial window_state (e.g. 0, an empty map, a running sum of 0)
+    def init_state(self) -> Any:
+        return None  # placeholder: the empty / identity window_state
+
+    # Step 1: initial result (e.g. 0 for max-length or count, +inf for min-length)
+    def init_result(self) -> Any:
+        return None  # placeholder: the identity value for the accumulator
+
+    # Step 3.1: fold the new element into window_state
+    def add(self, val: int) -> None:
+        pass  # placeholder: update self.window_state to INCLUDE `val`
+
+    # Step 3.2 inverse: undo exactly what add() did
+    def remove(self, val: int) -> None:
+        pass  # placeholder: update self.window_state to EXCLUDE `val`
+
+    # Step 3.2 condition (CONTRACT_CONDITION): should we shrink from the left?
+    def should_contract(self) -> bool:
+        # placeholder: longest -> while INVALID; shortest -> while STILL VALID
+        return False
+
+    # Step 3.3: measure the window [start, end] and update self.result
+    def update_result(self, start: int, end: int) -> None:
+        pass  # placeholder: max/min length, or += (end - start + 1) for counting
 ```
 
-```java run
+```java
 import java.util.List;
 
 class Solution {
 
-    // Generic code for two-pointer traversal
-    public void twoPointer(List<Integer> arr) {
+    // Step 1: window_state (the info needed to test validity) and
+    //         result (the answer accumulator) -- kept as fields so
+    //         add()/remove() can mutate them. Replace the types per problem.
+    private Object windowState;
+    private Object result;
 
-        // Initialize left and right to the ends of the array
-        int left = 0;
-        int right = arr.size() - 1;
+    // Generic code for the variable-size sliding window
+    public Object slidingWindow(List<Integer> arr) {
 
-        while (left < right) {
-            int leftVal = arr.get(left);
-            int rightVal = arr.get(right);
+        // Step 1: window boundaries (both move only forward)
+        int start = 0;
+        int end = 0;
+        windowState = initState();   // the empty / identity window_state
+        result = initResult();       // the identity value for the accumulator
 
-            // Check if the left pointer should be incremented
-            if (incrementLeft(leftVal, rightVal)) {
-                // Increment the left pointer by some steps
-                left += leftStep(leftVal, rightVal);
+        // Step 3: expand `end` from 0 to n - 1
+        while (end < arr.size()) {
+
+            // Step 3.1: fold arr[end] into window_state -- always expand the right edge
+            add(arr.get(end));
+
+            // Step 3.2: while CONTRACT_CONDITION holds, shrink from the left.
+            //           remove() must be the EXACT INVERSE of add()
+            while (shouldContract()) {
+                remove(arr.get(start));
+                start++;
             }
 
-            // Check if the right pointer should be decremented
-            if (decrementRight(leftVal, rightVal)) {
-                // Decrement the right pointer by some steps
-                right -= rightStep(leftVal, rightVal);
-            }
+            // Step 3.3: measure the current window and update result
+            updateResult(start, end);
+
+            // Step 3.4: advance the right edge
+            end++;
         }
+
+        // Step 4: return the answer
+        return result;
     }
 
-    // Decide whether to move the left pointer
-    private boolean incrementLeft(int leftVal, int rightVal) {
-        // Example condition: move left if sum < 10
-        return (leftVal + rightVal < 10);
+    // Step 1: initial window_state (e.g. 0, an empty map, a running sum of 0)
+    private Object initState() {
+        return null; // placeholder: the empty / identity window_state
     }
 
-    // Decide whether to move the right pointer
-    private boolean decrementRight(int leftVal, int rightVal) {
-        // Example condition: move right if sum > 10
-        return (leftVal + rightVal > 10);
+    // Step 1: initial result (e.g. 0 for max-length or count, +inf for min-length)
+    private Object initResult() {
+        return null; // placeholder: the identity value for the accumulator
     }
 
-    // Steps to move the left pointer
-    private int leftStep(int leftVal, int rightVal) {
-        return 1; // Example: move 1 step
+    // Step 3.1: fold the new element into window_state
+    private void add(int val) {
+        // placeholder: update windowState to INCLUDE `val`
     }
 
-    // Steps to move the right pointer
-    private int rightStep(int leftVal, int rightVal) {
-        return 1; // Example: move 1 step
+    // Step 3.2 inverse: undo exactly what add() did
+    private void remove(int val) {
+        // placeholder: update windowState to EXCLUDE `val`
+    }
+
+    // Step 3.2 condition (CONTRACT_CONDITION): should we shrink from the left?
+    private boolean shouldContract() {
+        // placeholder: longest -> while INVALID; shortest -> while STILL VALID
+        return false;
+    }
+
+    // Step 3.3: measure the window [start, end] and update result
+    private void updateResult(int start, int end) {
+        // placeholder: max/min length, or result += (end - start + 1) for counting
     }
 }
 ```
-
-
 ---
 
 ## Complexity Analysis
@@ -418,7 +870,7 @@ BruteForce().reverse(arr)
 print(arr)   # [5, 4, 3, 2, 1]
 ```
 
-```java run
+```java run viz=array viz-root=arr
 import java.util.Arrays;
 
 public class Main {
@@ -451,36 +903,218 @@ This works, but it uses O(n) extra space and touches every element twice. We can
 **Key insight:** to reverse an array, we just need to swap equidistant elements from both ends — `arr[0] ↔ arr[n-1]`, `arr[1] ↔ arr[n-2]`, and so on. Each swap needs exactly two positions: one from the left, one from the right. That's the two-pointer template.
 
 > ▶ Interactive Diagram — Two-pointer reversal on [1, 2, 3, 4, 5] — two swaps close the gap from both ends; the middle element needs no swap.
-```d3 widget=array-traversal
+```d3 widget=array-1d
 {
-  "items": ["1", "2", "3", "4", "5"],
-  "title": "Two-pointer reversal on [1, 2, 3, 4, 5]",
   "steps": [
     {
-      "items":   ["1", "2", "3", "4", "5"],
-      "markers": [
-        { "name": "left",  "index": 0, "color": "#3b82f6" },
-        { "name": "right", "index": 4, "color": "#f59e0b" }
+      "nodes": [
+        {
+          "id": "0",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "msg": "Initial — left = 0, right = 4. Swap arr[0]=1 with arr[4]=5."
+      "edges": [],
+      "cursor": [
+        {
+          "name": "left",
+          "target": "0",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "right",
+          "target": "4",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Initial — left = 0, right = 4. Swap arr[0]=1 with arr[4]=5.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "items":   ["5", "2", "3", "4", "1"],
-      "markers": [
-        { "name": "left",  "index": 1, "color": "#3b82f6" },
-        { "name": "right", "index": 3, "color": "#f59e0b" }
+      "nodes": [
+        {
+          "id": "0",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "msg": "Move inward — left = 1, right = 3. Swap arr[1]=2 with arr[3]=4."
+      "edges": [],
+      "cursor": [
+        {
+          "name": "left",
+          "target": "1",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "right",
+          "target": "3",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Move inward — left = 1, right = 3. Swap arr[1]=2 with arr[3]=4.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "items":   ["5", "4", "3", "2", "1"],
-      "markers": [
-        { "name": "left",  "index": 2, "color": "#3b82f6" },
-        { "name": "right", "index": 2, "color": "#f59e0b" }
+      "nodes": [
+        {
+          "id": "0",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "msg": "left = right = 2 — pointers meet, the middle element stays. Result: [5, 4, 3, 2, 1]."
+      "edges": [],
+      "cursor": [
+        {
+          "name": "left",
+          "target": "2",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "right",
+          "target": "2",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "left = right = 2 — pointers meet, the middle element stays. Result: [5, 4, 3, 2, 1].",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Two-pointer reversal on [1, 2, 3, 4, 5]"
 }
 ```
 

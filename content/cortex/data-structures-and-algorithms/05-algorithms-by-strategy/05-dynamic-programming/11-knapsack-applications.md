@@ -142,7 +142,7 @@ print(Solution().subset_sum([1, 2, 3], 0))            # True
 print(Solution().subset_sum([3, 34, 4, 12, 5, 2], 9)) # True
 ```
 
-```java run
+```java run viz=array viz-root=dp
 public class Main {
     static class Solution {
         public boolean subsetSum(int[] arr, int target) {
@@ -311,7 +311,7 @@ print(Solution().rod_cutting([1, 5, 8, 9, 10, 17, 17, 20], 8))  # 22
 print(Solution().rod_cutting([3, 5, 8, 9], 3))   # 8
 ```
 
-```java run
+```java run viz=array viz-root=dp
 public class Main {
     static class Solution {
         public int rodCutting(int[] prices, int length) {
@@ -474,7 +474,7 @@ print(Solution().coin_change([1, 2, 5], 11))      # 3
 print(Solution().coin_change([2], 0))             # 0
 ```
 
-```java run
+```java run viz=array viz-root=dp
 import java.util.*;
 
 public class Main {
@@ -659,7 +659,7 @@ print(Solution().coin_change_ii([1, 2, 5], 5))       # 4  — multiple denominat
 print(Solution().coin_change_ii([2], 3))             # 0  — only even denomination, odd amount
 ```
 
-```java run
+```java run viz=array viz-root=dp
 import java.util.*;
 
 public class Main {

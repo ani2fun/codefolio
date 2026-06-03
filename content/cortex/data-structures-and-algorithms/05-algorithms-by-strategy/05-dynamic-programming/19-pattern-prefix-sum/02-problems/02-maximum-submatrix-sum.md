@@ -104,7 +104,7 @@ print(Solution().maximum_submatrix_sum([[-1,-2],[-3,-4]]))                 # -1 
 print(Solution().maximum_submatrix_sum([[1,2,3],[4,5,6],[7,8,9]]))         # 45 — all positive
 ```
 
-```java run
+```java run viz=grid viz-root=matrix
 import java.util.*;
 
 public class Main {

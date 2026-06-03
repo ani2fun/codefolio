@@ -270,7 +270,7 @@ if __name__ == "__main__":
     print(sol.word_break("phoneisphone",  ["phone", "and"]))          # False
 ```
 
-```java run
+```java run viz=array viz-root=dp
 import java.util.*;
 
 public class Main {

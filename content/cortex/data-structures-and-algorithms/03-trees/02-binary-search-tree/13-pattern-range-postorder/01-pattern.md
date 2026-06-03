@@ -63,7 +63,7 @@ Because the work happens *after* the children's results come back. The recursive
 ## Generic template
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 """
 Definition for a binary tree node.
 class TreeNode:
@@ -109,7 +109,7 @@ class Solution:
         return f(left, right, node.val)
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 /**

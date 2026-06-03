@@ -118,7 +118,7 @@ print(Solution().find_second_minimum(from_level_order([3, 1, 4, 1, 5, 9, 2])))  
 print(Solution().find_second_minimum(from_level_order([1, 2, 3, 4, 5, 6, 7])))        # 2
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

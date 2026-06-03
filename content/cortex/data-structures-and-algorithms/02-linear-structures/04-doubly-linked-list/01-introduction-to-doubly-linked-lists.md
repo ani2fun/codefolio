@@ -1,6 +1,8 @@
 ---
 title: "Introduction To Doubly Linked Lists"
-summary: "<!-- TODO: summary -->"
+summary: "Bidirectional chained nodes carrying prev and next pointers. O(1) insert and delete at any known node and at both ends — the structure behind LRU caches, browser history, and every modern deque."
+prereqs:
+  - linear-structures-singly-linked-list-introduction-to-singly-linked-lists
 ---
 
 # 1. Introduction to Doubly Linked Lists
@@ -22,6 +24,15 @@ That's a **doubly linked list**. One extra pointer per node, and three of the si
 3. [Defining a node in doubly linked list](#defining-a-node-in-doubly-linked-list)
 4. [Structure of a doubly linked list](#structure-of-a-doubly-linked-list)
 5. [Overview of supported operations](#overview-of-supported-operations)
+6. [Internal mechanics](#internal-mechanics)
+7. [Working example](#working-example)
+8. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
+9. [Production reality](#production-reality)
+10. [Quiz](#quiz)
+11. [Practice ladder](#practice-ladder)
+12. [Further reading](#further-reading)
+13. [Cross-links](#cross-links)
+14. [Final takeaway](#final-takeaway)
 
 ***
 
@@ -346,8 +357,7 @@ node.next -> next_target: "points to"
 As we already learned, the node of a doubly linked list is just an extension of a singly linked list node. We can implement a doubly linked list node by adding a new pointer to the implementation of a singly linked list node.
 
 
-```python run
-
+```python run viz=linked-list viz-root=head
 class ListNode:
     def __init__(self, val):
         self.val = val
@@ -355,7 +365,7 @@ class ListNode:
         self.next = None
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 
 class ListNode {
 	int val;
@@ -588,33 +598,164 @@ Don't worry if you don't understand all of these operations yet. We will explore
 
 > *Coming up next:* we'll start with **traversal** — and you'll see something surprising. Adding the `prev` pointer doesn't just make backward walks possible; it also subtly changes how we *think* about iteration. The forward loop you wrote a hundred times for singly lists has a mirror twin now, and it's the foundation for every problem in this section.
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+# Internal Mechanics
 
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
+Under the hood, a doubly linked list is the same scattered-heap-block layout as a singly linked list — but every block now carries **two** pointers instead of one. There is no contiguous buffer, no length field, no master container. Each `new ListNode(...)` call (Java) or `ListNode(...)` call (Python) asks the allocator for a fresh block somewhere in the heap, and the only thing tying the blocks together is the pair of addresses each one stores.
 
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
+Three facts follow from this layout, and the rest of the chapter falls out of them:
 
-<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
-<!--       Guidance: bulleted list of gotchas -->
+- **Every link is two pointers, not one.** Setting `a.next = b` does not link the chain — it links it in one direction only. The companion write `b.prev = a` is what makes the link bidirectional. Forget one half and the list still walks forward, but the backward walk silently breaks at that node.
+- **`head` and `tail` are both anchors.** A singly linked list has one entry point (`head`); a doubly linked list maintains two (`head` and `tail`). Without a `tail` reference, finding the tail still costs `O(n)` — the `prev` pointers only help *after* you have already reached the tail node.
+- **There is no `O(1)` "jump to index `k`".** Random access by index is still `O(k)`. The `prev` pointer lets you walk *backward* from a known node, but it does not give you address arithmetic; reaching node `k` still means following `k` pointers from one of the two anchors.
 
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+To make this concrete: store five `int` values in a doubly linked list. Each node is roughly `32` bytes on a 64-bit machine — `8` bytes for the value plus padding, `8` for `next`, `8` for `prev`, and `~8` of allocator metadata. The same five values in an array fit in `20` bytes. The doubly linked list uses roughly eight times the memory of the array, and one and a third times the memory of the singly linked list it extends.
 
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+So the tradeoff is: a doubly linked list buys `O(1)` insertion and deletion at any known node — and `O(1)` access to both ends — at the cost of one extra pointer per node, one extra pointer write per structural change, and a structural invariant (`a.next.prev == a` for every link) that the implementation must preserve on every operation.
 
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
+---
 
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+## Key Takeaway
 
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
+A doubly linked list is a chain of independently-allocated heap nodes connected by paired `prev`/`next` pointers and anchored at both ends by `head` and `tail` references. Every structural change rewrites four pointers, not two — that's the price of the bidirectional invariant, and the source of every "list looks fine forward but corrupt backward" bug.
 
-<!-- TODO: Final Takeaway — missing, needs to be written -->
-<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->
+***
+
+# Working Example
+
+Walk through the smallest interesting list — three names, three nodes — end to end, from allocation to bidirectional traversal.
+
+**Step 1 — allocate.** The program calls `ListNode("Alice")`, `ListNode("Bob")`, and `ListNode("Carol")` in that order. The allocator returns three heap addresses; for this trace, say `0x100`, `0x240`, and `0x1A8`. Each node holds its value with `prev` and `next` both initialised to `null`.
+
+**Step 2 — link forward and backward.** Two assignments wire each link. `a.next = b` and `b.prev = a` together connect Alice and Bob. Then `b.next = c` and `c.prev = b` connect Bob and Carol. Alice's `prev` stays `null`, marking the head; Carol's `next` stays `null`, marking the tail.
+
+**Step 3 — anchor at both ends.** Two variables hold the endpoints: `head` stores `0x100` (Alice) and `tail` stores `0x1A8` (Carol). These are the only two handles into the list — without them, the three nodes are unreachable.
+
+The chain now looks like this in memory:
+
+- `head` → address `0x100`: `prev = null`, `val = Alice`, `next = 0x240`
+- address `0x240`: `prev = 0x100`, `val = Bob`, `next = 0x1A8`
+- `tail` → address `0x1A8`: `prev = 0x240`, `val = Carol`, `next = null`
+
+**Step 4 — traverse forward.** Set `curr = head`, then loop while `curr != null`: read `curr.val`, then assign `curr = curr.next`. Three iterations, three reads, three pointer follows. Cost: `O(n)` time, `O(1)` space.
+
+**Step 5 — traverse backward.** Set `curr = tail`, then loop while `curr != null`: read `curr.val`, then assign `curr = curr.prev`. Same three iterations, in reverse order — Carol, Bob, Alice. The backward walk is structurally identical to the forward walk, just keyed on a different pointer. This is the operation a singly linked list cannot do in `O(n)` total time without first reversing the list or building a stack.
+
+> 🖼 Diagram — TODO: 3-frame trace — scattered allocation, paired prev/next pointers wiring the chain, two cursors (curr from head and curr from tail) sweeping in opposite directions.
+
+The core insight is: every operation on a doubly linked list reduces to three motions — *follow next*, *follow prev*, or *rewrite a (next, prev) pair*. Insertion, deletion, reversal, splicing — they are all combinations of these three atoms, and the bidirectional invariant `a.next.prev == a` is what keeps them composable.
+
+---
+
+## Key Takeaway
+
+The complete lifecycle is allocate, link-both-ways, anchor-at-both-ends, traverse-in-either-direction. The `prev` pointer is the only structural addition over a singly linked list, but it pays for itself the moment you need to walk backward, insert before a known node, or pop from either end.
+
+***
+
+# Edge Cases and Pitfalls
+
+The doubly linked list invariant — `a.next.prev == a` for every link, plus `head.prev == null` and `tail.next == null` — looks simple. In practice, every common bug below is a violation of one of those four equations. Train your eye to spot them now.
+
+- **Forgetting the mirror pointer update.** Setting `a.next = b` without also setting `b.prev = a` corrupts the chain. Forward traversal still works; backward traversal walks into garbage or `null` at the broken link. Every structural change rewrites *four* pointers — the target's `prev` and `next`, plus each neighbour's mirror. Skip one and the bug only surfaces when something tries to walk backward, which can be hours later.
+- **Single-node list (size 1).** The sole node has `prev = null` and `next = null`, and `head == tail` reference the same node. Insertion and deletion code that assumes "there is a `prev` neighbour to update" must check this case or it crashes on a null dereference.
+- **Empty list (size 0).** Both `head == null` and `tail == null`. Any operation that reads `head.next` or `tail.prev` without a null check faults immediately. The first insertion must set both `head` and `tail` to the new node — touching only one anchor leaves the list inconsistent.
+- **Forgetting to update `head` or `tail`.** Deleting the head node requires `head = head.next` *and* `head.prev = null` (if the new head exists). Deleting the tail requires `tail = tail.prev` *and* `tail.next = null`. Forgetting the anchor update leaves the list pointing at a freed or detached node.
+- **Cycles created by careless reassignment.** Writing `a.next = b` when `b` is already somewhere later in the chain (without first detaching it) creates a cycle — both `next` and `prev` chains loop indefinitely. Traversal never terminates. Always detach a node from its current neighbours before splicing it in elsewhere.
+- **Stale `tail` after bulk deletion.** Tail-tracking code that updates `tail` on every individual delete is fine; code that batches deletes and updates `tail` once at the end is fragile — a partial failure mid-batch can leave `tail` pointing to a freed node. Recompute `tail` from the new last node, or update it inside the same critical section as the structural change.
+
+So the key idea is: every doubly-linked-list bug is a broken invariant. When something walks wrong, ask which of the four equations no longer holds — `a.next.prev == a`, `a.prev.next == a`, `head.prev == null`, or `tail.next == null`.
+
+***
+
+# Production Reality
+
+Doubly linked lists show up wherever a system needs `O(1)` insertion and deletion at arbitrary positions, `O(1)` access to both ends, or a hash-table-plus-list combo that pins each element's position by direct node reference. The places below are worth knowing by name.
+
+**[The Linux kernel's `struct list_head`]** — uses **an intrusive circular doubly linked list embedded into every kernel data structure** — because process queues, file descriptors, and driver registrations need `O(1)` deletion at arbitrary positions, and a circular layout removes the special-case branches for head and tail. Source: [include/linux/list.h](https://github.com/torvalds/linux/blob/master/include/linux/list.h).
+
+**[Java's `LinkedList<E>`]** — uses **a doubly linked list under the `List` and `Deque` interfaces** — because the standard library needs `O(1)` `addFirst` / `removeFirst` / `addLast` / `removeLast` for code that uses it as a deque, even though `ArrayDeque` is almost always faster in practice.
+
+**[Python's `collections.OrderedDict` and `LRU` caches]** — uses **a doubly linked list keyed by a hash map of node references** — because the LRU eviction policy needs `O(1)` "move this key to the front" on every access, which collapses to one `unlink` + one `prepend` only when the node's predecessor is a single pointer hop away.
+
+**[Web browser back/forward history]** — uses **a doubly linked list of page entries** — because the user can navigate forward and backward from any point, and both directions must be `O(1)` regardless of history depth.
+
+**[The Java HotSpot JVM's `ConcurrentLinkedDeque`]** — uses **a doubly linked list with relaxed concurrent invariants** — because lock-free deques need bidirectional pointers to coordinate enqueue and dequeue from either end without a global lock, while accepting that some `prev` pointers are momentarily stale until a helper thread fixes them up.
+
+**[Text editor undo/redo stacks]** — uses **a doubly linked list of edit deltas** — because undo walks backward and redo walks forward, each step needs to read the neighbouring delta in `O(1)`, and the user can branch the history by editing after an undo.
+
+***
+
+# Quiz
+
+Test your grip before moving on. One answer per question; reveal only after you have committed to one.
+
+**[Recall] Q: What three fields does a doubly linked list node hold?**
+A value (the payload, any type), a `prev` pointer (the address of the preceding node, or `null` if it is the head), and a `next` pointer (the address of the following node, or `null` if it is the tail).
+
+**[Recall] Q: What two references must a doubly linked list maintain externally to support `O(1)` operations at both ends?**
+The `head` reference (points to the first node, used as the entry for forward traversal) and the `tail` reference (points to the last node, used as the entry for backward traversal). Without `tail`, finding the last node still costs `O(n)`.
+
+**[Reasoning] Q: Why is deleting a known node `O(1)` in a doubly linked list but `O(n)` in a singly linked list?**
+In a doubly linked list, the target node already holds `target.prev`, so the predecessor's `next` pointer can be rewritten in one hop. In a singly linked list, the target only knows its successor, so the predecessor must be located by walking from the head — that scan is the `O(n)` cost.
+
+**[Reasoning] Q: A list looks correct when printed forward but garbage when printed backward. What invariant is broken?**
+The mirror invariant `a.next.prev == a`. Some operation set a `next` pointer without setting the corresponding `prev` pointer (or vice versa), so the forward chain is intact but the backward chain dead-ends or loops at the broken link.
+
+**[Tradeoff] Q: When does a doubly linked list beat a singly linked list, and when does the singly linked list win?**
+The doubly linked list wins when the workload includes deletion or insertion before a known node, frequent backward traversal, or `O(1)` operations at both ends (LRU caches, deques, undo stacks). The singly linked list wins when memory per node matters (one pointer instead of two, plus less bookkeeping per operation) and the access pattern is forward-only — most stacks, queues, and free lists land here.
+
+***
+
+# Practice Ladder
+
+Five problems to lock in the bidirectional reflex before the pattern chapters take over. Try each unaided; hit the hint after ten minutes; don't peek at solutions until you have written something runnable.
+
+| # | Problem | Pattern | Difficulty | Hint |
+|---|---------|---------|------------|------|
+| 1 | [Reverse a List](./06-pattern-reversal/02-problems/01-reverse-a-list.md) | [Reversal](./06-pattern-reversal/01-pattern.md) | Easy | At each node, swap its `prev` and `next` pointers. After one pass the chain is reversed in place — then swap the `head` and `tail` anchors. `O(n)` time, `O(1)` space. |
+| 2 | [Pairwise Swap](./07-pattern-reversal-subproblem/02-problems/01-pairwise-swap.md) | [Reversal Subproblem](./07-pattern-reversal-subproblem/01-pattern.md) | Medium | Walk the list two nodes at a time, swapping each `(a, b)` pair by rewriting four pointers — `a.prev`, `a.next`, `b.prev`, `b.next`. The mirror update is exactly where most bugs live. |
+| 3 | [Two Sum](./08-pattern-two-pointers/02-problems/02-two-sum.md) | [Two Pointers](./08-pattern-two-pointers/01-pattern.md) | Easy | Anchor a `left` pointer at `head` and a `right` pointer at `tail`. Move `left` forward via `next` or `right` backward via `prev` based on the sum — the symmetric pointer motion is exactly what a singly linked list cannot do. |
+| 4 | [Relocate Node](./09-pattern-reorder/02-problems/01-relocate-node.md) | [Reorder](./09-pattern-reorder/01-pattern.md) | Medium | Detach the node from its current neighbours (rewire four pointers), then splice it into its new position (rewire four more). The structural invariant `a.next.prev == a` must hold at every intermediate step. |
+| 5 | [Parity Order](./09-pattern-reorder/02-problems/02-parity-order.md) | [Reorder](./09-pattern-reorder/01-pattern.md) | Medium | Walk the list once; when an out-of-place node is found, unlink it and append it to the correct partition's tail. The doubly linked structure makes the unlink `O(1)` — the same problem on a singly linked list needs an auxiliary pointer per step. |
+
+Once these feel automatic, `prev` and `next` have stopped being syntax and started being structural reflexes — and the pattern chapters can land their punches.
+
+***
+
+# Further Reading
+
+Curated paths in, not a syllabus. Read in order of the annotation; come back for the rest when you need depth.
+
+- **[CLRS — Chapter 10.2: Linked Lists](https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/)**
+  ★ Essential — the canonical reference for doubly linked lists with sentinel nodes, including the proofs that eliminate every head/tail edge case at the cost of one wasted node.
+- **[Linux kernel `struct list_head`](https://github.com/torvalds/linux/blob/master/include/linux/list.h)**
+  ★ Essential — the most-read doubly-linked-list implementation in the world. The `list_add` / `list_del` macros are four-line proofs of the bidirectional invariant; the `container_of` trick shows how an intrusive list embeds itself in any host struct.
+- **[CPython `collections.OrderedDict` source](https://github.com/python/cpython/blob/main/Objects/odictobject.c)**
+  ◆ Advanced — the production design that pairs a hash map with a doubly linked list to give `O(1)` insertion-ordered iteration plus `O(1)` `move_to_end`. The trick used by every LRU cache.
+- **[Bjarne Stroustrup — "Why you should avoid linked lists" (GoingNative 2012)](https://www.youtube.com/watch?v=YQs6IC-vgmo)**
+  ◆ Advanced — the counterargument: a benchmark showing `std::vector` outperforms `std::list` for almost every workload because of cache locality. The case for doubly linked lists narrows to LRU caches, intrusive lists, and concurrent deques after you've watched this.
+- **[Python `deque` implementation — `_collectionsmodule.c`](https://github.com/python/cpython/blob/main/Modules/_collectionsmodule.c)**
+  → Reference — a block-based doubly linked list (64 elements per block) that demonstrates the hybrid array-of-linked-blocks trick used to claw back cache locality while keeping `O(1)` operations at both ends.
+
+***
+
+# Cross-Links
+
+**Prerequisites**
+
+- [Introduction to Singly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-introduction-to-singly-linked-lists) — the precursor; every "doubly linked list wins here" claim is implicitly "the singly linked list loses here for lack of a back-pointer".
+- [Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis) — what `O(1)` insertion at a known node and `O(n)` traversal actually mean, and how to read them off a loop.
+
+**What comes next**
+
+- [Traversal in Doubly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-traversal-in-doubly-linked-lists) — the forward loop and its mirror twin; the foundation every later operation builds on.
+- [Insertion in Doubly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-insertion-in-doubly-linked-lists) — the four-pointer recipe for inserting at the head, at the tail, before a node, or after a node — all `O(1)` once the position is known.
+- [Deletion in Doubly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-deletion-in-doubly-linked-lists) — the dual to insertion, and the operation that justifies the whole structure: deleting a known node in `O(1)`.
+
+***
+
+## Final Takeaway
+
+1. **Core mechanic:** a doubly linked list is a chain of heap-allocated nodes, each holding a value plus paired `prev` and `next` pointers to its neighbours, anchored at both ends by `head` and `tail` references and terminated by `null` on both sides.
+2. **Dominant tradeoff:** you gain `O(1)` insertion and deletion at any known node, `O(1)` access to both ends, and bidirectional traversal; you give up one extra pointer per node (`~33%` memory overhead over a singly linked list), one extra pointer write per structural change, and a maintenance burden — the invariant `a.next.prev == a` must hold after every operation.
+3. **One thing to remember:** every link in a doubly linked list is *two* pointers, not one. The mirror update — pairing every `a.next = b` with `b.prev = a` — is the single most common place this structure breaks, and the first place to look when the list walks correctly forward but garbage backward.

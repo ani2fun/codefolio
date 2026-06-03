@@ -279,7 +279,7 @@ print(Solution().matrix_chain_multiplication([1, 2, 3, 4]))      # 18 — small 
 print(Solution().matrix_chain_multiplication([5, 10, 3, 12, 5, 50, 6]))  # 2010
 ```
 
-```java run
+```java run viz=graph viz-root=dp
 import java.util.*;
 
 public class Main {

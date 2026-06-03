@@ -1,6 +1,6 @@
 ---
 title: "Constructing A Binary Tree"
-summary: "<!-- TODO: summary -->"
+summary: "Run traversal backwards — rebuild the tree from its sequences. One ordering is never enough, but any pair that includes inorder pins down exactly one tree via divide-and-conquer recursion, O(N) time with a hashmap index, O(N) space."
 ---
 
 # 6. Constructing a Binary Tree
@@ -26,6 +26,17 @@ This lesson explains why no single traversal is enough, walks through *why* pre+
 3. [Construction from preorder + inorder](#construction-from-preorder--inorder)
 4. [Construction from postorder + inorder](#construction-from-postorder--inorder)
 5. [What about preorder + postorder?](#what-about-preorder--postorder)
+6. [Understanding the problem](#understanding-the-problem)
+7. [Supported operations](#supported-operations)
+8. [Internal mechanics](#internal-mechanics)
+9. [Working example](#working-example)
+10. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
+11. [Production reality](#production-reality)
+12. [Quiz](#quiz)
+13. [Practice ladder](#practice-ladder)
+14. [Further reading](#further-reading)
+15. [Cross-links](#cross-links)
+16. [Final takeaway](#final-takeaway)
 
 ***
 
@@ -372,7 +383,7 @@ r7 = Solution().preorder_and_inorder_reconstruction([4, 2, 1, 3, 6, 5, 7], [1, 2
 print(to_level_order(r7))  # [4, 2, 6, 1, 3, 5, 7]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {
@@ -699,7 +710,7 @@ r7 = Solution().postorder_and_inorder_reconstruction([1, 3, 2, 5, 7, 6, 4], [1, 
 print(to_level_order(r7))  # [4, 2, 6, 1, 3, 5, 7]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {
@@ -894,46 +905,190 @@ So in practice: prefer pre+in or post+in, and fall back to pre+post only if you 
 
 ***
 
+# Understanding the Problem
+
+Traversal flattens a tree into a sequence; construction runs that arrow backwards. The previous two lessons produced preorder, inorder, and postorder lists *from* a tree. This lesson asks the inverse: given the list, recover the exact tree it came from. That inverse is only well-posed when the input carries enough information to fix the tree's shape, and a single traversal never does.
+
+The gap is structural, not algorithmic. A traversal records the *order* nodes are visited but discards most of the *shape*:
+
+- **Preorder** names the root first, then leaves every parent-child split unconstrained.
+- **Inorder** hides the root entirely — any value could be the root with the rest partitioned around it.
+- **Postorder** names the root last, but its tail is as ambiguous as preorder's.
+
+The first two body sections prove this precisely. "[Why one traversal is not enough](#why-one-traversal-is-not-enough)" shows five distinct trees sharing the preorder `[1, 2, 3]`; "[Why two traversals (with inorder) suffice](#why-two-traversals-with-inorder-suffice)" shows why adding inorder collapses those five to one. So the key idea is: reconstruction is solvable exactly when you can identify the root *and* split the remaining values into a left group and a right group — one traversal gives the first half of that, never the second.
+
+***
+
+# Supported Operations
+
+There is one operation, run in three pairings: take two traversal sequences and return the unique tree that produces both. The pairing decides whether the problem is solvable and how the recursion is steered. The two construction sections above are the two solvable cases worked in full; this table is their synthesis, not a new claim.
+
+| Pairing | Root comes from | Solvable? | Time | Space |
+|---|---|---|---|---|
+| Preorder + inorder | first preorder value | always | `O(N²)` scan / `O(N)` map | `O(N)` tree + `O(h)` stack |
+| Postorder + inorder | last postorder value | always | `O(N²)` scan / `O(N)` map | `O(N)` tree + `O(h)` stack |
+| Preorder + postorder | both ends | only if every node is full | — | — |
+| Any single traversal | — | never | — | — |
+
+The two `inorder` pairings are duals: "[Construction from preorder + inorder](#construction-from-preorder--inorder)" marches a `preIndex` forward and recurses left-then-right, while "[Construction from postorder + inorder](#construction-from-postorder--inorder)" marches a `postIndex` backward and recurses right-then-left. Both hand the root to the inorder split, which carves the current slice into a left subtree and a right subtree. So the core insight is: inorder is the load-bearing member of any solvable pair, because it is the only ordering that reveals the left/right partition around the root — "[What about preorder + postorder?](#what-about-preorder--postorder)" shows the pair without it failing on single-child nodes.
+
+***
+
+# Internal Mechanics
+
+The recursion *is* the mechanism, and "[Why two traversals (with inorder) suffice](#why-two-traversals-with-inorder-suffice)" lays out its skeleton: take the root from one array, split the inorder slice around it, recurse on the two halves. Three facts about how that skeleton runs explain both the complexity and the one slow step.
+
+- **The pre/post index is a one-way cursor.** A single moving index walks the preorder array forward (or the postorder array backward), handing out one root per recursive call. Because it advances *before* the recursive calls, the side that recurses first consumes its roots first — left-then-right for pre+in, right-then-left for post+in.
+- **The inorder split is the partition.** Locating the root inside `inorder[inStart..inEnd]` divides the slice in two: everything left of that index is the left subtree, everything right is the right subtree. The length of the left slice tells the recursion exactly how many of the next array values belong to the left child.
+- **The base case is the empty slice.** When `inStart > inEnd`, the slice is empty, so the subtree is `null`. Every branch shrinks toward this boundary, which is what guarantees termination.
+
+The slow step is finding the root in the inorder slice. The frozen `find_index` helper does a **linear scan**, which costs `O(N)` per call and degrades the whole build to `O(N²)` time on a skew tree — the "[A subtlety — speeding up the lookup](#construction-from-preorder--inorder)" note above quantifies this. To make this concrete: a pre-built **value → inorder index** hash map turns each lookup into `O(1)`, dropping construction to `O(N)` time. So the core insight is: each node is created exactly once, so the algorithm is fundamentally `O(N)`; the only thing standing between you and that bound is how fast you locate the root in the inorder slice, and a hashmap index closes the gap. Space stays `O(N)` for the constructed tree plus `O(h)` for the recursion stack regardless.
+
+***
+
+# Working Example
+
+The worked tables inside the two construction sections trace *which* node each call produces. This trace shows *why* the inorder split steers the recursion, by following the pre+in build of one small tree slice by slice. Use the same input as the pre+in worked example:
+
+```
+preorder = [1, 2, 4, 3, 7]
+inorder  = [4, 2, 1, 3, 7]
+```
+
+Read each line as one `build(inStart, inEnd)` call. The `pre→` column is the value `preIndex` hands over as the root before it advances; the split columns are the inorder slices the root carves out:
+
+```
+call              pre→  root   inorder slice    left slice   right slice
+build(0,4)        1     1      [4,2,1,3,7]      [4,2]        [3,7]
+  build(0,1)      2     2      [4,2]            [4]          []
+    build(0,0)    4     4      [4]              []           []
+      build(0,-1) —     null   []               —            —
+      build(1,0)  —     null   []               —            —
+    build(2,1)    —     null   []               —            —
+  build(3,4)      3     3      [3,7]            []           [7]
+    build(3,2)    —     null   []               —            —
+    build(4,4)    7     7      [7]              []           []
+```
+
+The roots come out in preorder — `1, 2, 4, 3, 7` — exactly the order `preIndex` reads them. Each non-empty call splits its inorder slice at the root: `1` splits `[4,2,1,3,7]` into left `[4,2]` and right `[3,7]`, and the left slice's length (`2`) tells the recursion that the next two preorder values, `2` and `4`, form the left subtree. The reconstructed tree is:
+
+```
+        1
+       / \
+      2   3
+     /     \
+    4       7
+```
+
+So the core insight is: the pre/post array decides *who* the root is, and the inorder split decides *which values fall on each side* — neither alone is enough, but together every call partitions cleanly into two smaller calls until the slices empty out.
+
+***
+
+# Edge Cases and Pitfalls
+
+The recursion is short, so the bugs cluster at the boundaries: the cursor direction, the recursion order, and the assumption that any input is reconstructable. The per-section worked examples above cover the *happy path*; this list is the consolidated trap sheet to keep open the first time a reconstruction returns the wrong tree.
+
+- **Wrong recursion order for postorder.** Pre+in recurses left-then-right; post+in must recurse **right-then-left**. Postorder processes the right subtree immediately before the root, so a backward cursor meets right-subtree roots first. Recursing left-first with a decrementing `postIndex` builds a mirror-image tree with no crash — the output looks plausible and is wrong.
+- **Cursor advanced after the recursion instead of before.** The pre/post index must advance *before* the two recursive calls, so each call claims its root and leaves the rest for its children. Advancing it after the calls hands the same value to multiple nodes and corrupts the whole subtree.
+- **Linear-scan lookup on a skew tree.** The frozen `find_index` scans `O(N)` of the inorder slice per call, so a one-sided tree of `N` nodes costs `O(N²)` time overall. A pre-built value → index hash map fixes this in one line, dropping it to `O(N)`; reach for it whenever inputs can be large or adversarial.
+- **Duplicate values break the inorder lookup.** The whole method assumes values are distinct, because it locates the root by *value* in the inorder slice. With duplicates, the lookup can land on the wrong copy and split the slice incorrectly. Reconstruction from traversals is only well-defined for trees with unique node values.
+- **Trying to reconstruct from a single traversal.** One ordering can never fix the shape — preorder leaves child positions free, inorder hides the root, postorder mirrors preorder. Code that attempts it returns one arbitrary tree from many candidates, as the five-tree diagram above shows.
+- **Reaching for pre+post on a non-full tree.** Preorder plus postorder pins down a unique tree *only* when every internal node has two children. On a single-child node the pair cannot tell which side the child sits on, so it silently returns one of two trees. Prefer a pairing that includes inorder unless the tree is known to be full.
+
+So the key idea is: the three-line recursion rarely breaks, so every pitfall is a boundary question — is the cursor moving the right way and advancing at the right moment, are the values unique, and does the chosen traversal pair actually determine the tree? Confirm those four and the reconstruction is exact.
+
+***
+
+# Production Reality
+
+Reconstruction from a flattened sequence is what every "save a tree, load it back" path does under the hood. The systems below are worth knowing by the traversal pair they persist and rebuild from.
+
+**[Tree serialisation / deserialisation libraries]** — uses **preorder-with-null-markers reconstruction** — because writing the root before its subtrees lets the loader rebuild each parent before attaching the children it owns, recovering the exact shape in `O(N)` time.
+
+**[Compiler and IDE AST caches]** — uses **preorder + inorder dumps rebuilt on load** — because reparsing source is expensive, so the toolchain persists two traversals and reconstructs the parse tree in `O(N)` instead.
+
+**[Document and scene-graph formats (DOM snapshots, glTF node trees)]** — uses **preorder reconstruction with explicit child counts** — because a depth-first dump that records each node's child count lets the reader rebuild the hierarchy in a single linear pass.
+
+**[Distributed key-value stores with Merkle trees]** — uses **postorder reconstruction** — because a parent hash is computed from its children's hashes, so the children must be rebuilt and hashed before the parent, which is exactly postorder.
+
+**[Interview and competitive-programming judges]** — uses **preorder + inorder or postorder + inorder reconstruction** — because the "build the tree from two traversals" problem is a standard test of whether a candidate can turn the divide-and-conquer recursion into correct code under time pressure.
+
+***
+
+# Quiz
+
+Test your grip before moving on. Commit to an answer before revealing it.
+
+**[Recall] Q: Which single traversal, on its own, fails even to identify the root of the tree?**
+Inorder — it visits the root somewhere in the middle, so any value could be the root with the rest partitioned around it.
+
+**[Recall] Q: In preorder + inorder reconstruction, which array gives the root of the current subtree, and which gives the left/right split?**
+The next preorder value is the root, and its index in the inorder slice splits that slice into the left subtree (values before it) and the right subtree (values after it).
+
+**[Reasoning] Q: Why must postorder + inorder reconstruction recurse into the right subtree before the left?**
+Postorder lists the right subtree's nodes immediately before the root, so a backward-moving cursor meets right-subtree roots first, and recursing right-first consumes the postorder array in the order the roots appear.
+
+**[Reasoning] Q: Why does preorder + postorder fail to reconstruct a tree with a single-child node?**
+Both orderings place the root at a known end, but neither reveals which side a lone child sits on, so a node with one child is indistinguishable from its mirror — the pair only works when every internal node is full.
+
+**[Tradeoff] Q: When is the linear-scan `find_index` acceptable, and when must you switch to a hashmap index?**
+The linear scan is fine for small or balanced inputs where `O(N²)` is negligible, but switch to an `O(1)` hashmap index — making the build `O(N)` time, `O(N)` space — whenever inputs are large or could be skewed.
+
+***
+
+# Practice Ladder
+
+Five problems to turn "take a root, split around it, recurse on the halves" into a reflex. None is a reconstruction problem outright — those live later — but each drills a sub-skill construction leans on: divide-and-conquer over subtrees, lockstep recursion, and the full-vs-non-full distinction behind the pre+post caveat. Try each unaided; reach for the hint after ten minutes; do not peek at solutions until you have written something runnable.
+
+| # | Problem | Pattern | Difficulty | Hint |
+|---|---------|---------|------------|------|
+| 1 | [Height of a Binary Tree](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-problems-height-of-a-binary-tree) | [Postorder Traversal (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-pattern) | Easy | Return `-1` for a `null` node, else `1 + max(left, right)` — the same divide-the-tree-into-two-subtrees recursion `build` uses. `O(N)` time, `O(h)` space. |
+| 2 | [Identical Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-simultaneous-traversal-problems-identical-trees) | [Simultaneous Traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-simultaneous-traversal-pattern) | Easy | Recurse into both trees in lockstep, comparing value and structure at each node — the mirror of building one tree from two arrays. `O(N)` time, `O(h)` space. |
+| 3 | [Symmetry Detection](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-simultaneous-traversal-problems-symmetry-detection) | [Simultaneous Traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-simultaneous-traversal-pattern) | Easy | Compare the left subtree against the right subtree's mirror — the left/right split awareness that makes the inorder partition work. `O(N)` time, `O(h)` space. |
+| 4 | [Is It a Full Binary Tree](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-problems-is-it-a-full-binary-tree) | [Postorder Traversal (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-pattern) | Medium | A node is full when it has zero or two children; check this bottom-up — exactly the property pre+post reconstruction needs to be unambiguous. `O(N)` time, `O(h)` space. |
+| 5 | [Subtree Detection](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-simultaneous-traversal-problems-subtree-detection) | [Simultaneous Traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-simultaneous-traversal-pattern) | Medium | At each node of the big tree, test whether the small tree matches in lockstep from here — recursion that compares two structures node for node. `O(N·M)` time, `O(h)` space. |
+
+Once these feel automatic, the recursive shape behind reconstruction — root, split, recurse — has stopped being a trick and become a reflex.
+
+***
+
+# Further Reading
+
+Curated paths in, not a syllabus. Read in order of the annotation; come back for the rest when you need depth.
+
+- **[Recursive Traversals in Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-recursive-traversals-in-binary-trees)**
+  ★ Essential — the forward direction this lesson inverts; you must know how preorder, inorder, and postorder are produced before you can rebuild a tree from them.
+- **[Iterative Traversals in Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-iterative-traversals-in-binary-trees)**
+  ◆ Advanced — the same orderings driven by an explicit stack, useful when a deep skew tree would overflow the recursion that construction also relies on.
+- **[CLRS — Section 10.4: Representing Rooted Trees](https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/)**
+  ◆ Advanced — the formal treatment of tree representations and the array/sequence encodings that serialisation and reconstruction build on.
+- **[Insertion in Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-insertion-in-binary-trees)**
+  → Reference — the next lesson; adding a single node to an existing tree, the operation construction repeats `N` times in disguise.
+- **[Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis)**
+  → Reference — what the `O(N²)` linear-scan versus `O(N)` hashmap-index distinction means precisely, and why the lookup cost dominates.
+
+***
+
+# Cross-Links
+
+**Prerequisites**
+
+- [Recursive Traversals in Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-recursive-traversals-in-binary-trees) — preorder, inorder, and postorder are the sequences this lesson reconstructs trees from.
+- [Iterative Traversals in Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-iterative-traversals-in-binary-trees) — the explicit-stack view of the same orderings, and the overflow risk the reconstruction recursion shares.
+- [Linked-List Implementation of Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-linked-list-implementation-of-binary-trees) — the `TreeNode` with `val`, `left`, and `right` that `build` allocates one node at a time.
+- [Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis) — the meaning of the `O(N²)` versus `O(N)` and `O(h)` claims this lesson makes.
+
+**What comes next**
+
+- [Insertion in Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-insertion-in-binary-trees) — placing a single node into an existing tree, the operation that follows once you can build one from scratch.
+- [Pattern: Simultaneous Traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-simultaneous-traversal-pattern) — recursing through two trees in lockstep, the same two-input divide-and-conquer shape construction uses on two arrays.
+
+***
+
 ## Final Takeaway
-
-Tree construction from traversals is a small jewel of recursive thinking. Three things to walk away with:
-
-1. **One traversal is never enough.** Each individual traversal throws away too much information about the tree's *shape*. Preorder fixes the visit order but not the parent-child relationships; inorder hides the root entirely; postorder mirrors preorder's problem from the other end. Don't try to invert a single traversal.
-2. **Pre+in and post+in are duals.** Both algorithms have the same shape — divide-and-conquer over the inorder slice, indexed by a moving pointer into the other array. Pre+in marches forward through preorder and recurses left-then-right; post+in marches backward through postorder and recurses right-then-left. Recognise the duality and you'll never need to look up either algorithm.
-3. **Watch the inorder lookup cost.** The implementations above use a `find_index` linear scan to locate the root in the inorder slice — clear to read, but it makes every recursive call O(N), degrading the algorithm to O(N²) on skew trees. Pre-building a **value → inorder index** hash map turns each lookup into O(1) and brings the whole construction down to O(N). The map is a one-line change with massive payoff — reach for it in production code.
 
 > *Coming up — the lessons that follow build on construction with <strong>insertion</strong> (adding a new node to an existing tree at a given position) and then dive into the <strong>11 binary-tree patterns</strong> that cover almost every interview question you'll see on this data structure: stateless and stateful preorder/postorder, root-to-leaf paths, level-order traversal, lowest common ancestor, simultaneous traversal of two trees, and a final practice mix. Each pattern is a recipe — once you've internalised the recursive shape from these first six lessons, the patterns are just <em>"what work do I do at the visit step?"</em> applied to specific problems.*
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
-
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
-
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
-
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
-
-<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
-<!--       Guidance: bulleted list of gotchas -->
-
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
-
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
-
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
-
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
-
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
+1. **Core mechanic:** take the root from one traversal (first of preorder, last of postorder), split the inorder slice around it into a left and right subtree, and recurse on the two halves until the slices empty.
+2. **Dominant tradeoff:** you gain a unique tree from any pair that includes inorder, but you must carry both sequences and pay an inorder root-lookup per node — `O(N²)` time with a linear scan, `O(N)` time and `O(N)` space once a hashmap index makes the lookup `O(1)`.
+3. **One thing to remember:** one traversal is never enough and inorder is always the indispensable half — it is the only ordering that reveals which values fall left of the root and which fall right.

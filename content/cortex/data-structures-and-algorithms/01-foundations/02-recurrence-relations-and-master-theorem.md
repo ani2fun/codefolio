@@ -375,7 +375,7 @@ if __name__ == "__main__":
         print(f"{n:>10} {ms:>18.1f} {us:>22.1f}")
 ```
 
-```java run
+```java run viz=graph viz-root=out
 import java.util.*;
 
 public class Main {

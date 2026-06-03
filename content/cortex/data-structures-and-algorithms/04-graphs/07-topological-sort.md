@@ -298,7 +298,7 @@ print(Solution().topological_sort([[], [], []]))            # [2, 1, 0] or simil
 print(Solution().topological_sort([[1, 2], [], []]))        # [0, 2, 1] or similar valid order
 ```
 
-```java run
+```java run viz=graph viz-root=graph
 import java.util.*;
 
 public class Main {
@@ -533,7 +533,7 @@ print(Solution().topological_sort_ii([[1], []]))                    # [0, 1]
 print(Solution().topological_sort_ii([[1, 2], [3], [3], []]))       # [0, 2, 1, 3]
 ```
 
-```java run
+```java run viz=graph viz-root=graph
 import java.util.*;
 
 public class Main {

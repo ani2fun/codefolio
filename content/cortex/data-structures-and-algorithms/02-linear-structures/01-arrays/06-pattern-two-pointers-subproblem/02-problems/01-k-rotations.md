@@ -222,7 +222,7 @@ Solution().k_rotations(arr, 3)
 print(arr)   # [3, 4, 5, 1, 2]
 ```
 
-```java run
+```java run viz=array viz-root=arr
 import java.util.Arrays;
 
 public class Main {

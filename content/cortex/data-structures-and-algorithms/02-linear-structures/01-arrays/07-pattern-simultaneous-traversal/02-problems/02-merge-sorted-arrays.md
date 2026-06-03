@@ -157,7 +157,7 @@ flowchart TB
 
 ### The Solution
 
-```python run
+```python run viz=array viz-root=a1
 from typing import List
 
 class Solution:
@@ -220,7 +220,7 @@ a6 = [1, 3, 5, 0, 0, 0]
 Solution().merge_sorted_arrays(a6, 3, [2, 4, 6], 3); print(a6) # [1, 2, 3, 4, 5, 6]
 ```
 
-```java run
+```java run viz=array viz-root=a1
 import java.util.Arrays;
 
 public class Main {

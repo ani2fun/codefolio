@@ -10,11 +10,11 @@ summary: CAP is a partition-time choice; PACELC names the trade-off you pay ever
 
 ## 1. Motivation
 
-In **2000**, Eric Brewer gave a keynote at PODC titled *Towards Robust Distributed Systems*. On slide 14 he stated what he called the "CAP conjecture": you cannot have all three of consistency, availability, and partition-tolerance simultaneously. In 2002, [Gilbert and Lynch proved it](https://users.ece.cmu.edu/~adrian/731-sp04/readings/GL-cap.pdf) (formally, for asynchronous networks).
+In **2000**, Eric Brewer gave a keynote at PODC titled *Towards Robust Distributed Systems*. In that talk he stated what he called the "CAP conjecture": you cannot have all three of consistency, availability, and partition-tolerance simultaneously. In 2002, [Gilbert and Lynch proved it](https://users.ece.cmu.edu/~adrian/731-sp04/readings/GL-cap.pdf) (formally, for asynchronous networks).
 
-For the next ten years, every blog post explaining CAP got it slightly wrong. The most common error: *"Pick two of three"*. This is **not what CAP says**. As Brewer himself wrote in [his 2012 retraction-and-clarification piece](https://www.infoq.com/articles/cap-twelve-years-later-how-the-rules-have-changed/), partitions are not a choice — they happen whether you want them or not. The real choice is *what your system does **during** a partition*.
+For the next ten years, every blog post explaining CAP got it slightly wrong. The most common error: *"Pick two of three"*. This is **not what CAP says**. As Brewer himself wrote in [his 2012 clarification](https://www.infoq.com/articles/cap-twelve-years-later-how-the-rules-have-changed/), partitions are not a choice — they happen whether you want them or not. The real choice is *what your system does **during** a partition*.
 
-Then in **2010**, Daniel Abadi at Yale published a [short paper](https://dbmsmusings.blogspot.com/2010/04/problems-with-cap-and-yahoos-little.html) pointing out that CAP only describes the system's behaviour during the rare event of a partition — but says nothing about its behaviour the rest of the time. The rest of the time, you trade *latency* against *consistency* — every replication mechanism, every quorum-vs-eventually-consistent choice, every async-vs-sync-replication knob. That trade-off is **PACELC**: *if a Partition, choose Availability or Consistency; **Else**, choose Latency or Consistency*.
+Then in **2010**, Daniel Abadi at Yale published a [blog post](https://dbmsmusings.blogspot.com/2010/04/problems-with-cap-and-yahoos-little.html) (later formalised in a 2012 IEEE Computer paper) pointing out that CAP only describes the system's behaviour during the rare event of a partition — but says nothing about its behaviour the rest of the time. The rest of the time, you trade *latency* against *consistency* — every replication mechanism, every quorum-vs-eventually-consistent choice, every async-vs-sync-replication knob. That trade-off is **PACELC**: *if a Partition, choose Availability or Consistency; **Else**, choose Latency or Consistency*.
 
 The PACELC version is the one a senior engineer carries around. CAP is the version you find on whiteboards. We will teach the senior version.
 
@@ -69,7 +69,7 @@ A system gets a two-letter classification — one for each scenario:
 | System | PACELC class | Meaning |
 |---|---|---|
 | Spanner, FoundationDB | **PC + EC** | Refuse during partition; prioritise consistency over latency normally. |
-| MongoDB (default) | **PC + EC** | Same. |
+| MongoDB (default) | **PA + EC** | Available during a partition (the majority side keeps a primary); consistency over latency normally (default w:majority since 5.0). |
 | Cassandra, DynamoDB | **PA + EL** | Stay available during partition; prioritise low latency over strong consistency normally. |
 | ZooKeeper, etcd | **PC + EC** | Used as the "boring, correct" coordinator everywhere. |
 | MySQL with async replication | **PA + EL** | The async replica may fall behind, even with no partition. |
@@ -102,7 +102,7 @@ Real-world: Cassandra. Twitter, Instagram, and Reddit all use Cassandra-class st
 
 **Pick CP** during partition. **Pick C** (strong) normally. → **PC + EC**.
 
-Real-world: Spanner. Stripe and most modern fintech run their ledger on a Spanner-class store.
+Real-world: Spanner. Modern fintech ledgers run on Spanner-class stores (e.g. Spanner or CockroachDB).
 
 ### Service 3 — Mixed system (the realistic case)
 

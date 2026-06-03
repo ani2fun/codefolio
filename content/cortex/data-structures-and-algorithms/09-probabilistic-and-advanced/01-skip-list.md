@@ -68,6 +68,46 @@ flowchart LR
 
 <p align="center"><strong>A skip list with 3 levels. To search for 30, start at the highest level: from H[3], the next node is 50 (too big); drop to level 2; from H[2], the next is 20 (≤ 30, take it); from 20[2], the next is 50 (too big); drop to level 1; from 20[1], the next is 50 (too big); drop to level 0; walk to 30. Found.</strong></p>
 
+```d3 widget=skiplist
+{
+  "title": "Skip list with 3 levels",
+  "steps": [
+    {
+      "nodes": [
+        {"id": "L0-0", "label": "3",  "kind": "node", "slot": 0, "meta": [{"name": "level", "value": "0"}], "cardId": "", "layoutKind": ""},
+        {"id": "L0-1", "label": "6",  "kind": "node", "slot": 1, "meta": [{"name": "level", "value": "0"}], "cardId": "", "layoutKind": ""},
+        {"id": "L0-2", "label": "7",  "kind": "node", "slot": 2, "meta": [{"name": "level", "value": "0"}], "cardId": "", "layoutKind": ""},
+        {"id": "L0-3", "label": "9",  "kind": "node", "slot": 3, "meta": [{"name": "level", "value": "0"}], "cardId": "", "layoutKind": ""},
+        {"id": "L0-4", "label": "12", "kind": "node", "slot": 4, "meta": [{"name": "level", "value": "0"}], "cardId": "", "layoutKind": ""},
+        {"id": "L0-5", "label": "17", "kind": "node", "slot": 5, "meta": [{"name": "level", "value": "0"}], "cardId": "", "layoutKind": ""},
+        {"id": "L1-0", "label": "3",  "kind": "node", "slot": 0, "meta": [{"name": "level", "value": "1"}], "cardId": "", "layoutKind": ""},
+        {"id": "L1-1", "label": "6",  "kind": "node", "slot": 1, "meta": [{"name": "level", "value": "1"}], "cardId": "", "layoutKind": ""},
+        {"id": "L1-3", "label": "9",  "kind": "node", "slot": 3, "meta": [{"name": "level", "value": "1"}], "cardId": "", "layoutKind": ""},
+        {"id": "L1-5", "label": "17", "kind": "node", "slot": 5, "meta": [{"name": "level", "value": "1"}], "cardId": "", "layoutKind": ""},
+        {"id": "L2-0", "label": "3",  "kind": "node", "slot": 0, "meta": [{"name": "level", "value": "2"}], "cardId": "", "layoutKind": ""},
+        {"id": "L2-3", "label": "9",  "kind": "node", "slot": 3, "meta": [{"name": "level", "value": "2"}], "cardId": "", "layoutKind": ""}
+      ],
+      "edges": [
+        {"from": "L0-0", "to": "L0-1", "label": ""},
+        {"from": "L0-1", "to": "L0-2", "label": ""},
+        {"from": "L0-2", "to": "L0-3", "label": ""},
+        {"from": "L0-3", "to": "L0-4", "label": ""},
+        {"from": "L0-4", "to": "L0-5", "label": ""},
+        {"from": "L1-0", "to": "L1-1", "label": ""},
+        {"from": "L1-1", "to": "L1-3", "label": ""},
+        {"from": "L1-3", "to": "L1-5", "label": ""},
+        {"from": "L2-0", "to": "L2-3", "label": ""}
+      ],
+      "cursor": [], "highlight": [], "changed": [], "removed": [],
+      "annotation": "Level 0 (bottom) holds all nodes. Level 1 skips over 7 and 12. Level 2 is the sparsest express lane with only 3 and 9.",
+      "line": 0, "frames": [], "cardCursor": []
+    }
+  ]
+}
+```
+
+<p align="center"><strong>Skip list with 3 levels. Level 0 contains all nodes; higher levels act as express lanes.</strong></p>
+
 ***
 
 # Search
@@ -179,7 +219,7 @@ if __name__ == "__main__":
     print(f"after delete(7): search(7) -> {sl.search(7)}")
 ```
 
-```java run
+```java run viz=graph viz-root=head
 import java.util.*;
 
 public class Main {

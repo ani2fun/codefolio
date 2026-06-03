@@ -73,7 +73,7 @@ print(Solution().sort_people_by_height([[1, 0]]))                               
 print(Solution().sort_people_by_height([[7, 0], [4, 4], [7, 1], [5, 0], [6, 1], [5, 2]]))  # [[7, 0], [7, 1], [6, 1], [5, 0], [5, 2], [4, 4]]
 ```
 
-```java run
+```java run viz=array viz-root=people
 import java.util.*;
 
 public class Main {

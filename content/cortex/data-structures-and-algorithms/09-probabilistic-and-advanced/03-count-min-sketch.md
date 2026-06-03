@@ -128,7 +128,7 @@ if __name__ == "__main__":
     print(f"Memory: {cms.w * cms.d * 4 / 1024:.1f} KB for any stream size")
 ```
 
-```java run
+```java run viz=grid viz-root=table
 import java.util.*;
 
 public class Main {

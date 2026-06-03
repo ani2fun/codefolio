@@ -119,7 +119,7 @@ print(Solution().sum_of_minimums([[],[],[]], [4,2,9]))                   # 15 â€
 print(Solution().sum_of_minimums([[1,2],[0],[0]], [1,2,3]))              # 1 â€” one component
 ```
 
-```java run
+```java run viz=graph viz-root=graph
 import java.util.*;
 
 public class Main {

@@ -55,41 +55,276 @@ Two pointers map directly onto that mirror structure. Place `left` at index `0` 
 A single-pointer traversal breaks here. If you walk forward and overwrite `arr[i]` with `arr[n − 1 − i]`, the original `arr[i]` is gone before you can place it at index `n − 1 − i`. You'd need an `O(n)` temporary buffer to remember evicted values — exactly the brute-force cost the two-pointer template avoids by swapping atomically.
 
 > ▶ Interactive Diagram — Flipping [a, e, i, o, u] in place — two swaps reverse the array; the middle element at index 2 is its own mirror.
-```d3 widget=array-traversal
+```d3 widget=array-1d
 {
-  "items": ["a", "e", "i", "o", "u"],
-  "title": "Reversing [a, e, i, o, u] in place with two pointers",
   "steps": [
     {
-      "items":   ["a", "e", "i", "o", "u"],
-      "markers": [
-        { "name": "left",  "index": 0, "color": "#3b82f6" },
-        { "name": "right", "index": 4, "color": "#f59e0b" }
+      "nodes": [
+        {
+          "id": "0",
+          "label": "a",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "e",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "i",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "o",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "u",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "msg": "Initial — left = 0, right = 4. Swap arr[left] and arr[right] (a ↔ u)."
+      "edges": [],
+      "cursor": [
+        {
+          "name": "left",
+          "target": "0",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "right",
+          "target": "4",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Initial — left = 0, right = 4. Swap arr[left] and arr[right] (a ↔ u).",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "items":   ["u", "e", "i", "o", "a"],
-      "markers": [
-        { "name": "left",  "index": 1, "color": "#3b82f6" },
-        { "name": "right", "index": 3, "color": "#f59e0b" }
+      "nodes": [
+        {
+          "id": "0",
+          "label": "u",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "e",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "i",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "o",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "a",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "msg": "Move inward — left = 1, right = 3. Swap arr[left] and arr[right] (e ↔ o)."
+      "edges": [],
+      "cursor": [
+        {
+          "name": "left",
+          "target": "1",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "right",
+          "target": "3",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Move inward — left = 1, right = 3. Swap arr[left] and arr[right] (e ↔ o).",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "items":   ["u", "o", "i", "e", "a"],
-      "markers": [
-        { "name": "left",  "index": 2, "color": "#3b82f6" },
-        { "name": "right", "index": 2, "color": "#f59e0b" }
+      "nodes": [
+        {
+          "id": "0",
+          "label": "u",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "o",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "i",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "e",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "a",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "msg": "Pointers meet at index 2 — the middle element is its own mirror; no swap needed."
+      "edges": [],
+      "cursor": [
+        {
+          "name": "left",
+          "target": "2",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "right",
+          "target": "2",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Pointers meet at index 2 — the middle element is its own mirror; no swap needed.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "items":   ["u", "o", "i", "e", "a"],
-      "markers": [],
-      "msg": "Done — arr is reversed: [u, o, i, e, a]."
+      "nodes": [
+        {
+          "id": "0",
+          "label": "u",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "o",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "i",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "e",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "a",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Done — arr is reversed: [u, o, i, e, a].",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Reversing [a, e, i, o, u] in place with two pointers"
 }
 ```
 
@@ -179,7 +414,7 @@ a8 = list('abcdefghij')                           # longer even-length input
 Solution().flip_characters(a8); print(a8)         # ['j', 'i', 'h', 'g', 'f', 'e', 'd', 'c', 'b', 'a']
 ```
 
-```java run
+```java run viz=array viz-root=arr
 import java.util.Arrays;
 
 public class Main {

@@ -108,7 +108,7 @@ if __name__ == "__main__":
     print(f"matches of 'aab' in 'aabaaaabaaab': {find_pattern('aabaaaabaaab', 'aab')}")  # [0, 4, 8]
 ```
 
-```java run
+```java run viz=array viz-root=Z
 import java.util.*;
 
 public class Main {

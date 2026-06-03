@@ -143,7 +143,7 @@ state: "forward(5) appends 5 — final" {
 
 ### The Solution
 
-```python run
+```python run viz=array viz-root=result
 from typing import List
 
 class Solution:
@@ -187,7 +187,7 @@ print(Solution().forward_sequence(3))   # [1, 2, 3]
 print(Solution().forward_sequence(10))  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 ```
 
-```java run
+```java run viz=array viz-root=result
 import java.util.*;
 
 public class Main {

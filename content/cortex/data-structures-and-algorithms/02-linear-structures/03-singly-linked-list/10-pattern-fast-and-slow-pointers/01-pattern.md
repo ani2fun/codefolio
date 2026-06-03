@@ -14,28 +14,148 @@ The problem can be further extended to find a node between two given nodes at a 
 The fast and slow pointer pattern is a classification of problems that can be solved using the fast and slow pointer technique.
 
 > ▶ Interactive Diagram — Fast-and-slow pointers find a node at a proportional distance from the ends — e.g., the middle (n=2, one pointer moves twice as fast), or the 1/3 point (n=3, fast moves three times as fast). No length measurement needed.
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Fast-and-slow finds a node at a proportional distance — e.g., 1/n of length",
-  "direction": "single",
-  "nodes": [
-    {"id": "n1", "value": "1"},
-    {"id": "n2", "value": "2"},
-    {"id": "n3", "value": "3"},
-    {"id": "n4", "value": "4"},
-    {"id": "n5", "value": "5"},
-    {"id": "n6", "value": "6"},
-    {"id": "n7", "value": "7"},
-    {"id": "n8", "value": "8"}
-  ],
-  "head": "n1",
   "steps": [
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"],["n5","n6"],["n6","n7"],["n7","n8"]],
-      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "current", "nodeId": "n4"}, {"name": "tail", "nodeId": "n8"}],
-      "msg": "Goal: find a node at 1/n of the length in a single pass — no length measurement needed"
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "1",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "2",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n6",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n7",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n8",
+          "label": "8",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n5",
+          "label": "next"
+        },
+        {
+          "from": "n5",
+          "to": "n6",
+          "label": "next"
+        },
+        {
+          "from": "n6",
+          "to": "n7",
+          "label": "next"
+        },
+        {
+          "from": "n7",
+          "to": "n8",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n1",
+          "color": "#10b981"
+        },
+        {
+          "name": "current",
+          "target": "n4",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "tail",
+          "target": "n8",
+          "color": "#8b5cf6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Goal: find a node at 1/n of the length in a single pass — no length measurement needed",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Fast-and-slow finds a node at a proportional distance — e.g., 1/n of length"
 }
 ```
 
@@ -50,35 +170,281 @@ It should be noted that a solution node will only exist if the length **L** betw
 The idea is to initialize two references `flast` and `slow` with `start` and move them forward at different speeds until `fast` reaches `end`.The `slow` reference moves **1** step in each iteration, while the `fast` reference moves **(n+1)** steps. This way, at the end of every iteration, the `slow` reference is at a proportional distance from the `start` and `fast` reference. When the `fast` reference reaches `end`, the `slow` reference points to the solution node.
 
 > ▶ Interactive Diagram — The middle-finding case — by far the most common. fast moves twice as fast as slow. Because fast traverses at 2× speed, it reaches the end in half the ticks it would take slow — so when fast is done, slow is exactly halfway through.
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Middle-finding — fast moves 2x; when fast reaches tail, slow is at the middle",
-  "direction": "single",
-  "nodes": [
-    {"id": "n1", "value": "1"},
-    {"id": "n2", "value": "2"},
-    {"id": "n3", "value": "3"},
-    {"id": "n4", "value": "4"},
-    {"id": "n5", "value": "5"}
-  ],
-  "head": "n1",
   "steps": [
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
-      "markers": [{"name": "slow", "nodeId": "n1"}, {"name": "fast", "nodeId": "n1"}],
-      "msg": "Init: slow = fast = head"
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "1",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "2",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n5",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "slow",
+          "target": "n1",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "fast",
+          "target": "n1",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Init: slow = fast = head",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
-      "markers": [{"name": "slow", "nodeId": "n2"}, {"name": "fast", "nodeId": "n3"}],
-      "msg": "Tick 1: slow → 2, fast → 3"
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "1",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "2",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n5",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "slow",
+          "target": "n2",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "fast",
+          "target": "n3",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Tick 1: slow → 2, fast → 3",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
-      "markers": [{"name": "slow", "nodeId": "n3"}, {"name": "fast", "nodeId": "n5"}],
-      "msg": "Tick 2: slow → 3, fast → 5 (tail). Loop ends. slow is the middle."
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "1",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "2",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n5",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "slow",
+          "target": "n3",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "fast",
+          "target": "n5",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Tick 2: slow → 3, fast → 5 (tail). Loop ends. slow is the middle.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Middle-finding — fast moves 2x; when fast reaches tail, slow is at the middle"
 }
 ```
 
@@ -110,7 +476,7 @@ The algorithm given below outlines the fast and slow pointer traversal technique
 Given below is the generic code implementation of the fast and slow pointer traversal technique on a linked list.
 
 
-```python run
+```python run viz=linked-list viz-root=head
 """
 Definition for singly-linked list.
 class ListNode:
@@ -139,7 +505,7 @@ def findTheSolutionNode(start: ListNode, end: ListNode, n: int) -> ListNode:
     return slow
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 
 /**
  * Definition for singly-linked list.
@@ -208,36 +574,167 @@ Let's consider the following problem as an example to better understand how to i
 > **Problem statement:** Given a linked list, find the middle node.
 
 > ▶ Interactive Diagram — For odd length the middle is unambiguous. For even length there are two candidates — by convention, fast-and-slow returns the second middle (the one closer to the tail). Some problems want the first; the small tweak is to start fast one step ahead.
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Middle node — odd length picks the true centre; even length picks the second middle",
-  "direction": "single",
-  "nodes": [
-    {"id": "a1", "value": "1"},
-    {"id": "a2", "value": "2"},
-    {"id": "a3", "value": "3"},
-    {"id": "a4", "value": "4"},
-    {"id": "a5", "value": "5"}
-  ],
-  "head": "a1",
   "steps": [
     {
-      "links": [["a1","a2"],["a2","a3"],["a3","a4"],["a4","a5"]],
-      "markers": [{"name": "current", "nodeId": "a3"}],
-      "msg": "Odd length [1,2,3,4,5] — middle = node(3), unambiguous"
+      "nodes": [
+        {
+          "id": "a1",
+          "label": "1",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a2",
+          "label": "2",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a4",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a5",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "a1",
+          "to": "a2",
+          "label": "next"
+        },
+        {
+          "from": "a2",
+          "to": "a3",
+          "label": "next"
+        },
+        {
+          "from": "a3",
+          "to": "a4",
+          "label": "next"
+        },
+        {
+          "from": "a4",
+          "to": "a5",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "a3",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Odd length [1,2,3,4,5] — middle = node(3), unambiguous",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "a1", "value": "1"},
-        {"id": "a2", "value": "2"},
-        {"id": "a3", "value": "3"},
-        {"id": "a4", "value": "4"}
+        {
+          "id": "a1",
+          "label": "1",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a2",
+          "label": "2",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a4",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["a1","a2"],["a2","a3"],["a3","a4"]],
-      "markers": [{"name": "current", "nodeId": "a3"}],
-      "msg": "Even length [1,2,3,4] — fast-and-slow returns the SECOND middle = node(3)"
+      "edges": [
+        {
+          "from": "a1",
+          "to": "a2",
+          "label": "next"
+        },
+        {
+          "from": "a2",
+          "to": "a3",
+          "label": "next"
+        },
+        {
+          "from": "a3",
+          "to": "a4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "a3",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Even length [1,2,3,4] — fast-and-slow returns the SECOND middle = node(3)",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Middle node — odd length picks the true centre; even length picks the second middle"
 }
 ```
 
@@ -270,7 +767,7 @@ flowchart TB
 The implementation of the fast and slow pointer solution is given as follows.
 
 
-```python run
+```python run viz=linked-list viz-root=head
 """
 Definition for singly-linked list.
 class ListNode:
@@ -310,7 +807,7 @@ class Solution:
         return slow
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 /**
  * Definition for singly-linked list.
  * class ListNode {

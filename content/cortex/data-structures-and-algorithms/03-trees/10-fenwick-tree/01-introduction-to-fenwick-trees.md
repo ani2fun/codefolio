@@ -99,6 +99,34 @@ flowchart TB
 
 <p align="center"><strong>The implicit tree inside a Fenwick array. Each node's range covers a power of 2 slots; the tree's edges aren't stored — they emerge from the bit pattern of indices.</strong></p>
 
+> ▶ Interactive Diagram — Fenwick tree over n=8, A=[1..8]
+
+```d3 widget=fenwick
+{
+  "title": "Fenwick tree over A = [1, 2, 3, 4, 5, 6, 7, 8]",
+  "steps": [
+    {
+      "nodes": [
+        {"id": "1", "label": "1",  "kind": "node", "slot": 1, "meta": [{"name": "range", "value": "[1,1]"}], "cardId": "", "layoutKind": ""},
+        {"id": "2", "label": "3",  "kind": "node", "slot": 2, "meta": [{"name": "range", "value": "[1,2]"}], "cardId": "", "layoutKind": ""},
+        {"id": "3", "label": "3",  "kind": "node", "slot": 3, "meta": [{"name": "range", "value": "[3,3]"}], "cardId": "", "layoutKind": ""},
+        {"id": "4", "label": "10", "kind": "node", "slot": 4, "meta": [{"name": "range", "value": "[1,4]"}], "cardId": "", "layoutKind": ""},
+        {"id": "5", "label": "5",  "kind": "node", "slot": 5, "meta": [{"name": "range", "value": "[5,5]"}], "cardId": "", "layoutKind": ""},
+        {"id": "6", "label": "11", "kind": "node", "slot": 6, "meta": [{"name": "range", "value": "[5,6]"}], "cardId": "", "layoutKind": ""},
+        {"id": "7", "label": "7",  "kind": "node", "slot": 7, "meta": [{"name": "range", "value": "[7,7]"}], "cardId": "", "layoutKind": ""},
+        {"id": "8", "label": "36", "kind": "node", "slot": 8, "meta": [{"name": "range", "value": "[1,8]"}], "cardId": "", "layoutKind": ""}
+      ],
+      "edges": [],
+      "cursor": [], "highlight": [], "changed": [], "removed": [],
+      "annotation": "BIT over A=[1,2,3,4,5,6,7,8]. Each cell i stores the prefix sum of A[i−lowbit(i)+1..i]. Odd-indexed cells cover 1 element; even-indexed cells cover a power-of-2 span.",
+      "line": 0, "frames": [], "cardCursor": []
+    }
+  ]
+}
+```
+
+<p align="center"><strong>Fenwick tree over n=8. Each cell i covers the range [i−lowbit(i)+1, i].</strong></p>
+
 The tree is never materialised. The array `bit[]` is the entire data structure.
 
 ***
@@ -112,6 +140,68 @@ Walk *down* the tree by repeatedly subtracting the lowest set bit until reaching
 For `i = 13` (binary `1101`), the walk visits `13, 12, 8, 0`: subtract 1, then 4, then 8.
 
 `O(log n)` — at most one bit removed per iteration, so at most `log₂(i)` iterations.
+
+> ▶ Interactive Diagram — Prefix sum query sum(1..5) traversal
+
+```d3 widget=fenwick
+{
+  "title": "Prefix sum query: sum(1..5)",
+  "steps": [
+    {
+      "nodes": [
+        {"id": "1", "label": "1",  "kind": "node", "slot": 1, "meta": [{"name": "range", "value": "[1,1]"}], "cardId": "", "layoutKind": ""},
+        {"id": "2", "label": "3",  "kind": "node", "slot": 2, "meta": [{"name": "range", "value": "[1,2]"}], "cardId": "", "layoutKind": ""},
+        {"id": "3", "label": "3",  "kind": "node", "slot": 3, "meta": [{"name": "range", "value": "[3,3]"}], "cardId": "", "layoutKind": ""},
+        {"id": "4", "label": "10", "kind": "node", "slot": 4, "meta": [{"name": "range", "value": "[1,4]"}], "cardId": "", "layoutKind": ""},
+        {"id": "5", "label": "5",  "kind": "node", "slot": 5, "meta": [{"name": "range", "value": "[5,5]"}], "cardId": "", "layoutKind": ""},
+        {"id": "6", "label": "11", "kind": "node", "slot": 6, "meta": [{"name": "range", "value": "[5,6]"}], "cardId": "", "layoutKind": ""},
+        {"id": "7", "label": "7",  "kind": "node", "slot": 7, "meta": [{"name": "range", "value": "[7,7]"}], "cardId": "", "layoutKind": ""},
+        {"id": "8", "label": "36", "kind": "node", "slot": 8, "meta": [{"name": "range", "value": "[1,8]"}], "cardId": "", "layoutKind": ""}
+      ],
+      "edges": [],
+      "cursor": [{"name": "i", "target": "5", "color": "#6366f1"}],
+      "highlight": ["5"], "changed": [], "removed": [],
+      "annotation": "Query sum(1..5): start at i=5. bit[5]=[5,5], acc += 5. Running total: 5.",
+      "line": 0, "frames": [], "cardCursor": []
+    },
+    {
+      "nodes": [
+        {"id": "1", "label": "1",  "kind": "node", "slot": 1, "meta": [{"name": "range", "value": "[1,1]"}], "cardId": "", "layoutKind": ""},
+        {"id": "2", "label": "3",  "kind": "node", "slot": 2, "meta": [{"name": "range", "value": "[1,2]"}], "cardId": "", "layoutKind": ""},
+        {"id": "3", "label": "3",  "kind": "node", "slot": 3, "meta": [{"name": "range", "value": "[3,3]"}], "cardId": "", "layoutKind": ""},
+        {"id": "4", "label": "10", "kind": "node", "slot": 4, "meta": [{"name": "range", "value": "[1,4]"}], "cardId": "", "layoutKind": ""},
+        {"id": "5", "label": "5",  "kind": "node", "slot": 5, "meta": [{"name": "range", "value": "[5,5]"}], "cardId": "", "layoutKind": ""},
+        {"id": "6", "label": "11", "kind": "node", "slot": 6, "meta": [{"name": "range", "value": "[5,6]"}], "cardId": "", "layoutKind": ""},
+        {"id": "7", "label": "7",  "kind": "node", "slot": 7, "meta": [{"name": "range", "value": "[7,7]"}], "cardId": "", "layoutKind": ""},
+        {"id": "8", "label": "36", "kind": "node", "slot": 8, "meta": [{"name": "range", "value": "[1,8]"}], "cardId": "", "layoutKind": ""}
+      ],
+      "edges": [{"from": "5", "to": "4", "label": "query"}],
+      "cursor": [{"name": "i", "target": "4", "color": "#6366f1"}],
+      "highlight": ["5", "4"], "changed": [], "removed": [],
+      "annotation": "i -= lowbit(5)=1 → i=4. bit[4]=[1,4], acc += 10. Running total: 15.",
+      "line": 0, "frames": [], "cardCursor": []
+    },
+    {
+      "nodes": [
+        {"id": "1", "label": "1",  "kind": "node", "slot": 1, "meta": [{"name": "range", "value": "[1,1]"}], "cardId": "", "layoutKind": ""},
+        {"id": "2", "label": "3",  "kind": "node", "slot": 2, "meta": [{"name": "range", "value": "[1,2]"}], "cardId": "", "layoutKind": ""},
+        {"id": "3", "label": "3",  "kind": "node", "slot": 3, "meta": [{"name": "range", "value": "[3,3]"}], "cardId": "", "layoutKind": ""},
+        {"id": "4", "label": "10", "kind": "node", "slot": 4, "meta": [{"name": "range", "value": "[1,4]"}], "cardId": "", "layoutKind": ""},
+        {"id": "5", "label": "5",  "kind": "node", "slot": 5, "meta": [{"name": "range", "value": "[5,5]"}], "cardId": "", "layoutKind": ""},
+        {"id": "6", "label": "11", "kind": "node", "slot": 6, "meta": [{"name": "range", "value": "[5,6]"}], "cardId": "", "layoutKind": ""},
+        {"id": "7", "label": "7",  "kind": "node", "slot": 7, "meta": [{"name": "range", "value": "[7,7]"}], "cardId": "", "layoutKind": ""},
+        {"id": "8", "label": "36", "kind": "node", "slot": 8, "meta": [{"name": "range", "value": "[1,8]"}], "cardId": "", "layoutKind": ""}
+      ],
+      "edges": [],
+      "cursor": [], "highlight": [], "changed": ["5", "4"], "removed": [],
+      "annotation": "i -= lowbit(4)=4 → i=0, stop. sum(1..5) = 5 + 10 = 15. Two cells read in O(log n).",
+      "line": 0, "frames": [], "cardCursor": []
+    }
+  ]
+}
+```
+
+<p align="center"><strong>Prefix sum query [1..5] — LSB-jump path from 5 to 0.</strong></p>
 
 ## Point update (`A[i] += delta`)
 
@@ -168,7 +258,7 @@ if __name__ == "__main__":
     print(f"  sum [3..6] = {bit.range_sum(3, 6)}    (expected {sum(arr[2:6]) + 100})")
 ```
 
-```java run
+```java run viz=array viz-root=arr
 public class Main {
     static int n;
     static long[] bit;

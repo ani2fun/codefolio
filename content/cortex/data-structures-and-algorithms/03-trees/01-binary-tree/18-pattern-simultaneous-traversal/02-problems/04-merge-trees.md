@@ -17,7 +17,7 @@ A *constructive* simultaneous traversal — instead of returning a verdict, retu
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional
 
 
@@ -115,7 +115,7 @@ print(to_level_order(Solution().merge_trees(
 )))   # [3, 4, 5, 5, 4, None, 7]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

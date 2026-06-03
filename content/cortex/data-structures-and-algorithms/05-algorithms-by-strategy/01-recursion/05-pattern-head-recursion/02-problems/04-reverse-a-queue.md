@@ -136,7 +136,7 @@ The "stash" is conceptual — those saved fronts physically live in `frontElemen
 
 ### The Solution
 
-```python run
+```python run viz=array viz-root=q1
 from typing import List
 
 class Solution:
@@ -177,7 +177,7 @@ q6 = [10, 20, 30, 40, 50]
 Solution().reverse_a_queue(q6); print(q6)   # [50, 40, 30, 20, 10]
 ```
 
-```java run
+```java run viz=array viz-root=q1
 import java.util.*;
 
 public class Main {

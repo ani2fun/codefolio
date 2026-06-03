@@ -266,7 +266,7 @@ if __name__ == "__main__":
     print(sol.boolean_parenthesisation("T|F"))      # 1
 ```
 
-```java run
+```java run viz=grid viz-root=T
 public class Main {
     static class Solution {
         public int booleanParenthesisation(String s) {

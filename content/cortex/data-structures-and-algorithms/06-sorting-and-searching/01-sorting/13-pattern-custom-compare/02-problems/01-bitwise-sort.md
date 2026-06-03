@@ -96,7 +96,7 @@ a8 = [0, 1, 2, 3]                                 # includes zero
 Solution().bitwise_sort(a8); print(a8)            # [0, 1, 2, 3]
 ```
 
-```java run
+```java run viz=array viz-root=arr
 import java.util.*;
 
 public class Main {

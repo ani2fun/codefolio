@@ -104,7 +104,7 @@ print(Solution().maximum_path_sum(from_level_order([1, 2, 3])))                 
 print(Solution().maximum_path_sum(from_level_order([10, 5, 20, 3, 7])))              # 30
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

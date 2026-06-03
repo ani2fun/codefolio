@@ -34,7 +34,7 @@ This is the canonical use of the pattern: **f** = "append `node.val` to the resu
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional, List
 
 
@@ -122,7 +122,7 @@ root_left.left.left.left = TreeNode(1)
 print(Solution().bst_to_sorted_array(root_left))    # [1, 2, 3, 4]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

@@ -226,7 +226,7 @@ print(Solution().insert_interval([[3, 5], [7, 9]], [1, 2]))            # [[1, 2]
 print(Solution().insert_interval([[1, 3], [4, 6], [7, 9]], [2, 8]))   # [[1, 9]]  — merge all
 ```
 
-```java run
+```java run viz=grid viz-root=intervals
 import java.util.*;
 
 public class Main {

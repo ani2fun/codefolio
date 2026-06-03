@@ -123,7 +123,7 @@ print(Solution().minimum_travel_time([[[1,1]],[]], 0, 1))                       
 print(Solution().minimum_travel_time([[[1,2]],[[]]], 0, 1))                             # -1 — no path to dest
 ```
 
-```java run
+```java run viz=graph viz-root=routes
 import java.util.*;
 
 public class Main {

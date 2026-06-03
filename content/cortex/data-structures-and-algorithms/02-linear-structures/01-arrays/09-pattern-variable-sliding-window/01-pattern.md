@@ -156,11 +156,39 @@ If all three hold, you get O(N). If any fails, nested loops are unavoidable.
 
 ---
 
-## The Four Operations
+## The Variable Sized Sliding Window Technique
+
+The variable-sized sliding window technique uses two variables `start` and `end` to maintain a window in the array and a variable `aggregate` that always holds the aggregated value of `f` over the current window. We initialize `aggregate` with some default value dictated by the problem, and start with `start = 0` and `end = 0` denoting a zero-sized window. We iterate until `end` reaches the end of the array and in each iteration do some or all of the operations described above.
+
+> **Step 1:** Initialize two variables, `start` and `end` to 0.
+>
+> **Step 2:** Initialize `aggregate` to some initial value dictated by the problem.
+>
+> **Step 3:** Loop while `end` < `arr.size()` and do the following:
+>
+> - **Step 3.1:** Check if we should compute `aggregate`:
+>   - **Step 3.1.1:** Add the contribution of `arr[end]` to `aggregate`
+>
+> - **Step 3.2:** Process `aggregate` as dictated by the problem
+>
+> - **Step 3.3:** Check if we should contract the window:
+>   - **Step 3.3.1:** Remove the contribution of `arr[start]` from `aggregate` using the inverse function
+>   - **Step 3.3.2:** Increment `start` by 1
+>
+> - **Step 3.4:** Check if we should expand the window:
+>   - **Step 3.4.1:** Increment `end` by 1
+
+The four adaptations you make when solving a specific problem:
+- **What is `aggregate`?** Sum, product, frequency map, distinct element count, or something else
+- **When do you compute the aggregate (Step 3.1)?** Always, or only under certain conditions
+- **When and how many times do you contract (Step 3.3)?** `if` for at most one contraction per iteration, `while` for as many as needed
+- **What does "process" do (Step 3.2)?** Update a max, count valid windows, record a length, check a condition
+
+### The Four Operations
 
 The variable-sized sliding window uses `start` and `end` for boundaries and `aggregate` for the running result of `f` over `arr[start..end]`. We initialize `aggregate` with some default value dictated by the problem and start with `start = 0` and `end = 0` (a zero-sized window). We iterate until `end` reaches the end of the array, and in each iteration perform some or all of the following four operations.
 
-### Operation 1 — Update Aggregate with Item at `end`
+#### Operation 1 — Update Aggregate with Item at `end`
 
 We update `aggregate` by adding the contribution of `arr[end]` to it so that `aggregate` always reflects the function `f` computed over all elements in the current window, including the one at `end`.
 
@@ -195,7 +223,7 @@ op -> after_note
 
 The function `f` must support an O(1) add operation. Common examples: `aggregate += arr[end]` for sum, `aggregate *= arr[end]` for product, `freq[arr[end]] += 1` for frequency counts.
 
-### Operation 2 — Process the Aggregate
+#### Operation 2 — Process the Aggregate
 
 The value stored in `aggregate` is the aggregated value of the function `f` over the subarray from `start` to `end`. We process it as dictated by the problem — update a running maximum, check a validity condition, record a window length, count a match, or anything else the problem asks.
 
@@ -221,7 +249,7 @@ flowchart LR
 
 <p align="center"><strong>Operation 2: use the current aggregate. This is the step where the problem's output logic lives — every window evaluated here is a candidate for the final answer.</strong></p>
 
-### Operation 3 — Contract the Window by Incrementing `start`
+#### Operation 3 — Contract the Window by Incrementing `start`
 
 If we can skip all remaining subarrays starting at `start` — specifically the ones that would end beyond `end` — we increment `start` by 1, which contracts the window from the left. We also update `aggregate` to remove the contribution of `arr[start]` (the item being removed from the window).
 
@@ -272,7 +300,7 @@ start += 1                                     # Contract window from the left
 
 Critical: one contraction isn't always enough. Many problems require a **while loop** on the contraction condition — keep shrinking until the invariant is fully restored before moving on. The choice between `if` and `while` here is one of the most important decisions when adapting the template to a specific problem.
 
-### Operation 4 — Expand the Window by Incrementing `end`
+#### Operation 4 — Expand the Window by Incrementing `end`
 
 If we want to consider the next subarray starting at `start` — that is, the subarray from `start` to `end+1` — in the next iteration, we increment `end` by 1, which expands the window to the right. We do **not** add the contribution of the newly added item to `aggregate` yet — that will be done in the next iteration's Operation 1.
 
@@ -320,33 +348,6 @@ end += 1  # arr[end]'s contribution will be added in the next iteration
 
 ---
 
-## The Variable Sized Sliding Window Technique
-
-The variable-sized sliding window technique uses two variables `start` and `end` to maintain a window in the array and a variable `aggregate` that always holds the aggregated value of `f` over the current window. We initialize `aggregate` with some default value dictated by the problem, and start with `start = 0` and `end = 0` denoting a zero-sized window. We iterate until `end` reaches the end of the array and in each iteration do some or all of the operations described above.
-
-> **Step 1:** Initialize two variables, `start` and `end` to 0.
->
-> **Step 2:** Initialize `aggregate` to some initial value dictated by the problem.
->
-> **Step 3:** Loop while `end` < `arr.size()` and do the following:
->
-> - **Step 3.1:** Check if we should compute `aggregate`:
->   - **Step 3.1.1:** Add the contribution of `arr[end]` to `aggregate`
->
-> - **Step 3.2:** Process `aggregate` as dictated by the problem
->
-> - **Step 3.3:** Check if we should contract the window:
->   - **Step 3.3.1:** Remove the contribution of `arr[start]` from `aggregate` using the inverse function
->   - **Step 3.3.2:** Increment `start` by 1
->
-> - **Step 3.4:** Check if we should expand the window:
->   - **Step 3.4.1:** Increment `end` by 1
-
-The four adaptations you make when solving a specific problem:
-- **What is `aggregate`?** Sum, product, frequency map, distinct element count, or something else
-- **When do you compute the aggregate (Step 3.1)?** Always, or only under certain conditions
-- **When and how many times do you contract (Step 3.3)?** `if` for at most one contraction per iteration, `while` for as many as needed
-- **What does "process" do (Step 3.2)?** Update a max, count valid windows, record a length, check a condition
 
 ---
 
@@ -544,100 +545,1109 @@ Three boxes check immediately. The fourth — provable skipping — is the hard 
 
 The brute-force solution is to use nested loops to find the sum of all possible subarrays. If the sum of any subarray is greater than the maximum seen so far, we update the maximum sum value. Below is an execution of the brute force solution on the array.
 
-> 🖼 Diagram — Brute force checks every subarray — N(N+1)/2 total. For each outer position i, the inner loop extends j rightward accumulating the sum. Every subarray is evaluated explicitly.
-```d2
-direction: right
-
-i0: "Outer loop i=0: all subarrays starting at index 0" {
-  grid-columns: 4
-  grid-gap: 16
-  j0a: |md
-    `[-2]`
-
-    sum=-2
-  |
-  j0b: |md
-    `[-2,1]`
-
-    sum=-1
-  |
-  j0c: |md
-    `[-2,1,-3]`
-
-    sum=-4
-  |
-  j0d: "..."
-}
-
-i1: "Outer loop i=1: all subarrays starting at index 1" {
-  grid-columns: 4
-  grid-gap: 16
-  j1a: |md
-    `[1]`
-
-    sum=1
-  |
-  j1b: |md
-    `[1,-3]`
-
-    sum=-2
-  |
-  j1c: |md
-    `[1,-3,4]`
-
-    sum=2
-  |
-  j1d: "..."
-}
-
-i3: "Outer loop i=3: all subarrays starting at index 3" {
-  grid-columns: 4
-  grid-gap: 16
-  j3a: |md
-    `[4]`
-
-    sum=4
-  |
-  j3b: |md
-    `[4,-1]`
-
-    sum=3
-  |
-  j3c: |md
-    `[4,-1,2]`
-
-    sum=5
-  |
-  j3d: |md
-    `[4,-1,2,1]`
-
-    sum=6 ← new max
-  | {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
-}
-```
-
-<p align="center"><strong>Brute force checks every subarray — N(N+1)/2 total. For each outer position <code>i</code>, the inner loop extends <code>j</code> rightward accumulating the sum. Every subarray is evaluated explicitly.</strong></p>
-
-> ▶ Interactive Diagram — TODO: add caption
-```d3 widget=array-traversal
+```d3 widget=array-1d
 {
-  "items": ["-2", "1", "-3", "4", "-1", "2", "1", "-5", "4"],
-  "title": "Brute force max subarray sum — selected highlights",
   "steps": [
-    { "markers": [{"name": "i", "index": 0, "color": "#3b82f6"}, {"name": "j", "index": 0, "color": "#f59e0b"}], "range": {"lo": 0, "hi": 0}, "msg": "i=0, j=0 → subarray=[-2], sum=-2; maxSum=-2." },
-    { "markers": [{"name": "i", "index": 0, "color": "#3b82f6"}, {"name": "j", "index": 1, "color": "#f59e0b"}], "range": {"lo": 0, "hi": 1}, "msg": "i=0, j=1 → subarray=[-2,1], sum=-1; maxSum=-1." },
-    { "markers": [{"name": "i", "index": 0, "color": "#3b82f6"}, {"name": "j", "index": 8, "color": "#f59e0b"}], "range": {"lo": 0, "hi": 8}, "msg": "…i=0 continues to j=8 (all subarrays starting at 0)." },
-    { "markers": [{"name": "i", "index": 1, "color": "#3b82f6"}, {"name": "j", "index": 1, "color": "#f59e0b"}], "range": {"lo": 1, "hi": 1}, "msg": "i=1, j=1 → subarray=[1], sum=1." },
-    { "markers": [{"name": "i", "index": 3, "color": "#3b82f6"}, {"name": "j", "index": 3, "color": "#f59e0b"}], "range": {"lo": 3, "hi": 3}, "msg": "i=3, j=3 → subarray=[4], sum=4; maxSum=4." },
-    { "markers": [{"name": "i", "index": 3, "color": "#3b82f6"}, {"name": "j", "index": 4, "color": "#f59e0b"}], "range": {"lo": 3, "hi": 4}, "msg": "i=3, j=4 → subarray=[4,-1], sum=3." },
-    { "markers": [{"name": "i", "index": 3, "color": "#3b82f6"}, {"name": "j", "index": 5, "color": "#f59e0b"}], "range": {"lo": 3, "hi": 5}, "msg": "i=3, j=5 → subarray=[4,-1,2], sum=5; maxSum=5." },
-    { "markers": [{"name": "i", "index": 3, "color": "#3b82f6"}, {"name": "j", "index": 6, "color": "#f59e0b"}], "range": {"lo": 3, "hi": 6}, "msg": "i=3, j=6 → subarray=[4,-1,2,1], sum=6; maxSum=6 ★." },
-    { "markers": [{"name": "i", "index": 3, "color": "#3b82f6"}, {"name": "j", "index": 7, "color": "#f59e0b"}], "range": {"lo": 3, "hi": 7}, "msg": "i=3, j=7 → subarray=[4,-1,2,1,-5], sum=1; maxSum stays 6." },
-    { "markers": [{"name": "i", "index": 3, "color": "#3b82f6"}, {"name": "j", "index": 8, "color": "#f59e0b"}], "range": {"lo": 3, "hi": 8}, "msg": "i=3, j=8 → subarray=[4,-1,2,1,-5,4], sum=5; maxSum stays 6. Outer loop continues to i=4..8 (all dominated by earlier 6)." }
-  ]
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "-2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "-3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "-1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "7",
+          "label": "-5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "8",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 8,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "i",
+          "target": "0",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "j",
+          "target": "0",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "0"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "i=0, j=0 → subarray=[-2], sum=-2; maxSum=-2.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "-2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "-3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "-1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "7",
+          "label": "-5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "8",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 8,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "i",
+          "target": "0",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "j",
+          "target": "1",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "0",
+        "1"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "i=0, j=1 → subarray=[-2,1], sum=-1; maxSum=-1.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "-2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "-3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "-1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "7",
+          "label": "-5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "8",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 8,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "i",
+          "target": "0",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "j",
+          "target": "8",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "…i=0 continues to j=8 (all subarrays starting at 0).",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "-2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "-3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "-1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "7",
+          "label": "-5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "8",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 8,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "i",
+          "target": "1",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "j",
+          "target": "1",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "1"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "i=1, j=1 → subarray=[1], sum=1.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "-2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "-3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "-1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "7",
+          "label": "-5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "8",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 8,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "i",
+          "target": "3",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "j",
+          "target": "3",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "3"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "i=3, j=3 → subarray=[4], sum=4; maxSum=4.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "-2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "-3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "-1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "7",
+          "label": "-5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "8",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 8,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "i",
+          "target": "3",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "j",
+          "target": "4",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "3",
+        "4"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "i=3, j=4 → subarray=[4,-1], sum=3.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "-2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "-3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "-1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "7",
+          "label": "-5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "8",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 8,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "i",
+          "target": "3",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "j",
+          "target": "5",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "3",
+        "4",
+        "5"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "i=3, j=5 → subarray=[4,-1,2], sum=5; maxSum=5.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "-2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "-3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "-1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "7",
+          "label": "-5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "8",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 8,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "i",
+          "target": "3",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "j",
+          "target": "6",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "3",
+        "4",
+        "5",
+        "6"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "i=3, j=6 → subarray=[4,-1,2,1], sum=6; maxSum=6 ★.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "-2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "-3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "-1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "7",
+          "label": "-5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "8",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 8,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "i",
+          "target": "3",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "j",
+          "target": "7",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "i=3, j=7 → subarray=[4,-1,2,1,-5], sum=1; maxSum stays 6.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "-2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "-3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "-1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "7",
+          "label": "-5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "8",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 8,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "i",
+          "target": "3",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "j",
+          "target": "8",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "i=3, j=8 → subarray=[4,-1,2,1,-5,4], sum=5; maxSum stays 6. Outer loop continues to i=4..8 (all dominated by earlier 6).",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    }
+  ],
+  "title": "Brute force max subarray sum — selected highlights"
 }
 ```
 
+  <p align="center"><strong>Brute force checks every subarray — N(N+1)/2 total. For each outer position <code>i</code>, the inner loop extends <code>j</code> rightward accumulating the sum. Every subarray is evaluated explicitly.</strong></p>
 
 ```python run viz=array viz-root=arr
 from typing import List
@@ -654,7 +1664,7 @@ def max_subarray_sum_brute(arr: List[int]) -> int:
 print(max_subarray_sum_brute([-2, 1, -3, 4, -1, 2, 1, -5, 4]))   # 6
 ```
 
-```java run
+```java run viz=array viz-root=arr
 public class Main {
     static int maxSubarraySumBrute(int[] arr) {
         int maxSum = Integer.MIN_VALUE;
@@ -724,21 +1734,990 @@ flowchart TB
 ```
 
 > ▶ Interactive Diagram — The variable-sized sliding window skips all subarrays starting between start+1 and end, and all subarrays starting at start and ending beyond end. Two resets occur — at end=1 and end=3 — discarding all subarrays rooted in those negative prefixes.
-```d3 widget=array-traversal
+```d3 widget=array-1d
 {
-  "items": ["-2", "1", "-3", "4", "-1", "2", "1", "-5", "4"],
-  "title": "Variable-window max subarray sum (Kadane's) on [-2, 1, -3, 4, -1, 2, 1, -5, 4]",
   "steps": [
-    { "markers": [{"name": "start", "index": 0, "color": "#3b82f6"}, {"name": "end", "index": 0, "color": "#f59e0b"}], "range": {"lo": 0, "hi": 0}, "msg": "Init: current = arr[0] = −2, maxSum = −2." },
-    { "markers": [{"name": "start", "index": 1, "color": "#3b82f6"}, {"name": "end", "index": 1, "color": "#f59e0b"}], "range": {"lo": 1, "hi": 1}, "msg": "end=1, current=−2 < 0 → reset: current=arr[1]=1, start=1; maxSum = max(−2, 1) = 1." },
-    { "markers": [{"name": "start", "index": 1, "color": "#3b82f6"}, {"name": "end", "index": 2, "color": "#f59e0b"}], "range": {"lo": 1, "hi": 2}, "msg": "end=2, current=1 ≥ 0 → extend: current = 1 + (−3) = −2; maxSum stays 1." },
-    { "markers": [{"name": "start", "index": 3, "color": "#3b82f6"}, {"name": "end", "index": 3, "color": "#f59e0b"}], "range": {"lo": 3, "hi": 3}, "msg": "end=3, current=−2 < 0 → reset: current=arr[3]=4, start=3; maxSum = max(1, 4) = 4." },
-    { "markers": [{"name": "start", "index": 3, "color": "#3b82f6"}, {"name": "end", "index": 4, "color": "#f59e0b"}], "range": {"lo": 3, "hi": 4}, "msg": "end=4, current=4 ≥ 0 → extend: current = 4 + (−1) = 3; maxSum stays 4." },
-    { "markers": [{"name": "start", "index": 3, "color": "#3b82f6"}, {"name": "end", "index": 5, "color": "#f59e0b"}], "range": {"lo": 3, "hi": 5}, "msg": "end=5, current=3 ≥ 0 → extend: current = 3 + 2 = 5; maxSum = max(4, 5) = 5." },
-    { "markers": [{"name": "start", "index": 3, "color": "#3b82f6"}, {"name": "end", "index": 6, "color": "#f59e0b"}], "range": {"lo": 3, "hi": 6}, "msg": "end=6, current=5 ≥ 0 → extend: current = 5 + 1 = 6; maxSum = max(5, 6) = 6 ★." },
-    { "markers": [{"name": "start", "index": 3, "color": "#3b82f6"}, {"name": "end", "index": 7, "color": "#f59e0b"}], "range": {"lo": 3, "hi": 7}, "msg": "end=7, current=6 ≥ 0 → extend: current = 6 + (−5) = 1; maxSum stays 6." },
-    { "markers": [{"name": "start", "index": 3, "color": "#3b82f6"}, {"name": "end", "index": 8, "color": "#f59e0b"}], "range": {"lo": 3, "hi": 8}, "msg": "end=8, current=1 ≥ 0 → extend: current = 1 + 4 = 5; maxSum stays 6 → return 6." }
-  ]
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "-2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "-3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "-1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "7",
+          "label": "-5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "8",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 8,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "start",
+          "target": "0",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "0",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "0"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "Init: current = arr[0] = −2, maxSum = −2.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "-2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "-3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "-1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "7",
+          "label": "-5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "8",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 8,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "start",
+          "target": "1",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "1",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "1"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "end=1, current=−2 < 0 → reset: current=arr[1]=1, start=1; maxSum = max(−2, 1) = 1.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "-2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "-3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "-1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "7",
+          "label": "-5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "8",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 8,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "start",
+          "target": "1",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "2",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "1",
+        "2"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "end=2, current=1 ≥ 0 → extend: current = 1 + (−3) = −2; maxSum stays 1.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "-2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "-3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "-1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "7",
+          "label": "-5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "8",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 8,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "start",
+          "target": "3",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "3",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "3"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "end=3, current=−2 < 0 → reset: current=arr[3]=4, start=3; maxSum = max(1, 4) = 4.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "-2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "-3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "-1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "7",
+          "label": "-5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "8",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 8,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "start",
+          "target": "3",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "4",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "3",
+        "4"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "end=4, current=4 ≥ 0 → extend: current = 4 + (−1) = 3; maxSum stays 4.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "-2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "-3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "-1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "7",
+          "label": "-5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "8",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 8,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "start",
+          "target": "3",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "5",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "3",
+        "4",
+        "5"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "end=5, current=3 ≥ 0 → extend: current = 3 + 2 = 5; maxSum = max(4, 5) = 5.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "-2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "-3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "-1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "7",
+          "label": "-5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "8",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 8,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "start",
+          "target": "3",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "6",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "3",
+        "4",
+        "5",
+        "6"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "end=6, current=5 ≥ 0 → extend: current = 5 + 1 = 6; maxSum = max(5, 6) = 6 ★.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "-2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "-3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "-1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "7",
+          "label": "-5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "8",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 8,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "start",
+          "target": "3",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "7",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "end=7, current=6 ≥ 0 → extend: current = 6 + (−5) = 1; maxSum stays 6.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "-2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "-3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "-1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "7",
+          "label": "-5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "8",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 8,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "start",
+          "target": "3",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "8",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "end=8, current=1 ≥ 0 → extend: current = 1 + 4 = 5; maxSum stays 6 → return 6.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    }
+  ],
+  "title": "Variable-window max subarray sum (Kadane's) on [-2, 1, -3, 4, -1, 2, 1, -5, 4]"
 }
 ```
 
@@ -796,7 +2775,7 @@ print(sol.max_subarray_sum([-3, -1, -2]))                       # -1
 print(sol.max_subarray_sum([1]))                                # 1
 ```
 
-```java run
+```java run viz=array viz-root=arr
 public class Main {
     static class Solution {
         public int maxSubarraySum(int[] arr) {
@@ -883,6 +2862,8 @@ As the code above demonstrates, using the variable-sized sliding window techniqu
 
 ## Proof of Correctness
 
+### 1. The Invariant
+
 Consider we have an array `arr` and a window denoted by `start` and `end` (including `start`, including `end`) somewhere in the array such that `sum(start, i)` is non-negative for all `i` such that `start ≤ i < end`. This will be the **invariant** that we maintain throughout the execution.
 
 > 🖼 Diagram — The invariant states that every partial sum from start to any index before end is non-negative. The window has been "clean" up to this point.
@@ -938,9 +2919,25 @@ brk -> note: "" {style.stroke-dash: 3}
 
 If the invariant holds, we can prove that all of the following subarrays can never have the maximum sum and can be ignored.
 
+**Running example for this proof.** As each case below proves a family of subarrays is suboptimal, we'll spot-check the claim against this window:
+
+- **Array:** `arr = [2, -5, 1, 4, 3]`
+- **Window state:** `start = 0`, `end = 1`
+- **Invariant held a moment ago:** `sum(0, 0) = 2 ≥ 0`
+- **Adding `arr[1] = -5` broke it:** `sum(0, 1) = 2 + (-5) = -3 < 0`
+
+**Variable trace — how we got here:**
+
+| Step | Operation              | `start` | `end` | `sum` | Invariant `sum(start, i) ≥ 0` for `i ∈ [start, end)` |
+|------|------------------------|---------|-------|-------|------------------------------------------------------|
+| Init | —                      | 0       | 0     | 0     | trivially holds (empty range)                        |
+| 1    | `sum += arr[0] = 2`    | 0       | 0     | 2     | `sum(0, 0) = 2 ≥ 0` ✓                                 |
+| 2    | `end += 1`             | 0       | 1     | 2     | still holds — window is `arr[0..0]`                   |
+| 3    | `sum += arr[1] = -5`   | 0       | 1     | -3    | **broken** — `sum(0, 1) = -3 < 0`                     |
+
 ---
 
-### 1. Subarrays Starting at `start` and Ending Beyond `end`
+### 2. Subarrays Starting at `start` and Ending Beyond `end`
 
 Consider a subarray starting at `start` and ending beyond `end` at some index `b`. We can prove that `sum(start, b)` can never be the maximum sum. This is because `sum(end+1, b)` will always be greater, since `sum(start, end)` is negative.
 
@@ -948,7 +2945,7 @@ Decompose: `sum(start, b) = sum(start, end) + sum(end+1, b)`
 
 Since `sum(start, end) < 0`: `sum(start, b) < sum(end+1, b)`
 
-> 🖼 Diagram — Case 1: a negative prefix drags down any extension beyond it. Starting fresh at end+1 always produces a higher sum.
+> 🖼 Diagram — Case 2: a negative prefix drags down any extension beyond it. Starting fresh at end+1 always produces a higher sum.
 ```mermaid
 ---
 config:
@@ -972,21 +2969,39 @@ flowchart LR
     Full --> Neg --> Comp --> Conc
 ```
 
-<p align="center"><strong>Case 1: a negative prefix drags down any extension beyond it. Starting fresh at <code>end+1</code> always produces a higher sum.</strong></p>
+<p align="center"><strong>Case 2: a negative prefix drags down any extension beyond it. Starting fresh at <code>end+1</code> always produces a higher sum.</strong></p>
+
+**Concrete check on `arr = [2, -5, 1, 4, 3]` with `start = 0, end = 1`.**
+
+- **Candidates:** Subarrays starting at `0` and ending at `2`, `3`, or `4`.
+- **Take the longest:** `arr[0..4] = [2, -5, 1, 4, 3]`, sum = `5`.
+- **Dominator:** `arr[2..4] = [1, 4, 3]`, sum = `8`.
+- **Why:** `sum(0, b) = sum(0, 1) + sum(2, b) = -3 + sum(2, b)` — the negative prefix drags every extension down by exactly `3`.
+- **Result:** Every Case 2 candidate is strictly beaten by the corresponding fresh start at index `2`.
+
+**Variable trace — every Case 2 candidate vs its dominator:**
+
+| `b` | Skip-candidate `arr[0..b]` | `sum(0, b)`    | Dominator `arr[2..b]` | `sum(2, b)`   | Difference |
+|-----|----------------------------|----------------|-----------------------|----------------|------------|
+| 2   | `[2, -5, 1]`               | -3 + 1 = -2    | `[1]`                 | 1              | -3         |
+| 3   | `[2, -5, 1, 4]`            | -2 + 4 = 2     | `[1, 4]`              | 1 + 4 = 5      | -3         |
+| 4   | `[2, -5, 1, 4, 3]`         | 2 + 3 = 5      | `[1, 4, 3]`           | 5 + 3 = 8      | -3         |
+
+The Difference column is constant at `-3` — exactly the value of the broken prefix `sum(0, 1)`. The dominator wins by that constant margin no matter how far `b` extends.
 
 **Conclusion:** We can skip all subarrays starting at `start` and ending beyond `end`.
 
 ---
 
-### 2. Subarrays Starting Between `start+1` and `end` and Ending Beyond `end`
+### 3. Subarrays Starting Between `start+1` and `end` and Ending Beyond `end`
 
 Consider a subarray starting between `start + 1` and `end` (including both) at some index `a`, and ending beyond `end` at some index `b`. We can see that `sum(a, b)` can never be the maximum sum, because it will always be less than `sum(end+1, b)`.
 
 The argument: `sum(a, end)` is negative. This is because `sum(start, end)` is negative and, per our invariant, `sum(start, a-1)` is non-negative — which means `sum(a, end)` must be negative (a non-negative prefix cannot be responsible for a negative total; the remainder must be).
 
-Once we know `sum(a, end) < 0`, the same argument from Case 1 applies: `sum(a, b) = sum(a, end) + sum(end+1, b) < sum(end+1, b)`.
+Once we know `sum(a, end) < 0`, the same argument from Case 2 applies: `sum(a, b) = sum(a, end) + sum(end+1, b) < sum(end+1, b)`.
 
-> 🖼 Diagram — Case 2: any subarray rooted between start+1 and end that extends beyond end is beaten by starting fresh at end+1.
+> 🖼 Diagram — Case 3: any subarray rooted between start+1 and end that extends beyond end is beaten by starting fresh at end+1.
 ```mermaid
 ---
 config:
@@ -1011,13 +3026,40 @@ flowchart LR
     Structure --> Inv --> Neg --> Comp --> Conc
 ```
 
-<p align="center"><strong>Case 2: any subarray rooted between <code>start+1</code> and <code>end</code> that extends beyond <code>end</code> is beaten by starting fresh at <code>end+1</code>.</strong></p>
+<p align="center"><strong>Case 3: any subarray rooted between <code>start+1</code> and <code>end</code> that extends beyond <code>end</code> is beaten by starting fresh at <code>end+1</code>.</strong></p>
+
+**Concrete check on `arr = [2, -5, 1, 4, 3]` with `start = 0, end = 1`.**
+
+- **Choice of `a`:** The only `a` between `start+1 = 1` and `end = 1` is `a = 1`.
+- **Take a candidate:** `arr[1..4] = [-5, 1, 4, 3]`, sum = `3`.
+- **Dominator:** `arr[2..4] = [1, 4, 3]`, sum = `8`.
+- **Why `sum(1, 1)` is negative:** invariant gives `sum(0, 0) = 2 ≥ 0`; we observed `sum(0, 1) = -3 < 0`; subtracting, `sum(1, 1) = -3 − 2 = -5`.
+- **Result:** With `sum(a, end)` proven negative, Case 2's argument repeats verbatim — every Case 3 candidate is beaten by the fresh start at index `2`.
+
+**Variable trace — deriving `sum(a, end) = sum(1, 1)`:**
+
+| Step | Statement                                      | Value         | Source              |
+|------|------------------------------------------------|---------------|---------------------|
+| 1    | `sum(0, 0)`                                    | 2 (≥ 0)       | invariant           |
+| 2    | `sum(0, 1)`                                    | -3 (< 0)      | observed            |
+| 3    | `sum(0, 1) = sum(0, 0) + sum(1, 1)`            | -3 = 2 + x    | decomposition       |
+| 4    | Solve for `sum(1, 1)`                          | -5 (< 0)      | step 3 algebra      |
+
+**Variable trace — every Case 3 candidate vs its dominator (a = 1):**
+
+| `b` | Skip-candidate `arr[1..b]` | `sum(1, b)`    | Dominator `arr[2..b]` | `sum(2, b)`   | Difference |
+|-----|----------------------------|----------------|-----------------------|----------------|------------|
+| 2   | `[-5, 1]`                  | -5 + 1 = -4    | `[1]`                 | 1              | -5         |
+| 3   | `[-5, 1, 4]`               | -4 + 4 = 0     | `[1, 4]`              | 1 + 4 = 5      | -5         |
+| 4   | `[-5, 1, 4, 3]`            | 0 + 3 = 3      | `[1, 4, 3]`           | 5 + 3 = 8      | -5         |
+
+The Difference column is constant at `-5` = `sum(1, 1)` — the negative prefix `[−5]` loses exactly that much to every dominator, regardless of `b`.
 
 **Conclusion:** We can skip all subarrays starting between `start+1` and `end` (including both) and ending beyond `end`.
 
 ---
 
-### 3. Subarrays Starting Between `start+1` and `end` and Ending At or Before `end`
+### 4. Subarrays Starting Between `start+1` and `end` and Ending At or Before `end`
 
 Consider a subarray starting between `start + 1` and `end` (including both) at index `a`, and ending at or before `end` at index `b`. We can see that `sum(a, b)` can never be the maximum sum, because it will always be less than `sum(start, b)`.
 
@@ -1027,7 +3069,7 @@ The argument: per our invariant, `sum(start, a-1) ≥ 0`. Therefore:
 
 Any subarray starting later than `start` and ending at the same point `b` is always beaten by the subarray starting at `start`, because prepending a non-negative prefix to any subarray never reduces its sum.
 
-> 🖼 Diagram — Case 3: any subarray starting strictly after start and ending before end is dominated by the corresponding subarray starting at start — which was already evaluated in a previous iteration.
+> 🖼 Diagram — Case 4: any subarray starting strictly after start and ending before end is dominated by the corresponding subarray starting at start — which was already evaluated in a previous iteration.
 ```mermaid
 ---
 config:
@@ -1051,7 +3093,26 @@ flowchart LR
     Structure --> Inv --> Dom --> Conc
 ```
 
-<p align="center"><strong>Case 3: any subarray starting strictly after <code>start</code> and ending before <code>end</code> is dominated by the corresponding subarray starting at <code>start</code> — which was already evaluated in a previous iteration.</strong></p>
+<p align="center"><strong>Case 4: any subarray starting strictly after <code>start</code> and ending before <code>end</code> is dominated by the corresponding subarray starting at <code>start</code> — which was already evaluated in a previous iteration.</strong></p>
+
+**Concrete check on `arr = [2, -5, 1, 4, 3]` with `start = 0, end = 1`.**
+
+- **Choice of `a, b`:** Only `a = 1` is available, and only `b = 1` (since `b ≤ end`).
+- **Single Case 4 candidate:** `arr[1..1] = [-5]`, sum = `-5`.
+- **Dominator:** `arr[0..1] = [2, -5]`, sum = `-3`.
+- **Why:** prepending the non-negative prefix `sum(0, 0) = 2` lifted the total by exactly `2`, so `arr[0..1]` strictly beats `arr[1..1]`.
+- **Already considered:** `arr[0..1]` was already evaluated in the previous iteration's Operation 2.
+
+**Variable trace — skip-candidate vs dominator:**
+
+| Step | Quantity                            | Value             | Source                |
+|------|-------------------------------------|-------------------|-----------------------|
+| 1    | Skip-candidate `sum(1, 1)`          | -5                | direct                |
+| 2    | Non-negative prefix `sum(0, 0)`     | 2 (≥ 0)           | invariant             |
+| 3    | Dominator `sum(0, 1) = sum(0, 0) + sum(1, 1)` | 2 + (-5) = -3 | decomposition |
+| 4    | Comparison: `sum(0, 1) ≥ sum(1, 1)` | -3 ≥ -5 ✓         | step 1 vs step 3      |
+
+The dominator's lift is exactly `sum(0, 0) = 2` — the non-negative prefix the invariant promised. That lift is always present, so the dominator always ties or beats the skip-candidate.
 
 **Conclusion:** We can skip all subarrays starting between `start+1` and `end` (including both) and ending at or before `end`.
 
@@ -1061,8 +3122,8 @@ flowchart LR
 
 We can conclude from the three cases above that if the invariant holds, the following subarrays can be skipped entirely:
 
-1. All subarrays starting at `start` and ending beyond `end` (from Case 1)
-2. All subarrays starting between `start+1` and `end`, including both, ending anywhere (from Cases 2 and 3)
+1. All subarrays starting at `start` and ending beyond `end` (from Case 2)
+2. All subarrays starting between `start+1` and `end`, including both, ending anywhere (from Cases 3 and 4)
 
 > 🖼 Diagram — Three cases together cover every possible subarray that touches the current window. All are safely skippable once the prefix sum turns negative.
 ```mermaid
@@ -1080,9 +3141,9 @@ config:
 flowchart LR
     subgraph Skip["All skippable subarrays when sum(start,end) < 0"]
         direction LR
-        C1["Case 1: arr[start..b] for b > end"]
-        C2["Case 2: arr[a..b] for start < a ≤ end, b > end"]
-        C3["Case 3: arr[a..b] for start < a ≤ end, b ≤ end"]
+        C1["Case 2: arr[start..b] for b > end"]
+        C2["Case 3: arr[a..b] for start < a ≤ end, b > end"]
+        C3["Case 4: arr[a..b] for start < a ≤ end, b ≤ end"]
     end
     Conc["All subarrays touching the current window<br/>starting at start or between start+1..end<br/>ending anywhere at or beyond start+1<br/>are provably suboptimal"]
     Skip --> Conc
@@ -1125,9 +3186,9 @@ Since the invariant is maintained throughout the run, and we consider `sum(start
 
 Most problems in this category are medium or hard — the difficulty lies not in the template itself, but in identifying the right invariant and proving the skipping is safe. The following problems in this section are solved using the variable-sized sliding window:
 
-- **Consecutive Ones** — find the length of the longest run of 1s (no flips allowed)
-- **Product Conundrum** — find the length of the longest subarray with product strictly less than K
-- **Maximum Subarray Sum** — find the maximum sum over any subarray (the problem we just proved)
-- **Consecutive Ones with K Flips** — find the longest run of 1s with at most K zeros flipped
+- **[Consecutive Ones](02-problems/01-consecutive-ones.md)** — find the length of the longest run of 1s (no flips allowed)
+- **[Product Conundrum](02-problems/02-product-conundrum.md)** — find the length of the longest subarray with product strictly less than K
+- **[Maximum Subarray Sum](02-problems/03-maximum-subarray-sum.md)** — find the maximum sum over any subarray (the problem we just proved)
+- **[Consecutive Ones with K Flips](02-problems/04-consecutive-ones-with-k-flips.md)** — find the longest run of 1s with at most K zeros flipped
 
 We will now solve these problems to understand the variable-size sliding window technique better.

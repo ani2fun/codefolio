@@ -45,7 +45,7 @@ flowchart TB
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional
 
 
@@ -133,7 +133,7 @@ print(Solution().symmetry_detection(from_level_order([1, 2, 2, 3, 4, 4, 3])))   
 print(Solution().symmetry_detection(from_level_order([1, 2, 2, None, 3, None, 3])))  # False (structure differs)
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

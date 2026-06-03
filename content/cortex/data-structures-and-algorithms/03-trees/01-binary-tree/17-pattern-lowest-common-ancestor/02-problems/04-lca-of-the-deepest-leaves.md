@@ -19,7 +19,7 @@ A more elegant *one-pass* solution exists using the stateful postorder pattern f
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from queue import Queue
 from typing import Optional
 
@@ -150,7 +150,7 @@ root6 = from_level_order([1, 2, 3, 4, 5, None, None])       # one side deeper
 print(Solution().deepest_lowest_common_ancestor(root6).val)   # 2
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

@@ -116,7 +116,7 @@ print(Solution().root_to_leaf_paths(from_level_order([1, 2, 3]), 4))            
 print(Solution().root_to_leaf_paths(from_level_order([1, 2, 2]), 3))                        # [[1, 2], [1, 2]] (two identical paths)
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

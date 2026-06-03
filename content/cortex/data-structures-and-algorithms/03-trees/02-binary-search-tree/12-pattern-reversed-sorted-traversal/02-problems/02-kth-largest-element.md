@@ -34,7 +34,7 @@ Walk reverse in-order; the k-th node visited is the k-th largest. Critically —
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional, List, Any
 
 
@@ -133,7 +133,7 @@ print(Solution().kth_largest_element(
     from_level_order([4, 2, 5, 1, 3, None, 6]), 6))   # 1
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

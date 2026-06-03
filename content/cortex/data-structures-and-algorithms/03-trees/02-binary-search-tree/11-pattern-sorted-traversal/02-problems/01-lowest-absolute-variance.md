@@ -29,7 +29,7 @@ Given the **root** of a binary search tree, return the lowest absolute variance 
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional, List
 
 
@@ -124,7 +124,7 @@ print(Solution().lowest_absolute_variance(
     from_level_order([5, 3, 7, 2, 4, 6, 8])))         # 1
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

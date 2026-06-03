@@ -99,7 +99,7 @@ flowchart LR
 
 
 
-```python run viz=array viz-root=storage_stack
+```python run viz=array viz-root=storage_stack viz-kind=stack
 import math
 
 class MinStack:
@@ -167,7 +167,7 @@ ms3.pop()
 print(ms3.get_min()) # 10
 ```
 
-```java run
+```java run viz=array viz-root=storage_stack viz-kind=stack
 import java.util.*;
 
 public class Main {
@@ -289,7 +289,7 @@ Mirror image of MinStack. Maintain a running `max`. When a new max arrives, push
 
 
 
-```python run viz=array viz-root=storage_stack
+```python run viz=array viz-root=storage_stack viz-kind=stack
 import math
 from typing import List
 
@@ -358,7 +358,7 @@ ms3.pop()
 print(ms3.get_max()) # 1
 ```
 
-```java run
+```java run viz=array viz-root=storage_stack viz-kind=stack
 import java.util.*;
 
 public class Main {

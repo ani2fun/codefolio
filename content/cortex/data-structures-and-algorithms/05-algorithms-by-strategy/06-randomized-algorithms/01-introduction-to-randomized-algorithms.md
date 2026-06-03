@@ -150,7 +150,7 @@ if __name__ == "__main__":
     print(f"  max deviation: {(max(counts) - min(counts)) / (trials / 10) * 100:.1f}%")
 ```
 
-```java run
+```java run viz=graph viz-root=sample
 import java.util.*;
 
 public class Main {

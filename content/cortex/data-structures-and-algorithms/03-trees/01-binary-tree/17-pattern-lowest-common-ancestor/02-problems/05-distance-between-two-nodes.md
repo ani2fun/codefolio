@@ -51,7 +51,7 @@ flowchart TB
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional
 
 
@@ -164,7 +164,7 @@ print(Solution().distance_between_nodes(from_level_order([1, 2, 3, 4, None, None
 print(Solution().distance_between_nodes(from_level_order([1, 2, 3, 4, None, None, 7]), 4, 2))         # 1 (parent-child)
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

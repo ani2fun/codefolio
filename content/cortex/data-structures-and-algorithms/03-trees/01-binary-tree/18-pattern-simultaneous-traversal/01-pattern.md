@@ -64,7 +64,7 @@ flowchart TB
 The "are these two trees identical?" template — the simplest member of the family.
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional
 
 class TreeNode:
@@ -78,7 +78,7 @@ def identical(a: Optional[TreeNode], b: Optional[TreeNode]) -> bool:
     return identical(a.left, b.left) and identical(a.right, b.right)
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 public static boolean identical(TreeNode a, TreeNode b) {
     if (a == null && b == null) return true;
     if (a == null || b == null) return false;

@@ -1,6 +1,6 @@
 ---
 title: "Converting Expressions Using Stack"
-summary: "<!-- TODO: summary -->"
+summary: "Rewrite arithmetic between infix, postfix, and prefix with one stack. Postfix and prefix conversions push operands and pop two to glue with the operator; infix-to-postfix is the Shunting-Yard algorithm, with infix-to-prefix a reverse-and-flip extension. O(N) time and O(N) space with string builders."
 ---
 
 # 6. Converting Expressions Using a Stack
@@ -19,18 +19,44 @@ The same handful of moves — *push operand, pop-two-and-combine, peek-and-compa
 
 ## Table of contents
 
-1. [Postfix → Prefix](#understanding-postfix-to-prefix-conversion)
-2. [Convert postfix to prefix](#convert-postfix-to-prefix)
-3. [Postfix → Infix](#understanding-postfix-to-infix-conversion)
-4. [Convert postfix to infix](#convert-postfix-to-infix)
-5. [Prefix → Postfix](#understanding-prefix-to-postfix-conversion)
-6. [Convert prefix to postfix](#convert-prefix-to-postfix)
-7. [Prefix → Infix](#understanding-prefix-to-infix-conversion)
-8. [Convert prefix to infix](#convert-prefix-to-infix)
-9. [Infix → Postfix](#understanding-infix-to-postfix-conversion)
-10. [Convert infix to postfix](#convert-infix-to-postfix)
-11. [Infix → Prefix](#understanding-infix-to-prefix-conversion)
-12. [Convert infix to prefix](#convert-infix-to-prefix)
+1. [Understanding the problem](#understanding-the-problem)
+2. [Postfix → Prefix](#understanding-postfix-to-prefix-conversion)
+3. [Convert postfix to prefix](#convert-postfix-to-prefix)
+4. [Postfix → Infix](#understanding-postfix-to-infix-conversion)
+5. [Convert postfix to infix](#convert-postfix-to-infix)
+6. [Prefix → Postfix](#understanding-prefix-to-postfix-conversion)
+7. [Convert prefix to postfix](#convert-prefix-to-postfix)
+8. [Prefix → Infix](#understanding-prefix-to-infix-conversion)
+9. [Convert prefix to infix](#convert-prefix-to-infix)
+10. [Infix → Postfix](#understanding-infix-to-postfix-conversion)
+11. [Convert infix to postfix](#convert-infix-to-postfix)
+12. [Infix → Prefix](#understanding-infix-to-prefix-conversion)
+13. [Convert infix to prefix](#convert-infix-to-prefix)
+14. [Supported operations](#supported-operations)
+15. [Internal mechanics](#internal-mechanics)
+16. [Working example](#working-example)
+17. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
+18. [Production reality](#production-reality)
+19. [Practice ladder](#practice-ladder)
+20. [Quiz](#quiz)
+21. [Further reading](#further-reading)
+22. [Cross-links](#cross-links)
+23. [Final takeaway](#final-takeaway)
+
+***
+
+# Understanding the Problem
+
+A conversion routine exists to move an expression between notations without changing what it computes — and the trap is that the notations are not related by any string operation. Reversing a postfix string does not give prefix; flipping operators in place does not give infix. The operand order is always left-to-right in every notation, but the operator positions move, and moving them correctly requires rebuilding the operator–operand grouping rather than shuffling characters.
+
+The six conversions split by what the source notation already tells you:
+
+- **From postfix or prefix** — the source already encodes evaluation order by position, so one linear scan with a string stack rebuilds any target. Pop two sub-expressions, glue the operator on, push the combined string back.
+- **From infix** — the source hides order behind precedence and parentheses, so the conversion must *recover* that order first. That recovery is the Shunting-Yard algorithm, and `infix → prefix` reuses it after a reverse-and-flip.
+
+To make this concrete: converting postfix `231*+9-` to prefix is a single left-to-right walk that folds the string into `-+2*319`. Converting infix `(2+3)*4` to postfix cannot relocate the `*` and `+` in place — it has to let `+` wait on a stack behind the `(` fence, emit it when `)` arrives, then emit `*` at end of input to produce `23+4*`.
+
+So the key idea is: **conversion preserves operand order and re-places operators, and the source notation decides whether one scan suffices (postfix/prefix) or a precedence-aware pass is needed first (infix).**
 
 ***
 
@@ -99,7 +125,7 @@ Given a postfix expression `postfix`, return the equivalent prefix expression. O
 
 
 
-```python run
+```python run viz=array viz-root=stack viz-kind=stack
 from typing import List
 
 class Solution:
@@ -152,7 +178,7 @@ print(Solution().convert_postfix_to_prefix("abcd-+*"))       # *a+-bcd
 print(Solution().convert_postfix_to_prefix("ab+cd+*"))       # *+ab+cd
 ```
 
-```java run
+```java run viz=array viz-root=stack viz-kind=stack
 import java.util.*;
 
 public class Main {
@@ -271,7 +297,7 @@ flowchart LR
 
 
 
-```python run
+```python run viz=array viz-root=stack viz-kind=stack
 from typing import List
 
 class Solution:
@@ -324,7 +350,7 @@ print(Solution().convert_postfix_to_infix("ab+cd+*"))              # ((a+b)*(c+d
 print(Solution().convert_postfix_to_infix("abcd-+*"))              # (a*(b+(c-d)))
 ```
 
-```java run
+```java run viz=array viz-root=stack viz-kind=stack
 import java.util.*;
 
 public class Main {
@@ -446,7 +472,7 @@ flowchart LR
 
 
 
-```python run
+```python run viz=array viz-root=stack viz-kind=stack
 from typing import List
 
 class Solution:
@@ -499,7 +525,7 @@ print(Solution().convert_prefix_to_postfix("*+ab+cd"))       # ab+cd+*
 print(Solution().convert_prefix_to_postfix("*a+-bcd"))       # abcd-+*
 ```
 
-```java run
+```java run viz=array viz-root=stack viz-kind=stack
 import java.util.*;
 
 public class Main {
@@ -594,7 +620,7 @@ Right-to-left scan, infix combine step `(a op b)`.
 
 
 
-```python run
+```python run viz=array viz-root=stack viz-kind=stack
 from typing import List
 
 class Solution:
@@ -648,7 +674,7 @@ print(Solution().convert_prefix_to_infix("*+ab+cd"))       # ((a+b)*(c+d))
 print(Solution().convert_prefix_to_infix("*a+-bcd"))       # (a*(b+(c-d)))
 ```
 
-```java run
+```java run viz=array viz-root=stack viz-kind=stack
 import java.util.*;
 
 public class Main {
@@ -799,7 +825,7 @@ The key invariant: **at any point during the scan, the operator stack contains o
 
 
 
-```python run
+```python run viz=array viz-root=stack viz-kind=stack
 from typing import List
 
 class Solution:
@@ -886,7 +912,7 @@ print(Solution().convert_infix_to_postfix("(a+b)*(c-d)"))              # ab+cd-*
 print(Solution().convert_infix_to_postfix("a^b^c"))                    # ab^c^ (right-assoc handled)
 ```
 
-```java run
+```java run viz=array viz-root=stack viz-kind=stack
 import java.util.*;
 
 public class Main {
@@ -1050,7 +1076,7 @@ flowchart LR
 
 
 
-```python run
+```python run viz=array viz-root=stack viz-kind=stack
 from typing import List
 
 class Solution:
@@ -1143,7 +1169,7 @@ print(Solution().convert_infix_to_prefix("(a+b)*(c-d)"))        # *+ab-cd
 print(Solution().convert_infix_to_prefix("a*(b+c)"))            # *a+bc
 ```
 
-```java run
+```java run viz=array viz-root=stack viz-kind=stack
 import java.util.*;
 
 public class Main {
@@ -1287,39 +1313,177 @@ Three lessons:
 
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+# Supported Operations
 
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
+A conversion is not a data structure, so the "operations" worth comparing are the six rewrites and the two stacks they run on. The table scores each conversion on its scan direction, its combine step, and its cost, and the differences map directly to where the operator lands in the output.
 
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
+| Conversion | Scan | Combine step | Stack holds | Time | Space |
+|---|---|---|---|---|---|
+| **Postfix → Prefix** | left → right | `op + a + b` | strings | `O(N)` | `O(N)` |
+| **Postfix → Infix** | left → right | `(a + op + b)` | strings | `O(N)` | `O(N)` |
+| **Prefix → Postfix** | right → left | `a + b + op` | strings | `O(N)` | `O(N)` |
+| **Prefix → Infix** | right → left | `(a + op + b)` | strings | `O(N)` | `O(N)` |
+| **Infix → Postfix** | left → right | precedence flush | operators | `O(N)` | `O(N)` |
+| **Infix → Prefix** | reverse, then L→R | precedence flush | operators | `O(N)` | `O(N)` |
 
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
+The `O(N)` time and space figures assume a string builder for the output. The frozen Python and Java above use naive `+` concatenation, which copies the accumulated string on each combine. That lifts the worst case to `O(N²)` time and `O(N²)` space, as each implementation's complexity note states. Switching to `StringBuilder` (Java) or a list-join (Python) restores `O(N)`.
 
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
+So the key idea is: **two combine recipes cover the four scan conversions, and one precedence-flush recipe covers both infix conversions — every cell in the table is `O(N)` once the output uses a builder instead of repeated concatenation.**
 
-<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
-<!--       Guidance: bulleted list of gotchas -->
+***
 
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+# Internal Mechanics
 
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+Two distinct engines do all six conversions, and the split is the same one from Understanding the Problem. The scan conversions run a **string stack**; the infix conversions run an **operator stack** plus an output buffer. Neither engine backtracks, and both touch every character a constant number of times.
 
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
+The string-stack engine — used by all four postfix/prefix conversions — has three moving parts:
 
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+- **Operand → push.** A single character has no operator yet, so it goes onto the stack as a one-character sub-expression.
+- **Operator → pop two, combine, push one.** The operator needs its two most recent sub-expressions. They sit on top of the stack, so it pops both, glues them with the operator in the target position, and pushes the larger sub-expression back.
+- **End of scan → the lone survivor is the answer.** A well-formed source collapses to exactly one string.
 
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
+The operator-stack engine — the Shunting-Yard algorithm used by infix conversions — keeps operators waiting in increasing precedence order from bottom to top, with an output buffer for operands. An operand appends straight to output. An incoming operator first flushes every stacked operator whose precedence is `≥` its own (strict `>` for the right-associative `^`), then pushes itself. A `(` pushes as a fence; a `)` flushes back to that fence and discards it.
 
-<!-- TODO: Final Takeaway — missing, needs to be written -->
-<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->
+To make this concrete: converting infix `2+3*4` to postfix appends `2`, pushes `+`, then meets `*`. Because `prec(*) = 2` exceeds `prec(+) = 1`, no flush happens and `*` pushes on top; the output ends `234*+`, so the multiply fires before the add. The precedence comparison, not the token order, decided the operator emission order.
+
+One subtlety separates correct from subtly-broken conversions: **operand order on the pop**. Under a left-to-right scan (postfix source), the first pop is the *right* operand and the second pop is the *left*. Under a right-to-left scan (prefix source), the first pop is the *left* operand and the second pop is the *right*. The operand-write order is always left-to-right in the output regardless of notation — only the pop order flips with the scan direction.
+
+So the core insight is: **a string stack rebuilds sub-expressions for the four scan conversions, while an operator stack with precedence flushing recovers order for the two infix conversions — and the only conversion-specific detail beyond the combine string is which pop is the left operand.**
+
+***
+
+# Working Example
+
+One infix expression, carried into postfix and then prefix, makes both engines tangible. Take `(2+3)*4`, whose value is `5 * 4 = 20`.
+
+The Shunting-Yard pass turns `(2+3)*4` into postfix `23+4*` — the parenthesis fences off `+` until `)` arrives, then `*` waits on the stack until end of input. That trace is the frozen walkthrough in the infix-to-postfix section above; the result is `23+4*`.
+
+Now convert that postfix `23+4*` to prefix with the string-stack engine, scanning left to right (first pop = right operand):
+
+- Read `2`, `3` → stack `['2', '3']`.
+- Read `+` → pop `'3'` (right), pop `'2'` (left), push `'+23'` → stack `['+23']`.
+- Read `4` → stack `['+23', '4']`.
+- Read `*` → pop `'4'` (right), pop `'+23'` (left), push `'*+234'` → stack `['*+234']`.
+- End of scan → the lone string `*+234` is the prefix form.
+
+The same `(2+3)*4` converts to prefix `*+234` directly through the reverse-and-flip route in the infix-to-prefix section, and the two agree. The operands kept their `2 3 4` left-to-right order in every notation; only the operators `+` and `*` moved.
+
+So the key idea is: **each conversion is `O(N)` and rebuilds the same expression in a new notation, preserving operand order — the postfix and prefix forms of `(2+3)*4` differ only in where `+` and `*` sit relative to `2`, `3`, and `4`.**
+
+***
+
+# Edge Cases and Pitfalls
+
+The algorithms are short; the bugs cluster in operand order, associativity, and string cost. Keep this checklist open when you implement any converter.
+
+- **Operand order on non-commutative operators.** This is the single most common bug. `+` and `*` survive a swapped pop; `-`, `/`, and `^` do not. Left-to-right scans (postfix source) pop the *right* operand first; right-to-left scans (prefix source) pop the *left* operand first. Get it wrong and `+`/`*` look correct while `-`/`/` silently produce a wrong expression.
+- **`^` is right-associative.** `2^3^2` means `2^(3^2) = 512`, not `(2^3)^2 = 64`. In Shunting-Yard, use strict `>` (not `≥`) when comparing an incoming `^` against a stacked `^`, so the new `^` pushes on top and evaluates first. Using `≥` for `^` flips the association and corrupts the output.
+- **Naive string concatenation is `O(N²)`.** Building the result with repeated `+` copies the whole accumulated string on each combine, so a length-`N` output costs `O(N²)` time and `O(N²)` space. Use a `StringBuilder` (Java) or list-join (Python) to keep it `O(N)`.
+- **Parenthesis fences must not be flushed as operators.** A `(` sits on the operator stack but has no precedence; the flush loop must stop at it, not emit it. Emitting the `(` into the output leaves a stray bracket and breaks the postfix.
+- **Unbalanced parentheses.** A missing `)` leaves a `(` stranded on the stack at end of input; a surplus `)` flushes to an empty stack. A robust converter checks that every `(` is matched before trusting the output.
+- **Infix → prefix flips bracket handling as well as the scan.** After reversing the infix string, the code pushes `)` and flushes on `(` — the brackets swap roles because reversal inverts their direction. Reversing the scan without swapping the bracket logic mismatches every parenthesis.
+- **Single-operand input.** A source of one operand and no operator (`"5"`) must return that operand unchanged. An engine that assumes at least one operator never pushes the lone survivor to the output.
+
+***
+
+# Production Reality
+
+Expression conversion is not an academic exercise — it is the front half of every compiler, calculator, and formula engine, where human-written infix is rewritten into a position-encoded form before evaluation. The five systems below put a converter on a hot path.
+
+**[The `javac` compiler front-end]** — uses **infix-to-postfix-style parsing into a bytecode operand stack** — because turning source expressions into stack-ordered bytecode lets the JVM evaluate them in one linear pass with no runtime precedence parsing.
+
+`javac` parses `a + b * c` respecting precedence and emits `iload`, `iload`, `iload`, `imul`, `iadd` — the postfix order this lesson produces. The conversion happens once at compile time; every later execution is a plain stack walk. Source: [The Java Virtual Machine Specification — Chapter 2.6.2, Operand Stacks](https://docs.oracle.com/javase/specs/jvms/se21/html/jvms-2.html#jvms-2.6.2).
+
+**[Spreadsheet formula engines (Excel, Google Sheets)]** — uses **the Shunting-Yard algorithm to convert infix formulas to postfix, cached per cell** — because users type infix but recalculation must be a fast parse-free stack walk.
+
+A formula like `=(A1+B1)*C1` is converted to postfix once and stored. When a dependency changes, the engine re-evaluates the cached postfix rather than re-parsing the text. <!-- VERIFY: many spreadsheet engines compile formulas to an internal postfix/bytecode form; exact representation varies by implementation. -->
+
+**[Reverse Polish calculators (HP-12C and successors)]** — uses **direct postfix entry, sidestepping infix-to-postfix conversion entirely** — because accepting postfix input means the device never needs a parser or parenthesis keys.
+
+The HP-12C takes `2 ENTER 3 +` and runs the string-stack evaluator with no conversion step. It is the counter-example that shows *why* conversion exists: skip it only by pushing the postfix burden onto the user. Reference: [Wikipedia — Reverse Polish notation](https://en.wikipedia.org/wiki/Reverse_Polish_notation).
+
+**[Database SQL expression planners]** — uses **infix-to-tree/postfix conversion of `WHERE` and `SELECT` expressions** — because the optimiser needs a structured, precedence-resolved form to reorder and evaluate predicates efficiently.
+
+A predicate like `price * qty > 100 AND in_stock` is parsed into an expression tree (a tree-shaped postfix) so the planner can push filters down and short-circuit. The conversion is the same precedence-aware pass as Shunting-Yard. <!-- VERIFY: SQL planners typically build an expression tree rather than a flat postfix string; the precedence-resolution step is equivalent. -->
+
+**[Scientific calculator apps and `eval`-free math parsers]** — uses **Shunting-Yard to convert typed infix to postfix, then a stack evaluator** — because evaluating user infix safely means converting it rather than calling a language `eval`.
+
+A calculator that accepts `(7-8/3)*(5/2-6)` converts to postfix and evaluates on a stack, avoiding the security and correctness hazards of a raw `eval`. The conversion plus evaluation is exactly lessons 6 and 5 composed. Reference: [Dijkstra's Shunting-Yard algorithm (Wikipedia)](https://en.wikipedia.org/wiki/Shunting_yard_algorithm).
+
+***
+
+# Practice Ladder
+
+This lesson has no problems of its own — it is the algorithm-dense core of the expression section. The five problems below are the closest stack exercises in this chapter; each rehearses a move the converters depend on: holding deferred work on a stack, tracking operators between parentheses, or folding sub-expressions on a boundary.
+
+| # | Problem | Pattern | Difficulty | Hint |
+|---|---------|---------|------------|------|
+| 1 | [Parentheses Checker](./11-pattern-sequence-validation/02-problems/01-parentheses-checker.md) | [Sequence Validation](./11-pattern-sequence-validation/01-pattern.md) | Easy | Push openers, pop on closers, check the match — `O(n)` time, `O(n)` space. This is the balanced-parenthesis precondition every infix converter assumes about its fences. |
+| 2 | [Redundant Parentheses](./11-pattern-sequence-validation/02-problems/03-redundant-parentheses.md) | [Sequence Validation](./11-pattern-sequence-validation/01-pattern.md) | Medium | A pair wrapping no operator is redundant. Tracking operators on the stack between brackets is the same bookkeeping Shunting-Yard does when a `)` flushes back to its `(`. |
+| 3 | [Bracketed Reversal](./12-pattern-linear-evaluation/02-problems/02-bracketed-reversal.md) | [Linear Evaluation](./12-pattern-linear-evaluation/01-pattern.md) | Medium | Push characters until `[`, reverse on `]`, fold back. The stack stores deferred context exactly as a string-stack converter holds partial sub-expressions until an operator fires. |
+| 4 | [String Expansion](./12-pattern-linear-evaluation/02-problems/03-string-expansion.md) | [Linear Evaluation](./12-pattern-linear-evaluation/01-pattern.md) | Medium | Push context on `[`, fold it on `]`. The fold-on-boundary move mirrors the combine step that glues two sub-expressions when a converter reaches an operator. |
+| 5 | [Formula Parsing](./12-pattern-linear-evaluation/02-problems/04-formula-parsing.md) | [Linear Evaluation](./12-pattern-linear-evaluation/01-pattern.md) | Hard | Scan once, hold counts and a multiplier stack, fold on `)`. This is the precedence-aware, parenthesis-fencing structure of Shunting-Yard applied to chemical formulas. |
+
+Work these until the push-deferred-work-and-fold-on-boundary reflex is automatic; the six converters then read as variations on the same move.
+
+***
+
+# Quiz
+
+Commit to an answer before reading the response — that is the test of whether the idea has landed.
+
+**[Recall] Q: What precedence values do the implementations assign to `^`, `*`/`/`, and `+`/`-`?**
+`^` is `3` (highest), `*` and `/` are `2`, and `+` and `-` are `1`.
+
+**[Recall] Q: For a postfix source scanned left to right, which operand does the first pop give — the left or the right?**
+The right operand; the second pop gives the left operand, because the right operand was pushed most recently.
+
+**[Reasoning] Q: Why does converting `2^3^2` need a strict `>` precedence comparison instead of `≥`?**
+`^` is right-associative, so an incoming `^` must push on top of a stacked `^` rather than flush it, which only `>` allows — giving `2^(3^2)` instead of `(2^3)^2`.
+
+**[Reasoning] Q: Why is naive `+` string concatenation `O(N²)` for these converters, and how do you fix it?**
+Each combine copies the entire accumulated string, so `N` combines cost `O(N²)`; a `StringBuilder` or list-join appends in amortised `O(1)`, restoring `O(N)` time and space.
+
+**[Tradeoff] Q: Infix-to-prefix could be written as its own algorithm, but the lesson reuses infix-to-postfix via reverse-and-flip. What is the tradeoff?**
+Reusing Shunting-Yard avoids a second algorithm and its separate bug surface, at the cost of three extra `O(N)` passes (reverse, flip brackets, reverse the result) that a dedicated converter would skip.
+
+***
+
+# Further Reading
+
+Curated entries, not a syllabus. The annotation tells you which to open first.
+
+- **[Dijkstra's Shunting-Yard algorithm (Wikipedia)](https://en.wikipedia.org/wiki/Shunting_yard_algorithm)**
+  ★ Essential — the canonical write-up of infix-to-postfix with worked precedence and associativity cases; read it alongside this lesson's infix sections.
+- **[Edsger Dijkstra — original report (MR 35)](https://www.cs.utexas.edu/~EWD/MCReps/MR35.PDF)**
+  ◆ Advanced — the converter in the words of its 1961 inventor; the historical source for the two-stack design.
+- **[Sedgewick & Wayne — *Algorithms* (4th ed), §1.3 Stacks and Queues](https://algs4.cs.princeton.edu/13stacks/)**
+  ◆ Advanced — Dijkstra's two-stack evaluator implemented and analysed; the cleanest companion for the string-stack engine.
+- **[Reverse Polish notation (Wikipedia)](https://en.wikipedia.org/wiki/Reverse_Polish_notation)**
+  ★ Essential — why postfix needs neither parentheses nor precedence, with the calculator history that motivates the conversion target.
+- **[The Java Virtual Machine Specification — Operand Stacks](https://docs.oracle.com/javase/specs/jvms/se21/html/jvms-2.html#jvms-2.6.2)**
+  → Reference — how a production compiler converts infix source into postfix-ordered bytecode; pairs with the Production Reality section.
+
+***
+
+# Cross-Links
+
+**Prerequisites**
+
+- [Infix, Postfix, and Prefix Notations](/cortex/data-structures-and-algorithms/linear-structures-stack-infix-postfix-and-prefix-notations) — defines the three notations and why position-encoded forms need no precedence rules; this lesson rewrites between them.
+- [Evaluating Expressions Using Stack](/cortex/data-structures-and-algorithms/linear-structures-stack-evaluating-expressions-using-stack) — the string-stack scan here is the conversion twin of that lesson's value-stack evaluator.
+
+**What comes next**
+
+- [Pattern: Reversal](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-reversal) — the first stack *pattern*; the section pivots from expression parsing to stack as a reusable problem-solving shape.
+- [Pattern: Sequence Validation](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-sequence-validation) — the parenthesis-matching pattern that the infix converters rely on for well-formed fences.
+
+***
+
+## Final Takeaway
+
+Six conversions reduce to two engines: a string stack for the four postfix/prefix scans, and the Shunting-Yard operator stack for the two infix rewrites.
+
+1. **Core mechanic:** a string stack pops two sub-expressions and glues the operator in the target position for postfix/prefix conversions, while an operator stack flushes by precedence and fences on parentheses for infix conversions.
+2. **Dominant tradeoff:** all six conversions run in `O(N)` time and `O(N)` space with a string builder, but naive `+` concatenation degrades the scan conversions to `O(N²)`, trading code simplicity for quadratic cost.
+3. **One thing to remember:** operand order is always left-to-right in the output, but the pop order flips with scan direction — left-to-right scans pop the right operand first, right-to-left scans pop the left operand first, and getting it backwards silently breaks `-`, `/`, and `^`.

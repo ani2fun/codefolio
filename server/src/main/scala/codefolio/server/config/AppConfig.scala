@@ -22,10 +22,10 @@ final case class RateLimitConfig(anonymous: RateLimitBucket, authenticated: Rate
 /**
  * Configuration for the code-execution proxy.
  *
- * `pistonUrl` is for the Piston public service (production); `codeRunnerUrl` points at the local
- * Judge0-API-compatible Code Runner container in dev. Either may be unset; if both are unset the /api/run
- * endpoint returns 503. The handler prefers Piston when both are set and the language is Piston-supported,
- * falling back to Code Runner otherwise.
+ * `pistonUrl` is for the Piston public service (fallback); `codeRunnerUrl` points at the self-hosted
+ * Judge0-API-compatible Code Runner container. Either may be unset; if both are unset the /api/run
+ * endpoint returns 503. The handler prefers Code Runner when both are set (higher stdout cap for traced
+ * runs; controlled JDK version), falling back to Piston otherwise.
  *
  * `codeRunnerAuthToken` is an optional `X-Auth-Token` header — kept for parity with what the original
  * portfolio-app exposed even though the local Code Runner image doesn't currently require auth.

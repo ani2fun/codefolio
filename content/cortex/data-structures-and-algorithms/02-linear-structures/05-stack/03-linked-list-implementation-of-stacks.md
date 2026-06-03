@@ -1,6 +1,6 @@
 ---
 title: "Linked List Implementation Of Stacks"
-summary: "<!-- TODO: summary -->"
+summary: "A stack on a singly linked list: keep the top at the head, so every push prepends a node and every pop unlinks the head — all O(1), with no fixed capacity and no resize spikes."
 ---
 
 # 3. Linked-List Implementation of Stacks
@@ -21,14 +21,38 @@ This lesson builds the linked-list stack end-to-end in Python and Java — same 
 
 ## Table of contents
 
-1. [Structure of a linked-list-based stack](#structure-of-a-linked-list-based-stack)
-2. [Implementing the stack class using a linked list](#implementing-the-stack-class-using-a-linked-list)
-3. [Determining the size of the stack](#determining-the-size-of-the-stack)
-4. [Checking if the stack is empty](#checking-if-the-stack-is-empty)
-5. [Accessing the top of the stack](#accessing-the-top-of-the-stack)
-6. [Pushing an item onto the stack](#pushing-an-item-onto-the-stack)
-7. [Popping an item from the stack](#popping-an-item-from-the-stack)
-8. [Design a stack using a linked list](#design-a-stack-using-a-linked-list)
+1. [Understanding the problem](#understanding-the-problem)
+2. [Structure of a linked-list-based stack](#structure-of-a-linked-list-based-stack)
+3. [Supported operations](#supported-operations)
+4. [Internal mechanics](#internal-mechanics)
+5. [Implementing the stack class using a linked list](#implementing-the-stack-class-using-a-linked-list)
+6. [Determining the size of the stack](#determining-the-size-of-the-stack)
+7. [Checking if the stack is empty](#checking-if-the-stack-is-empty)
+8. [Accessing the top of the stack](#accessing-the-top-of-the-stack)
+9. [Pushing an item onto the stack](#pushing-an-item-onto-the-stack)
+10. [Popping an item from the stack](#popping-an-item-from-the-stack)
+11. [Working example](#working-example)
+12. [Design a stack using a linked list](#design-a-stack-using-a-linked-list)
+13. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
+14. [Production reality](#production-reality)
+15. [Quiz](#quiz)
+16. [Practice ladder](#practice-ladder)
+17. [Further reading](#further-reading)
+18. [Cross-links](#cross-links)
+19. [Final takeaway](#final-takeaway)
+
+***
+
+# Understanding the Problem
+
+An array backs a stack well, but it forces one decision up front: how big can the stack get? A bounded array reserves every slot at construction and refuses the push that would exceed it. A growable array resizes by copying into a larger buffer, paying an occasional `O(n)` cost. A linked list sidesteps both — it grows one node at a time, with no buffer to size and no copy to amortise.
+
+The difference comes from what "the top" refers to in each implementation:
+
+- **Array stack** — the top is an `index` into a contiguous buffer; capacity is the buffer's length.
+- **Linked-list stack** — the top is a **pointer** to a node; capacity is whatever the machine's memory allows.
+
+Using a linked list, a stack created with no capacity ceiling keeps accepting pushes until the operating system itself runs out of memory. Each push allocates exactly one node and links it to the front; nothing is reserved in advance, so five pushes cost five nodes' worth of memory rather than a million-slot buffer. So the key idea is: a linked list backs a stack when you want unbounded or bursty growth with no resize spikes — trading the array's cache locality for one heap allocation per push.
 
 ***
 
@@ -109,6 +133,34 @@ flowchart LR
 ```
 
 <p align="center"><strong>Lifecycle — every push prepends a node at the head and bumps size; every pop removes the head and drops size. The list grows and shrinks at the same end, perfectly mirroring the LIFO contract.</strong></p>
+
+***
+
+# Supported Operations
+
+Five operations make up the whole interface, and every one is `O(1)` time and `O(1)` extra space. The set matches the array implementation exactly — same contract, different storage — because a stack is defined by its LIFO behaviour, not by how the nodes are laid out. What changes underneath is the mechanism: an `index` slide becomes a pointer swing.
+
+| Operation | Time | Space | What it does |
+|---|---|---|---|
+| `size()` | `O(1)` | `O(1)` | Returns `currentSize` — the counter bumped on push, dropped on pop |
+| `empty()` | `O(1)` | `O(1)` | Returns whether `currentSize == 0` (equivalently `head == null`) |
+| `top()` | `O(1)` | `O(1)` | Reads `head.val` without unlinking it (peek) |
+| `push(val)` | `O(1)` | `O(1)` | Prepends a new node at the head; returns `false` if full |
+| `pop()` | `O(1)` | `O(1)` | Unlinks and returns the head node; returns `-1` if empty |
+
+The two reads differ in intent: `top()` inspects, `pop()` consumes. Using a stack holding `head → 9 → 7 → 5`, `top()` returns `9` and leaves the list intact, while `pop()` returns `9` and advances `head` to the node holding `7`. So the core insight is: every operation touches only the head, which is exactly why none of the five depends on how many nodes the list holds.
+
+***
+
+# Internal Mechanics
+
+Every operation is a rule expressed in terms of the `head` pointer, and the list nodes are the passive storage those rules read and re-link. Unlike the array version, where a single `index` slides over a fixed buffer, the linked-list version allocates or frees a node on each mutation and rewires one pointer:
+
+- **Push** allocates a node, sets its `next` to the old `head`, then moves `head` to the new node.
+- **Pop** reads `head.val`, advances `head` to `head.next`, then frees the old head.
+- **Top** reads `head.val` and leaves `head` alone.
+
+The order of pointer assignments is the only delicate part. On push, the new node's `next` must be wired to the old `head` *before* `head` moves — reverse the two and the node points at itself, forming a one-element cycle. On pop, the old head must be saved *before* `head` advances, or the node becomes unreachable before it can be freed. Using a three-node list `head → 9 → 7 → 5`: a pop reads `9`, swings `head` to the `7` node, and the former head is now garbage. So the core insight is: the nodes are passive storage and `head` is the only live state — correctness reduces to rewiring pointers in the order that never strands a node.
 
 ***
 
@@ -865,7 +917,7 @@ s = Stack(3); s.push(1); s.push(2); s.push(3)
 print(s.pop(), s.pop(), s.pop(), s.pop())   # 3 2 1 -1
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 public class Main {
     static class ListNode { int val; ListNode next; ListNode(int v){ val=v; } }
     static class Stack {
@@ -898,6 +950,22 @@ public class Main {
 > **All cases** — Time: **O(1)** | Space: **O(1)** (one node freed per pop)
 
 </details>
+
+***
+
+# Working Example
+
+Watching the `head` pointer move through a full push-then-pop cycle is the fastest way to make the five operations click. Start with `Stack(3)` — capacity `3`, `head = null`, `currentSize = 0` marking it empty. Each step below allocates or frees exactly one node and rewires `head`:
+
+1. **`push(1)`** — not full, so allocate a node `1`, set its `next` to `null` (the old head), move `head` to it. List `head → 1`, `currentSize == 1`.
+2. **`push(2)`** — allocate node `2`, set its `next` to the `1` node, move `head` to it. List `head → 2 → 1`, `currentSize == 2`.
+3. **`push(3)`** — allocate node `3`, set its `next` to the `2` node, move `head` to it. List `head → 3 → 2 → 1`, `currentSize == 3` — the stack is now full (`currentSize == capacity`).
+4. **`pop()`** — not empty, so read `head.val == 3`, save the head node, advance `head` to the `2` node, free the saved node. Return `3`. List `head → 2 → 1`, `currentSize == 2`.
+5. **`pop()`** — read `head.val == 2`, advance `head` to the `1` node, free the old head. Return `2`. List `head → 1`.
+6. **`pop()`** — read `head.val == 1`, advance `head` to `null`, free the old head. Return `1` — the stack is empty again.
+7. **`pop()`** — `empty()` is now true (`head == null`), so return the sentinel `-1` without touching any node.
+
+The return sequence is `3 2 1 -1` — the three values in reverse insertion order, then the empty sentinel. That reversal is LIFO made literal. The last value pushed (`3`) is the first popped; the first value pushed (`1`) waits at the bottom of the list until everything above it is unlinked. So the core insight is: a push-pop cycle is a node-by-node build-up and tear-down at the head, and the values return in exactly reverse order regardless of how deep the list grew.
 
 ***
 
@@ -1029,7 +1097,7 @@ print(s.push(9))   # False — stack is full
 print(s.empty())   # False
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -1154,7 +1222,7 @@ public class Main {
 
 </details>
 <details>
-<summary><h2>Final Takeaway</h2></summary>
+<summary><h2>Array vs. linked-list — choosing a backing store</h2></summary>
 
 
 Linked-list and array stacks implement the same interface with the same asymptotic costs but different real-world behaviour. Three lessons:
@@ -1179,39 +1247,103 @@ Linked-list and array stacks implement the same interface with the same asymptot
 
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+# Edge Cases and Pitfalls
 
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
+The linked-list stack has no buffer to overrun, so its bugs move from index arithmetic to **pointer order** and **bookkeeping**. Almost every one clusters around the two pointer rewrites — push and pop — and the `currentSize` counter that shadows the list. Keep this list open the next time a linked-list stack misbehaves:
 
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
+- **Rewiring `head` before the new node's `next`.** On push, set `newNode.next = head` *first*, then `head = newNode`. Reverse the order and `newNode.next` points at `newNode` itself — a one-element cycle that strands the rest of the list. The push still returns `true`, so the bug surfaces later as a `pop()` that never terminates or returns the wrong node.
+- **Advancing `head` before saving the old head.** On pop, capture `value = head.val` and `temp = head` *before* `head = head.next`. Advance first and the old node leaks: the only pointer to it is gone and it can never be freed. A garbage collector reclaims it automatically, but reading `head.val` after the advance still returns the wrong value.
+- **Letting `size()` walk the list.** Computing size by traversing every node is `O(n)` time. Maintain `currentSize` as an integer bumped on push and dropped on pop so `size()` and `empty()` stay `O(1)`. Forgetting one increment or decrement desyncs the counter from the list, and the capacity check on the next push reads a stale count.
+- **The `-1` sentinel collides with real data.** Returning `-1` from `top()` or `pop()` to mean "empty" is only unambiguous when `-1` cannot be a stored value. A stack of arbitrary integers makes `-1` indistinguishable from a popped `-1`. Guard with `empty()` before every `pop()`, or raise an exception instead of returning a sentinel.
+- **Assuming "linked list" means "unbounded".** The version built here is bounded — it rejects the push when `currentSize == capacity` and returns `false`. Code that assumes a linked-list stack always accepts a push silently drops data when the return value is ignored. Either honour the boolean return or drop the capacity check to build the genuinely unbounded variant.
+- **Treating the head pointer as cheap to lose.** `head` is the only live reference into the entire list. Overwrite it without first wiring its replacement and every node below becomes unreachable in one assignment. The whole list then leaks under manual memory, or is silently collected under a garbage collector. Every mutation must leave `head` pointing at the true top before it returns.
 
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
+***
 
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
+# Production Reality
 
-<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
-<!--       Guidance: bulleted list of gotchas -->
+The linked-list stack is the default wherever growth is unbounded or bursty and a resize spike is unacceptable. The systems below are worth knowing by name.
 
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+**[A garbage-collected language's allocator free-list]** — uses **a linked stack of reclaimed memory blocks** — because freed blocks already carry a header that can hold the `next` pointer, so pushing a block back costs one pointer write with zero extra allocation.
 
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+**[An OS kernel's free-page list]** — uses **a singly linked stack of available physical page frames** — because the page count is unknown and unbounded at boot, and the most-recently-freed page is the warmest in cache, so LIFO reuse improves locality for free.
 
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
+**[A lock-free concurrent stack (Treiber stack)]** — uses **a linked list with an atomic compare-and-swap on `head`** — because a single head pointer is the only shared state, so one `CAS` swings the top atomically without locking the whole structure.
 
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+**[An undo history with no fixed cap]** — uses **a linked stack of edit records** — because a document's edit count is open-ended, and a linked list grows one record per keystroke without ever pausing to copy a full buffer.
 
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
+**[A recursive interpreter's continuation stack]** — uses **heap-allocated linked frames instead of the native call stack** — because deep or unbounded recursion would overflow a fixed call stack, and linked frames grow until the heap itself is exhausted.
 
-<!-- TODO: Final Takeaway — missing, needs to be written -->
-<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->
+***
+
+# Quiz
+
+Test your grip before moving on. One answer per question; reveal only after you have committed to one.
+
+**[Recall] Q: In the linked-list stack, what does `head` point at, and what value marks an empty stack?**
+`head` points at the most-recently-pushed node — the top of the stack — and `head == null` marks an empty stack (equivalently `currentSize == 0`).
+
+**[Reasoning] Q: Why must `newNode.next = head` run before `head = newNode` on a push?**
+If `head = newNode` runs first, then `newNode.next = head` wires the node to itself, creating a one-element cycle that strands every node below the new top.
+
+**[Reasoning] Q: Why does the stack keep a `currentSize` counter instead of computing size on demand?**
+A linked list has no length field, so computing size means walking every node at `O(n)` time; an integer bumped on push and dropped on pop keeps `size()` and `empty()` at `O(1)`.
+
+**[Tradeoff] Q: Both the array and linked-list stacks are `O(1)` per operation — so when do you reach for the linked-list version, and what do you give up?**
+Reach for it when growth is unbounded or bursty and you need worst-case `O(1)` push with no resize spike; you give up cache locality, since every node is a separate heap allocation the CPU cannot prefetch.
+
+**[Recall] Q: On a pop, why is the old head saved into a temporary before `head` advances?**
+So the node can still be freed in a language with manual memory management — once `head` advances, the only pointer to the old node is gone and it can never be reclaimed.
+
+***
+
+# Practice Ladder
+
+Five problems that exercise the stack as a tool, easiest first. Try each unaided; hit the hint after ten minutes; do not peek at solutions until you have written something runnable.
+
+| # | Problem | Pattern | Difficulty | Hint |
+|---|---------|---------|------------|------|
+| 1 | [Stack Inversion](./08-pattern-reversal/02-problems/01-stack-inversion.md) | [Reversal](./08-pattern-reversal/01-pattern.md) | Easy | Pop every node off one stack and push it onto a second — the order flips for free. `O(n)` time, `O(n)` space. |
+| 2 | [Reverse the String](./08-pattern-reversal/02-problems/02-reverse-the-string.md) | [Reversal](./08-pattern-reversal/01-pattern.md) | Easy | Push each character, then pop them all — LIFO reverses the sequence. The stack is the whole algorithm. |
+| 3 | [Parentheses Checker](./11-pattern-sequence-validation/02-problems/01-parentheses-checker.md) | [Sequence Validation](./11-pattern-sequence-validation/01-pattern.md) | Easy | Push every opener; on a closer, pop and check it matches. A leftover or mismatched pop means unbalanced. `O(n)` time. |
+| 4 | [Preceding Superior Element](./09-pattern-previous-closest-occurrence/02-problems/01-preceding-superior-element.md) | [Previous Closest Occurrence](./09-pattern-previous-closest-occurrence/01-pattern.md) | Medium | Keep a stack of candidates; pop everything smaller than the current value before reading the answer off the top. Monotonic-stack reflex. |
+| 5 | [Largest Rectangle Area](./10-pattern-next-closest-occurrence/02-problems/07-largest-rectangle-area.md) | [Next Closest Occurrence](./10-pattern-next-closest-occurrence/01-pattern.md) | Hard | Maintain an increasing stack of bar indices; when a shorter bar arrives, pop and compute the area each popped bar bounds. `O(n)` with one pass. |
+
+Once these feel automatic, push and pop have stopped being syntax and become a structural reflex. The backing store — array or linked list — then stops mattering to the algorithm on top.
+
+***
+
+# Further Reading
+
+Curated paths in, not a syllabus. Read in order of the annotation; come back for the rest when you need depth.
+
+- **[CLRS — Chapter 10.1 (Stacks) and 10.2 (Linked Lists)](https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/)**
+  ★ Essential — the canonical stack interface alongside the singly linked list with its `head` pointer and `O(1)` head insertion, the two primitives this lesson combines.
+- **[R. Kent Dybvig — "The Development of Chez Scheme" (free-list allocation)](https://legacy.cs.indiana.edu/~dyb/pubs/hocs.pdf)**
+  ◆ Advanced — a real allocator that pushes and pops reclaimed memory blocks on a linked free-list; this lesson's head-pointer design carrying live system memory.
+- **[R. K. Treiber — "Systems Programming: Coping with Parallelism" (the Treiber stack)](https://dominoweb.draco.res.ibm.com/58319a2ed2b1078985257003004617ef.html)**
+  ◆ Advanced — the lock-free linked stack that swings `head` with a single atomic compare-and-swap; shows why one head pointer is exactly the right shared state for concurrency.
+- **[The Linux Kernel — buddy allocator free lists](https://www.kernel.org/doc/gorman/html/understand/understand009.html)**
+  → Reference — how the kernel keeps free physical page frames on linked lists and reuses the most-recently-freed page first; a production LIFO over linked nodes.
+
+***
+
+# Cross-Links
+
+**Prerequisites**
+
+- [Introduction to Stacks](/cortex/data-structures-and-algorithms/linear-structures-stack-introduction-to-stacks) — the LIFO contract and the push / pop / top / empty / size interface this lesson implements over a singly linked list.
+- [Introduction to Singly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-introduction-to-singly-linked-lists) — the `head` pointer, the node-with-`next` layout, and the `O(1)` head insertion and deletion that make every stack operation constant time.
+- [Array Implementation of Stacks](/cortex/data-structures-and-algorithms/linear-structures-stack-array-implementation-of-stacks) — the same five operations over a contiguous buffer; read it first to feel the tradeoff this lesson flips.
+
+**What comes next**
+
+- [Infix, Postfix, and Prefix Notations](/cortex/data-structures-and-algorithms/linear-structures-stack-infix-postfix-and-prefix-notations) — the first real application: how arithmetic notation determines whether a stack can evaluate an expression in one linear pass.
+
+***
+
+## Final Takeaway
+
+1. **Core mechanic:** keep the top at the `head` of a singly linked list, push by prepending a node and swinging `head` to it, pop by reading `head.val` and advancing `head` to `head.next` — every operation is `O(1)` time and `O(1)` extra space, with a `currentSize` counter so `size()` stays `O(1)` too.
+2. **Dominant tradeoff:** you gain unbounded growth and worst-case `O(1)` push with no resize spike; you give up cache locality, since each node is a separate heap allocation the CPU cannot prefetch on the way to the next pop.
+3. **One thing to remember:** wire the new node's `next` before moving `head` on push, and save the old head before advancing it on pop — `head` is the only live reference, so the entire stack is correct exactly when no rewrite ever strands a node.

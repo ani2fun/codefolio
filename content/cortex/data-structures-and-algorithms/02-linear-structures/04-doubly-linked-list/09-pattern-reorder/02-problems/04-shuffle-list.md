@@ -254,7 +254,7 @@ rev2 = sol.reverse(halves[1])
 print(to_list(sol.merge_alternate_nodes(halves[0], rev2)))      # [1, 7, 2, 6, 3, 5, 4]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -513,27 +513,83 @@ Result: [1, 4, 2, 3] ✓
 | Three | `[1,2,3]` | `[1,3,2]` | Odd split: first=[1,2], second=[3]. Reverse=[3]. Alt-merge → [1,3,2]. |
 
 </details>
+<details>
+<summary><h2>Examples</h2></summary>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+**Example 1**
+```
+Input:  head = [1, 2, 3, 4]
+Output: [1, 4, 2, 3]
+Explanation: Even-length split: first half = 1 ⇄ 2; second half = 3 ⇄ 4. Reverse the second half (DLL swap(prev, next) per node): 4 ⇄ 3. Alternate-merge A, B, A, B with both directions wired on every attach: 1 ⇄ 4 ⇄ 2 ⇄ 3.
+```
 
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
+**Example 2**
+```
+Input:  head = [1, 2, 3, 4, 5]
+Output: [1, 5, 2, 4, 3]
+Explanation: Odd-length split keeps the middle in the first half: first = 1 ⇄ 2 ⇄ 3; second = 4 ⇄ 5. Reverse the second half: 5 ⇄ 4. Alternate-merge then drain the first half's leftover 3.
+```
 
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
+**Example 3**
+```
+Input:  head = [1]
+Output: [1]
+Explanation: A single-node list is already in the target shape — the reorder is a no-op.
+```
 
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
+**Example 4**
+```
+Input:  head = [1, 2, 3, 4, 5, 6]
+Output: [1, 6, 2, 5, 3, 4]
+Explanation: Even-length split: first = 1 ⇄ 2 ⇄ 3; second = 4 ⇄ 5 ⇄ 6. Reverse second: 6 ⇄ 5 ⇄ 4. Alternate-merge → 1 ⇄ 6 ⇄ 2 ⇄ 5 ⇄ 3 ⇄ 4.
+```
 
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
+</details>
+<details>
+<summary><h2>Intuition</h2></summary>
 
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
+The **structural property** that makes this a reorder problem is that the output is a deterministic permutation of the input nodes — same nodes, new `prev` / `next` wiring. The target pattern `L0, Ln, L1, Ln-1, ...` is exactly what you get if you split at the middle, reverse the second half, and alternate-fuse the two halves. That decomposition uses three primitives you've already built on the DLL: **fast-and-slow** to find the middle, **DLL reversal** (one `swap(prev, next)` per node — the cheat code that makes the DLL flip cheaper than the singly-linked version), and the **merge pattern**'s boolean-flip selector with both directions wired on every attach. The reorder pipeline is the wrapper that names which `f1` and `f2` apply.
 
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->
+The **pointer placement** follows directly. `f1` is itself a small pipeline: a slow / fast pair walks the list until `fast` reaches the end, leaving `slow` at the boundary between the two halves. The DLL twist on the cut is that you no longer need a `prev_to_slow` cursor — you read `slow.prev` directly to sever the back-link on the even-length path, and on the odd-length path you sever at `slow.next` and `slow.next.prev`. Then a fresh single-cursor walk reverses the second half with the DLL idiom `current.prev, current.next = current.next, current.prev`. `f2` is the merge pattern's boolean-flip selector — a `mergeFirst` toggle flipping each tick, with the dummy-head splice loop and drain step from alternate-node-fusion, each splice paired with its mirror.
+
+What **breaks if you reach for a naive approach**? Trying to materialise the index permutation `[L0, Ln, L1, Ln-1, ...]` directly requires random access — each lookup is `O(n)`, giving total cost `O(n²)`. Copying every value into an array and rebuilding works in `O(n)` time but spends `O(n)` extra memory and allocates `n` new nodes, and on a DLL it doubles the wiring work. Forgetting any one of the four mirror writes per merge attach silently breaks backward traversal — a class of bug that only surfaces when something walks from the tail. The split-reverse-merge pipeline does the job in `O(n)` time with `O(1)` extra space — three single-pass walks over disjoint halves, mirrors honest end-to-end.
+
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
+| Check | Answer for Shuffle List |
+|---|---|
+| **Q1.** Does the problem rearrange the nodes of one input DLL in place? | **Yes** — every input node appears in the output exactly once; only `prev` and `next` fields change. |
+| **Q2.** Can the target be expressed as classifier + selector? | **Yes** — `f1` is "split at the middle (fast-and-slow) and reverse the second half (DLL `swap(prev, next)` per node)"; `f2` is the boolean-flip alternate-fuse selector with both directions wired. |
+| **Q3.** Are the sub-lists bounded in count and walkable in one pass? | **Yes** — exactly two halves; the merge pass alternates between them in one walk. |
+| **Q4.** Is `O(1)` extra space sufficient? | **Yes** — a constant number of pointers (`slow`, `fast`, `current`, `previous`, `next_node`, `dummy`, `tail`, `mergeFirst`) regardless of input size. |
+
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
+
+Run the reorder pipeline with a composite `f1` and a boolean-flip `f2`, with mirror updates on every attach.
+
+1. **Short-circuit trivial inputs.** If `head` is `null` or `head.next` is `null`, return without modification. A list with zero or one node already matches the target shape.
+2. **Find the middle with fast-and-slow.** Initialise `slow = head`, `fast = head`. Loop while `fast` and `fast.next` are non-`null`: advance `slow = slow.next`, advance `fast = fast.next.next`. When the loop exits, `slow` sits at the boundary between the two halves — DLL-specifically, `slow` lands on the first node of the second half on even-length inputs and on the dead-centre middle on odd-length inputs.
+3. **Split into two halves with both directions severed.** On even length (`fast == null`), `secondHalf = slow`, then `slow.prev.next = null` and `slow.prev = null` sever the cut in both directions. On odd length (`fast != null`), `secondHalf = slow.next`, then `slow.next.prev = null` and `slow.next = null` sever the cut in both directions. The odd-length cut keeps the dead-centre middle node in the first half, matching the target pattern.
+4. **Reverse the second half with the DLL idiom.** Run `current = secondHalf`, `previous = null`; while `current` is non-`null`, capture `next_node = current.next`, swap `current.prev` and `current.next` in one stroke, advance `previous = current`, `current = next_node`. When done, `previous` is the new head of the reversed second half — and because each node's two pointer fields swapped together, both chains flipped together in one pass.
+5. **Initialise the merge skeleton.** Create `dummy = ListNode(0)`, set `tail = dummy`, and initialise `mergeFirst = true` so the first node taken is from the first half (the `L0` node).
+6. **Loop while both halves are non-`null`.** Each iteration: if `mergeFirst`, splice from the first half by writing `tail.next = first_half` AND `first_half.prev = tail`, then advance `first_half`; otherwise do the mirrored splice from the reversed second half. Advance `tail = tail.next` and flip `mergeFirst`.
+7. **Drain the non-empty half with the mirror.** When the alternate loop exits, at most one half still has nodes. Splice it onto the output with `tail.next = remaining` AND `remaining.prev = tail` — without the drain step the longer half loses its tail nodes; without the mirror the longer half's first remaining node still has a stale back-link.
+8. **Disconnect the dummy and return the new head.** Set `dummy.next.prev = null` to sever the back-link the merge splice planted, then return `dummy.next` as the new head of the reordered list.
+
+</details>
+<details>
+<summary><h2>Dry Run — Example 2</h2></summary>
+
+See the **Trace — head = [1, 2, 3, 4, 5] (odd length)** block inside *Solution & Analysis* above for the line-by-line walk. The key beats: the fast/slow loop parks `slow = 3` and `fast = 5`, so the odd-length branch fires; the cut writes `4.prev = null` AND `3.next = null` so the boundary is severed both ways; the DLL reversal pass swaps `prev` / `next` on nodes 4 and 5 in one stroke each, giving `5 ⇄ 4`; the alternate-merge weaves first-half and reversed-second-half in lockstep with both directions wired on every attach, draining the first-half's leftover 3 at the end. Final list: `1 ⇄ 5 ⇄ 2 ⇄ 4 ⇄ 3`. (The **Trace — head = [1, 2, 3, 4] (even length)** block above walks through the symmetric even-length path.)
+
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
+Shuffle-list is the composite reorder on a DLL — `f1` itself uses two earlier patterns (fast-and-slow to find the middle, DLL one-stroke `swap(prev, next)` reversal to flip the second half), then `f2` is the alternate-fuse selector with the mirror wired on every attach. One problem, three primitives chained, four boundary writes per attach: the payoff for learning the primitives in isolation — and the cost of the DLL upgrade.
+
+</details>

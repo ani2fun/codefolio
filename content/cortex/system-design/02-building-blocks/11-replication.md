@@ -319,7 +319,7 @@ The senior move: **`QUORUM` is a per-query choice, not a cluster-wide setting**.
 ## 8. In the Wild
 
 - **[GitHub Engineering, *October 21 post-incident analysis*](https://github.blog/news-insights/company-news/oct21-post-incident-analysis/)** (2018) — the canonical split-brain story. The 43-second partition, the eager failover, the 24-hour reconciliation. Required reading.
-- **[Postgres streaming replication docs](https://www.postgresql.org/docs/current/warm-standby.html#STREAMING-REPLICATION)** — the operational reference. The four `synchronous_commit` levels (`off` / `local` / `remote_write` / `remote_apply`) are the precise lever.
+- **[Postgres streaming replication docs](https://www.postgresql.org/docs/current/warm-standby.html#STREAMING-REPLICATION)** — the operational reference. The `synchronous_commit` levels (`off` / `local` / `remote_write` / `on` / `remote_apply`) are the precise lever.
 - **[Werner Vogels, *Eventually Consistent*, CACM 2009](https://queue.acm.org/detail.cfm?id=1466448)** — Amazon CTO's classic on what eventually consistent actually buys you. Pairs naturally with leaderless replication.
 - **[Kingsbury, *Jepsen — MongoDB 4.2.6*](https://jepsen.io/analyses/mongodb-4.2.6)** — empirical exploration of single-leader replication's edge cases. Worth reading any Jepsen report.
 - **[Patroni](https://patroni.readthedocs.io/)** — the production-grade Postgres failover tooling that does the GitHub-style automatic promotion *correctly* (with quorum + fencing + hysteresis). The README is short and worth a skim.

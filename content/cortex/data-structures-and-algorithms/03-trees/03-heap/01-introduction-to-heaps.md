@@ -676,7 +676,7 @@ The root has no parent, so we use `-∞` as a sentinel — it's smaller than any
 
 
 
-```python run
+```python run viz=array viz-root=heap
 from typing import Optional
 
 class TreeNode:
@@ -761,7 +761,7 @@ t6 = from_level_order([1, 2, 3, 4, 5, 6, 0])
 print(Solution().tree_heap_validator(t6))                     # False — 0 < parent 3
 ```
 
-```java run
+```java run viz=array viz-root=heap
 import java.util.*;
 
 public class Main {

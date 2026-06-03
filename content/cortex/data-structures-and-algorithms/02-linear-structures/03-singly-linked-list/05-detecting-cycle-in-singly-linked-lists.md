@@ -38,26 +38,108 @@ Floyd came up with something better. His algorithm uses **two pointers**, no has
 
 Sometimes, a linked list may not terminate at a `null` reference but instead, hold the reference to some other node in the next section of its last node. Such a list is said to have a cycle, as now, if we traverse the list from the start, we will loop indefinitely and never reach a `null` reference. Floyd's algorithm, also called the tortoise and hare method, uses the fast and slow pointer technique to identify if a linked list has a cycle in a single pass. It is a really efficient algorithm that can also identify the node at which the cycle starts without using any extra space.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "A linked list with a cycle — the tail loops back to node(3) instead of pointing to null",
-  "direction": "single",
-  "nodes": [
-    {"id": "n1", "value": "5"},
-    {"id": "n2", "value": "7"},
-    {"id": "n3", "value": "3", "style": "highlight"},
-    {"id": "n4", "value": "10"},
-    {"id": "n5", "value": "6"}
-  ],
-  "head": "n1",
-  "cycleTarget": "n3",
   "steps": [
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
-      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "current", "nodeId": "n3"}],
-      "msg": "Tail node(6) loops back to node(3) — naive traversal would never terminate"
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n5",
+          "label": "next"
+        },
+        {
+          "from": "n5",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n1",
+          "color": "#10b981"
+        },
+        {
+          "name": "current",
+          "target": "n3",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [
+        "n3"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "Tail node(6) loops back to node(3) — naive traversal would never terminate",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "A linked list with a cycle — the tail loops back to node(3) instead of pointing to null"
 }
 ```
 
@@ -71,77 +153,961 @@ The `fast` and `slow` pointers can meet at any node in the cycle and not necess
 
 Below is an example of a linked list that has a cycle.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Floyd Phase 1 — slow advances 1, fast advances 2; they meet inside the loop",
-  "direction": "single",
-  "nodes": [
-    {"id": "n1", "value": "5"},
-    {"id": "n2", "value": "7"},
-    {"id": "n3", "value": "3"},
-    {"id": "n4", "value": "10"},
-    {"id": "n5", "value": "6"}
-  ],
-  "head": "n1",
-  "cycleTarget": "n3",
-  "sections": [
-    {"name": "Init", "startIdx": 0},
-    {"name": "Tick 1", "startIdx": 1},
-    {"name": "Tick 2", "startIdx": 4},
-    {"name": "Tick 3 (meet)", "startIdx": 7}
-  ],
   "steps": [
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
-      "markers": [{"name": "slow", "nodeId": "n1"}, {"name": "fast", "nodeId": "n1"}],
-      "msg": "Init: slow = fast = head (both at node 5)"
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n5",
+          "label": "next"
+        },
+        {
+          "from": "n5",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "slow",
+          "target": "n1",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "fast",
+          "target": "n1",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Init: slow = fast = head (both at node 5)",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
-      "markers": [{"name": "slow", "nodeId": "n2"}, {"name": "fast", "nodeId": "n1"}],
-      "msg": "Tick 1a: slow advances by 1 → node 7"
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n5",
+          "label": "next"
+        },
+        {
+          "from": "n5",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "slow",
+          "target": "n2",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "fast",
+          "target": "n1",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Tick 1a: slow advances by 1 → node 7",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
-      "markers": [{"name": "slow", "nodeId": "n2"}, {"name": "fast", "nodeId": "n2"}],
-      "msg": "Tick 1b: fast advances step 1 of 2 → node 7"
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n5",
+          "label": "next"
+        },
+        {
+          "from": "n5",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "slow",
+          "target": "n2",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "fast",
+          "target": "n2",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Tick 1b: fast advances step 1 of 2 → node 7",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
-      "markers": [{"name": "slow", "nodeId": "n2"}, {"name": "fast", "nodeId": "n3"}],
-      "msg": "Tick 1c: fast advances step 2 of 2 → node 3. slow=7, fast=3"
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n5",
+          "label": "next"
+        },
+        {
+          "from": "n5",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "slow",
+          "target": "n2",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "fast",
+          "target": "n3",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Tick 1c: fast advances step 2 of 2 → node 3. slow=7, fast=3",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
-      "markers": [{"name": "slow", "nodeId": "n3"}, {"name": "fast", "nodeId": "n3"}],
-      "msg": "Tick 2a: slow advances → node 3"
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n5",
+          "label": "next"
+        },
+        {
+          "from": "n5",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "slow",
+          "target": "n3",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "fast",
+          "target": "n3",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Tick 2a: slow advances → node 3",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
-      "markers": [{"name": "slow", "nodeId": "n3"}, {"name": "fast", "nodeId": "n4"}],
-      "msg": "Tick 2b: fast advances step 1 → node 10"
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n5",
+          "label": "next"
+        },
+        {
+          "from": "n5",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "slow",
+          "target": "n3",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "fast",
+          "target": "n4",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Tick 2b: fast advances step 1 → node 10",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
-      "markers": [{"name": "slow", "nodeId": "n3"}, {"name": "fast", "nodeId": "n5"}],
-      "msg": "Tick 2c: fast advances step 2 → node 6. slow=3, fast=6"
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n5",
+          "label": "next"
+        },
+        {
+          "from": "n5",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "slow",
+          "target": "n3",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "fast",
+          "target": "n5",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Tick 2c: fast advances step 2 → node 6. slow=3, fast=6",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
-      "markers": [{"name": "slow", "nodeId": "n4"}, {"name": "fast", "nodeId": "n5"}],
-      "msg": "Tick 3a: slow advances → node 10"
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n5",
+          "label": "next"
+        },
+        {
+          "from": "n5",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "slow",
+          "target": "n4",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "fast",
+          "target": "n5",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Tick 3a: slow advances → node 10",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
-      "markers": [{"name": "slow", "nodeId": "n4"}, {"name": "fast", "nodeId": "n3"}],
-      "msg": "Tick 3b: fast advances step 1 — wraps via cycle edge → back to node 3"
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n5",
+          "label": "next"
+        },
+        {
+          "from": "n5",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "slow",
+          "target": "n4",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "fast",
+          "target": "n3",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Tick 3b: fast advances step 1 — wraps via cycle edge → back to node 3",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
-      "markers": [{"name": "slow", "nodeId": "n4"}, {"name": "fast", "nodeId": "n4"}],
-      "msg": "Tick 3c: fast advances step 2 → node 10. slow and fast collide — a cycle exists."
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n5",
+          "label": "next"
+        },
+        {
+          "from": "n5",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "slow",
+          "target": "n4",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "fast",
+          "target": "n4",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Tick 3c: fast advances step 2 → node 10. slow and fast collide — a cycle exists.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Floyd Phase 1 — slow advances 1, fast advances 2; they meet inside the loop"
 }
 ```
 
@@ -149,56 +1115,593 @@ Below is an example of a linked list that has a cycle.
 
 Once we confirm that a linked list has a cycle, the next step is to find where the cycle starts. After the `fast` and `slow` pointer meet at some node, we move `fast` back to the head of the list and traverse the list again using both `fast` and `slow`. However, this time, both `fast` and `slow` move at the same speed of one step in each iteration until they meet. The node at which they meet this time is where the cycle starts.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Floyd Phase 2 — reset fast to head; walk both at speed 1; they meet at the cycle start",
-  "direction": "single",
-  "nodes": [
-    {"id": "n1", "value": "5"},
-    {"id": "n2", "value": "7"},
-    {"id": "n3", "value": "3", "style": "highlight"},
-    {"id": "n4", "value": "10"},
-    {"id": "n5", "value": "6"}
-  ],
-  "head": "n1",
-  "cycleTarget": "n3",
-  "sections": [
-    {"name": "Init",  "startIdx": 0},
-    {"name": "Tick 1", "startIdx": 1},
-    {"name": "Tick 2 (meet)", "startIdx": 3}
-  ],
   "steps": [
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
-      "markers": [{"name": "fast", "nodeId": "n1"}, {"name": "slow", "nodeId": "n4"}],
-      "msg": "Phase 2 init: fast resets to head; slow stays at the meeting point (node 10)"
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n5",
+          "label": "next"
+        },
+        {
+          "from": "n5",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "fast",
+          "target": "n1",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "slow",
+          "target": "n4",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [
+        "n3"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "Phase 2 init: fast resets to head; slow stays at the meeting point (node 10)",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
-      "markers": [{"name": "fast", "nodeId": "n2"}, {"name": "slow", "nodeId": "n4"}],
-      "msg": "Tick 1a: fast advances one step → node 7"
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n5",
+          "label": "next"
+        },
+        {
+          "from": "n5",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "fast",
+          "target": "n2",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "slow",
+          "target": "n4",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [
+        "n3"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "Tick 1a: fast advances one step → node 7",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
-      "markers": [{"name": "fast", "nodeId": "n2"}, {"name": "slow", "nodeId": "n5"}],
-      "msg": "Tick 1b: slow advances one step → node 6"
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n5",
+          "label": "next"
+        },
+        {
+          "from": "n5",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "fast",
+          "target": "n2",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "slow",
+          "target": "n5",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [
+        "n3"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "Tick 1b: slow advances one step → node 6",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
-      "markers": [{"name": "fast", "nodeId": "n3"}, {"name": "slow", "nodeId": "n5"}],
-      "msg": "Tick 2a: fast advances one step → node 3 (the highlighted cycle entry)"
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n5",
+          "label": "next"
+        },
+        {
+          "from": "n5",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "fast",
+          "target": "n3",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "slow",
+          "target": "n5",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [
+        "n3"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "Tick 2a: fast advances one step → node 3 (the highlighted cycle entry)",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
-      "markers": [{"name": "fast", "nodeId": "n3"}, {"name": "slow", "nodeId": "n3"}],
-      "msg": "Tick 2b: slow wraps via cycle edge → node 3. They collide at the cycle start."
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n5",
+          "label": "next"
+        },
+        {
+          "from": "n5",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "fast",
+          "target": "n3",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "slow",
+          "target": "n3",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [
+        "n3"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "Tick 2b: slow wraps via cycle edge → node 3. They collide at the cycle start.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
-      "markers": [{"name": "fast", "nodeId": "n3"}, {"name": "slow", "nodeId": "n3"}],
-      "msg": "Return slow (= fast) — node 3 is the cycle start. Total: O(n) time, O(1) space."
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n5",
+          "label": "next"
+        },
+        {
+          "from": "n5",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "fast",
+          "target": "n3",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "slow",
+          "target": "n3",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [
+        "n3"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "Return slow (= fast) — node 3 is the cycle start. Total: O(n) time, O(1) space.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Floyd Phase 2 — reset fast to head; walk both at speed 1; they meet at the cycle start"
 }
 ```
 
@@ -232,7 +1735,7 @@ flowchart TB
 The implementation is relatively straightforward: we use the `slow` and `fast` pointer technique to traverse the list until they either meet (cycle) or `fast` falls off the end (no cycle). On a cycle, we reset `fast` to `head` and walk both pointers at the same speed until they meet again — that meeting point is where the cycle starts.
 
 
-```python run
+```python run viz=linked-list viz-root=head
 """
 Definition for singly-linked list.
 class ListNode:
@@ -280,7 +1783,7 @@ class Solution:
         return slow
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 /**
  * Definition for singly-linked list.
  * class ListNode {
@@ -609,7 +2112,7 @@ print(Solution().detect_cycle(from_list_with_cycle([1, 2, 3, 4], 2)))          #
 print(Solution().detect_cycle(from_list_with_cycle([1, 2, 3], 2)))             # True (cycle at last node)
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 public class Main {
     static class ListNode {
         int val;
@@ -862,7 +2365,7 @@ Solution().remove_loop(h6)
 print(to_list(h6))                                                # [1, 2, 3]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {

@@ -141,7 +141,7 @@ Step 1 is constraint-bounded pruning; step 3 is choice-bounded pruning; step 4 i
 A clean, language-agnostic implementation showing both pruning styles. We'll use Generate Parentheses as the canonical example since it has both flavours visible.
 
 
-```python run
+```python run viz=array viz-root=results
 from typing import List
 
 class Solution:
@@ -174,7 +174,7 @@ if __name__ == "__main__":
     print(Solution().generate_balanced(3))
 ```
 
-```java run
+```java run viz=array viz-root=results
 import java.util.ArrayList;
 import java.util.List;
 

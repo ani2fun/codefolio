@@ -165,7 +165,7 @@ t7 = from_level_order([3, 3, 3])                              # equal values —
 Solution().increasing_path(t7); print(to_level_order(t7))   # [1, 0, 0]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

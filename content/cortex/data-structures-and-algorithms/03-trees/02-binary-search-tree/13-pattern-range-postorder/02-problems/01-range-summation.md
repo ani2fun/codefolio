@@ -36,7 +36,7 @@ Every in-range node accumulates `leftSum + rightSum + originalVal` and writes th
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional
 
 
@@ -150,7 +150,7 @@ Solution().range_summation(t5, 1, 3)
 print(level_order_vals(t5))   # [5, 1, 3]  (root updated to 2+1+3=6? actually 2+(1)+(3)=6 but note postorder: left=1, right=3 returned; root.val += 1+3 → 6; returns 6)
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

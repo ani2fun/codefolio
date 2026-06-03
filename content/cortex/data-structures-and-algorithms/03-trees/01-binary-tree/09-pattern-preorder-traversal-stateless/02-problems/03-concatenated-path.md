@@ -162,7 +162,7 @@ t7 = from_level_order([9, 8, 7])
 Solution().concatenated_path(t7); print(to_level_order(t7))   # [9, 98, 97]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

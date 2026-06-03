@@ -161,7 +161,7 @@ print(Solution().largest_plus_of1s([[0,0],[0,0]]))                              
 print(Solution().largest_plus_of1s([[0,1,0],[1,1,1],[0,1,0]]))                            # 5  — classic plus
 ```
 
-```java run
+```java run viz=graph viz-root=grid
 import java.util.*;
 
 public class Main {

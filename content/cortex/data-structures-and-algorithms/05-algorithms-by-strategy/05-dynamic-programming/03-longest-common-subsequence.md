@@ -271,7 +271,7 @@ if __name__ == "__main__":
     print(Solution().longestCommonSubsequence("abcdefgh", "bxclf"))   # 3
 ```
 
-```java run
+```java run viz=graph viz-root=memo
 import java.util.Arrays;
 
 public class Main {
@@ -506,7 +506,7 @@ print(Solution().longest_common_subsequence("a", "a"))             # 1
 print(Solution().longest_common_subsequence("a", "b"))             # 0
 ```
 
-```java run
+```java run viz=grid viz-root=dp
 public class Main {
     static class Solution {
         public int longestCommonSubsequence(String s1, String s2) {
@@ -773,7 +773,7 @@ print(sorted(Solution().longest_common_subsequence_ii("a", "a")))             # 
 print(sorted(Solution().longest_common_subsequence_ii("a", "b")))             # []
 ```
 
-```java run
+```java run viz=grid viz-root=dp
 import java.util.*;
 
 public class Main {

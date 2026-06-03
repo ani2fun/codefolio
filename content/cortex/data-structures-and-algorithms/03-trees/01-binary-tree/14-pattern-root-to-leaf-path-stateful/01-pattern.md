@@ -57,7 +57,7 @@ flowchart TB
 The "collect all root-to-leaf paths" template — the simplest member of the family.
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import List, Optional
 
 class TreeNode:
@@ -79,7 +79,7 @@ def all_root_to_leaf_paths(root: Optional[TreeNode]) -> List[List[int]]:
     return out
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 static List<Integer> path;
 static List<List<Integer>> out;
 static void allHelper(TreeNode n) {

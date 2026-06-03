@@ -116,6 +116,40 @@ flowchart TB
 
 <p align="center"><strong>Segment tree for <code>A = [1,2,3,4,5,6,7,8]</code> storing range sums. The root covers the full array; each internal node aggregates its two children; leaves are single array slots.</strong></p>
 
+> ▶ Interactive Diagram — Sum segment tree over A = [1, 3, 5, 7]
+
+```d3 widget=segment-tree
+{
+  "title": "Sum segment tree over A = [1, 3, 5, 7]",
+  "steps": [
+    {
+      "nodes": [
+        {"id": "1", "label": "16", "kind": "node", "slot": 1, "meta": [{"name": "range", "value": "[0,3]"}], "cardId": "", "layoutKind": ""},
+        {"id": "2", "label": "4",  "kind": "node", "slot": 2, "meta": [{"name": "range", "value": "[0,1]"}], "cardId": "", "layoutKind": ""},
+        {"id": "3", "label": "12", "kind": "node", "slot": 3, "meta": [{"name": "range", "value": "[2,3]"}], "cardId": "", "layoutKind": ""},
+        {"id": "4", "label": "1",  "kind": "leaf", "slot": 4, "meta": [{"name": "range", "value": "[0,0]"}], "cardId": "", "layoutKind": ""},
+        {"id": "5", "label": "3",  "kind": "leaf", "slot": 5, "meta": [{"name": "range", "value": "[1,1]"}], "cardId": "", "layoutKind": ""},
+        {"id": "6", "label": "5",  "kind": "leaf", "slot": 6, "meta": [{"name": "range", "value": "[2,2]"}], "cardId": "", "layoutKind": ""},
+        {"id": "7", "label": "7",  "kind": "leaf", "slot": 7, "meta": [{"name": "range", "value": "[3,3]"}], "cardId": "", "layoutKind": ""}
+      ],
+      "edges": [
+        {"from": "2", "to": "1", "label": ""},
+        {"from": "3", "to": "1", "label": ""},
+        {"from": "4", "to": "2", "label": ""},
+        {"from": "5", "to": "2", "label": ""},
+        {"from": "6", "to": "3", "label": ""},
+        {"from": "7", "to": "3", "label": ""}
+      ],
+      "cursor": [], "highlight": [], "changed": [], "removed": [],
+      "annotation": "Sum segment tree built over A = [1, 3, 5, 7]. Root stores total sum 16.",
+      "line": 0, "frames": [], "cardCursor": []
+    }
+  ]
+}
+```
+
+<p align="center"><strong>Sum segment tree over [1, 3, 5, 7]. Root stores the total sum 16.</strong></p>
+
 ***
 
 # Build, query, update
@@ -129,6 +163,84 @@ Build the tree recursively from leaves up. `O(n)` time.
 Recursively descend; at each node, decide whether the current node's range is *fully inside* the query range, *fully outside*, or *partially overlapping*.
 
 `O(log n)` because at most 4 "partial overlap" nodes per level.
+
+> ▶ Interactive Diagram — Range sum query [1,3] — traversal path and answer segments
+
+```d3 widget=segment-tree
+{
+  "title": "Range sum query: sum(A[1..3])",
+  "steps": [
+    {
+      "nodes": [
+        {"id": "1", "label": "16", "kind": "node", "slot": 1, "meta": [{"name": "range", "value": "[0,3]"}], "cardId": "", "layoutKind": ""},
+        {"id": "2", "label": "4",  "kind": "node", "slot": 2, "meta": [{"name": "range", "value": "[0,1]"}], "cardId": "", "layoutKind": ""},
+        {"id": "3", "label": "12", "kind": "node", "slot": 3, "meta": [{"name": "range", "value": "[2,3]"}], "cardId": "", "layoutKind": ""},
+        {"id": "4", "label": "1",  "kind": "leaf", "slot": 4, "meta": [{"name": "range", "value": "[0,0]"}], "cardId": "", "layoutKind": ""},
+        {"id": "5", "label": "3",  "kind": "leaf", "slot": 5, "meta": [{"name": "range", "value": "[1,1]"}], "cardId": "", "layoutKind": ""},
+        {"id": "6", "label": "5",  "kind": "leaf", "slot": 6, "meta": [{"name": "range", "value": "[2,2]"}], "cardId": "", "layoutKind": ""},
+        {"id": "7", "label": "7",  "kind": "leaf", "slot": 7, "meta": [{"name": "range", "value": "[3,3]"}], "cardId": "", "layoutKind": ""}
+      ],
+      "edges": [
+        {"from": "2", "to": "1", "label": ""},
+        {"from": "3", "to": "1", "label": ""},
+        {"from": "4", "to": "2", "label": ""},
+        {"from": "5", "to": "2", "label": ""},
+        {"from": "6", "to": "3", "label": ""},
+        {"from": "7", "to": "3", "label": ""}
+      ],
+      "cursor": [], "highlight": [], "changed": [], "removed": [],
+      "annotation": "Initial state. Query: sum(A[1..3]) = 3+5+7 = 15.",
+      "line": 0, "frames": [], "cardCursor": []
+    },
+    {
+      "nodes": [
+        {"id": "1", "label": "16", "kind": "node", "slot": 1, "meta": [{"name": "range", "value": "[0,3]"}], "cardId": "", "layoutKind": ""},
+        {"id": "2", "label": "4",  "kind": "node", "slot": 2, "meta": [{"name": "range", "value": "[0,1]"}], "cardId": "", "layoutKind": ""},
+        {"id": "3", "label": "12", "kind": "node", "slot": 3, "meta": [{"name": "range", "value": "[2,3]"}], "cardId": "", "layoutKind": ""},
+        {"id": "4", "label": "1",  "kind": "leaf", "slot": 4, "meta": [{"name": "range", "value": "[0,0]"}], "cardId": "", "layoutKind": ""},
+        {"id": "5", "label": "3",  "kind": "leaf", "slot": 5, "meta": [{"name": "range", "value": "[1,1]"}], "cardId": "", "layoutKind": ""},
+        {"id": "6", "label": "5",  "kind": "leaf", "slot": 6, "meta": [{"name": "range", "value": "[2,2]"}], "cardId": "", "layoutKind": ""},
+        {"id": "7", "label": "7",  "kind": "leaf", "slot": 7, "meta": [{"name": "range", "value": "[3,3]"}], "cardId": "", "layoutKind": ""}
+      ],
+      "edges": [
+        {"from": "2", "to": "1", "label": ""},
+        {"from": "3", "to": "1", "label": ""},
+        {"from": "4", "to": "2", "label": ""},
+        {"from": "5", "to": "2", "label": ""},
+        {"from": "6", "to": "3", "label": ""},
+        {"from": "7", "to": "3", "label": ""}
+      ],
+      "cursor": [], "highlight": ["1","2","4","5","3"], "changed": [], "removed": [],
+      "annotation": "Traversal: root[0,3] → partial. Left[0,1] → partial. [0,0] outside (skip). [1,1] fully inside ✓. Right[2,3] fully inside ✓.",
+      "line": 0, "frames": [], "cardCursor": []
+    },
+    {
+      "nodes": [
+        {"id": "1", "label": "16", "kind": "node", "slot": 1, "meta": [{"name": "range", "value": "[0,3]"}], "cardId": "", "layoutKind": ""},
+        {"id": "2", "label": "4",  "kind": "node", "slot": 2, "meta": [{"name": "range", "value": "[0,1]"}], "cardId": "", "layoutKind": ""},
+        {"id": "3", "label": "12", "kind": "node", "slot": 3, "meta": [{"name": "range", "value": "[2,3]"}], "cardId": "", "layoutKind": ""},
+        {"id": "4", "label": "1",  "kind": "leaf", "slot": 4, "meta": [{"name": "range", "value": "[0,0]"}], "cardId": "", "layoutKind": ""},
+        {"id": "5", "label": "3",  "kind": "leaf", "slot": 5, "meta": [{"name": "range", "value": "[1,1]"}], "cardId": "", "layoutKind": ""},
+        {"id": "6", "label": "5",  "kind": "leaf", "slot": 6, "meta": [{"name": "range", "value": "[2,2]"}], "cardId": "", "layoutKind": ""},
+        {"id": "7", "label": "7",  "kind": "leaf", "slot": 7, "meta": [{"name": "range", "value": "[3,3]"}], "cardId": "", "layoutKind": ""}
+      ],
+      "edges": [
+        {"from": "2", "to": "1", "label": ""},
+        {"from": "3", "to": "1", "label": ""},
+        {"from": "4", "to": "2", "label": ""},
+        {"from": "5", "to": "2", "label": ""},
+        {"from": "6", "to": "3", "label": ""},
+        {"from": "7", "to": "3", "label": ""}
+      ],
+      "cursor": [], "highlight": [], "changed": ["5","3"], "removed": [],
+      "annotation": "Answer segments: node 5 ([1,1] = 3) + node 3 ([2,3] = 12). Total = 15.",
+      "line": 0, "frames": [], "cardCursor": []
+    }
+  ]
+}
+```
+
+<p align="center"><strong>Range sum query [1,3] — traversal path and answer segments.</strong></p>
 
 ## Point update
 
@@ -220,7 +332,7 @@ if __name__ == "__main__":
     print(f"  sum of [0..2]:  {st.range_query(0, 2)}   (expected 1+2+3 = 6, unchanged)")
 ```
 
-```java run
+```java run viz=array viz-root=tree
 public class Main {
     static int n;
     static long[] tree, lazy;

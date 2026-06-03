@@ -286,7 +286,7 @@ We use a **2D residual matrix** `residual[u][v]` instead of an adjacency list â€
 The graph is given as an adjacency list of `(neighbour, capacity)` pairs.
 
 
-```python run
+```python run viz=graph viz-root=graph
 import sys
 from typing import List, Tuple, Set
 
@@ -404,7 +404,7 @@ print(Solution().maximum_flow([[[1,3],[2,4]],[[3,2]],[[3,3]],[]], 0, 3))        
 print(Solution().maximum_flow([[[1,5]], []], 0, 0))                             # 0
 ```
 
-```java run
+```java run viz=graph viz-root=graph
 import java.util.*;
 
 public class Main {

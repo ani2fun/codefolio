@@ -295,7 +295,7 @@ if __name__ == "__main__":
     print(f"  Search 7: {search(root, 7)}  Search 99: {search(root, 99)}")
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 public class Main {
     static class Node {
         int key, height = 1;

@@ -108,7 +108,7 @@ print(Solution().punctual_arrival_speed([1, 2], 1.9))      # -1  (impossible —
 print(Solution().punctual_arrival_speed([10, 10, 10], 5))  # 10  (last ride is exact)
 ```
 
-```java run
+```java run viz=array viz-root=distance
 public class Main {
     static class Solution {
 

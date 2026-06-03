@@ -97,7 +97,7 @@ Each recursion picks one more segment. ✓
 
 ### The Solution
 
-```python run
+```python run viz=array viz-root=segments
 from typing import List
 
 class Solution:
@@ -198,7 +198,7 @@ print(Solution().generate_ip_addresses("1111"))         # ['1.1.1.1']
 print(Solution().generate_ip_addresses("255255255255")) # ['255.255.255.255']
 ```
 
-```java run
+```java run viz=array viz-root=segments
 import java.util.*;
 
 public class Main {

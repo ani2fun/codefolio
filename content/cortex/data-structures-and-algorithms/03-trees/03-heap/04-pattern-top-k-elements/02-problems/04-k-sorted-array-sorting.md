@@ -77,7 +77,7 @@ Total work: `n + 1` pushes, `n` pops, all on a heap of size at most `K+1` → **
 
 
 
-```python run
+```python run viz=array viz-root=heap viz-kind=heap
 from typing import List
 import heapq
 
@@ -133,7 +133,7 @@ a7 = [5, 3, 4, 1, 2]
 Solution().k_sorted_array_sorting(a7, 2); print(a7)   # [1, 2, 3, 4, 5]
 ```
 
-```java run
+```java run viz=array viz-root=heap viz-kind=heap
 import java.util.*;
 
 public class Main {

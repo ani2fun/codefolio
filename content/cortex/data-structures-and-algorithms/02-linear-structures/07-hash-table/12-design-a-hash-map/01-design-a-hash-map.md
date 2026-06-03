@@ -234,7 +234,7 @@ c3.put(4, 4)                    # evicts LRU which is key 2
 print(c3.get(2))                # -1 — evicted
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -380,7 +380,7 @@ Implement a set that supports `insert`, `remove`, and `getRandom` — **all in O
 Three operations all in O(1) — easy to do **two of three**, hard to do **three of three**:
 
 - A hash set gives O(1) insert and remove (by value), but `getRandom` is **not** O(1) — there's no direct random index into a hash table.
-- A dynamic array gives O(1) `getRandom` (just `arr[rand() % size]`), and O(1) append, but `remove(val)` is O(N) — we'd have to scan to find the value's index.
+- A dynamic array gives O(1) `getRandom` (`arr[rand() % size]`), and O(1) append, but `remove(val)` is O(N) — we'd have to scan to find the value's index.
 
 The composite trick: **dynamic array + hash map**, where the array stores the values and the map stores `value → index in the array`. Now:
 
@@ -501,7 +501,7 @@ print(s3.remove(20))            # True — removes middle element (swap with las
 print(20 not in s3.hash_map)    # True — 20 is gone
 ```
 
-```java run
+```java run viz=graph viz-root=hash_map
 import java.util.*;
 
 public class Main {
@@ -614,7 +614,7 @@ You've now seen the full hash-table toolkit assembled, and the design lesson tie
 1. **Hash map + doubly-linked list** — for problems that need O(1) lookup *and* an O(1) recency / priority order. Caches, schedulers, deque-with-fast-key-access. The map points to nodes; the list owns them.
 2. **Hash map + dynamic array** — for problems that need O(1) lookup *and* O(1) random access by position. The array stores values; the map stores indices. Swap-with-last gives O(1) deletion as long as order doesn't matter.
 
-The deeper lesson is **composability**. A hash table on its own gives O(1) for *one* dimension of access (by key). To get O(1) on *another* dimension (recency, position, frequency, age), pair it with a structure that's specialised for that dimension and have the two collaborate via shared node references or shared indices.
+The deeper lesson is **composability**. A hash table on its own gives O(1) for *one* dimension of access (by key). To get O(1) on *another* dimension (recency, position, frequency, age), pair it with a structure specialised for that dimension. The two collaborate via shared node references or shared indices.
 
 Once you see this composition pattern, it shows up everywhere: LinkedHashMap, OrderedDict, LFU caches, expiring caches, priority queues with `decrease-key`, indexed priority queues, in-memory write-ahead logs, every implementation of database `INDEX` you'll ever read source for.
 

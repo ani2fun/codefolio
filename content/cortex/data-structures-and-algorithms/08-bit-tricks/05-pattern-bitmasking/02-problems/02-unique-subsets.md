@@ -116,7 +116,7 @@ print(len(Solution().unique_subsets([1, 2, 3, 4])))  # 16
 print(Solution().unique_subsets([5]))                # [[], [5]]
 ```
 
-```java run
+```java run viz=array viz-root=arr
 import java.util.*;
 
 public class Main {

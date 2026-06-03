@@ -190,7 +190,7 @@ print(sorted(Solution().case_transformations("ab")))     # ['AB', 'Ab', 'aB', 'a
 print(len(Solution().case_transformations("abc")))       # 8
 ```
 
-```java run
+```java run viz=graph viz-root=transformations
 import java.util.*;
 
 public class Main {

@@ -35,6 +35,34 @@ inp -> map: single pass
 
 <p align="center"><strong>The counting technique — one linear sweep over the input builds a complete frequency map. After this single pass, every "how often did X appear?" question is a constant-time lookup.</strong></p>
 
+## Why Naive Isn't Enough
+
+The obvious move is to compare items to each other directly. For "which character is unique?" you take each character and scan the rest of the string for a match. The answer is correct, but the cost is the problem.
+
+Direct comparison pays a quadratic price. Each item triggers a fresh scan of the whole sequence, so the work is `n + (n−1) + … + 1`, which is `O(n²)` time for `O(1)` extra space. The clock dominates the moment the input grows past a few thousand items.
+
+To make this concrete: on `"aaabbccdd"` the naive scan checks `'a'` against all 9 characters, then `'a'` again, then `'a'` again — re-deriving the same count three times before it even reaches `'b'`. The algorithm never remembers what an earlier scan already established, so it keeps re-counting items it has already seen.
+
+So the key idea is: re-deriving each item's count on demand throws away work, and a single pass that records every count up front replaces all those repeated scans with one lookup.
+
+## The Core Idea
+
+The fix is to count everything once, then answer questions against the counts. Walk the sequence a single time and build a hash map from each item to the number of times it appears.
+
+A frequency map turns a comparison problem into a tally-inspection problem. Instead of asking "does this item appear elsewhere?" by re-scanning, you ask "what is this item's count?" by reading one map entry in amortised `O(1)` time. The map captures the *whole* distribution of the input in one structure, so any occurrence-based question becomes a lookup against it. So the core insight is: the hash map is a precomputed census of the input, and the rest of the algorithm only interrogates that census.
+
+## How the Count Builds
+
+Each item read triggers one move — find its current count, add one, store it back. The map only grows or updates per item; it never rewinds.
+
+The map's invariant is exact at every step: after reading the first `k` items, `frequency` holds the precise count of each distinct item among those `k`. Three observations make the pass concrete:
+
+- **An unseen item** starts at `1` — the map had no entry, so the increment creates one.
+- **A repeat item** climbs by `1` — the existing count is read and overwritten.
+- **The final map** is complete the instant the last item is read — no second aggregation pass is needed.
+
+To make this concrete: reading `"abca"` walks `{} → {a:1} → {a:1,b:1} → {a:1,b:1,c:1} → {a:2,b:1,c:1}`. The second `'a'` finds the existing `1` and bumps it to `2`. The core insight is: because each read updates exactly one entry in amortised `O(1)`, the entire frequency map is built in a single `O(n)` sweep.
+
 ## Counting technique
 
 The mechanism is almost embarrassingly simple. Initialise an empty hash map `frequency`. Walk the sequence; for each item, increment `frequency[item]`. When the walk ends, the map holds the count of every distinct item.
@@ -122,6 +150,17 @@ The single-pass nature is the entire story. We touch each item once; each touch 
 
 > *Predict before reading on — the brute-force "for each character, scan again to count it" is O(N²). Counting builds the map once and looks up answers in O(1). When does the constant factor matter? At what input size does the difference start to dominate?*
 
+## Variants / Taxonomy
+
+The family splits along two independent axes — *what the count keys on* and *what question the map answers afterwards*:
+
+- **Single-sequence tally.** Count items in one sequence, then read the counts — first-non-repeating, longest-palindrome buildability. The map *is* the answer source.
+- **Two-sequence reconcile.** Count one sequence, then walk the second and decrement — constructibility, anagram equality. The map drains toward empty (or goes negative) to signal the verdict.
+- **Value-keyed map.** The key is the item itself — a character, a number. This is the default when items compare directly.
+- **Canonical-form-keyed map.** The key is a *derived* signature shared by many items — a sorted string or a 26-slot letter-count tuple groups anagrams together. Different inputs collide into the same bucket on purpose.
+
+Every variant runs the identical build-then-query skeleton. The single/two-sequence axis only changes whether you increment or decrement; the value/canonical-form axis only changes what you hash on. The single-sequence value-keyed tally is the base case the other three specialise.
+
 # Identifying the counting pattern
 
 The counting technique fits **easy-to-medium** problems on arrays or strings where the answer depends on the *occurrences* of items — how many times each appears, whether two collections have matching multisets, whether one is a subset of another, and so on. Most of these problems share a single template.
@@ -131,11 +170,26 @@ The counting technique fits **easy-to-medium** problems on arrays or strings whe
 
 If you can rephrase a problem as "first build the count of X, then answer Y from it", counting is the right tool.
 
-## Example
+## Recognition Checklist
 
-Let's drill the pattern with one canonical problem.
+Four questions confirm a problem fits the counting pattern. If every answer is "yes," the build-then-query skeleton applies as-is.
 
-> **Problem statement:** Given a string `s`, return the index of the first non-repeating character. Return -1 if no such character exists.
+1. **Does the answer depend on how *often* items appear, not on their order or position?** Uniqueness, multiset equality, subset-of, palindrome buildability all key on counts — not on where an item sits.
+2. **Is the input a linear sequence — an array, string, or list?** The counting sweep walks one item at a time, so the input must be iterable end to end.
+3. **Can the question be answered by *reading* the counts after one pass?** You build the map first, then inspect it; the count is an input to the answer, not the answer itself.
+4. **Is the per-item work `O(1)` amortised?** Each item triggers one hash-map insert or update, so the whole pass is `O(n)` time.
+
+These four questions reappear as the **Diagnostic Questions** table in every problem write-up that follows.
+
+## Canonical Example
+
+Walk a full problem end-to-end to see the pattern click into place.
+
+### Problem Statement
+
+> **Problem:** Given a string `s`, return the index of the first non-repeating character. Return `-1` if no such character exists.
+
+Take `s = "aaabcd"`. The expected answer is `3` — `'b'` is the first character that appears exactly once.
 
 > 🖼 Diagram — The "first non-repeating character" problem in one sentence — return the index of the first character whose count in s is 1.
 ```mermaid
@@ -157,9 +211,9 @@ flowchart LR
 
 <p align="center"><strong>The "first non-repeating character" problem in one sentence — return the index of the first character whose count in <code>s</code> is 1.</strong></p>
 
-### Brute force solution
+### Brute Force
 
-The most direct approach: for each character, scan the rest of the string and check whether it repeats.
+The most direct approach: for each character, scan the rest of the string and check whether it repeats. Return the first index whose character matches nowhere else. It works, but each character triggers a full scan, so the cost is `O(N²)` time for `O(1)` extra space — quadratic and unusable past a few thousand characters.
 
 > 🖼 Diagram — Brute-force flow — nested loops compare every character to every other, giving O(N²) time. Acceptable for tiny strings, prohibitive for anything realistic.
 ```mermaid
@@ -229,7 +283,11 @@ public class Main {
 
 The brute-force approach is **O(N²)** time. Tolerable up to a few thousand characters; brutal beyond that.
 
-### Counting technique solution
+### Key Insight
+
+The repeated scans all re-derive the same fact: how many times a character appears. Compute that once for *every* character in a single pass, then the "is this unique?" test collapses to a count lookup. The core insight is: a frequency map answers every occurrence question in `O(1)`, so one `O(N)` build replaces `N` separate `O(N)` scans.
+
+### Optimized Solution
 
 Now the same problem with the counting pattern:
 
@@ -300,43 +358,45 @@ public class Main {
 
 Two linear passes — **O(N)** time, **O(N)** space. The trade is unambiguous: spend O(N) extra memory to drop time from quadratic to linear. On any realistic input this is a no-brainer.
 
-## Example problems
+### Trace
 
-The five problems below cover the spectrum of "easy-to-medium" counting problems. Each is a different shape — uniqueness, subset-of, multiset-equality, palindromicity, grouping — but every solution is a variation on *build the frequency map first, then ask the question*.
+Walk `s = "aaabcd"` — first build the frequency map in one pass, then re-scan for the earliest count-1 character:
 
-> -   First non-repeating character
-> -   Constructibility check
-> -   Anagram checker
-> -   Build palindrome
-> -   Cluster anagrams
+```
+pass 1 (build the map)
+  a → 1   a → 2   a → 3   b → 1   c → 1   d → 1
+  frequency = {a:3, b:1, c:1, d:1}
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+pass 2 (first index with count 1)
+  i=0  s[0]='a'  freq 3 ≠ 1  skip
+  i=1  s[1]='a'  freq 3 ≠ 1  skip
+  i=2  s[2]='a'  freq 3 ≠ 1  skip
+  i=3  s[3]='b'  freq 1 = 1  return 3
 
-<!-- TODO: Why Naive Isn't Enough — missing, needs to be written -->
-<!--       Guidance: motivation for why the obvious approach fails -->
+result = 3
+```
 
-<!-- TODO: The Core Idea — missing, needs to be written -->
-<!--       Guidance: one paragraph: the central trick -->
+The result `3` matches the expected output — `'b'` is the first character whose count is exactly `1`.
 
-<!-- TODO: How the Pointers/Window Move — missing, needs to be written -->
-<!--       Guidance: mechanics of the moving parts -->
+### Fitting the Template
 
-<!-- TODO: The Generic Algorithm — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
+| Check | Answer for First Non-Repeating Character |
+|---|---|
+| **Q1.** Does the answer depend on how *often* items appear? | **Yes** — "non-repeating" means count exactly `1`, a pure frequency test. |
+| **Q2.** Is the input a linear sequence? | **Yes** — a string, walked character by character. |
+| **Q3.** Can the answer be read off the counts after one pass? | **Yes** — build the map first, then re-scan and read each character's count. |
+| **Q4.** Is the per-item work `O(1)` amortised? | **Yes** — each character is one hash-map increment, then one lookup. |
 
-<!-- TODO: Generic Implementation — missing, needs to be written -->
-<!--       Guidance: Python block + Java block of the skeleton -->
+## Problems in This Category
 
-<!-- TODO: Variants / Taxonomy — missing, needs to be written -->
-<!--       Guidance: enumerate sub-shapes of this pattern -->
+The five problems below each specialise the build-then-query skeleton — only what the map keys on and what question it answers afterwards change:
 
-<!-- TODO: Recognition Checklist — missing, needs to be written -->
-<!--       Guidance: 4-question diagnostic — the source of the Problem-section Diagnostic Questions -->
+| # | Problem | Variant | Twist on the skeleton |
+|---|---|---|---|
+| 1 | [First Non-Repeating Character](02-problems/01-first-non-repeating-character) | Single-sequence tally | Count once, re-scan for the first count-1 character |
+| 2 | [Constructibility Check](02-problems/02-constructibility-check) | Two-sequence reconcile | Count `s2`, then drain it while walking `s1` |
+| 3 | [Anagram Checker](02-problems/03-anagram-checker) | Two-sequence reconcile | Count `s`, decrement over `t`; the map must end empty |
+| 4 | [Build Palindrome](02-problems/04-build-palindrome) | Single-sequence tally | Inspect each count's parity to size the longest palindrome |
+| 5 | [Cluster Anagrams](02-problems/05-cluster-anagrams) | Canonical-form key | Hash on the 26-slot letter-count tuple so anagrams collide |
 
-<!-- TODO: Canonical Example — missing, needs to be written -->
-<!--       Guidance: fully worked example: brute force → optimised → template fit -->
-
-<!-- TODO: Problems in This Category — missing, needs to be written -->
-<!--       Guidance: table with links to the 02-problems/ files -->
+Each is a small variation on the same skeleton — only the key and the post-build question change.

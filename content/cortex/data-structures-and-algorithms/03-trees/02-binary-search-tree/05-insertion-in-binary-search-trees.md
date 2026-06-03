@@ -154,7 +154,7 @@ You must do this **recursively**.
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional, List
 from collections import deque
 
@@ -255,7 +255,7 @@ r7 = Solution().recursive_insertion(t7, 5)         # insert duplicate (goes righ
 print(to_level_order(r7))                          # [5, 3, 7, 5]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {
@@ -358,6 +358,105 @@ public class Main {
 
 </details>
 
+### Step through the execution
+
+Click **Trace** to step through the recursive insertion. The locals panel shows `root` (a heap object with `val`, `left`, and `right` fields) and `data` at each call. Watch the call stack grow three frames deep as the algorithm descends — `main` → `recursiveInsertion (root=5)` → `recursiveInsertion (root=3)` → `recursiveInsertion (root=null)` — then pop back as the new node bubbles up.
+
+```python trace
+class TreeNode:
+    def __init__(self, val):
+        self.val = val
+        self.left = None
+        self.right = None
+
+
+def recursive_insertion(root, data):
+    if root is None:
+        return TreeNode(data)
+    if data < root.val:
+        root.left = recursive_insertion(root.left, data)
+    else:
+        root.right = recursive_insertion(root.right, data)
+    return root
+
+
+root = TreeNode(5)
+root.left = TreeNode(3)
+root.right = TreeNode(7)
+root = recursive_insertion(root, 4)
+print(root.left.right.val)  # 4
+```
+
+Same insertion in Java — `main` builds the same three-node tree and calls `recursiveInsertion`. Each recursive call pushes a new frame; the caption flips as the algorithm descends and pops back on return. The `TreeNode` fields `val`, `left`, and `right` expand on the heap at each step. The **Kotlin** and **Scala** tabs show equivalent source.
+
+```java trace
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+
+        TreeNode(int val) {
+            this.val = val;
+        }
+    }
+
+    static TreeNode recursiveInsertion(TreeNode root, int data) {
+        if (root == null) {
+            return new TreeNode(data);
+        }
+        if (data < root.val) {
+            root.left = recursiveInsertion(root.left, data);
+        } else {
+            root.right = recursiveInsertion(root.right, data);
+        }
+        return root;
+    }
+
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(5);
+        root.left = new TreeNode(3);
+        root.right = new TreeNode(7);
+        root = recursiveInsertion(root, 4);
+        System.out.println(root.left.right.val);  // 4
+    }
+}
+```
+
+```kotlin trace
+class TreeNode(val value: Int, var left: TreeNode? = null, var right: TreeNode? = null)
+
+fun recursiveInsertion(root: TreeNode?, data: Int): TreeNode {
+    if (root == null) return TreeNode(data)
+    if (data < root.value) root.left  = recursiveInsertion(root.left, data)
+    else                   root.right = recursiveInsertion(root.right, data)
+    return root
+}
+
+fun main() {
+    var root: TreeNode? = TreeNode(5, TreeNode(3), TreeNode(7))
+    root = recursiveInsertion(root, 4)
+    println(root.left!!.right!!.value)  // 4
+}
+```
+
+```scala trace
+class TreeNode(val value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+def recursiveInsertion(root: TreeNode, data: Int): TreeNode =
+  if root == null then TreeNode(data)
+  else if data < root.value then
+    root.left = recursiveInsertion(root.left, data)
+    root
+  else
+    root.right = recursiveInsertion(root.right, data)
+    root
+
+@main def run(): Unit =
+  var root = TreeNode(5, TreeNode(3), TreeNode(7))
+  root = recursiveInsertion(root, 4)
+  println(root.left.right.value)  // 4
+```
 
 ***
 
@@ -447,7 +546,7 @@ You must do this **iteratively**.
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional
 from collections import deque
 
@@ -571,7 +670,7 @@ t6 = from_level_order([5, 3, 7])
 print(to_level_order(Solution().iterative_insertion(t6, 5)))   # [5, 3, 7, 5]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

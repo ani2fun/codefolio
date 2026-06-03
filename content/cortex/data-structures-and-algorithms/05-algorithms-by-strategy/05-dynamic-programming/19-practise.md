@@ -104,7 +104,7 @@ print(Solution().covering_distance(6))   # 24
 print(Solution().covering_distance(10))  # 274
 ```
 
-```java run
+```java run viz=array viz-root=dp
 import java.util.*;
 
 public class Main {
@@ -248,7 +248,7 @@ print(Solution().reachability_check([3, 0, 0, 0]))   # True  — jump over zeros
 print(Solution().reachability_check([1, 1, 1, 1]))   # True  — chain of 1-steps
 ```
 
-```java run
+```java run viz=array viz-root=dp
 import java.util.*;
 
 public class Main {
@@ -407,7 +407,7 @@ print(Solution().longest_bitonic_subsequence([1, 3, 1]))               # 3  — 
 print(Solution().longest_bitonic_subsequence([5, 5, 5, 5]))            # 1  — all same
 ```
 
-```java run
+```java run viz=array viz-root=arr
 import java.util.*;
 
 public class Main {
@@ -598,7 +598,7 @@ print(Solution().longest_alternating_subsequence([5, 5, 5]))               # 1  
 print(Solution().longest_alternating_subsequence([1, 2, 1, 2, 1]))         # 5  — perfect alternating
 ```
 
-```java run
+```java run viz=grid viz-root=dp
 import java.util.*;
 
 public class Main {
@@ -781,7 +781,7 @@ print(Solution().pattern_as_subsequence("aaa", "a"))           # 3  — repeated
 print(Solution().pattern_as_subsequence("abc", "abc"))         # 1  — identical
 ```
 
-```java run
+```java run viz=grid viz-root=dp
 import java.util.*;
 
 public class Main {
@@ -949,7 +949,7 @@ print(Solution().shortest_common_supersequence("a", "a"))      # 1  — identica
 print(Solution().shortest_common_supersequence("a", "b"))      # 2  — completely different single chars
 ```
 
-```java run
+```java run viz=grid viz-root=dp
 import java.util.*;
 
 public class Main {
@@ -1142,7 +1142,7 @@ print(Solution().longest_repeated_subsequence("abcd"))       # ""  — all uniqu
 print(Solution().longest_repeated_subsequence("aabb"))       # ab  — two pairs
 ```
 
-```java run
+```java run viz=graph viz-root=dp
 import java.util.*;
 
 public class Main {

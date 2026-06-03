@@ -19,7 +19,7 @@ This adds one O(N) pre-pass, keeping overall complexity at O(N).
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional
 
 
@@ -161,7 +161,7 @@ root6 = TreeNode(1)                                                         # si
 print(Solution().lowest_common_ancestor_ii(root6, root6, root6).val)       # 1
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

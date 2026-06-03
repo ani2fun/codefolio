@@ -73,7 +73,7 @@ print(Solution().duplicate_element([1, 2, 3, 3]))         # 3
 print(Solution().duplicate_element([2, 2]))               # 2
 ```
 
-```java run
+```java run viz=array viz-root=arr
 public class Main {
     static class Solution {
         public int duplicateElement(int[] arr) {

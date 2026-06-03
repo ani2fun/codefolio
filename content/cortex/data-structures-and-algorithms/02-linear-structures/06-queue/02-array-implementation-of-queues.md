@@ -1,6 +1,6 @@
 ---
 title: "Array Implementation Of Queues"
-summary: "<!-- TODO: summary -->"
+summary: "A bounded FIFO on a fixed buffer: track a front index and a back index, wrap both with one modulo, and enqueue, dequeue, and peek all collapse to O(1) over contiguous, cache-friendly memory."
 ---
 
 # 2. Array Implementation of Queues
@@ -19,16 +19,41 @@ This lesson builds that circular queue end-to-end in Python and Java, deriving t
 
 ## Table of contents
 
-1. [Structure of an array-based queue](#structure-of-an-array-based-queue)
-2. [The cyclic nature of array-based queues](#the-cyclic-nature-of-array-based-queues)
-3. [Implementing the queue class](#implementing-the-queue-class)
-4. [Determining the size of the queue](#determining-the-size-of-the-queue)
-5. [Checking if the queue is empty](#checking-if-the-queue-is-empty)
-6. [Accessing the front of the queue](#accessing-the-front-of-the-queue)
-7. [Accessing the back of the queue](#accessing-the-back-of-the-queue)
-8. [Enqueuing an item into the queue](#enqueuing-an-item-into-the-queue)
-9. [Dequeuing an item from the queue](#dequeuing-an-item-from-the-queue)
-10. [Design a queue using a circular array](#design-a-queue-using-a-circular-array)
+1. [Understanding the problem](#understanding-the-problem)
+2. [Structure of an array-based queue](#structure-of-an-array-based-queue)
+3. [The cyclic nature of array-based queues](#the-cyclic-nature-of-array-based-queues)
+4. [Supported operations](#supported-operations)
+5. [Internal mechanics](#internal-mechanics)
+6. [Implementing the queue class](#implementing-the-queue-class)
+7. [Determining the size of the queue](#determining-the-size-of-the-queue)
+8. [Checking if the queue is empty](#checking-if-the-queue-is-empty)
+9. [Accessing the front of the queue](#accessing-the-front-of-the-queue)
+10. [Accessing the back of the queue](#accessing-the-back-of-the-queue)
+11. [Enqueuing an item into the queue](#enqueuing-an-item-into-the-queue)
+12. [Dequeuing an item from the queue](#dequeuing-an-item-from-the-queue)
+13. [Working example](#working-example)
+14. [Design a queue using a circular array](#design-a-queue-using-a-circular-array)
+15. [Boss-fight demo](#boss-fight-demo)
+16. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
+17. [Production reality](#production-reality)
+18. [Quiz](#quiz)
+19. [Practice ladder](#practice-ladder)
+20. [Further reading](#further-reading)
+21. [Cross-links](#cross-links)
+22. [Final takeaway](#final-takeaway)
+
+***
+
+# Understanding the Problem
+
+A queue touches both ends, so an array backs it well only once you fix where each end lives. The two operations a queue exposes act on opposite ends: enqueue adds at the **back**, dequeue removes from the **front**. An array gives `O(1)` read and write at any index it owns. So if a `frontIndex` always marks the oldest item and a `backIndex` always marks the newest, every queue operation is one index computation plus one memory access.
+
+A second decision follows, and it splits the same way it did for the stack:
+
+- **Bounded queue** — fixed capacity, set once at construction; an enqueue that would exceed it is rejected.
+- **Growable queue** — the buffer reallocates when full, paying an occasional `O(n)` copy to stay unbounded.
+
+There is a wrinkle the stack never had. Both indices move *forward*, never back, so a long-running queue marches its live region down the array and strands the slots it leaves behind. Using a capacity-`6` queue: enqueue six items, dequeue three, and the front sits at index `3` while indices `0`–`2` are vacated but unreachable by a naïve scheme. The queue would report itself full at half capacity. So the key idea is: an array backs a queue well because both work at fixed ends, but the forward march of two indices forces one extra trick — treat the array as a circle so vacated slots become reusable.
 
 ***
 
@@ -70,7 +95,12 @@ cls: "Queue (circular-array-backed)" {
 
 ### Size
 
-The number of items currently in the queue. Why store it as a separate counter and not derive it from the indices? Because — and this is the subtle bit — once the queue wraps around, `backIndex < frontIndex` is *normal*, not a bug, and you cannot tell from the indices alone whether the queue holds 0 items or `capacity` items if `frontIndex == backIndex + 1 (mod capacity)`. A separate counter makes empty/full unambiguous in O(1).
+`currentSize` is the count of items currently in the queue, stored as a standalone counter rather than derived from the indices. The reason it must be standalone is the wrap-around. After the queue wraps, two states look identical from the indices alone:
+
+- **Empty** — `frontIndex == backIndex + 1 (mod capacity)` with nothing between them.
+- **Full** — `frontIndex == backIndex + 1 (mod capacity)` with every slot occupied.
+
+Using a capacity-`6` queue: front at `3` and back at `2` describes both a zero-item queue and a six-item queue, and `backIndex < frontIndex` here is normal, not a bug. So the key idea is: a separate `currentSize` counter is the only way to tell empty from full in `O(1)` once the indices can wrap past each other.
 
 ### Capacity
 
@@ -312,6 +342,35 @@ note -> mem.m3
 
 ***
 
+# Supported Operations
+
+Six operations make up the entire interface, and every one is `O(1)` time and `O(1)` space. The set is deliberately tiny. A queue offers no indexed access, no search, and no middle insertion — those would break the FIFO contract that gives the structure its value. What remains divides into one query, two reads, and two mutations, plus a size count:
+
+| Operation | Time | Space | What it does |
+|---|---|---|---|
+| `size()` | `O(1)` | `O(1)` | Returns `currentSize` — the count of stored items |
+| `empty()` | `O(1)` | `O(1)` | Returns whether `currentSize == 0` |
+| `front()` | `O(1)` | `O(1)` | Reads `arr[frontIndex]` without removing it (peek) |
+| `back()` | `O(1)` | `O(1)` | Reads `arr[backIndex]` without removing it (peek) |
+| `enqueue(val)` | `O(1)` | `O(1)` | Writes `val` at the next back slot; returns `false` if full |
+| `dequeue()` | `O(1)` | `O(1)` | Removes and returns the front item; returns `-1` if empty |
+
+The two reads sit at opposite ends: `front()` inspects the oldest item, `back()` inspects the newest. Using a capacity-`6` queue holding `[3, 5, 7]` at indices `1`–`3`, `front()` returns `3` and `back()` returns `7`, both leaving the queue unchanged. So the core insight is: the whole interface is read-or-write at one of two tracked indices, which is exactly why none of the six operations ever depends on how many items the queue holds.
+
+***
+
+# Internal Mechanics
+
+Every operation is a rule expressed in terms of `frontIndex`, `backIndex`, and `currentSize`, and the buffer is the passive storage those rules read and write. The buffer never moves and never resizes in a bounded queue — only the two indices slide, always forward, always modulo `capacity`. Those three integers are the entire bookkeeping:
+
+- **Enqueue** advances `backIndex` to `(backIndex + 1) % capacity`, writes `arr[backIndex] = val`, then increments `currentSize`.
+- **Dequeue** reads `arr[frontIndex]`, advances `frontIndex` to `(frontIndex + 1) % capacity`, then decrements `currentSize`.
+- **Front** and **back** read `arr[frontIndex]` and `arr[backIndex]` and leave every index alone.
+
+A dequeued slot is never erased. Advancing `frontIndex` is enough, because the queue is defined as the values between `frontIndex` and `backIndex` taken cyclically. Anything outside that arc is invisible to every operation, and the next enqueue that wraps around overwrites it. The `currentSize` counter does the one job the indices cannot: it tells *empty* from *full* when `frontIndex` and `backIndex` coincide on the ring. So the core insight is: the buffer is passive storage and the two indices plus the size are the only live state — correctness reduces to advancing each index cyclically and keeping `currentSize` exact.
+
+***
+
 # Implementing the queue class
 
 We'll build the class incrementally — first the skeleton (constructor + stub methods), then fill in `size`, `empty`, `front`, `back`, `enqueue`, `dequeue` in order.
@@ -364,7 +423,7 @@ q = Queue(4)
 print("created queue with capacity 4")
 ```
 
-```java run
+```java run viz=array viz-root=arr
 public class Main {
     static class Queue {
         private final int[] arr;
@@ -391,13 +450,13 @@ public class Main {
 ```
 
 
-The skeleton is just bookkeeping — five fields, six stubs. The next six sections fill in one stub at a time.
+The skeleton is pure bookkeeping — five fields, six stubs. The next six sections fill in one stub at a time.
 
 ***
 
 # Determining the size of the queue
 
-The size operation reports the current number of items in the queue. We've already done all the hard work in the constructor and (preview) in `enqueue`/`dequeue`: those operations maintain `currentSize` as an invariant. The size method is then a one-line read.
+The size operation reports the current number of items in the queue. The work is already done elsewhere: the constructor sets `currentSize = 0`, and `enqueue` and `dequeue` keep it exact as an invariant. The size method is then a one-line read of that counter, costing `O(1)` time and `O(1)` space.
 
 > **Algorithm**
 >
@@ -992,7 +1051,7 @@ The cyclic advance is the one-liner that does all the work:
 backIndex = (backIndex + 1) % capacity
 ```
 
-When `backIndex` is the last valid index, `(last + 1) % capacity == 0`, wrapping us back to slot 0. When `backIndex` is anywhere else, this is just `backIndex + 1`. One expression handles both the normal case *and* the wrap-around case — no `if`, no special branches.
+When `backIndex` is the last valid index, `(last + 1) % capacity == 0`, wrapping us back to slot 0. When `backIndex` is anywhere else, the modulo is a no-op and the result is `backIndex + 1`. One expression handles both the normal case *and* the wrap-around case — no `if`, no special branches.
 
 ```mermaid
 ---
@@ -1347,6 +1406,22 @@ Same shape as enqueue — predicate, modulo, array read, decrement.
 
 ***
 
+# Working Example
+
+Watching `frontIndex` and `backIndex` chase each other around the ring is the fastest way to make the six operations click. Start with `Queue(3)` — capacity `3`, buffer `[—, —, —]`, `frontIndex = 0`, `backIndex = -1`, `currentSize = 0`. This run fills the queue, drains part of it, then enqueues again to force a wrap. Each step changes one index and at most one slot:
+
+1. **`enqueue(1)`** — not full, so `backIndex` becomes `(−1 + 1) % 3 = 0`, `arr[0] = 1`, `currentSize = 1`. Buffer `[1, —, —]`.
+2. **`enqueue(2)`** — `backIndex` becomes `(0 + 1) % 3 = 1`, `arr[1] = 2`, `currentSize = 2`. Buffer `[1, 2, —]`.
+3. **`enqueue(3)`** — `backIndex` becomes `(1 + 1) % 3 = 2`, `arr[2] = 3`, `currentSize = 3` — the queue is now full (`currentSize == capacity`).
+4. **`dequeue()`** — not empty, so read `arr[0] == 1`, advance `frontIndex` to `(0 + 1) % 3 = 1`, `currentSize = 2`, return `1`. Buffer still reads `[1, 2, 3]`, but slot `0` is now logically vacant.
+5. **`enqueue(4)`** — not full, so `backIndex` becomes `(2 + 1) % 3 = 0` — the wrap. `arr[0] = 4` overwrites the vacated slot, `currentSize = 3`. Buffer `[4, 2, 3]`, front at `1`, back at `0`.
+6. **`front()`** — read `arr[1] == 2`, no index changes. The oldest live item is `2`.
+7. **`back()`** — read `arr[0] == 4`, no index changes. The newest item is `4`.
+
+The values dequeued so far come out as `1`, and the live contents read `2, 3, 4` front-to-back — exactly insertion order. That ordering is FIFO made literal: the first value enqueued (`1`) is the first dequeued, while the newest (`4`) waits at the back. The wrap at step 5 is the only event that distinguishes a queue's array from a stack's. So the core insight is: enqueue and dequeue chase each other forward around the ring, the modulo recycles vacated slots, and values leave in exactly the order they arrived regardless of capacity.
+
+***
+
 # Design a queue using a circular array
 
 ## Problem Statement
@@ -1483,7 +1558,7 @@ print(q.enqueue(8), q.enqueue(9))   # True False (full)
 print(q.empty())                    # False
 ```
 
-```java run
+```java run viz=array viz-root=arr
 public class Main {
     static class Queue {
         private final int[] arr;
@@ -1539,39 +1614,110 @@ A circular array queue is *the* canonical bounded-FIFO data structure — every 
 
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+***
 
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
+# Edge Cases and Pitfalls
 
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
+The circular queue fits on one screen, yet most of its bugs cluster around the two moving indices and the `currentSize` counter that disambiguates them. Keep this list open the next time a queue misbehaves at the edges:
 
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
+- **Deriving size from the indices instead of storing it.** On a wrapped ring, `frontIndex == backIndex + 1 (mod capacity)` is ambiguous: it describes both an empty queue and a full one. Maintaining `currentSize` as a separate counter is the unambiguous fix; the index gap alone cannot tell `0` items from `capacity` items in `O(1)`.
+- **Forgetting the modulo on one of the two advances.** Both `frontIndex` and `backIndex` must advance with `(idx + 1) % capacity`. Writing a plain `backIndex + 1` enqueues one slot past the buffer the moment the back reaches `capacity - 1`. That is an `IndexError` in Python, an `ArrayIndexOutOfBoundsException` in Java, or silent corruption in C.
+- **Checking `backIndex == capacity - 1` for "full".** After a wrap the back can sit anywhere on the ring, so a position-based full check is wrong. The correct test is `currentSize == capacity`, which holds no matter where the indices landed.
+- **The `-1` sentinel collides with real data.** Returning `-1` from `front()`, `back()`, or `dequeue()` to mean "empty" is only safe when `-1` cannot be a stored value. If the queue holds arbitrary integers, `-1` is ambiguous. Prefer an explicit `empty()` guard before every read, or raise an exception instead of returning a sentinel.
+- **Dequeue does not clear the slot.** A dequeued value stays physically in the buffer until a wrapping enqueue overwrites it. For plain integers this is harmless, but a queue of object references keeps those objects alive and ineligible for garbage collection. In Java, null the slot after reading it when storing references.
+- **Mutating before checking.** The full check must run before the back advance and write; the empty check before the front read and advance. Reordering them — advancing `backIndex` first, then testing — leaves an index and `currentSize` in a corrupt state when the boundary is hit.
 
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
+***
 
-<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
-<!--       Guidance: bulleted list of gotchas -->
+# Production Reality
 
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+The array-backed circular queue is the default queue everywhere a maximum depth is known or memory must stay contiguous and lock-free. The systems below are worth knowing by name.
 
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+**[The Linux kernel `kfifo`]** — uses **a power-of-two circular byte buffer with masking instead of modulo** — because a single-producer/single-consumer ring needs no locks, and masking a power-of-two index is even cheaper than the `%` operator on the kernel's hot I/O path.
 
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
+**[A network interface card driver's RX/TX rings]** — uses **fixed-size descriptor ring buffers shared with the hardware** — because the NIC and the CPU advance head and tail pointers independently, and a bounded ring gives back-pressure for free when the consumer falls behind.
 
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+**[An audio processing pipeline]** — uses **a lock-free ring buffer between the capture and playback threads** — because the real-time audio thread cannot block on allocation, so a pre-sized circular buffer guarantees `O(1)` enqueue and dequeue with no `malloc` in the callback.
 
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
+**[The LMAX Disruptor]** — uses **a pre-allocated ring buffer indexed by a monotonically increasing sequence** — because high-frequency trading needs millions of messages per second, and reusing slots in a fixed ring eliminates per-message garbage-collection pressure.
 
-<!-- TODO: Final Takeaway — missing, needs to be written -->
-<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->
+**[A bounded producer-consumer work queue]** — uses **a circular array guarded by the `currentSize` counter** — because the bounded design applies back-pressure to producers when full rather than growing without limit and exhausting memory.
+
+**[Java's `ArrayDeque` used as a queue]** — uses **a growable circular array behind `offer` / `poll`** — because the standard library wants `O(1)` amortised FIFO with far better cache locality than `LinkedList`, accepting an occasional resize to stay unbounded.
+
+***
+
+# Quiz
+
+Test your grip before moving on. One answer per question; reveal only after you have committed to one.
+
+**[Recall] Q: For a queue holding three items at indices `1`, `2`, `3`, what do `frontIndex`, `backIndex`, and `currentSize` hold?**
+`frontIndex == 1`, `backIndex == 3`, `currentSize == 3` — front marks the oldest item, back marks the newest, and the counter tracks the live count directly.
+
+**[Recall] Q: What single expression advances either index, and what does it compute when the index is `capacity - 1`?**
+`(idx + 1) % capacity` advances either index, and when `idx == capacity - 1` it wraps to `0` rather than stepping out of bounds.
+
+**[Reasoning] Q: Why does the queue maintain `currentSize` separately instead of deriving size from `frontIndex` and `backIndex`?**
+On a wrapped ring the indices alone cannot distinguish an empty queue from a full one when they meet, so a separate `currentSize` counter is the only `O(1)` way to tell the two apart.
+
+**[Reasoning] Q: Why does `dequeue()` not need to erase the value it removes from the buffer?**
+The queue is defined as the values between `frontIndex` and `backIndex` taken cyclically, so advancing `frontIndex` makes the old front invisible to every operation, and the next wrapping enqueue overwrites that slot anyway.
+
+**[Tradeoff] Q: When would you choose a bounded circular queue over a growable one, and what do you give up?**
+Choose bounded when the maximum depth is known and per-operation latency must be predictable, as in kernels and real-time audio. You give up the freedom to exceed capacity, since a full enqueue is rejected rather than triggering an `O(n)` resize-and-copy.
+
+***
+
+# Practice Ladder
+
+Five problems that exercise the queue contract and the circular-buffer mechanics, easiest first. Try each unaided; hit the hint after ten minutes; do not peek at solutions until you have written something runnable.
+
+<!-- VERIFY: confirm links — the 06-queue chapter has no pattern-problem directories, so this ladder links the chapter's own lessons/design plus a sibling sliding-window pattern problem that a deque accelerates; revisit if dedicated queue problems are added. -->
+
+| # | Problem | Pattern | Difficulty | Hint |
+|---|---------|---------|------------|------|
+| 1 | [Array Implementation of Queues](/cortex/data-structures-and-algorithms/linear-structures-queue-array-implementation-of-queues) | [Introduction to Queues](/cortex/data-structures-and-algorithms/linear-structures-queue-introduction-to-queues) | Easy | Build the six operations from scratch over one buffer; the only logic is the full check and the two cyclic advances. `O(1)` per op, `O(n)` space. |
+| 2 | [Linked-List Implementation of Queues](/cortex/data-structures-and-algorithms/linear-structures-queue-linked-list-implementation-of-queues) | [Introduction to Queues](/cortex/data-structures-and-algorithms/linear-structures-queue-introduction-to-queues) | Easy | Keep head and tail pointers; enqueue at the tail, dequeue at the head — no modulo, but one allocation per node. `O(1)` per op. |
+| 3 | [Design a Queue using Stacks](/cortex/data-structures-and-algorithms/linear-structures-queue-design-a-queue-design-a-queue) | [Introduction to Queues](/cortex/data-structures-and-algorithms/linear-structures-queue-introduction-to-queues) | Medium | Pour one stack into a second to reverse LIFO into FIFO; transfer lazily so each item moves at most once. Amortised `O(1)` per op. |
+| 4 | [Maximum Subarray Sum](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-variable-sliding-window-problems-maximum-subarray-sum) | [Variable Sliding Window](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-variable-sliding-window-pattern) | Medium | Treat the window as a FIFO front-to-back; admit at the back, evict from the front when the running condition breaks. `O(n)` one pass. |
+| 5 | [Subarray Size Equals K](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-fixed-sliding-window-problems-subarray-size-equals-k) | [Fixed Sliding Window](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-fixed-sliding-window-pattern) | Easy | A fixed-width window is a bounded queue: enqueue one element at the back and dequeue one at the front each step. `O(n)` time, `O(1)` extra. |
+
+Once these feel automatic, enqueue and dequeue have stopped being syntax and become a structural reflex — exactly what BFS, scheduling, and stream-processing problems build on.
+
+***
+
+# Further Reading
+
+Curated paths in, not a syllabus. Read in order of the annotation; come back for the rest when you need depth.
+
+- **[CLRS — Chapter 10.1: Stacks and Queues](https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/)**
+  ★ Essential — the canonical array-backed queue with `ENQUEUE` / `DEQUEUE`, the head and tail indices, and the wrap-around treated formally, including the empty- and full-queue error conditions.
+- **[Linux kernel `kfifo` source](https://github.com/torvalds/linux/blob/master/lib/kfifo.c)**
+  ◆ Advanced — a production single-producer/single-consumer ring buffer using a power-of-two size and bit masking instead of `%`; this lesson's design hardened for the kernel I/O path.
+- **[The LMAX Disruptor technical paper](https://lmax-exchange.github.io/disruptor/disruptor.html)**
+  ◆ Advanced — how a pre-allocated ring buffer indexed by a running sequence reaches millions of messages per second by reusing slots and avoiding garbage collection.
+- **[Java `ArrayDeque` source](https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/java/util/ArrayDeque.java)**
+  → Reference — the growable circular-array deque the JDK recommends over `LinkedList`; shows how the bounded design extends to amortised `O(1)` growth without losing cache locality.
+
+***
+
+# Cross-Links
+
+**Prerequisites**
+
+- [Introduction to Queues](/cortex/data-structures-and-algorithms/linear-structures-queue-introduction-to-queues) — the FIFO contract and the enqueue / dequeue / front / back / empty / size interface this lesson implements over an array.
+- [Introduction to Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-introduction) — contiguous layout and `O(1)` indexed access, the two array properties that make the whole implementation constant time.
+- [Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis) — what `O(1)` per operation and `O(n)` space in capacity actually mean, and how to read them off the code.
+
+**What comes next**
+
+- [Linked-List Implementation of Queues](/cortex/data-structures-and-algorithms/linear-structures-queue-linked-list-implementation-of-queues) — the same six operations with the tradeoff flipped: no fixed capacity and no modulo, but one allocation per node and no cache locality.
+- [Design a Queue](/cortex/data-structures-and-algorithms/linear-structures-queue-design-a-queue-design-a-queue) — builds a queue out of stacks and a stack out of queues, testing whether the FIFO and LIFO contracts are understood as composable primitives.
+
+***
+
+## Final Takeaway
+
+1. **Core mechanic:** track a `frontIndex` and a `backIndex` that both march forward through `(idx + 1) % capacity`, keep a `currentSize` counter, and every operation becomes `O(1)` time and `O(1)` extra space — enqueue advances back then writes, dequeue reads then advances front.
+2. **Dominant tradeoff:** you gain cache-friendly contiguous storage and predictable per-operation cost with no allocation; you give up the freedom to grow, since a bounded queue rejects an enqueue once `currentSize == capacity`.
+3. **One thing to remember:** the modulo recycles vacated slots and the `currentSize` counter is what tells empty from full on a wrapped ring — keep both correct and the entire queue is correct.

@@ -113,7 +113,7 @@ Given the **root** of a binary search tree and a **target** value, return the no
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional
 
 
@@ -199,7 +199,7 @@ r7 = Solution().iterative_search(t7, 6)            # rightmost node
 print(r7.val if r7 else None)                      # 6
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {
@@ -370,7 +370,7 @@ Given the **root** of a binary search tree, return the node with the minimum val
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional
 
 
@@ -456,7 +456,7 @@ r7 = Solution().iteratively_find_minimum(t7)
 print(r7.val if r7 else None)                      # 1
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {
@@ -616,7 +616,7 @@ Given the **root** of a binary search tree, return the node with the maximum val
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional
 
 
@@ -702,7 +702,7 @@ r7 = Solution().iteratively_find_maximum(t7)
 print(r7.val if r7 else None)                      # 9
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {
@@ -868,7 +868,7 @@ Given the **root** of a binary search tree and a **target**, return the node tha
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional
 
 
@@ -977,7 +977,7 @@ r7 = Solution().iteratively_find_lower_bound(t7, 4)  # exact match on root
 print(r7.val if r7 else None)                      # 4
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {
@@ -1179,7 +1179,7 @@ Given the **root** of a binary search tree and a **target**, return the node tha
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional
 
 
@@ -1276,7 +1276,7 @@ r7 = Solution().iteratively_find_upper_bound(t7, 4)  # target = left-child value
 print(r7.val if r7 else None)                      # 5
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {
@@ -1463,7 +1463,7 @@ Why is the descent direction safe? Because of the BST property. Suppose you're a
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional
 
 
@@ -1543,7 +1543,7 @@ t7 = from_level_order([5, 3, 7, 2, 4, 6, 8])
 print(Solution().closest_value(t7, 6.4))           # 6
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

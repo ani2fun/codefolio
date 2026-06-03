@@ -179,7 +179,7 @@ if __name__ == "__main__":
     print(Solution().enumerate_all(2, 2))   # [[1,1], [1,2], [2,1], [2,2]]
 ```
 
-```java run
+```java run viz=graph viz-root=state
 import java.util.ArrayList;
 import java.util.List;
 

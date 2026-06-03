@@ -30,7 +30,7 @@ Output: [-1]
 Run `upper_bound` for each query. Return `-1` if the result is `n`.
 
 
-```python run
+```python run viz=array viz-root=result
 from typing import List
 
 class Solution:
@@ -107,7 +107,7 @@ print(Solution().ceiling_index([2, 2, 2], [2]))      # [-1]  (duplicates, all eq
 print(Solution().ceiling_index([1, 3, 5, 7], [2, 4, 6, 8]))  # [1, 2, 3, -1]
 ```
 
-```java run
+```java run viz=array viz-root=result
 import java.util.*;
 
 public class Main {

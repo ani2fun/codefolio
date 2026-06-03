@@ -10,7 +10,7 @@ summary: The discipline that asks "what happens when the disk fills up?" before 
 
 ## 1. Motivation
 
-In **January 2017**, GitLab's database almost died. An engineer ran `rm -rf` on what they believed was a stale replica directory; it was actually the primary. They had backups. The backups had not been working for months. They had snapshots. The snapshots were six hours old. They had a replica. Replication had silently broken nine months earlier. Six hours of customer data was lost.
+In **January 2017**, GitLab's database almost died. An engineer ran `rm -rf` on what they believed was a stale replica directory; it was actually the primary. They had backups. The backups had not been working for months. They had snapshots. The snapshots were six hours old. They had a replica. Replication had silently fallen behind under load that very night. Six hours of customer data was lost.
 
 GitLab did the rare-and-admirable thing: they livestreamed the recovery on YouTube and published [a public postmortem](https://about.gitlab.com/blog/postmortem-of-database-outage-of-january-31/) that any engineer can still read in 15 minutes. Read it. Every paragraph is a lesson in system design that no Leetcode problem will ever teach you.
 
@@ -111,7 +111,7 @@ config:
 ---
 flowchart LR
     User["Browser"] -->|"HTTPS"| App["Single-process<br/>Python app<br/>(FastAPI)"]
-    App -->|"SQL"| DB["SQLite file<br/>on the same disk"]
+    App -->|"in-process SQL<br/>(no network)"| DB["SQLite file<br/>on the same disk"]
 ```
 
 <p align="center"><strong>Book-tracking app — production architecture for ten readers.</strong></p>
@@ -226,7 +226,7 @@ for c in CHOICES:
     print(f"  {c['name']:<55} -> {verdict}")
 ```
 
-**Now break it.** Change `TARGET_QPS` to `40_000` and re-run. What changes? Now change `MONTHLY_BUDGET_USD` to `100`. Notice that nothing fits — you have an *impossible* requirements set, and a senior engineer's first job is to push back: *"You cannot have 40,000 QPS for $100/month. Pick which one to relax."* That conversation is the job. Most engineers fail it because they did not run the numbers first.
+**Now break it.** Change `TARGET_QPS` to `40_000` and re-run. What changes? Now change `MONTHLY_BUDGET_USD` to `100`. Notice that nothing fits — you have an *impossible* requirements set, and a senior engineer's first job is to push back: *"You cannot have 40,000 QPS of dynamic, database-backed work for $100/month. Pick which one to relax."* That conversation is the job. Most engineers fail it because they did not run the numbers first.
 
 ## 6. Trade-offs & Complexity
 
@@ -252,9 +252,9 @@ If a colleague tells you a single design "is the best", they are wrong. Politely
 
 The mistakes that distinguish junior from senior thinking — every one of these is a real outage somebody actually wrote a postmortem about:
 
-- **Optimising for the imaginary case.** *"What if we get 10 M users?"* You probably will not. Design for 10× your current numbers, not 1000×. ([Stack Overflow ran for years on two web servers and a single SQL Server](https://nickcraver.com/blog/2016/02/17/stack-overflow-the-architecture-2016-edition/) — 2016.)
-- **Confusing "we need it to be fast" with "we need it to be predictable".** A system that takes 80 ms in the median and 5,000 ms at the 99th percentile is *worse* than one that takes 400 ms always. Tail latency is what your users actually feel. ([Jeff Dean and Luiz Barroso, 2013](https://research.google/pubs/the-tail-at-scale/) is the canonical paper.)
-- **Treating "the cloud" as infinite and infallible.** It is not. Regions go down. Availability zones lose power. AWS has lost an entire region for a day twice. Design for it.
+- **Optimising for the imaginary case.** *"What if we get 10 M users?"* You probably will not. Design for 10× your current numbers, not 1000×. ([Stack Overflow ran on nine web servers and a single active SQL master](https://nickcraver.com/blog/2016/02/17/stack-overflow-the-architecture-2016-edition/) — 2016; the post notes it could limp along on just one.)
+- **Confusing "we need it to be fast" with "we need it to be predictable".** A system that takes 80 ms in the median but 5,000 ms at the 99th percentile can be *worse* than one that takes 400 ms always — especially once a request fans out across many services, where the rare slow component dominates the user-perceived time. Tail latency is what your users actually feel. ([Jeff Dean and Luiz Barroso, 2013](https://research.google/pubs/the-tail-at-scale/) is the canonical paper.)
+- **Treating "the cloud" as infinite and infallible.** It is not. Regions go down. Availability zones lose power. AWS's worst regional outages have run roughly 7–20 hours of degraded service in us-east-1 — and even then it has never lost an entire region (all zones) at once. Design for it.
 - **Assuming the network is reliable.** It is not — partitions happen, packets vanish, DNS lies. (This is fallacy #1 of the [Eight Fallacies of Distributed Systems](https://en.wikipedia.org/wiki/Fallacies_of_distributed_computing). We will dedicate a lesson to it later.)
 - **Building distributed systems before you have a single-machine system that works.** Distribution multiplies bugs by the number of nodes. If you cannot make one machine reliable, six of them will not save you. They will compound your suffering.
 - **Caching as a reflex.** "Add a cache" is the duct tape of system design. It hides slowness, then explodes spectacularly the first time the cache layer fails and 100% of your traffic hits the cold backend. (Cache stampedes get their own treatment in [Lesson 8](/cortex/system-design/building-blocks-caching).)
@@ -289,7 +289,7 @@ Your two regions cannot agree on the latest write *and* keep responding *and* ke
 
 ## In the Wild
 
-- **[Stack Overflow Architecture (2016)](https://nickcraver.com/blog/2016/02/17/stack-overflow-the-architecture-2016-edition/)** — Stack Overflow served 200 M+ pageviews/month from *nine* web servers and *one* SQL Server. It is the most widely-quoted refutation of "you must have microservices to scale" you will ever read.
+- **[Stack Overflow Architecture (2016)](https://nickcraver.com/blog/2016/02/17/stack-overflow-the-architecture-2016-edition/)** — Stack Overflow served roughly 66 M page loads *per day* (~2 billion/month) from *nine* web servers and a *single active SQL master*. It is the most widely-quoted refutation of "you must have microservices to scale" you will ever read.
 
 - **[Discord — How Discord Stores Trillions of Messages](https://discord.com/blog/how-discord-stores-trillions-of-messages)** (2023) — A study in *deliberate* migration from Cassandra to ScyllaDB, including the months of measurement that justified the move. Notice how much of the post is about *measurement*, not implementation.
 

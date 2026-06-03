@@ -27,7 +27,8 @@ object Blocks:
       runnable: Option[Boolean],
       viz: Option[String] = None,
       vizRoot: Option[String] = None,
-      vizCase: Option[String] = None
+      vizCase: Option[String] = None,
+      vizKind: Option[String] = None
   )
 
   /**
@@ -42,7 +43,8 @@ object Blocks:
       languageLabel: Option[String],
       viz: Option[String] = None,
       vizRoot: Option[String] = None,
-      vizCase: Option[String] = None
+      vizCase: Option[String] = None,
+      vizKind: Option[String] = None
   ): Either[BlockDecodeError, Block.RunnableCode] =
     for
       lang <- language.toRight(BlockDecodeError.MissingAttribute("runnable-code", "data-lang"))
@@ -53,7 +55,8 @@ object Blocks:
       languageLabel.filter(_.nonEmpty),
       viz.filter(_.nonEmpty),
       vizRoot.filter(_.nonEmpty),
-      vizCase.flatMap(_.toIntOption)
+      vizCase.flatMap(_.toIntOption),
+      vizKind.filter(_.nonEmpty)
     )
 
   /**
@@ -84,7 +87,8 @@ object Blocks:
             raw.runnable.getOrElse(true),
             raw.viz.filter(_.nonEmpty),
             raw.vizRoot.filter(_.nonEmpty),
-            raw.vizCase.flatMap(_.toIntOption)
+            raw.vizCase.flatMap(_.toIntOption),
+            raw.vizKind.filter(_.nonEmpty)
           )
       }
       converted.map(Block.RunnableGroup(_))
@@ -137,18 +141,20 @@ object Blocks:
 
   /**
    * Decode a `traced-code-block` placeholder. `language` (from `data-lang`) is the runtime to execute under
-   * (only "python" is supported in v1; the field is kept so adding Java later doesn't require an attribute
-   * rename). `source` (URI-decoded `data-source`) is the user program. The actual `sys.settrace` wrapper
-   * lives on the client — the server-side `/api/run` is unchanged. See ADR-0007.
+   * (e.g. "python" or "java"). `source` (URI-decoded `data-source`) is the user program. `companions` carries
+   * zero or more source-only language tabs (e.g. Kotlin, Scala) decoded from `data-companions`; their source
+   * is displayed with syntax highlighting and a `LanguageLockBanner` (no tracer). The actual tracer wrapper
+   * lives on the client — the server-side `/api/run` is unchanged. See ADR-0007 / ADR-0021.
    */
   def decodeTracedCode(
       language: Option[String],
-      source: Option[String]
+      source: Option[String],
+      companions: List[Block.TraceCompanion] = Nil
   ): Either[BlockDecodeError, Block.TracedCode] =
     for
       lang <- language.toRight(BlockDecodeError.MissingAttribute("traced-code-block", "data-lang"))
       src  <- source.toRight(BlockDecodeError.MissingAttribute("traced-code-block", "data-source"))
-    yield Block.TracedCode(lang, src)
+    yield Block.TracedCode(lang, src, companions)
 
   /**
    * Decode a `likec4-iframe` placeholder. `src` (from `data-src`) is the URL of the LikeC4 view (e.g.
@@ -183,7 +189,8 @@ object Block:
       languageLabel: Option[String],
       viz: Option[String] = None,
       vizRoot: Option[String] = None,
-      vizCase: Option[Int] = None
+      vizCase: Option[Int] = None,
+      vizKind: Option[String] = None
   ) extends Block
 
   final case class Tab(
@@ -193,7 +200,8 @@ object Block:
       runnable: Boolean,
       viz: Option[String] = None,
       vizRoot: Option[String] = None,
-      vizCase: Option[Int] = None
+      vizCase: Option[Int] = None,
+      vizKind: Option[String] = None
   )
 
   final case class RunnableGroup(tabs: List[Tab]) extends Block
@@ -215,12 +223,26 @@ object Block:
   final case class D3Widget(widget: String, payload: String) extends Block
 
   /**
-   * Step-through visualisation for a code block whose execution we want to inspect. `language` is the runtime
-   * ("python" in v1); `source` is the user program. On the client, a `sys.settrace` harness wraps the source
-   * and posts to the existing `/api/run`; the trace is parsed out of stdout and rendered as code + locals
-   * panel + step controls.
+   * Step-through visualisation for a code block whose execution we want to inspect. `language` is the primary
+   * traced runtime ("python" or "java"); `source` is the user program. On the client, a tracer harness wraps
+   * the source and posts to the existing `/api/run`; the trace is parsed out of stdout and rendered as code +
+   * locals panel + step controls. `companions` carries zero or more source-only language tabs (e.g. Kotlin,
+   * Scala) that display the equivalent source with a `LanguageLockBanner` but no tracer — they share the same
+   * multi-tab UI as the primary traced language.
    */
-  final case class TracedCode(language: String, source: String) extends Block
+  final case class TracedCode(
+      language: String,
+      source: String,
+      companions: List[Block.TraceCompanion] = Nil
+  ) extends Block
+
+  /**
+   * A source-only companion language tab inside a [[TracedCode]] block. These are emitted when the chapter
+   * ships adjacent `kotlin trace` / `scala trace` fences alongside a primary `java trace` fence. The
+   * companion tab shows the source with syntax highlighting and a `LanguageLockBanner` ("Trace frozen ·
+   * &lt;language&gt; is source-only — switch back to Java") but runs no tracer.
+   */
+  final case class TraceCompanion(language: String, source: String)
 
   /**
    * Embedded LikeC4 diagram view, surfaced as an `<iframe>` pointing at the LikeC4 SPA (proxied under `/c4`).

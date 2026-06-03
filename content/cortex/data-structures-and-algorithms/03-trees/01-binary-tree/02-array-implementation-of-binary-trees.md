@@ -1,6 +1,6 @@
 ---
 title: "Array Implementation Of Binary Trees"
-summary: "<!-- TODO: summary -->"
+summary: "Store a binary tree with no pointers at all: number nodes in level order and the children of index i live at 2i+1 and 2i+2, the parent at (i−1)/2. O(1) navigation and zero per-node overhead — but only complete trees avoid an exponential sentinel tax."
 ---
 
 # 2. Array Implementation of Binary Trees
@@ -19,22 +19,38 @@ The catch: this elegant arithmetic only works when the tree is **complete** (eve
 
 ## Table of contents
 
-- [2. Array Implementation of Binary Trees](#2-array-implementation-of-binary-trees)
-  - [The Hook](#the-hook)
-  - [Table of contents](#table-of-contents)
-- [Numbering nodes — the arithmetic that makes it work](#numbering-nodes--the-arithmetic-that-makes-it-work)
-- [The node — there isn't one](#the-node--there-isnt-one)
-- [Layout in memory](#layout-in-memory)
-  - [Cache behaviour](#cache-behaviour)
-- [Navigating without pointers](#navigating-without-pointers)
-  - [Root](#root)
-  - [Moving down — left and right children](#moving-down--left-and-right-children)
-  - [Moving up — parent](#moving-up--parent)
-  - [Identifying leaves](#identifying-leaves)
-- [Generic binary trees — paying for incompleteness](#generic-binary-trees--paying-for-incompleteness)
-  - [Worst case — when sentinels eat your memory](#worst-case--when-sentinels-eat-your-memory)
-  - [When does the array representation make sense?](#when-does-the-array-representation-make-sense)
-  - [Final Takeaway](#final-takeaway)
+1. [Understanding the problem](#understanding-the-problem)
+2. [Numbering nodes — the arithmetic that makes it work](#numbering-nodes--the-arithmetic-that-makes-it-work)
+3. [The node — there isn't one](#the-node--there-isnt-one)
+4. [Supported operations](#supported-operations)
+5. [Layout in memory](#layout-in-memory)
+6. [Internal mechanics](#internal-mechanics)
+7. [Navigating without pointers](#navigating-without-pointers)
+8. [Generic binary trees — paying for incompleteness](#generic-binary-trees--paying-for-incompleteness)
+9. [Working example](#working-example)
+10. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
+11. [Production reality](#production-reality)
+12. [Quiz](#quiz)
+13. [Practice ladder](#practice-ladder)
+14. [Further reading](#further-reading)
+15. [Cross-links](#cross-links)
+16. [Final takeaway](#final-takeaway)
+
+***
+
+# Understanding the Problem
+
+A binary tree is a set of nodes plus the edges that connect them, and the edges are the hard part to store. The linked representation answers "where are my children?" by holding two pointers per node, so the structure is written down explicitly in memory. That works for any shape, but it costs two pointer-sized fields per node and scatters the nodes across the heap. The question this lesson answers is the opposite one: can the edges be left *unwritten* and recovered by computation instead?
+
+The answer turns on one structural fact about a **complete binary tree** — every level full except possibly the last, which fills left-to-right. Number its nodes in level order, root first, and the position of every child and parent becomes a fixed function of an index:
+
+- **the edges are not stored** — no pointers, no child fields, nothing recording who connects to whom
+- **the edges are *derived*** — `2i + 1`, `2i + 2`, and `(i − 1) / 2` reconstruct every relationship on demand
+- **the array slot is the node** — `arr[i]` holds the value, and the index carries the structure
+
+To make this concrete: a complete tree storing `[1, 2, 3, 4, 5, 6, 7]` keeps all seven values in seven contiguous slots, and the fact that `4` and `5` are children of `2` is never recorded — it falls out of `2·1+1` and `2·1+2`. Reading `arr[3]` reaches a grandchild of the root with no pointer to follow.
+
+So the key idea is: the array representation trades stored edges for computed ones, which removes all per-node pointer overhead — but the computation is only correct when the tree is complete, and that single precondition governs everything else in this lesson.
 
 ***
 
@@ -115,6 +131,22 @@ ar: "Array slot — 4-8 bytes" {
 
 ***
 
+# Supported Operations
+
+The array representation has no insert, no delete, no search of its own — those belong to whatever structure sits on top (a heap, a segment tree, a BST). What the representation provides is *navigation*: four index computations that replace the pointer dereferences of the linked version. Each is a fixed arithmetic expression, so each is `O(1)` time and `O(1)` space.
+
+| Operation | Formula | Time | Space | What it returns |
+|---|---|---|---|---|
+| `root()` | `0` | `O(1)` | `O(1)` | The index of the root, always slot `0` |
+| `left(i)` | `2·i + 1` | `O(1)` | `O(1)` | The index of the left child of node `i` |
+| `right(i)` | `2·i + 2` | `O(1)` | `O(1)` | The index of the right child of node `i` |
+| `parent(i)` | `(i − 1) / 2` | `O(1)` | `O(1)` | The index of the parent of node `i` (integer division) |
+| `isLeaf(i)` | `2·i + 1 ≥ size` | `O(1)` | `O(1)` | Whether node `i` has no children |
+
+The set is deliberately small, and one entry is the representation's quiet advantage. A linked binary tree stores only downward edges, so reaching a parent costs `O(h)` time for a tree of height `h` — you walk from the root — unless every node pays for an extra parent pointer. The array gives `parent(i)` for free as `(i − 1) / 2`. Using your example tree `[1, 2, 3, 4, 5, 6, 7]`, `parent(4)` returns `(4 − 1) / 2 = 1`, landing on node `2`, with no traversal and no extra field. So the core insight is: the four formulas are the entire navigation surface, they are all `O(1)`, and upward navigation — normally the expensive direction in a tree — costs exactly as much as downward navigation here.
+
+***
+
 # Layout in memory
 
 What looks like a tree on paper is just a contiguous run of values in memory. Here's what a perfect height-2 tree storing `[1, 2, 3, 4, 5, 6, 7]` looks like physically:
@@ -168,6 +200,19 @@ arr: "array storage" {
 Modern CPUs read memory in *cache lines* of ~64 bytes — meaning when you fetch one value, you essentially get its 8-or-so neighbours for free. In an array tree, those neighbours are the next nodes in level order, which is *exactly* the order most traversals access them in. Linked trees, by contrast, scatter their nodes across the heap — every parent-to-child step is potentially a cache miss.
 
 For real numerical workloads (heaps in scientific computing, segment trees in competitive programming), array-backed trees are routinely **5–10× faster** than equivalent linked structures despite identical asymptotic complexity. The cache wins.
+
+***
+
+# Internal Mechanics
+
+The whole representation reduces to one rule: **the structure is implicit in the index, never stored**. A linked node records its edges in two pointer fields; an array tree records nothing about edges at all. Every parent-child relationship is reconstructed on demand from the level-order numbering, which means the only state the structure holds is the value array itself plus its `size`.
+
+Two pieces of state carry everything:
+
+- **the value array** — `arr[i]` holds the data for the node numbered `i` in level order
+- **the size** — `size` is the count of occupied slots, and it is the *only* thing that distinguishes a present child from an absent one
+
+The size field does the job that a `null` pointer does in the linked version. A linked node knows it has no left child because its `left` field is `null`; an array node knows it has no left child because `2i + 1 ≥ size` — the computed index falls off the end of the occupied region. To make this concrete: in the seven-slot tree `[1, 2, 3, 4, 5, 6, 7]`, node `3` computes a left child at index `7`, but `7 ≥ 7`, so node `3` is a leaf. Falling off the end *is* the array equivalent of hitting a `null`. So the core insight is: an array tree stores values and a size, recovers every edge by arithmetic on the index, and uses a single bounds check against `size` where the linked version uses pointer-equality against `null`.
 
 ***
 
@@ -342,46 +387,140 @@ For trees of arbitrary shape, the **linked-list representation** in the next les
 
 ***
 
+# Working Example
+
+Walking a few nodes by hand is the fastest way to make the four formulas reflex. Take the complete tree storing `[1, 2, 3, 4, 5, 6, 7]` — seven values in seven slots, `size = 7`, root at index `0`. The diagram below shows the index under each value, then the trace answers four questions using only arithmetic. No pointers are followed at any step.
+
+```
+index:   0    1    2    3    4    5    6
+value:  [1] [2] [3] [4] [5] [6] [7]
+tree:        1
+           /   \
+          2     3
+         / \   / \
+        4   5 6   7
+```
+
+**Children of node `1` (value `2`).** Left child is at `2·1 + 1 = 3`, so `arr[3] = 4`. Right child is at `2·1 + 2 = 4`, so `arr[4] = 5`. Both indices are below `size = 7`, so both children exist. Node `2` therefore has children `4` and `5` — confirmed without storing a single edge.
+
+**Parent of node `5` (value `6`).** Parent is at `(5 − 1) / 2 = 2`, so `arr[2] = 3`. Cross-check the sibling: node `6` (value `7`) computes `(6 − 1) / 2 = 2` as well — integer division floors `5 / 2` and `4 / 2` both to `2`, collapsing the two children onto their shared parent. Upward navigation cost one subtraction, one division, zero memory walks.
+
+**Is node `3` (value `4`) a leaf?** Its left child would sit at `2·3 + 1 = 7`. But `7 ≥ size`, so the index falls off the occupied region — node `3` has no children and *is* a leaf. The same test marks indices `3, 4, 5, 6` as leaves, exactly the bottom row.
+
+**Reaching a grandchild from the root.** From root index `0`, the left child is `arr[1] = 2`, and *its* left child is `arr[2·1 + 1] = arr[3] = 4`. Two arithmetic steps descend two levels, each step `O(1)` time and `O(1)` space.
+
+The four queries touched four different slots and never dereferenced a pointer, because there are none to dereference. So the core insight is: every navigation on an array tree is one closed-form index computation plus one array read, which is why the whole interface is `O(1)` time and `O(1)` space per call regardless of how many nodes the tree holds.
+
+***
+
+# Edge Cases and Pitfalls
+
+Almost every array-tree bug traces to one root cause: forgetting that the arithmetic is only valid on a complete tree, or fumbling the integer division that powers `parent`. The representation is unforgiving — a single off-by-one in the index math silently returns the wrong node rather than crashing. Train your eye to ask, on every access, "is this index still inside `size`, and is my division flooring correctly?".
+
+- **Using float division for `parent`.** The formula `(i − 1) / 2` requires *floored* integer division. In C, Java, and JavaScript, `/` on integers already truncates toward zero, which is correct for non-negative indices. In Python, `/` is float division — `(5 - 1) / 2` yields `2.0`, not `2`, and indexing with a float raises `TypeError`. Use `//` in Python. This is the single most common port bug between the two languages.
+- **Calling `parent(0)` on the root.** The root has no parent, yet `(0 − 1) / 2` evaluates to `0` under truncating division (`-1 / 2 → 0` toward zero) or to `-1` under flooring division — either way the result is meaningless. Guard the root explicitly: `parent(i)` is only defined for `i > 0`, and most code returns a sentinel like `-1` for the root.
+- **Forgetting the bounds check before reading a child.** `left(i)` and `right(i)` compute an index unconditionally; the index is only a *real* child if it is `< size`. Reading `arr[2i + 1]` without first testing `2i + 1 < size` either reads a stale or zero slot (silent wrong answer) or throws an out-of-bounds error. The computed index is a candidate, not a guarantee.
+- **Assuming the array representation is always compact.** It is compact *only* for complete or near-complete trees. For a skewed tree of `N` real nodes the layout needs up to `2^N − 1` slots — `O(2^N)` space — because each sparse level still reserves room for a full level. Choosing this representation for an arbitrarily-shaped tree trades the linked version's `O(N)` space for exponential waste.
+- **Checking only the left child for leaf-ness on a non-complete tree.** `isLeaf(i)` tests `2i + 1 ≥ size` and relies on the completeness invariant: the last level fills left-first, so a missing left child guarantees a missing right child. On a sentinel-padded non-complete tree this still holds at the array level, but you must additionally treat a sentinel value as "no node" — a slot inside `size` can still be a dummy, so reading it as real data corrupts the algorithm.
+- **Mutating `size` without keeping the level-order layout intact.** The arithmetic assumes slots `0 … size−1` form a valid level-order numbering. Removing a node from the middle and decrementing `size` shifts every later node's implied position, breaking every parent and child relationship after the hole. Insertions and deletions must preserve the complete-tree shape (as a heap does by filling and removing only at the end), or the index formulas no longer describe the tree.
+
+So the key idea is: the array representation buys `O(1)` navigation by encoding structure in the index, so every pitfall is really a question about the index — is it in bounds, is the division flooring, and does the layout still satisfy completeness. Keep those three honest and the arithmetic never lies.
+
+***
+
+# Production Reality
+
+Array-backed binary trees show up wherever the tree shape is complete by construction and cache locality matters. The systems below are worth knowing by name.
+
+**[A priority queue (binary heap)]** — uses **a complete binary tree stored in a flat array** — because a heap is complete by its own invariant, so the array layout wastes zero slots while giving `O(1)` parent/child navigation for the sift-up and sift-down that keep operations at `O(log N)` time.
+
+**[Heapsort]** — uses **an in-place array-backed binary heap** — because building the heap and repeatedly extracting the max can run entirely inside the input array with `O(1)` extra space, which no pointer-based tree can match.
+
+**[`java.util.PriorityQueue` and Python's `heapq`]** — uses **an array (`Object[]` / a Python `list`) interpreted as a complete binary tree** — because the standard-library priority queue needs predictable `O(log N)` push and pop with no per-node allocation, and the `2i+1 / 2i+2` indexing delivers exactly that.
+
+**[Segment trees]** — uses **a fixed-size array indexed by `2i` and `2i+1`** — because range-sum and range-min queries need `O(log N)` time, and the implicit array layout lets a node reach its two children with one shift, avoiding the pointer chasing that would thrash the cache.
+
+**[Fenwick (binary indexed) trees]** — uses **a flat array whose indices encode an implicit tree via bit tricks** — because prefix-sum updates and queries both run in `O(log N)` time over contiguous memory, with far lower constant factors than an explicit tree of nodes.
+
+**[Event-loop timer wheels and OS schedulers]** — uses **a min-heap on an array keyed by expiry time** — because the next timer to fire is always the heap root at index `0`, and an array heap gives `O(log N)` insertion and `O(1)` peek with no allocation on the hot path.
+
+***
+
+# Quiz
+
+Test your grip before moving on. Commit to an answer before revealing it.
+
+**[Recall] Q: For a node at index `i` in a complete binary tree stored in an array, what are the indices of its left child, right child, and parent?**
+Left child `2i + 1`, right child `2i + 2`, parent `(i − 1) / 2` using floored integer division.
+
+**[Recall] Q: Where does the root live, and how do you tell whether a node at index `i` is a leaf?**
+The root is always at index `0`, and node `i` is a leaf when its left child index `2i + 1` is `≥ size`, since the left child has the smaller index of the two.
+
+**[Reasoning] Q: Why does checking only the left child (`2i + 1 ≥ size`) correctly identify a leaf, instead of having to check both children?**
+The left child always has the smaller index, so if it is out of bounds the right child certainly is, and the completeness invariant guarantees the last level fills left-first, so "missing left, present right" can never occur.
+
+**[Reasoning] Q: Why does the array representation give parent navigation for free while a linked binary tree usually does not?**
+The parent index is a closed-form function `(i − 1) / 2` of the child's index, so it costs `O(1)` time, whereas a linked node stores only downward pointers and must either add a parent pointer per node or walk from the root in `O(h)` time.
+
+**[Tradeoff] Q: When is the array representation the wrong choice, and what does the linked representation buy you instead?**
+The array representation is wrong for arbitrarily-shaped or skewed trees, where sentinel padding costs up to `O(2^N)` space; the linked representation buys shape-flexibility at `O(N)` space for any shape, trading cache locality and the free parent formula for that freedom.
+
+***
+
+# Practice Ladder
+
+Five problems to turn the level-order numbering into a reflex. They climb from "confirm the structure is complete" to "navigate it under pressure," and all five live in this chapter's pattern directories. Try each unaided; reach for the hint after ten minutes; do not peek at solutions until you have written something runnable.
+
+| # | Problem | Pattern | Difficulty | Hint |
+|---|---------|---------|------------|------|
+| 1 | [Sum of Path](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-problems-sum-of-path) | [Preorder Traversal (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-pattern) | Easy | Carry a running sum down each branch; the same root-to-node descent that `2i+1 / 2i+2` would index, expressed as recursion. `O(n)` time, `O(h)` space for the call stack. |
+| 2 | [Root-to-Leaf Path Sum Check](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateless-problems-root-to-leaf-path-sum-check) | [Root-to-Leaf Path (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateless-pattern) | Easy | A node is a leaf exactly when both children are absent — the array's `2i+1 ≥ size` test in linked form; subtract each value and check for `0` at a leaf. `O(n)` time, `O(h)` space. |
+| 3 | [Level Sum](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-problems-level-sum) | [Level-Order Traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-pattern) | Medium | Level order is exactly the array's index order; a queue reproduces it node by node. Sum each level as you pop it. `O(n)` time, `O(w)` space for the widest level. |
+| 4 | [Complete Binary Tree Check](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-problems-complete-binary-tree-check) | [Level-Order Traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-pattern) | Medium | This is the array representation's precondition made into a problem: a tree is complete iff no real node appears after the first gap in level order. `O(n)` time, `O(w)` space. |
+| 5 | [Lowest Common Ancestor](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-lowest-common-ancestor-problems-lowest-common-ancestor) | [Lowest Common Ancestor](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-lowest-common-ancestor-pattern) | Medium | The same upward walk the `(i−1)/2` parent formula encodes — find where two descent paths converge. Recurse and return the node where the two targets split. `O(n)` time, `O(h)` space. |
+
+Once these feel automatic, "number the nodes in level order" has stopped being a trick and become a reflex — and the traversal chapters can land their punches.
+
+***
+
+# Further Reading
+
+Curated paths in, not a syllabus. Read in order of the annotation; come back for the rest when you need depth.
+
+- **[Linked-List Implementation of Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-linked-list-implementation-of-binary-trees)**
+  ★ Essential — the next lesson; the pointer-based representation that handles arbitrary shapes and backs every traversal and construction lesson in this chapter.
+- **[Introduction to Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-introduction-to-binary-trees)**
+  ★ Essential — the definitions this lesson assumes: complete, perfect, and balanced trees, and why completeness is the precondition the array layout depends on.
+- **[CLRS — Chapter 6: Heapsort](https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/)**
+  ◆ Advanced — the canonical treatment of the array-backed binary heap, including the `PARENT`, `LEFT`, and `RIGHT` index macros and the in-place `O(n log n)` sort built on them.
+- **[Segment Tree (cp-algorithms)](https://cp-algorithms.com/data_structures/segment_tree.html)**
+  ◆ Advanced — how the `2i / 2i+1` array layout extends from heaps to `O(log n)` range queries, the most common production use of an implicit array tree beyond heaps.
+- **[Python `heapq` documentation](https://docs.python.org/3/library/heapq.html)**
+  → Reference — the behaviour and complexity guarantees of Python's array-backed binary heap, including the zero-based `2i+1 / 2i+2` indexing used internally.
+
+***
+
+# Cross-Links
+
+**Prerequisites**
+
+- [Introduction to Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-introduction-to-binary-trees) — the tree vocabulary this lesson builds on, especially what makes a tree complete versus perfect versus balanced.
+- [Introduction to Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-introduction) — the contiguous buffer and `O(1)` indexed access that make the index arithmetic constant time and cache-friendly.
+- [Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis) — what `O(1)` navigation and `O(2^h)` worst-case space actually mean, and how to reason about the completeness tradeoff.
+
+**What comes next**
+
+- [Linked-List Implementation of Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-linked-list-implementation-of-binary-trees) — the same tree with the tradeoff flipped: per-node `left` / `right` pointers handle any shape at `O(N)` space, losing the free parent formula and the cache locality.
+- [Recursive Traversals in Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-recursive-traversals-in-binary-trees) — preorder, inorder, and postorder over the linked representation, the foundation every pattern in this chapter walks on.
+
+***
+
 ## Final Takeaway
 
-The array representation is the cleanest expression of binary-tree-as-data: pure index arithmetic, zero pointer overhead, perfect cache locality. It's also the most *constrained* representation — only complete (or near-complete) trees pay off. Three things to walk away with:
+The array representation is the cleanest expression of binary-tree-as-data: pure index arithmetic, zero pointer overhead, perfect cache locality. It is also the most *constrained* representation — only complete or near-complete trees pay off. Three things to walk away with:
 
-1. **`2i+1`, `2i+2`, `(i−1)/2` is the entire navigation API.** Memorise these three formulas. They appear in every heap implementation, every segment tree, every priority queue, every iterative tree algorithm that needs to address children by index. The arithmetic is *the* idea behind array-backed trees.
-2. **Cost is paid in completeness, not nodes.** A linked tree of `N` nodes uses `O(N)` memory regardless of shape; an array tree of `N` *real* nodes uses `O(2^h)` memory where `h` is the tree's height. Balanced and complete trees pay near-`O(N)`; skew trees pay `O(2^N)`. Match the representation to the workload.
-3. **Heaps are the killer app.** Every priority queue you've ever used — heaps in `std::priority_queue`, `java.util.PriorityQueue`, Python's `heapq`, the timer wheels in event loops, Dijkstra's frontier in pathfinding — uses an array-backed binary tree as its internal storage. The array representation is the *enabling technology* for one of the most-used data structures in computing.
+1. **Core mechanic:** number the nodes of a complete binary tree in level order and store the values in a flat array, so the children of index `i` live at `2i + 1` and `2i + 2` and the parent at `(i − 1) / 2`, giving `O(1)`-time, `O(1)`-space navigation with no pointers stored.
+2. **Dominant tradeoff:** you gain zero per-node overhead, free upward navigation, and cache-friendly contiguous memory; you give up shape-flexibility, since a non-complete tree must pad missing nodes with sentinels, costing up to `O(2^N)` space for a skewed tree against the linked version's flat `O(N)`.
+3. **One thing to remember:** the structure is never stored — it is computed from the index, and the whole representation works only as far as the completeness invariant holds, which is why heaps and segment trees adopt it and arbitrarily-shaped trees do not.
 
 > *Coming up — the next lesson covers the **linked-list implementation**, which trades the index arithmetic for a per-node <code>left</code>/<code>right</code> pointer. Less compact, less cache-friendly, but flexible enough to store arbitrarily-shaped trees without paying any sentinel tax. That representation is what every traversal, construction, and pattern lesson in the rest of the chapter will use.*
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
-
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
-
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
-
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
-
-<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
-<!--       Guidance: bulleted list of gotchas -->
-
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
-
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
-
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
-
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
-
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->

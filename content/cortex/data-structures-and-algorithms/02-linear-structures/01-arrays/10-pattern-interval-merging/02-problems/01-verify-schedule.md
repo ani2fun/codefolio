@@ -171,7 +171,7 @@ print(Solution().verify_schedule([[5, 10], [1, 4], [11, 15]]))             # Tru
 print(Solution().verify_schedule([[1, 3], [3, 5], [5, 7]]))                # True  — touching endpoints only
 ```
 
-```java run
+```java run viz=grid viz-root=meetings
 import java.util.*;
 
 public class Main {

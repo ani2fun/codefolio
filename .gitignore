@@ -21,6 +21,12 @@ client/dist/
 .npm/
 .parcel-cache/
 
+# Playwright (Phase 0+) — per-run artifacts; baselines under
+# client/test/e2e/*.spec.ts-snapshots/ ARE committed.
+client/test-results/
+client/playwright-report/
+client/blob-report/
+
 # OS
 .DS_Store
 Thumbs.db
@@ -32,11 +38,14 @@ Thumbs.db
 
 # Claude / agent context (not committed)
 .claude/
-docs
+docs/*
+!docs/adr/
+!docs/perf-baselines.md
 tools
 .codegraph
 .graphify
 graphify-out
+.handoff/
 
 # Logs
 *.log

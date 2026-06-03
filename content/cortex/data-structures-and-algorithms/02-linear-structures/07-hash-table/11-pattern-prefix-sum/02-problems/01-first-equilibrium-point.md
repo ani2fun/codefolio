@@ -22,6 +22,41 @@ Given an array `arr`, return the first index `i` such that `sum(arr[0..i-1]) == 
 > -   **Input:** `arr = [1, 3, 5, 10]` → **Output:** `-1`
 
 <details>
+<summary><strong>Examples</strong></summary>
+
+**Example 1**
+```
+Input:  arr = [1, 3, 5, 2, 2]
+Output: 2
+Explanation: at index 2, the left side [1, 3] sums to 4 and the right side [2, 2]
+sums to 4. Index 2 itself is excluded from both sides.
+```
+
+**Example 2**
+```
+Input:  arr = [5, 5, 5, 5, 5]
+Output: 2
+Explanation: at index 2, the left side [5, 5] and the right side [5, 5] each sum
+to 10. It is the only equilibrium point — the centre of a symmetric array.
+```
+
+**Example 3**
+```
+Input:  arr = [1, 3, 5, 10]
+Output: -1
+Explanation: no split point balances the two sides, so the function returns -1.
+```
+
+**Example 4**
+```
+Input:  arr = [1]
+Output: 0
+Explanation: a single element has empty sides — both sum to 0 — so index 0 is an
+equilibrium point.
+```
+
+</details>
+<details>
 <summary><h2>Approach</h2></summary>
 
 
@@ -33,7 +68,7 @@ Build a `prefix_sum` array where `prefix_sum[i]` holds the sum of the first `i` 
 
 
 
-```python run
+```python run viz=array viz-root=prefix_sum
 from typing import List
 
 class Solution:
@@ -74,7 +109,7 @@ print(Solution().first_equilibrium_point([2, 1, 2]))         # 1
 print(Solution().first_equilibrium_point([0]))               # 0
 ```
 
-```java run
+```java run viz=array viz-root=prefix_sum
 public class Main {
     static class Solution {
         public int firstEquilibriumPoint(int[] arr) {
@@ -124,35 +159,66 @@ public class Main {
 
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+## Intuition
 
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
+An equilibrium point splits the array so the elements strictly to its left sum to the same value as the elements strictly to its right. The brute-force read of that definition is a double loop: for each candidate index, sum everything to its left and everything to its right, then compare. Each candidate costs an `O(N)` re-sum, and there are `N` candidates, so the work is `O(N²)` time — and most of it re-adds the same elements the previous candidate already summed.
 
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
+The prefix sum collapses both side-sums into constant-time lookups. Build `prefix_sum` where `prefix_sum[i]` is the total of the first `i` elements, so `prefix_sum[0] = 0`. For a candidate at array index `i − 1`, the left side is `prefix_sum[i] − arr[i - 1]` (the prefix up to and including the candidate, minus the candidate itself), and the right side is `prefix_sum[n] − prefix_sum[i]` (the whole-array total minus everything up to the candidate). Both are subtractions, so each candidate check is `O(1)`.
 
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
+This is the no-map flavour of prefix sums: a precomputed prefix *array*, not a hash map, because the query is positional rather than value-based. What breaks if you skip the prefix array is the quadratic re-summing — recomputing each side from scratch turns an `O(N)` scan back into `O(N²)`. The diagnostic signal is "compare a left-of-`i` total to a right-of-`i` total at every index", which is exactly what one prefix-sum pass answers in linear time.
 
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
+## Applying the Diagnostic Questions
 
-<!-- TODO: Solution — missing, needs to be written -->
-<!--       Guidance: Python block then Java block -->
+| Check | Answer for First Equilibrium Point |
+|---|---|
+| **Q1.** Does the answer reduce to a subarray sum? | **Yes** — each side of the split is a range sum, read as a difference of prefix sums. |
+| **Q2.** Is the input a linear sequence walked once? | **Yes** — an integer array; one pass fills `prefix_sum`, a second scans for the split. |
+| **Q3.** Is the matching slice found by a hash-map lookup? | **No** — the query is positional, so a prefix *array* suffices; no hash map of values is needed. |
+| **Q4.** Does the rule survive negatives and zeros? | **Yes** — subtraction of prefix sums is correct regardless of sign, so negatives and zeros are fine. |
 
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
+## Approach
 
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table: time / space / why -->
+1. Allocate `prefix_sum` of length `n + 1` and set `prefix_sum[0] = 0`.
+2. Fill it left to right so `prefix_sum[i] = prefix_sum[i - 1] + arr[i - 1]` — the total of the first `i` elements.
+3. Scan `i` from `1` to `n`. For each, compute `left_sum = prefix_sum[i] − arr[i - 1]` (elements strictly before the candidate) and `right_sum = prefix_sum[n] − prefix_sum[i]` (elements strictly after it).
+4. If `left_sum == right_sum`, the candidate index `i − 1` is an equilibrium point — return it immediately, which guarantees the *first* one.
+5. If the scan finishes with no match, return `-1`.
 
-<!-- TODO: Edge Cases — missing, needs to be written -->
-<!--       Guidance: table, min 5 rows -->
+## Dry Run
 
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->
+Walk Example 1: `arr = [1, 3, 5, 2, 2]`, expected output `2`. First the prefix array, then the scan:
+
+```
+prefix_sum = [0, 1, 4, 9, 11, 13]   (prefix_sum[i] = sum of first i elements)
+total = prefix_sum[5] = 13
+
+i=1  candidate index 0  left = prefix_sum[1] − arr[0] = 1 − 1 = 0    right = 13 − 1  = 12   0 ≠ 12
+i=2  candidate index 1  left = prefix_sum[2] − arr[1] = 4 − 3 = 1    right = 13 − 4  = 9    1 ≠ 9
+i=3  candidate index 2  left = prefix_sum[3] − arr[2] = 9 − 5 = 4    right = 13 − 9  = 4    4 = 4 → return 2
+
+result = 2
+```
+
+The result `2` matches the expected output — at index `2` the left side `[1, 3]` and the right side `[2, 2]` both sum to `4`.
+
+## Complexity Analysis
+
+| | Cost | Why |
+|---|---|---|
+| **Time** | **O(N)** | One pass builds `prefix_sum`, a second scans for the split; each step is `O(1)`. |
+| **Space** | **O(N)** | The auxiliary `prefix_sum` array holds `N + 1` entries. Can be reduced to `O(1)` by tracking running left and right sums instead. |
+
+## Edge Cases
+
+| Input | Output | Why |
+|---|---|---|
+| `arr = [1]` | `0` | A single element has empty sides — both sum to `0` — so index `0` balances. |
+| `arr = [0]` | `0` | Same single-element logic; the lone value is excluded from both empty sides. |
+| `arr = [0, 0, 0]` | `0` | At index `0` the left is empty (`0`) and the right `[0, 0]` sums to `0`; the first match wins. |
+| `arr = [2, 1, 2]` | `1` | The centre splits `[2]` and `[2]`, each summing to `2`. |
+| `arr = [1, 2, 3]` | `-1` | No split balances the two sides, so the scan returns `-1`. |
+| `arr = [1, 3, 5, 10]` | `-1` | A strictly growing array has no equilibrium point. |
+
+## Key Takeaway
+
+When a problem compares a left-of-index total to a right-of-index total, a precomputed prefix-sum array turns each `O(N)` side-sum into an `O(1)` subtraction, collapsing the whole scan from `O(N²)` to `O(N)`.

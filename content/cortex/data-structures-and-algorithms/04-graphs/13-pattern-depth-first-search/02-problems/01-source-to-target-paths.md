@@ -109,7 +109,7 @@ print(Solution().source_to_target_paths([[], [0]]))      # [] — no path from 0
 print(Solution().source_to_target_paths([[1,2],[2],[]]))  # [[0,1,2],[0,2]]
 ```
 
-```java run
+```java run viz=graph viz-root=graph
 import java.util.*;
 
 public class Main {

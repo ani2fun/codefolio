@@ -155,7 +155,7 @@ print(Solution().consecutive_ones_with_k_flips([1, 1, 1, 1], 0))                
 print(Solution().consecutive_ones_with_k_flips([0, 0, 0], 0))                              # 0  — all zeros, no flips
 ```
 
-```java run
+```java run viz=array viz-root=arr
 public class Main {
     static class Solution {
         public int consecutiveOnesWithKFlips(int[] arr, int k) {

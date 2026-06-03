@@ -143,7 +143,7 @@ print(Solution().island_count([[1,1],[1,1]]))                               # 1
 print(Solution().island_count([[1,0,1],[0,0,0],[1,0,1]]))                   # 4
 ```
 
-```java run
+```java run viz=grid viz-root=grid
 import java.util.*;
 
 public class Main {

@@ -333,7 +333,7 @@ if __name__ == "__main__":
     print("Invariants held throughout. Binary search is correct on every input it saw.")
 ```
 
-```java run
+```java run viz=array viz-root=arr
 import java.util.*;
 
 public class Main {

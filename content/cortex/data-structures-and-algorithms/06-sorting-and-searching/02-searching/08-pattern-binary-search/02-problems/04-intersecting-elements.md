@@ -33,7 +33,7 @@ Output: []
 Same as the previous problem but accumulate matches into a result list instead of returning the first.
 
 
-```python run
+```python run viz=array viz-root=result
 from typing import List
 
 class Solution:
@@ -115,7 +115,7 @@ print(Solution().intersecting_elements([[5], [6]]))                             
 print(Solution().intersecting_elements([[1, 2, 3], [1, 2, 3]]))                   # [1, 2, 3] — identical rows
 ```
 
-```java run
+```java run viz=array viz-root=result
 import java.util.*;
 
 public class Main {

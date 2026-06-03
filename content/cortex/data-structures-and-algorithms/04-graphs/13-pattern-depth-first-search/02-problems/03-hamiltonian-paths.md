@@ -123,7 +123,7 @@ print(Solution().hamiltonian_paths([[],[2],[]], 0, 2))                     # []
 print(Solution().hamiltonian_paths([[1],[0]], 0, 0))                       # [[0,1,0]] — visits all
 ```
 
-```java run
+```java run viz=graph viz-root=graph
 import java.util.*;
 
 public class Main {

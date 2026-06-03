@@ -322,7 +322,7 @@ flowchart LR
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional
 from collections import deque
 
@@ -439,7 +439,7 @@ res7 = Solution().inorder_successor(t7, n7)
 print(res7.val if res7 else None)  # None
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {
@@ -588,7 +588,7 @@ You must do this **recursively**.
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional
 from collections import deque
 
@@ -743,7 +743,7 @@ t7 = from_level_order([5, 3, 7, 1, 4])
 print(to_level_order(Solution().recursive_deletion(t7, 5)))    # [7, 3, 1, 4]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {
@@ -1040,7 +1040,7 @@ Given the **root** of a binary search tree and an integer **key**, delete the no
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional
 from collections import deque
 
@@ -1217,7 +1217,7 @@ t7 = from_level_order([5, 3, 7, 1, 4])
 print(to_level_order(Solution().iterative_deletion(t7, 5)))    # [7, 3, 1, 4]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

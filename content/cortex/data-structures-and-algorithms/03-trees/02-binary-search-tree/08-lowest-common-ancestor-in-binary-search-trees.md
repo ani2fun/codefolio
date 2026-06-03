@@ -180,7 +180,7 @@ Given the **root** of a binary search tree and two random nodes, `nodeA` and `no
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional, List
 from collections import deque
 
@@ -299,7 +299,7 @@ res7 = Solution().lowest_common_ancestor(t7, a7, b7)
 print(res7.val if res7 else None)  # 20
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

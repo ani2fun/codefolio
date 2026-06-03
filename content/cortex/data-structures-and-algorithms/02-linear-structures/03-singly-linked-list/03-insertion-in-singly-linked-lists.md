@@ -111,26 +111,53 @@ Inserting at the beginning of a linked list is a fundamental and commonly used o
 
 In this scenario, if the linked list is empty, the **head** would be `null`. We need to initialize the **head** node of the linked list and ensure that the pointer of this newly created **head** node is `null`, as this new node will also be the last node of the list.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Insert at beginning — empty list: the new node becomes both head and tail",
-  "direction": "single",
-  "nodes": [{"id": "n", "value": "6"}],
-  "head": "n",
   "steps": [
     {
       "nodes": [],
-      "links": [],
-      "markers": [],
-      "msg": "Before: head = null (empty list)"
+      "edges": [],
+      "cursor": [],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Before: head = null (empty list)",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "nodes": [{"id": "n", "value": "6", "style": "new"}],
-      "links": [],
-      "markers": [{"name": "head", "nodeId": "n"}],
-      "msg": "Allocate the new node; head ← newNode. newNode.next = null (it's also the tail)."
+      "nodes": [
+        {
+          "id": "n",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [
+        "n"
+      ],
+      "removed": [],
+      "annotation": "Allocate the new node; head ← newNode. newNode.next = null (it's also the tail).",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Insert at beginning — empty list: the new node becomes both head and tail"
 }
 ```
 
@@ -146,62 +173,280 @@ In this scenario, if the linked list is empty, the **head** would be `null`. We 
 
 In this scenario, we already have some data in the linked list, so the **head** is not `null`. Therefore, to insert a new node at the beginning of the list, we need to update the pointer of the newly created node to store the reference of the existing **head** node.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Insert at beginning — non-empty list: two pointer updates, O(1)",
-  "direction": "single",
-  "nodes": [
-    {"id": "new", "value": "6"},
-    {"id": "n1", "value": "5"},
-    {"id": "n2", "value": "7"},
-    {"id": "n3", "value": "3"}
-  ],
-  "head": "n1",
   "steps": [
     {
       "nodes": [
-        {"id": "n1", "value": "5"},
-        {"id": "n2", "value": "7"},
-        {"id": "n3", "value": "3"}
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n2"],["n2","n3"]],
-      "markers": [{"name": "head", "nodeId": "n1"}],
-      "msg": "Before: head → 5 → 7 → 3"
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n1",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Before: head → 5 → 7 → 3",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "new", "value": "6", "style": "new"},
-        {"id": "n1", "value": "5"},
-        {"id": "n2", "value": "7"},
-        {"id": "n3", "value": "3"}
+        {
+          "id": "new",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n2"],["n2","n3"]],
-      "markers": [{"name": "head", "nodeId": "n1"}],
-      "msg": "Step 1: allocate new node with value 6"
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n1",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [
+        "new"
+      ],
+      "removed": [],
+      "annotation": "Step 1: allocate new node with value 6",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "new", "value": "6", "style": "new"},
-        {"id": "n1", "value": "5"},
-        {"id": "n2", "value": "7"},
-        {"id": "n3", "value": "3"}
+        {
+          "id": "new",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["new","n1"],["n1","n2"],["n2","n3"]],
-      "markers": [{"name": "head", "nodeId": "n1"}],
-      "msg": "Step 2: newNode.next = head (point new node at old head)"
+      "edges": [
+        {
+          "from": "new",
+          "to": "n1",
+          "label": "next"
+        },
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n1",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [
+        "new"
+      ],
+      "removed": [],
+      "annotation": "Step 2: newNode.next = head (point new node at old head)",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "new", "value": "6"},
-        {"id": "n1", "value": "5"},
-        {"id": "n2", "value": "7"},
-        {"id": "n3", "value": "3"}
+        {
+          "id": "new",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["new","n1"],["n1","n2"],["n2","n3"]],
-      "markers": [{"name": "head", "nodeId": "new"}],
-      "msg": "Step 3: head = newNode — done in O(1)"
+      "edges": [
+        {
+          "from": "new",
+          "to": "n1",
+          "label": "next"
+        },
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "new",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Step 3: head = newNode — done in O(1)",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Insert at beginning — non-empty list: two pointer updates, O(1)"
 }
 ```
 
@@ -218,7 +463,7 @@ In this scenario, we already have some data in the linked list, so the **head** 
 When implementing the logic for the insert at the beginning operation, we consider both possible cases and write the code for each in conditional blocks.
 
 
-```python run
+```python run viz=linked-list viz-root=head
 """
 Definition for singly-linked list.
 class ListNode:
@@ -254,7 +499,7 @@ class Solution:
         return new_node
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 /**
  * Definition for singly-linked list.
  * class ListNode {
@@ -291,52 +536,301 @@ class Solution {
 }
 ```
 
+### Step through the execution
+
+Click **Trace** to step through the insertion. The locals panel shows `newNode` and `head` as heap objects with `val` and `next` fields. The two-step splice — `newNode.next = head` then `return newNode` — is the entire algorithm; watch those two pointer assignments land.
+
+```python trace
+class ListNode:
+    def __init__(self, val):
+        self.val = val
+        self.next = None
+
+
+def insert_at_beginning(head, data):
+    new_node = ListNode(data)
+    if head is None:
+        return new_node
+    new_node.next = head
+    return new_node
+
+
+head = ListNode(5)
+head.next = ListNode(7)
+head.next.next = ListNode(3)
+head = insert_at_beginning(head, 6)
+print(head.val)       # 6
+print(head.next.val)  # 5
+```
+
+Same insertion in Java — `main` builds a three-node list and calls `insertAtBeginning`. Instance fields `val` and `next` expand for each `ListNode` on the heap; the `newNode.next = head` wiring and the returned new head are directly visible. The **Kotlin** and **Scala** tabs show equivalent source.
+
+```java trace
+public class Main {
+    static class ListNode {
+        int val;
+        ListNode next;
+
+        ListNode(int val) {
+            this.val = val;
+        }
+    }
+
+    static ListNode insertAtBeginning(ListNode head, int data) {
+        ListNode newNode = new ListNode(data);
+        if (head == null) {
+            return newNode;
+        }
+        newNode.next = head;
+        return newNode;
+    }
+
+    public static void main(String[] args) {
+        ListNode head = new ListNode(5);
+        head.next = new ListNode(7);
+        head.next.next = new ListNode(3);
+        head = insertAtBeginning(head, 6);
+        System.out.println(head.val);       // 6
+        System.out.println(head.next.val);  // 5
+    }
+}
+```
+
+```kotlin trace
+class ListNode(val value: Int, var next: ListNode? = null)
+
+fun insertAtBeginning(head: ListNode?, data: Int): ListNode {
+    val node = ListNode(data)
+    if (head == null) return node
+    node.next = head
+    return node
+}
+
+fun main() {
+    val head0 = ListNode(5, ListNode(7, ListNode(3)))
+    val head  = insertAtBeginning(head0, 6)
+    println(head.value)        // 6
+    println(head.next!!.value) // 5
+}
+```
+
+```scala trace
+class ListNode(val value: Int, var next: ListNode = null)
+
+def insertAtBeginning(head: ListNode, data: Int): ListNode =
+  val node = ListNode(data)
+  if head == null then node
+  else
+    node.next = head
+    node
+
+@main def run(): Unit =
+  val head0 = ListNode(5, ListNode(7, ListNode(3)))
+  val head  = insertAtBeginning(head0, 6)
+  println(head.value)       // 6
+  println(head.next.value)  // 5
+```
 
 ## Complexity Analysis
 
 The time complexity of the above function does not depend on the list size. In all cases, we always need to insert the node at the start of the list, which takes **constant** time, i.e., **O(1)**.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Insert before the head — 2 pointer ops, O(1) regardless of list size",
-  "direction": "single",
-  "nodes": [
-    {"id": "n1", "value": "5"},
-    {"id": "n2", "value": "7"},
-    {"id": "n3", "value": "3"}
-  ],
-  "head": "n1",
   "steps": [
     {
-      "links": [["n1","n2"],["n2","n3"]],
-      "markers": [],
-      "msg": "Before: head → 5 → 7 → 3 → null"
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Before: head → 5 → 7 → 3 → null",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n0", "value": "6", "style": "new"},
-        {"id": "n1", "value": "5"},
-        {"id": "n2", "value": "7"},
-        {"id": "n3", "value": "3"}
+        {
+          "id": "n0",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n0","n1"],["n1","n2"],["n2","n3"]],
-      "markers": [{"name": "current", "nodeId": "n0"}],
-      "head": "n1",
-      "msg": "Step 1: newNode.next = head — the new node points at the old head (1 pointer op)"
+      "edges": [
+        {
+          "from": "n0",
+          "to": "n1",
+          "label": "next"
+        },
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "n0",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [
+        "n0"
+      ],
+      "removed": [],
+      "annotation": "Step 1: newNode.next = head — the new node points at the old head (1 pointer op)",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n0", "value": "6", "style": "new"},
-        {"id": "n1", "value": "5"},
-        {"id": "n2", "value": "7"},
-        {"id": "n3", "value": "3"}
+        {
+          "id": "n0",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n0","n1"],["n1","n2"],["n2","n3"]],
-      "markers": [],
-      "head": "n0",
-      "msg": "Step 2: head = newNode — head moves to the new node (1 pointer op). Total: O(1), independent of list size."
+      "edges": [
+        {
+          "from": "n0",
+          "to": "n1",
+          "label": "next"
+        },
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [],
+      "highlight": [],
+      "changed": [
+        "n0"
+      ],
+      "removed": [],
+      "annotation": "Step 2: head = newNode — head moves to the new node (1 pointer op). Total: O(1), independent of list size.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Insert before the head — 2 pointer ops, O(1) regardless of list size"
 }
 ```
 
@@ -436,7 +930,7 @@ print(to_list(Solution().insert_at_beginning(from_list([1, 2]), 99)))        # [
 print(to_list(Solution().insert_at_beginning(from_list([3, 3, 3]), 3)))      # [3, 3, 3, 3]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -516,26 +1010,53 @@ Inserting at the end of a list is a common operation used to extend the list. Un
 
 If the linked list is empty, the **head** is `null`. We create a new node and make it the head — it is also the tail since it's the only node.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Insert at end — empty list: same as insert at beginning when there's nothing yet",
-  "direction": "single",
-  "nodes": [{"id": "n", "value": "6"}],
-  "head": "n",
   "steps": [
     {
       "nodes": [],
-      "links": [],
-      "markers": [],
-      "msg": "Before: head = null (empty list)"
+      "edges": [],
+      "cursor": [],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Before: head = null (empty list)",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "nodes": [{"id": "n", "value": "6", "style": "new"}],
-      "links": [],
-      "markers": [{"name": "head", "nodeId": "n"}],
-      "msg": "Create newNode and make it the head — newNode.next = null"
+      "nodes": [
+        {
+          "id": "n",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [
+        "n"
+      ],
+      "removed": [],
+      "annotation": "Create newNode and make it the head — newNode.next = null",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Insert at end — empty list: same as insert at beginning when there's nothing yet"
 }
 ```
 
@@ -551,61 +1072,264 @@ If the linked list is empty, the **head** is `null`. We create a new node and ma
 
 We traverse to the last node (whose `next` is `null`) and link the new node after it.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Insert at end — non-empty list: walk to tail then attach",
-  "direction": "single",
-  "nodes": [
-    {"id": "n1", "value": "5"},
-    {"id": "n2", "value": "7"},
-    {"id": "n3", "value": "3"},
-    {"id": "new", "value": "6"}
-  ],
-  "head": "n1",
   "steps": [
     {
       "nodes": [
-        {"id": "n1", "value": "5"},
-        {"id": "n2", "value": "7"},
-        {"id": "n3", "value": "3"}
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n2"],["n2","n3"]],
-      "markers": [{"name": "current", "nodeId": "n1"}],
-      "msg": "Before: head → 5 → 7 → 3. Start curr at head."
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "n1",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Before: head → 5 → 7 → 3. Start curr at head.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n1", "value": "5"},
-        {"id": "n2", "value": "7"},
-        {"id": "n3", "value": "3"}
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n2"],["n2","n3"]],
-      "markers": [{"name": "current", "nodeId": "n3"}],
-      "msg": "Walk to the tail (curr.next == null) — O(n)"
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "n3",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Walk to the tail (curr.next == null) — O(n)",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n1", "value": "5"},
-        {"id": "n2", "value": "7"},
-        {"id": "n3", "value": "3"},
-        {"id": "new", "value": "6", "style": "new"}
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "new",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n2"],["n2","n3"]],
-      "markers": [{"name": "current", "nodeId": "n3"}],
-      "msg": "Allocate newNode"
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "n3",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [
+        "new"
+      ],
+      "removed": [],
+      "annotation": "Allocate newNode",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n1", "value": "5"},
-        {"id": "n2", "value": "7"},
-        {"id": "n3", "value": "3"},
-        {"id": "new", "value": "6"}
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "new",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n2"],["n2","n3"],["n3","new"]],
-      "markers": [{"name": "head", "nodeId": "n1"}],
-      "msg": "tail.next = newNode — done. Total O(n) (walk + attach)."
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "new",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n1",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "tail.next = newNode — done. Total O(n) (walk + attach).",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Insert at end — non-empty list: walk to tail then attach"
 }
 ```
 
@@ -621,7 +1345,7 @@ We traverse to the last node (whose `next` is `null`) and link the new node afte
 ## Implementation
 
 
-```python run
+```python run viz=linked-list viz-root=head
 """
 Definition for singly-linked list.
 class ListNode:
@@ -665,7 +1389,7 @@ class Solution:
         return head
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 /**
  * Definition for singly-linked list.
  * class ListNode {
@@ -836,7 +1560,7 @@ print(to_list(Solution().insert_at_end(from_list([1, 2]), 3)))         # [1, 2, 
 print(to_list(Solution().insert_at_end(from_list([5, 5, 5]), 5)))      # [5, 5, 5, 5]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -924,20 +1648,23 @@ Inserting after a given node in a singly linked list is a relatively straightfor
 
 If the list is empty and contains no elements, we cannot find the given node because it does not exist within the list. Inserting a new node after the given node is not possible because there is no reference point within the list to perform the insertion. In such a case, the method would return without making any changes.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Insert after given node — empty list or null reference: nothing to do",
-  "direction": "single",
-  "nodes": [{"id": "placeholder", "value": "—"}],
-  "head": "placeholder",
   "steps": [
     {
       "nodes": [],
-      "links": [],
-      "markers": [],
-      "msg": "node = null and/or head = null — no reference point. Return immediately."
+      "edges": [],
+      "cursor": [],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "node = null and/or head = null — no reference point. Return immediately.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Insert after given node — empty list or null reference: nothing to do"
 }
 ```
 
@@ -951,51 +1678,212 @@ If the list is empty and contains no elements, we cannot find the given node bec
 
 Since the new node will be inserted between two existing nodes, we must ensure that we properly set up the pointers of these nodes. Inserting after a given node is a three-step process.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Insert 6 after node(7) — bridge new.next first, then redirect node.next",
-  "direction": "single",
-  "nodes": [
-    {"id": "n1", "value": "5"},
-    {"id": "n2", "value": "7"},
-    {"id": "new", "value": "6"},
-    {"id": "n3", "value": "3"}
-  ],
-  "head": "n1",
   "steps": [
     {
       "nodes": [
-        {"id": "n1", "value": "5"},
-        {"id": "n2", "value": "7"},
-        {"id": "n3", "value": "3"}
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n2"],["n2","n3"]],
-      "markers": [{"name": "current", "nodeId": "n2"}],
-      "msg": "Before: list = [5, 7, 3]; insert 6 after node(7)"
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "n2",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Before: list = [5, 7, 3]; insert 6 after node(7)",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n1", "value": "5"},
-        {"id": "n2", "value": "7"},
-        {"id": "new", "value": "6", "style": "new"},
-        {"id": "n3", "value": "3"}
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "new",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n2"],["n2","n3"],["new","n3"]],
-      "markers": [{"name": "current", "nodeId": "n2"}],
-      "msg": "Step 1: newNode.next = node.next — new bridges over to node 3"
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "new",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "n2",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [
+        "new"
+      ],
+      "removed": [],
+      "annotation": "Step 1: newNode.next = node.next — new bridges over to node 3",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n1", "value": "5"},
-        {"id": "n2", "value": "7"},
-        {"id": "new", "value": "6"},
-        {"id": "n3", "value": "3"}
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "new",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n2"],["n2","new"],["new","n3"]],
-      "markers": [{"name": "head", "nodeId": "n1"}],
-      "msg": "Step 2: node.next = newNode — splice complete. O(1)."
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "new",
+          "label": "next"
+        },
+        {
+          "from": "new",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n1",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Step 2: node.next = newNode — splice complete. O(1).",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Insert 6 after node(7) — bridge new.next first, then redirect node.next"
 }
 ```
 
@@ -1012,7 +1900,7 @@ Since the new node will be inserted between two existing nodes, we must ensure t
 We will be given the node, after which we will perform the insertion. When implementing the logic for the operation, we consider both possible cases and write the code for each in conditional blocks.
 
 
-```python run
+```python run viz=linked-list viz-root=head
 """
 Definition for singly-linked list.
 class ListNode:
@@ -1045,7 +1933,7 @@ class Solution:
         node.next = new_node
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 /**
  * Definition for singly-linked list.
  * class ListNode {
@@ -1220,7 +2108,7 @@ Solution().insert_after_the_given_node(h5, 9)
 print(to_list(h5))                                           # [1, 9, 2]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -1313,20 +2201,23 @@ Inserting before a given node may seem simple, just like inserting after a node.
 
 If the list is empty and contains no elements, we cannot find the given node because it does not exist within the list. Inserting a new node before the given node is not possible. In such a case, we return the **head** node as-is.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Insert before given node — empty list: return head unchanged",
-  "direction": "single",
-  "nodes": [{"id": "placeholder", "value": "—"}],
-  "head": "placeholder",
   "steps": [
     {
       "nodes": [],
-      "links": [],
-      "markers": [],
-      "msg": "head = null — given node cannot exist. Return null."
+      "edges": [],
+      "cursor": [],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "head = null — given node cannot exist. Return null.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Insert before given node — empty list: return head unchanged"
 }
 ```
 
@@ -1340,40 +2231,146 @@ If the list is empty and contains no elements, we cannot find the given node bec
 
 This is similar to **inserting at the beginning**, which we learned earlier. To determine if the given node is the first node, we compare it to the **head** node. If both are the same object, the given node is the head.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Insert before given node — given == head: same as insert-at-beginning",
-  "direction": "single",
-  "nodes": [
-    {"id": "new", "value": "6"},
-    {"id": "n1", "value": "7"},
-    {"id": "n2", "value": "3"},
-    {"id": "n3", "value": "10"}
-  ],
-  "head": "n1",
   "steps": [
     {
       "nodes": [
-        {"id": "n1", "value": "7"},
-        {"id": "n2", "value": "3"},
-        {"id": "n3", "value": "10"}
+        {
+          "id": "n1",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n2"],["n2","n3"]],
-      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "current", "nodeId": "n1"}],
-      "msg": "Before: node == head. Given is node(7)."
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n1",
+          "color": "#10b981"
+        },
+        {
+          "name": "current",
+          "target": "n1",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Before: node == head. Given is node(7).",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "new", "value": "6", "style": "new"},
-        {"id": "n1", "value": "7"},
-        {"id": "n2", "value": "3"},
-        {"id": "n3", "value": "10"}
+        {
+          "id": "new",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n1",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["new","n1"],["n1","n2"],["n2","n3"]],
-      "markers": [{"name": "head", "nodeId": "new"}],
-      "msg": "newNode.next = head, return newNode — done in O(1)"
+      "edges": [
+        {
+          "from": "new",
+          "to": "n1",
+          "label": "next"
+        },
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "new",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [
+        "new"
+      ],
+      "removed": [],
+      "annotation": "newNode.next = head, return newNode — done in O(1)",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Insert before given node — given == head: same as insert-at-beginning"
 }
 ```
 
@@ -1389,24 +2386,82 @@ This is similar to **inserting at the beginning**, which we learned earlier. To 
 
 This case is not easy, but it becomes simpler once we understand the concept behind it. The problem is that we don't have a reference to the node just before the given node. Without that predecessor, we can't rewire its `next` pointer after inserting.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Problem — singly-linked lists are forward-only, so the predecessor is unknown",
-  "direction": "single",
-  "nodes": [
-    {"id": "n1", "value": "5"},
-    {"id": "n2", "value": "7"},
-    {"id": "n3", "value": "3"},
-    {"id": "n4", "value": "10"}
-  ],
-  "head": "n1",
   "steps": [
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "current", "nodeId": "n3"}],
-      "msg": "Want to insert BEFORE node(3). But which node points to node(3)? We have no back-pointer."
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "n3",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Want to insert BEFORE node(3). But which node points to node(3)? We have no back-pointer.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Problem — singly-linked lists are forward-only, so the predecessor is unknown"
 }
 ```
 
@@ -1416,66 +2471,340 @@ This case is not easy, but it becomes simpler once we understand the concept beh
 
 We create a `previous` pointer initialised to `null`. As we traverse, we update both `current` and `previous` together at each step. When `current` reaches the given node, `previous` holds its predecessor. The problem then reduces to **inserting after the previous node** — which we already know how to do.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Insert before given node — track previous + current as you walk",
-  "direction": "single",
-  "nodes": [
-    {"id": "n1", "value": "5"},
-    {"id": "n2", "value": "7"},
-    {"id": "new", "value": "6"},
-    {"id": "n3", "value": "3"},
-    {"id": "n4", "value": "10"}
-  ],
-  "head": "n1",
   "steps": [
     {
       "nodes": [
-        {"id": "n1", "value": "5"},
-        {"id": "n2", "value": "7"},
-        {"id": "n3", "value": "3"},
-        {"id": "n4", "value": "10"}
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "previous", "nodeId": "n1"}, {"name": "current", "nodeId": "n2"}, {"name": "next", "nodeId": "n3"}],
-      "msg": "Start: previous=head, current=head.next. Given=node(3)."
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "previous",
+          "target": "n1",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "current",
+          "target": "n2",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "next",
+          "target": "n3",
+          "color": "#8b5cf6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Start: previous=head, current=head.next. Given=node(3).",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n1", "value": "5"},
-        {"id": "n2", "value": "7"},
-        {"id": "n3", "value": "3"},
-        {"id": "n4", "value": "10"}
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "previous", "nodeId": "n2"}, {"name": "current", "nodeId": "n3"}],
-      "msg": "Walk forward — current == given (node 3). previous = node(7)."
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "previous",
+          "target": "n2",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "current",
+          "target": "n3",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Walk forward — current == given (node 3). previous = node(7).",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n1", "value": "5"},
-        {"id": "n2", "value": "7"},
-        {"id": "new", "value": "6", "style": "new"},
-        {"id": "n3", "value": "3"},
-        {"id": "n4", "value": "10"}
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "new",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n2"],["n2","n3"],["new","n3"],["n3","n4"]],
-      "markers": [{"name": "current", "nodeId": "new"}],
-      "msg": "Allocate newNode; newNode.next = current (point at node 3)"
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "new",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "new",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [
+        "new"
+      ],
+      "removed": [],
+      "annotation": "Allocate newNode; newNode.next = current (point at node 3)",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n1", "value": "5"},
-        {"id": "n2", "value": "7"},
-        {"id": "new", "value": "6"},
-        {"id": "n3", "value": "3"},
-        {"id": "n4", "value": "10"}
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "new",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n2"],["n2","new"],["new","n3"],["n3","n4"]],
-      "markers": [{"name": "head", "nodeId": "n1"}],
-      "msg": "previous.next = newNode — splice complete. O(n) walk + O(1) wire."
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "new",
+          "label": "next"
+        },
+        {
+          "from": "new",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n1",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "previous.next = newNode — splice complete. O(n) walk + O(1) wire.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Insert before given node — track previous + current as you walk"
 }
 ```
 
@@ -1492,7 +2821,7 @@ We create a `previous` pointer initialised to `null`. As we traverse, we update 
 ## Implementation
 
 
-```python run
+```python run viz=linked-list viz-root=head
 """
 Definition for singly-linked list.
 class ListNode:
@@ -1547,7 +2876,7 @@ class Solution:
         return head
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 /**
  * Definition for singly-linked list.
  * class ListNode {
@@ -1811,7 +3140,7 @@ h6 = from_list([1, 2])
 print(to_list(Solution().insert_before_the_given_node(h6, h6.next, 99)))     # [1, 99, 2]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -1929,20 +3258,23 @@ Just as inserting before a given node is accomplished by piggybacking on the sea
 
 Attempting to insert a node at a position greater than 0 in an empty list is invalid. The only valid position in an empty list is position 0 (making the new node the head). When X > 0 but no nodes exist, we return the existing **head**.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Insert at distance — empty list with X > 0: invalid position, return null",
-  "direction": "single",
-  "nodes": [{"id": "placeholder", "value": "—"}],
-  "head": "placeholder",
   "steps": [
     {
       "nodes": [],
-      "links": [],
-      "markers": [],
-      "msg": "head = null, X > 0 — no valid position. Return null. (X = 0 with empty list is the create-new-head case.)"
+      "edges": [],
+      "cursor": [],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "head = null, X > 0 — no valid position. Return null. (X = 0 with empty list is the create-new-head case.)",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Insert at distance — empty list with X > 0: invalid position, return null"
 }
 ```
 
@@ -1956,40 +3288,141 @@ Attempting to insert a node at a position greater than 0 in an empty list is inv
 
 Inserting at distance 0 means inserting at the **beginning** of the list — exactly what we covered in the very first insertion lesson.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Insert at distance X = 0 — same as insert-at-beginning",
-  "direction": "single",
-  "nodes": [
-    {"id": "new", "value": "6"},
-    {"id": "n1", "value": "5"},
-    {"id": "n2", "value": "7"},
-    {"id": "n3", "value": "3"}
-  ],
-  "head": "n1",
   "steps": [
     {
       "nodes": [
-        {"id": "n1", "value": "5"},
-        {"id": "n2", "value": "7"},
-        {"id": "n3", "value": "3"}
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n2"],["n2","n3"]],
-      "markers": [{"name": "head", "nodeId": "n1"}],
-      "msg": "Before: head → 5 → 7 → 3, X = 0"
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n1",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Before: head → 5 → 7 → 3, X = 0",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "new", "value": "6", "style": "new"},
-        {"id": "n1", "value": "5"},
-        {"id": "n2", "value": "7"},
-        {"id": "n3", "value": "3"}
+        {
+          "id": "new",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["new","n1"],["n1","n2"],["n2","n3"]],
-      "markers": [{"name": "head", "nodeId": "new"}],
-      "msg": "newNode.next = head; head = newNode. O(1)."
+      "edges": [
+        {
+          "from": "new",
+          "to": "n1",
+          "label": "next"
+        },
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "new",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [
+        "new"
+      ],
+      "removed": [],
+      "annotation": "newNode.next = head; head = newNode. O(1).",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Insert at distance X = 0 — same as insert-at-beginning"
 }
 ```
 
@@ -2005,66 +3438,325 @@ Inserting at distance 0 means inserting at the **beginning** of the list — exa
 
 Traverse the list while keeping a counter starting at 0. Increment the counter on each step. Stop when `counter == X - 1` — this lands us at the node just **before** where we want to insert. The problem then reduces to **inserting after that node**, which we already know.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Insert at distance X = 2 — walk X−1 steps, then splice",
-  "direction": "single",
-  "nodes": [
-    {"id": "n1", "value": "5"},
-    {"id": "n2", "value": "7"},
-    {"id": "new", "value": "6"},
-    {"id": "n3", "value": "3"},
-    {"id": "n4", "value": "10"}
-  ],
-  "head": "n1",
   "steps": [
     {
       "nodes": [
-        {"id": "n1", "value": "5"},
-        {"id": "n2", "value": "7"},
-        {"id": "n3", "value": "3"},
-        {"id": "n4", "value": "10"}
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "current", "nodeId": "n1"}],
-      "msg": "Start: current=head, counter=0. Target X=2 → stop at counter X−1 = 1."
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "n1",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Start: current=head, counter=0. Target X=2 → stop at counter X−1 = 1.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n1", "value": "5"},
-        {"id": "n2", "value": "7"},
-        {"id": "n3", "value": "3"},
-        {"id": "n4", "value": "10"}
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "current", "nodeId": "n2"}],
-      "msg": "Walk: counter=1, current at node(7). Stop."
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "n2",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Walk: counter=1, current at node(7). Stop.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n1", "value": "5"},
-        {"id": "n2", "value": "7"},
-        {"id": "new", "value": "6", "style": "new"},
-        {"id": "n3", "value": "3"},
-        {"id": "n4", "value": "10"}
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "new",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n2"],["n2","n3"],["new","n3"],["n3","n4"]],
-      "markers": [{"name": "current", "nodeId": "new"}],
-      "msg": "newNode.next = current.next (point at node 3)"
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "new",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "new",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [
+        "new"
+      ],
+      "removed": [],
+      "annotation": "newNode.next = current.next (point at node 3)",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n1", "value": "5"},
-        {"id": "n2", "value": "7"},
-        {"id": "new", "value": "6"},
-        {"id": "n3", "value": "3"},
-        {"id": "n4", "value": "10"}
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "new",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n2"],["n2","new"],["new","n3"],["n3","n4"]],
-      "markers": [{"name": "head", "nodeId": "n1"}],
-      "msg": "current.next = newNode — splice complete. List is 5 → 7 → 6 → 3 → 10."
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "new",
+          "label": "next"
+        },
+        {
+          "from": "new",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n1",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "current.next = newNode — splice complete. List is 5 → 7 → 6 → 3 → 10.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Insert at distance X = 2 — walk X−1 steps, then splice"
 }
 ```
 
@@ -2082,29 +3774,153 @@ Traverse the list while keeping a counter starting at 0. Increment the counter o
 
 If `X` exceeds the list's length, the position doesn't exist. For example, inserting at position 5 in a 4-element list is invalid — we return the existing **head** unchanged.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Insert at distance X = 5 in size-4 list — traversal falls off, return head unchanged",
-  "direction": "single",
-  "nodes": [
-    {"id": "n1", "value": "5"},
-    {"id": "n2", "value": "7"},
-    {"id": "n3", "value": "3"},
-    {"id": "n4", "value": "10"}
-  ],
-  "head": "n1",
   "steps": [
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "current", "nodeId": "n4"}],
-      "msg": "Walking forward — counter reaches 3 at node(10). Target X−1 = 4."
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "n4",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Walking forward — counter reaches 3 at node(10). Target X−1 = 4.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "head", "nodeId": "n1"}],
-      "msg": "current = current.next becomes null before counter hits 4. X = 5 exceeds size 4 → return head unchanged."
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n1",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "current = current.next becomes null before counter hits 4. X = 5 exceeds size 4 → return head unchanged.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Insert at distance X = 5 in size-4 list — traversal falls off, return head unchanged"
 }
 ```
 
@@ -2118,7 +3934,7 @@ If `X` exceeds the list's length, the position doesn't exist. For example, inser
 ## Implementation
 
 
-```python run
+```python run viz=linked-list viz-root=head
 """
 Definition for singly-linked list.
 class ListNode:
@@ -2184,7 +4000,7 @@ class Solution:
         return head
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 /**
  * Definition for singly-linked list.
  * class ListNode {
@@ -2450,7 +4266,7 @@ print(to_list(Solution().insert_at_given_distance(from_list([7]), 0, 3)))       
 print(to_list(Solution().insert_at_given_distance(from_list([1, 2]), 1, 9)))         # [1, 9, 2]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {

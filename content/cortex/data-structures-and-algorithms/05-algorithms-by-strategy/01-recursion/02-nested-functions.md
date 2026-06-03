@@ -345,7 +345,7 @@ def main():
 main()
 ```
 
-```java run
+```java run viz=array viz-root=arr
 class Main {
     public static void main(String[] args) {
 
@@ -437,7 +437,7 @@ def main():
 main()
 ```
 
-```java run
+```java run viz=array viz-root=arr
 class Main {
     static void functionC() {
         int[] arr = new int[10_000];

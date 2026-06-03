@@ -139,7 +139,7 @@ if __name__ == "__main__":
     print(f"\nFalse positives: {fp}/10000 = {fp / 100:.2f}%  (target: 1%)")
 ```
 
-```java run
+```java run viz=array viz-root=bits
 import java.security.MessageDigest;
 import java.util.*;
 

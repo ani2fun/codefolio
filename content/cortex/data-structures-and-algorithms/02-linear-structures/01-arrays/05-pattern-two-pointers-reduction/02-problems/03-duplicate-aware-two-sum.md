@@ -223,7 +223,7 @@ print(Solution().duplicate_aware_two_sum([2, 2, 2, 2], 4))         # [[2, 2]] â€
 print(Solution().duplicate_aware_two_sum([-1, 0, 1, 2], 1))        # [[-1, 2], [0, 1]]
 ```
 
-```java run
+```java run viz=array viz-root=arr
 import java.util.*;
 
 public class Main {

@@ -279,7 +279,7 @@ print(Solution().remove_intervals([[1, 2], [3, 4]]))                    # 0  —
 print(Solution().remove_intervals([[1, 4], [1, 2], [2, 3], [3, 4]]))   # 1  — one containing others
 ```
 
-```java run
+```java run viz=grid viz-root=intervals
 import java.util.*;
 
 public class Main {

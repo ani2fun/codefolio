@@ -323,7 +323,7 @@ print(Solution().busiest_interval([[1, 2], [3, 4]]))                    # (-1, -
 print(Solution().busiest_interval([[1, 5], [2, 4], [3, 4]]))           # (3, 4)   — three overlapping
 ```
 
-```java run
+```java run viz=array viz-root=meetings
 import java.util.*;
 
 public class Main {

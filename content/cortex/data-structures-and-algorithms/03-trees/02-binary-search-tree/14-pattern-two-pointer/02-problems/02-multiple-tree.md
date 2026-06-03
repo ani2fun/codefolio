@@ -36,7 +36,7 @@ Same shape as two-sum, but the predicate is "right.val % left.val == 0", and we 
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional, List
 
 class TreeNode:
@@ -164,7 +164,7 @@ t6 = from_level_order([6, 2, 12, 1, None, None, 24])
 print(Solution().multiple_tree(t6))                    # True  (24%1=0, 12%2=0)
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

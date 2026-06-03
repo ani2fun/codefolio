@@ -64,50 +64,620 @@ i2 -> arr2.b0
 <p align="center"><strong>Two index variables — one per array — start at position 0 and move independently based on a condition evaluated at each step.</strong></p>
 
 > ▶ Interactive Diagram — Step through a merge of two sorted arrays — at each step a single comparison picks which pointer advances and which value enters the merged output.
-```d3 widget=array-traversal
+```d3 widget=array-1d
 {
-  "items": ["1", "4", "7", "10"],
-  "title": "Simultaneous traversal on two sorted arrays (merge example)",
-  "primaryLabel": "arr1",
-  "secondaryItems": ["2", "5", "8"],
-  "secondaryLabel": "arr2",
   "steps": [
     {
-      "markers": [{"name": "index1", "index": 0, "color": "#f59e0b"}],
-      "secondaryMarkers": [{"name": "index2", "index": 0, "color": "#10b981"}],
-      "msg": "Init: index1=0, index2=0. Compare arr1[0]=1 vs arr2[0]=2."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "10",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s0",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s1",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s2",
+          "label": "8",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "index1",
+          "target": "p0",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "index2",
+          "target": "s0",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Init: index1=0, index2=0. Compare arr1[0]=1 vs arr2[0]=2.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "markers": [{"name": "index1", "index": 1, "color": "#f59e0b"}],
-      "secondaryMarkers": [{"name": "index2", "index": 0, "color": "#10b981"}],
-      "msg": "1 < 2 → take arr1[0]=1, advance index1 → 1. Merged so far: [1]."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "10",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s0",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s1",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s2",
+          "label": "8",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "index1",
+          "target": "p1",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "index2",
+          "target": "s0",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "1 < 2 → take arr1[0]=1, advance index1 → 1. Merged so far: [1].",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "markers": [{"name": "index1", "index": 1, "color": "#f59e0b"}],
-      "secondaryMarkers": [{"name": "index2", "index": 1, "color": "#10b981"}],
-      "msg": "arr1[1]=4 vs arr2[0]=2 → 4 > 2 → take 2, advance index2 → 1. Merged: [1, 2]."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "10",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s0",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s1",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s2",
+          "label": "8",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "index1",
+          "target": "p1",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "index2",
+          "target": "s1",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "arr1[1]=4 vs arr2[0]=2 → 4 > 2 → take 2, advance index2 → 1. Merged: [1, 2].",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "markers": [{"name": "index1", "index": 2, "color": "#f59e0b"}],
-      "secondaryMarkers": [{"name": "index2", "index": 1, "color": "#10b981"}],
-      "msg": "arr1[1]=4 vs arr2[1]=5 → 4 < 5 → take 4, advance index1 → 2. Merged: [1, 2, 4]."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "10",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s0",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s1",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s2",
+          "label": "8",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "index1",
+          "target": "p2",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "index2",
+          "target": "s1",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "arr1[1]=4 vs arr2[1]=5 → 4 < 5 → take 4, advance index1 → 2. Merged: [1, 2, 4].",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "markers": [{"name": "index1", "index": 2, "color": "#f59e0b"}],
-      "secondaryMarkers": [{"name": "index2", "index": 2, "color": "#10b981"}],
-      "msg": "arr1[2]=7 vs arr2[1]=5 → 7 > 5 → take 5, advance index2 → 2. Merged: [1, 2, 4, 5]."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "10",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s0",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s1",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s2",
+          "label": "8",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "index1",
+          "target": "p2",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "index2",
+          "target": "s2",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "arr1[2]=7 vs arr2[1]=5 → 7 > 5 → take 5, advance index2 → 2. Merged: [1, 2, 4, 5].",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "markers": [{"name": "index1", "index": 3, "color": "#f59e0b"}],
-      "secondaryMarkers": [{"name": "index2", "index": 2, "color": "#10b981"}],
-      "msg": "arr1[2]=7 vs arr2[2]=8 → 7 < 8 → take 7, advance index1 → 3. Merged: [1, 2, 4, 5, 7]."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "10",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s0",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s1",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s2",
+          "label": "8",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "index1",
+          "target": "p3",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "index2",
+          "target": "s2",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "arr1[2]=7 vs arr2[2]=8 → 7 < 8 → take 7, advance index1 → 3. Merged: [1, 2, 4, 5, 7].",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "markers": [{"name": "index1", "index": 3, "color": "#f59e0b"}],
-      "secondaryMarkers": [{"name": "index2", "index": 2, "color": "#10b981"}],
-      "msg": "arr1[3]=10 vs arr2[2]=8 → 10 > 8 → take 8, advance index2 → 3 (past end). Main loop exits. Cleanup: append remaining arr1 → [1, 2, 4, 5, 7, 8, 10] ✓"
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "10",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s0",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s1",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s2",
+          "label": "8",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "index1",
+          "target": "p3",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "index2",
+          "target": "s2",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "arr1[3]=10 vs arr2[2]=8 → 10 > 8 → take 8, advance index2 → 3 (past end). Main loop exits. Cleanup: append remaining arr1 → [1, 2, 4, 5, 7, 8, 10] ✓",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Simultaneous traversal on two sorted arrays (merge example)"
 }
 ```
 
@@ -430,7 +1000,7 @@ flowchart TB
 <p align="center"><strong>Brute force — for each character of s, scan forward in t until found or t is exhausted. Correct, but the nested structure is error-prone.</strong></p>
 
 
-```python run
+```python run viz=array viz-root=s
 def is_subsequence_brute(s: str, t: str) -> bool:
     j = 0
     for i in range(len(s)):
@@ -447,7 +1017,7 @@ print(is_subsequence_brute("ace", "abcde"))   # True
 print(is_subsequence_brute("aec", "abcde"))   # False
 ```
 
-```java run
+```java run viz=array viz-root=s
 public class Main {
     static boolean isSubsequenceBrute(String s, String t) {
         int j = 0;
@@ -546,40 +1116,491 @@ flowchart LR
 <p align="center"><strong>Simultaneous traversal — <code>index2</code> always advances; <code>index1</code> only advances on a match. The two-pointer structure makes the logic explicit and easy to follow.</strong></p>
 
 > ▶ Interactive Diagram — Step through the subsequence check — watch index2 advance every step while index1 only ticks forward when the characters match.
-```d3 widget=array-traversal
+```d3 widget=array-1d
 {
-  "items": ["a", "c", "e"],
-  "title": "Subsequence check via simultaneous traversal — s = ace, t = abcde",
-  "primaryLabel": "s",
-  "secondaryItems": ["a", "b", "c", "d", "e"],
-  "secondaryLabel": "t",
   "steps": [
     {
-      "markers": [{"name": "index1", "index": 0, "color": "#f59e0b"}],
-      "secondaryMarkers": [{"name": "index2", "index": 0, "color": "#10b981"}],
-      "msg": "s[0]='a' vs t[0]='a' → match → advance both."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "a",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "c",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "e",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s0",
+          "label": "a",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s1",
+          "label": "b",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s2",
+          "label": "c",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s3",
+          "label": "d",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s4",
+          "label": "e",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "index1",
+          "target": "p0",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "index2",
+          "target": "s0",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "s[0]='a' vs t[0]='a' → match → advance both.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "markers": [{"name": "index1", "index": 1, "color": "#f59e0b"}],
-      "secondaryMarkers": [{"name": "index2", "index": 1, "color": "#10b981"}],
-      "msg": "s[1]='c' vs t[1]='b' → no match → advance only index2."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "a",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "c",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "e",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s0",
+          "label": "a",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s1",
+          "label": "b",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s2",
+          "label": "c",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s3",
+          "label": "d",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s4",
+          "label": "e",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "index1",
+          "target": "p1",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "index2",
+          "target": "s1",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "s[1]='c' vs t[1]='b' → no match → advance only index2.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "markers": [{"name": "index1", "index": 1, "color": "#f59e0b"}],
-      "secondaryMarkers": [{"name": "index2", "index": 2, "color": "#10b981"}],
-      "msg": "s[1]='c' vs t[2]='c' → match → advance both."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "a",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "c",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "e",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s0",
+          "label": "a",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s1",
+          "label": "b",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s2",
+          "label": "c",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s3",
+          "label": "d",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s4",
+          "label": "e",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "index1",
+          "target": "p1",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "index2",
+          "target": "s2",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "s[1]='c' vs t[2]='c' → match → advance both.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "markers": [{"name": "index1", "index": 2, "color": "#f59e0b"}],
-      "secondaryMarkers": [{"name": "index2", "index": 3, "color": "#10b981"}],
-      "msg": "s[2]='e' vs t[3]='d' → no match → advance only index2."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "a",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "c",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "e",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s0",
+          "label": "a",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s1",
+          "label": "b",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s2",
+          "label": "c",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s3",
+          "label": "d",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s4",
+          "label": "e",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "index1",
+          "target": "p2",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "index2",
+          "target": "s3",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "s[2]='e' vs t[3]='d' → no match → advance only index2.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "markers": [{"name": "index1", "index": 2, "color": "#f59e0b"}],
-      "secondaryMarkers": [{"name": "index2", "index": 4, "color": "#10b981"}],
-      "msg": "s[2]='e' vs t[4]='e' → match → advance both. index1 == len(s) → return True ✓"
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "a",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "c",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "e",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s0",
+          "label": "a",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s1",
+          "label": "b",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s2",
+          "label": "c",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s3",
+          "label": "d",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s4",
+          "label": "e",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "index1",
+          "target": "p2",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "index2",
+          "target": "s4",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "s[2]='e' vs t[4]='e' → match → advance both. index1 == len(s) → return True ✓",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Subsequence check via simultaneous traversal — s = ace, t = abcde"
 }
 ```
 

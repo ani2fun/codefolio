@@ -10,13 +10,13 @@ summary: How long each kind of computer operation actually takes — memorise th
 
 ## 1. Motivation
 
-In **2009**, Jeff Dean — the Google engineer who, among other things, built MapReduce, BigTable, Spanner, and TensorFlow — gave a talk at Stanford called *Designs, Lessons and Advice from Building Large Distributed Systems*. On slide 24 he put up a small table called **["Numbers everyone should know"](http://highscalability.com/numbers-everyone-should-know)**. It listed how long each kind of operation takes — from an L1 cache reference to a packet round-trip across the Atlantic.
+In **2009**, Jeff Dean — the Google engineer who, among other things, built MapReduce, BigTable, Spanner, and TensorFlow — gave the keynote at the LADIS 2009 workshop (Big Sky, Montana) called *Designs, Lessons and Advice from Building Large Distributed Systems*. On slide 24 he put up a small table called **["Numbers everyone should know"](http://highscalability.com/numbers-everyone-should-know)**. It listed how long each kind of operation takes — from an L1 cache reference to a packet round-trip across the Atlantic.
 
 That slide changed how a generation of engineers thought about systems. Not because the numbers were new — every CPU architect knew them — but because *application engineers* did not. People were happily writing code that did 10,000 round-trips to a database for a single page load and then wondering why the page was slow.
 
 Jeff's table told them, *to within an order of magnitude*, exactly why.
 
-The version below is the modern (2025) update. Memorise the order-of-magnitude column. The exact nanoseconds drift; the orders of magnitude do not.
+The version below is the modern (2026) update. Memorise the order-of-magnitude column. The exact nanoseconds drift; the orders of magnitude do not.
 
 ## 2. Intuition (Analogy)
 
@@ -29,20 +29,20 @@ The trick that makes them stick: **scale a 1-nanosecond L1 cache hit to feel lik
 | L1 cache reference | 1 ns | **1 second** |
 | Branch mispredict | 3 ns | 3 seconds |
 | L2 cache reference | 4 ns | 4 seconds |
+| L3 cache reference | 15 ns | 15 seconds |
 | Mutex lock/unlock | 17 ns | 17 seconds |
-| L3 cache reference | 40 ns | 40 seconds |
 | Main memory reference | 100 ns | **1 minute 40 seconds** |
 | Compress 1 KB with Snappy | 2 µs | 33 minutes |
 | Send 1 KB over a 1 Gbps network | 10 µs | 2 hours 47 minutes |
 | Random read from SSD | 16 µs | 4 hours 27 minutes |
-| Read 1 MB sequentially from RAM | 4 µs | 1 hour |
+| Read 1 MB sequentially from RAM | 20 µs | 5 hours 33 minutes |
 | Round-trip within same datacentre | 500 µs | **5 days 19 hours** |
 | Read 1 MB sequentially from SSD | 1 ms | 11 days |
-| Round-trip from California to Netherlands | 150 ms | **4 years 9 months** |
-| Read 1 MB sequentially from a spinning disk | 5 ms | 2 months |
 | Disk seek (spinning) | 4 ms | **1 month 18 days** |
+| Read 1 MB sequentially from a spinning disk | 5 ms | 2 months |
+| Round-trip from California to Netherlands | 150 ms | **4 years 9 months** |
 
-> Sources: Peter Norvig's [original interpretation](http://norvig.com/21-days.html#answers) of Jeff Dean's numbers; Aleksey Shipilëv's [Nanotrusting the nanotime](https://shipilev.net/blog/2014/nanotrusting-nanotime/) for honest nanosecond-scale measurement methodology; AWS / Cloudflare published cross-region RTT numbers.
+> Sources: Peter Norvig's [original interpretation](http://norvig.com/21-days.html#answers) of Jeff Dean's numbers; Aleksey Shipilëv's [Nanotrusting the nanotime](https://shipilev.net/blog/2014/nanotrusting-nanotime/) for honest nanosecond-scale measurement methodology; AWS / Cloudflare published cross-region RTT numbers. (Spinning-disk rows reflect modern 7200-RPM drives, ~4–5 ms; Jeff Dean's 2009 figures were 10 ms seek / 20 ms per MB.)
 
 The same data on a horizontal log scale — bars span nine orders of magnitude, so the gap between the cache layers and the cross-region hop is something the eye picks up in one beat. Click any row to update the human-scale caption.
 
@@ -54,8 +54,8 @@ The same data on a horizontal log scale — bars span nine orders of magnitude, 
     { "label": "L1 cache",                  "ns": 1,         "highlight": true },
     { "label": "Branch mispredict",         "ns": 3 },
     { "label": "L2 cache",                  "ns": 4 },
+    { "label": "L3 cache",                  "ns": 15 },
     { "label": "Mutex lock/unlock",         "ns": 17 },
-    { "label": "L3 cache",                  "ns": 40 },
     { "label": "Main memory",               "ns": 100,       "highlight": true },
     { "label": "Snappy compress 1 KB",      "ns": 2000 },
     { "label": "1 KB over 1 Gbps",          "ns": 10000 },
@@ -72,7 +72,7 @@ Memorise just *three* of those rows and the rest become deducible:
 
 > 1 ns ≈ **L1 cache** (1 second on the human scale)
 > 100 ns ≈ **main memory** (~minute on the human scale)
-> 100 ms ≈ **cross-continent network** (~year on the human scale)
+> 100 ms ≈ **cross-continent network** (~3–5 years on the human scale)
 
 That is the whole curriculum of this lesson, in three lines. Everything else is interpolation.
 
@@ -93,10 +93,10 @@ Two related numbers you will need for the rest of the track:
 |---|---|---|
 | Datacentre 10 Gbps NIC bandwidth | ~1.25 GB/s | "How much can leave one server per second?" |
 | Modern NVMe Gen5 SSD sequential read | ~14 GB/s | A single disk can saturate ten 10 G NICs |
-| Modern DDR5 memory bandwidth (per channel) | ~50 GB/s | RAM is roughly 3–4× faster than NVMe Gen5 |
-| Cross-region inter-AZ bandwidth | ~10 Gbps | Internal AWS / GCP backbone (100 Gbps spines exist; per-instance NIC is the bound) |
+| Modern DDR5 memory bandwidth (per channel) | ~50 GB/s | Per 64-bit DIMM/channel (DDR5-6400 ≈ 51 GB/s); ~25 GB/s per 32-bit sub-channel. RAM is ~3–4× faster than NVMe Gen5 |
+| Inter-AZ (intra-region) per-instance bandwidth | ~5–10 Gbps single-flow | Internal AWS / GCP backbone; ~5 Gbps per flow, ~10 Gbps in a cluster placement group, 100 Gbps spines exist. Cross-*region* is a separate, WAN-bound scope. |
 
-The bandwidth column matters because **a 1 GB transfer** does not take 10 µs (the latency of one packet) — it takes ~800 ms over a 10 Gbps link, dominated by bandwidth, not latency. Latency × concurrency = throughput. We will use this exact relationship in [Lesson 5 — Little's Law](/cortex/system-design/foundations-latency-throughput-usl).
+The bandwidth column matters because **a 1 GB transfer** does not take 10 µs (the latency of one packet) — it takes ~800 ms over a 10 Gbps link, dominated by bandwidth, not latency. Throughput = concurrency ÷ latency (equivalently, Little's Law: concurrency = latency × throughput). We will use this exact relationship in [Lesson 5 — Little's Law](/cortex/system-design/foundations-latency-throughput-usl).
 
 ## 4. Worked Example
 
@@ -108,7 +108,7 @@ You ask: how many items? They say: ten. You ask: where is the microservice? They
 
 You can answer **the why** without running anything. Each round-trip across the cluster is roughly 2 ms (1 ms each way + serialisation + connection setup if not pooled). Ten of them in series is **20 ms**. That alone is not bad.
 
-But you also know the connection pool is probably empty (cold lambdas, anyone?), so the first call also pays a TLS handshake — easily 100 ms more. So the *first* page load is **~120 ms** of pure waiting.
+But you also know the connection pool is probably empty (cold lambdas, anyone?), so the first call also pays a TLS handshake. A handshake costs round-trips × RTT (1 RTT for TLS 1.3, 2 for TLS 1.2); at ~1 ms in-region RTT that is only a few extra ms — call it ~5 ms. So the *first* page load is **~25 ms** of pure waiting. (A ~100 ms handshake would imply a cross-continent RTT — at which point every per-item call would be ~50 ms, not 2 ms.)
 
 You ask: in production, how often does the cart have 50 items? They say: about 20% of the time. Now the math is:
 
@@ -175,7 +175,7 @@ measure("scan 1 MB bytes",      lambda: sum(buf), repeats=200)
 # 6. Print the takeaways
 print("\nTakeaways:")
 print(f"- A noop loop iteration on this machine is ~50–500 ns; that is your floor.")
-print(f"- A 1-MB scan is bandwidth-bound; expect ~1 ms per MB on RAM, ~5 ms on SSD.")
+print(f"- A 1-MB scan is bandwidth-bound; expect ~20 µs per MB on RAM, ~1 ms on SSD, ~5 ms on spinning disk.")
 print(f"- p99 / median ratio reveals tail latency. Ratios > 5x mean GC/preemption is a thing.")
 ```
 
@@ -200,17 +200,19 @@ Write down the three numbers you get. You will reference them every time anyone 
 
 ## 6. Trade-offs & Complexity
 
-| Layer | Latency | Throughput per device | Cost per GB-month | When to use |
+| Layer | Latency | Throughput per device | Cost per GB† | When to use |
 |---|---|---|---|---|
 | **CPU register** | ~0.3 ns | — | — | Hot loop variables only |
-| **L1 cache** | 1 ns | ~50 GB/s | — | The compiler chose this; you do not |
-| **L2/L3 cache** | 4–40 ns | ~30 GB/s | — | Tight inner loops |
-| **DRAM** | 100 ns | ~50 GB/s | $5 / GB-mo | Hot data, working set |
-| **NVMe SSD** | 16–100 µs | ~7 GB/s | $0.10 / GB-mo | Warm data; durable; primary DB |
+| **L1 cache** | 1 ns | ~200 GB/s | — | The compiler chose this; you do not |
+| **L2/L3 cache** | 4–15 ns | ~60–80 GB/s | — | Tight inner loops |
+| **DRAM** | 100 ns | ~50 GB/s | ~$5 / GB (capex) | Hot data, working set |
+| **NVMe SSD** | 16–100 µs | ~14 GB/s (Gen5) | $0.10 / GB-mo | Warm data; durable; primary DB |
 | **Network (same DC)** | ~500 µs | ~1 GB/s per NIC | — | Microservice calls, cache fetches |
-| **Spinning disk** | ~4 ms | ~150 MB/s | $0.03 / GB-mo | Cold storage, archives |
+| **Spinning disk** | ~4 ms | ~150 MB/s | ~$0.02 / GB (capex) | Cold storage, archives |
 | **Network (cross-region)** | 30–250 ms | ~1 GB/s | $0.02 / GB transferred | Disaster recovery, replication |
-| **Object storage (S3)** | ~50 ms | virtually unbounded with parallelism | $0.023 / GB-mo | Blobs, backups, data lake |
+| **Object storage (S3)** | ~100–200 ms | virtually unbounded with parallelism | $0.023 / GB-mo | Blobs, backups, data lake |
+
+> † Hardware rows (DRAM, spinning disk) list one-time *purchase* price per GB; cloud rows (NVMe, S3, network) list *monthly* rent or per-GB transfer.
 
 **The rule of the table:** every row down is roughly 10–100× *slower* than the row above, and roughly 10–100× *cheaper per GB*. Picking the right row is mostly about asking "what is my access pattern?" and matching it.
 
@@ -218,7 +220,7 @@ A small table is also worth memorising: the **ratios** of bandwidth between RAM,
 
 | Pair | Ratio (modern hardware, ballpark) |
 |---|---|
-| RAM vs NVMe SSD | RAM is ~7× faster |
+| RAM vs NVMe SSD | RAM is ~3–4× faster (DDR5 channel vs NVMe Gen5) |
 | NVMe SSD vs 10 G NIC | SSD is ~6× faster |
 | 10 G NIC vs spinning disk | NIC is ~7× faster |
 | Same-DC RTT vs cross-region RTT | Cross-region is **~300× slower** |
@@ -230,24 +232,24 @@ That last one is why "just put the database in the other region" is almost never
 - **Confusing latency with bandwidth.** A 1-ms RTT does not mean you can transfer 1 GB in 1 ms. It means *the first byte* shows up after 1 ms; the rest is bandwidth-bound. *(See: every "why is my big file upload slow over fast network?" thread on the internet.)*
 - **Quoting medians when only tails matter.** If 1% of your requests are 100× slower than the median, your *user* experiences the tail every fifth page load (a page with 100 dependent calls hits the 99th-percentile call ~once). [The Tail at Scale (Dean & Barroso, 2013)](https://research.google/pubs/the-tail-at-scale/) is required reading.
 - **Optimising L1 cache when network is the bottleneck.** A 100 ns memory access embedded inside a 100 ms cross-region call is *one millionth* of the latency. Senior engineers triage where the time actually goes *before* optimising.
-- **Forgetting that a "fast" disk is still ~10,000× slower than RAM.** This is why caching exists. This is also why "we made the database faster" hits a wall — the disk is still the disk.
-- **Trusting cloud "best-case" latencies.** Vendors quote *un-loaded* RTT. Loaded systems queue. A "1 ms" service can take 50 ms when its CPU is 90% utilised. We will quantify this in [Lesson 5 — Little's Law](/cortex/system-design/foundations-latency-throughput-usl).
+- **Forgetting that even a "fast" SSD is still ~1,000× slower than RAM (and a spinning-disk seek ~100,000×).** This is why caching exists. This is also why "we made the database faster" hits a wall — the disk is still the disk.
+- **Trusting cloud "best-case" latencies.** Vendors quote *un-loaded* RTT. Loaded systems queue. A "1 ms" service averages ~10 ms at 90% CPU utilisation (M/M/1: response = service ÷ (1 − utilisation)), and its p99 tail can hit ~50 ms; a 50 ms *typical* figure needs ~98% utilisation. We will quantify this in [Lesson 5 — Little's Law](/cortex/system-design/foundations-latency-throughput-usl).
 - **Comparing wall-clock from different machines.** Same code, different CPU, can be 10× different. Always measure on the hardware you will run on.
 - **Forgetting cold caches.** First-request latency is dominated by everything that *should* have been hot but was not — DNS, TLS handshake, JIT, page cache, CDN warm-up. Every system has a "first 30 seconds" pathology. Production load tests should always include cold-start measurement.
 
 ## 8. Practice
 
 > **Exercise 1 — Estimate without running.**
-> A user uploads a 5 MB image. Your service stores it in S3 (50 ms latency, ~100 MB/s bandwidth from the same region) and writes a row in Postgres. Estimate the total time for one upload, *without* running anything. Then identify *which* component is the bottleneck.
+> A user uploads a 5 MB image. Your service stores it in S3 (~100 ms first-byte latency, ~100 MB/s bandwidth from the same region) and writes a row in Postgres. Estimate the total time for one upload, *without* running anything. Then identify *which* component is the bottleneck.
 >
 > <details>
 > <summary>Solution</summary>
 >
-> The 5 MB upload to S3 is bandwidth-bound: 5 MB / 100 MB/s = **50 ms** of transfer time, *plus* the ~50 ms RTT to issue the request = **~100 ms total** for S3.
+> The 5 MB upload to S3 takes 5 MB / 100 MB/s = **50 ms** of transfer time, *plus* the ~100 ms first-byte latency to issue and start the request = **~150 ms total** for S3.
 >
 > The Postgres write is a same-region RTT plus serialisation plus fsync — call it **5 ms**.
 >
-> If done **sequentially**, the user waits ~105 ms. The bottleneck is the S3 transfer, dominated by *bandwidth*, not latency.
+> If done **sequentially**, the user waits ~155 ms. The bottleneck is S3 — and at this object size the first-byte *latency* (~100 ms) actually exceeds the *transfer* (~50 ms), so a faster pipe alone barely helps; the object has to grow to tens of MB before bandwidth dominates.
 >
 > The 1% senior insight: parallelise the Postgres write with a placeholder row and update it on S3 success — get the user response down to ~5 ms while the upload completes in the background.
 >
@@ -292,11 +294,11 @@ That last one is why "just put the database in the other region" is almost never
 
 - **[Jeff Dean — Designs, Lessons and Advice from Building Large Distributed Systems](https://www.cs.cornell.edu/projects/ladis2009/talks/dean-keynote-ladis2009.pdf)** (2009, LADIS keynote PDF) — the talk that launched the table; slide 24 is the original *Numbers Everyone Should Know*.
 
-- **[Peter Norvig — Teach Yourself Programming in Ten Years (Answers section)](http://norvig.com/21-days.html#answers)** — the most-cited public reproduction of Jeff Dean's table, with Norvig's own annotations.
+- **[Peter Norvig — Teach Yourself Programming in Ten Years (Answers section)](http://norvig.com/21-days.html#answers)** — a closely related public table of the same numbers, with Norvig's own annotations (an independent origin of these figures, not a reproduction of Dean's).
 
-- **[Aleksey Shipilëv — JVM Anatomy Quarks](https://shipilev.net/jvm/anatomy-quarks/)** — modern updates to the same numbers, measured on contemporary hardware. Especially useful for JVM-ecosystem engineers.
+- **[Aleksey Shipilëv — Nanotrusting the Nanotime](https://shipilev.net/blog/2014/nanotrusting-nanotime/)** (2014) — honest methodology for measuring nanosecond-scale latency (the resolution and overhead of `System.nanoTime()` itself). Especially useful for JVM-ecosystem engineers; see also his [JVM Anatomy Quarks](https://shipilev.net/jvm/anatomy-quarks/) series.
 
-- **[Cloudflare — How fast is your network really?](https://blog.cloudflare.com/network-performance-update-birthday-week-2024/)** (2024) — a real-world measurement of CDN-edge-to-origin latency across the globe. Useful as ground truth for "cross-continent RTT" claims.
+- **[Cloudflare — Network performance update: Birthday Week 2024](https://blog.cloudflare.com/network-performance-update-birthday-week-2024/)** (2024) — real-world p95 end-user-to-Cloudflare TCP connect times across ISPs worldwide. A ground-truth check on last-mile RTT.
 
 ---
 

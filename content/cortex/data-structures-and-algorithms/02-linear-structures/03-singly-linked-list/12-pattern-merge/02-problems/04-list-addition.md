@@ -183,7 +183,7 @@ print(to_list(Solution().list_addition(from_list([5]), from_list([5]))))        
 print(to_list(Solution().list_addition(from_list([1, 2, 3]), from_list([4]))))         # [5, 2, 3]  (321+4=325)
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {

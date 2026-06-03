@@ -125,7 +125,7 @@ flowchart TB
 
 ### Solution
 
-```python run
+```python run viz=array viz-root=result
 from typing import List, Tuple
 
 class Solution:
@@ -194,7 +194,7 @@ print(Solution().even_odd_count([1, 3, 5], 2))            # [(0, 2), (0, 2)]  â€
 print(Solution().even_odd_count([2, 2, 2, 2], 3))         # [(3, 0), (3, 0)]  â€” all same even
 ```
 
-```java run
+```java run viz=array viz-root=result
 import java.util.*;
 
 public class Main {

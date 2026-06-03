@@ -10,7 +10,7 @@ summary: Six consistency levels along one axis, the anomalies each one allows, a
 
 ## 1. Motivation
 
-In **December 2015**, Kyle Kingsbury published [*Strong consistency models*](https://aphyr.com/posts/313-strong-consistency-models) — the post that took the textbook definitions and put them on **one axis** with a clear lattice diagram. The lattice ranks every common consistency model by strictness, and shows which guarantees imply which. Strong serialisability implies linearisability, which implies sequential, which implies causal, which implies all the per-key models, and so on. *Most production databases are eventually consistent by default, and the precise dialect of "eventual" varies in ways that surprise teams.*
+In **2014**, Kyle Kingsbury published [*Strong consistency models*](https://aphyr.com/posts/313-strong-consistency-models) — the post that took the textbook definitions and put them on **one axis** with a clear lattice diagram. The lattice ranks every common consistency model by strictness, and shows which guarantees imply which. Strong serialisability implies linearisability, which implies sequential, which implies causal, which implies all the per-key models, and so on. *Most production databases are eventually consistent by default, and the precise dialect of "eventual" varies in ways that surprise teams.*
 
 The same axis explains why production systems mix consistency levels per query. A bank's `SELECT balance FROM accounts WHERE id = ?` ahead of a `UPDATE accounts SET balance = balance - 100` must be linearisable: a stale balance read leads to authorising a withdrawal against money already gone. The same bank's `SELECT user_id, last_login_at FROM users WHERE id = ?` on the analytics dashboard can be 30 seconds stale and nobody cares. Same database; different queries; different consistency.
 
@@ -75,7 +75,7 @@ These are what each consistency level lets through. The widget from [Lesson 11](
 | Postgres (with replicas) | eventually consistent on replicas | linearisable on the primary | route the query to the primary |
 | Cassandra | LOCAL_ONE (eventual) | QUORUM + Lightweight Transactions | per-query `CONSISTENCY QUORUM`; LWT for compare-and-swap |
 | DynamoDB | eventually consistent reads | strongly consistent reads | `ConsistentRead=true` on the request |
-| MongoDB (replica set) | primary reads (linearisable per doc) | causal sessions | `readConcern` per query |
+| MongoDB (replica set) | `readConcern: local` on the primary | `readConcern: linearizable` (single-doc) | set `readConcern` per query; causal sessions for causal |
 | etcd / ZooKeeper | linearisable | linearisable | default — they're built for this |
 
 The pattern: **most systems default to the weakest practical model**, and offer stronger modes as a per-query opt-in with extra latency. Knowing which knob to flip for which query is the lesson.
@@ -212,7 +212,7 @@ Senior heuristic: **the latency budget of a UI screen is the budget for the slow
 
 ## 8. In the Wild
 
-- **[Kyle Kingsbury, *Strong consistency models*](https://aphyr.com/posts/313-strong-consistency-models)** (2015). The post that puts every common model on one lattice diagram. Required reading if you're going to design with consistency in mind.
+- **[Kyle Kingsbury, *Strong consistency models*](https://aphyr.com/posts/313-strong-consistency-models)** (2014). The post that puts every common model on one lattice diagram. Required reading if you're going to design with consistency in mind.
 - **[Werner Vogels, *Eventually Consistent*, CACM 2009](https://queue.acm.org/detail.cfm?id=1466448)** — Amazon CTO's classic on the spectrum of consistency, written for the practitioner.
 - **[Daniel Abadi, *Consistency Tradeoffs in Modern Distributed Database Systems*](https://cs.umd.edu/~abadi/papers/abadi-pacelc.pdf)** (2012) — the paper that introduced PACELC. Pairs naturally with [Lesson 4](/cortex/system-design/foundations-cap-and-pacelc).
 - **[The Jepsen analysis archives](https://jepsen.io/analyses)** — every popular database has been Jepsen-tested. Each report is a deep look at what a system *actually* delivers vs what it claims.

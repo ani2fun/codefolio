@@ -289,7 +289,7 @@ for row in matrix:
     print(row)
 ```
 
-```java run
+```java run viz=graph viz-root=matrix
 import java.util.Arrays;
 
 public class Main {
@@ -441,7 +441,7 @@ for row in matrix:
     print(row)
 ```
 
-```java run
+```java run viz=graph viz-root=matrix
 import java.util.Arrays;
 
 public class Main {
@@ -597,7 +597,7 @@ print("Node data:", cities)
 print("Edge between Tokyo (1) and Paris (2):", adj[1][2])
 ```
 
-```java run
+```java run viz=graph viz-root=adj
 import java.util.Arrays;
 
 public class Main {

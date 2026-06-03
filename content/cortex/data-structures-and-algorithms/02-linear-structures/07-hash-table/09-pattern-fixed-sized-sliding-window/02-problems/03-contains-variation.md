@@ -22,20 +22,73 @@ Given two strings `s1` and `s2`, return `true` if `s2` contains a permutation of
 > -   **Input:** `s1 = "abc", s2 = "defghiab"` → **Output:** `false`
 
 <details>
-<summary><h2>Approach</h2></summary>
+<summary><strong>Examples</strong></summary>
 
+**Example 1**
+```
+Input:  s1 = "abc", s2 = "edbaclm"
+Output: true
+Explanation: the window "bac" is a permutation of "abc" → match found.
+```
 
-The window size is fixed: `len(s1)`. A window is a permutation of `s1` iff the window's frequency map equals `s1`'s frequency map. Slide the window over `s2`; compare the maps each time the window is the right size.
+**Example 2**
+```
+Input:  s1 = "cod", s2 = "intdoce"
+Output: true
+Explanation: the window "doc" is a permutation of "cod" → match found.
+```
 
-To avoid O(K) map comparisons every step, you can maintain a counter `matches` of how many distinct characters have *exactly* the right count. We use the simpler `map == map` here for clarity; the optimisation matters only for large K.
+**Example 3**
+```
+Input:  s1 = "abc", s2 = "defghiab"
+Output: false
+Explanation: no length-3 window of s2 is a permutation of "abc".
+```
+
+**Example 4**
+```
+Input:  s1 = "aa", s2 = "aab"
+Output: true
+Explanation: the window "aa" matches s1's map {a:2} → match found.
+```
 
 </details>
+
+## Intuition
+
+The structural property that makes this a **fixed-sized sliding window** problem is the window width: a permutation of `s1` has exactly `len(s1)` characters, so every candidate window in `s2` is exactly that size. A permutation is a multiset of characters, and a frequency map is precisely a multiset, so the window's map is the summary to maintain.
+
+The window's two pointers each carry a fixed job. The `end` pointer adds the entering character; the `start` pointer drops the leaving one once the window reaches `len(s1)`. A window is a permutation of `s1` exactly when its frequency map equals `s1`'s frequency map — so the test is a map-equality check, run only when the window is the right width.
+
+The naive approach breaks the time budget. For each of the `len(s2) − len(s1) + 1` windows it builds a fresh map and compares, costing `O(N·K)` time for `O(K)` space where `K = len(s1)`. That re-counts the `K − 1` shared characters on every slide. The sliding window edits the map in `O(1)` per step, so only the equality check remains per window.
+
+## Applying the Diagnostic Questions
+
+| Check | Answer for Contains Variation |
+|---|---|
+| **Q1.** Is the window size fixed at exactly `k`? | **Yes** — every window is `len(s1)` wide; the size comes from the first string. |
+| **Q2.** Is the input a linear sequence? | **Yes** — `s2` is a string, walked character by character. |
+| **Q3.** Is the per-window answer read from an `O(1)`-updatable map? | **Yes** — the window's frequency map is compared against `s1`'s; the map itself updates in `O(1)`. |
+| **Q4.** Is the per-step work `O(1)` amortised? | **Yes** — one increment on expand and one decrement on contract; the equality check is bounded by the alphabet. |
+
+## Approach
+
+Pre-count `s1`, then slide a window of size `len(s1)` over `s2`, comparing maps each time the window is full.
+
+1. **Build `s1`'s frequency map.** Count every character of `s1` once; this is the target multiset.
+2. **Add the entering character.** Read `s2[end]` and increment its count in the window map.
+3. **Compare when the window is full.** When `end − start + 1 == len(s1)`, test whether the window map equals `s1`'s map; if so, return `true`.
+4. **Contract from the left.** Still in the full-window branch, decrement `s2[start]`'s count, delete the key if it hits zero, and advance `start`.
+5. **Advance and finish.** Increment `end` and continue; return `false` if no window ever matches.
+
+> *Optimisation* — to avoid an `O(K)` map comparison each step, track a counter of how many distinct characters hold *exactly* the right count. The solution below uses the clearer `map == map` check; the counter only matters for large `K`.
+
 <details>
 <summary><h2>Solution</h2></summary>
 
 
 
-```python run
+```python run viz=array viz-root=s
 from collections import defaultdict
 from typing import Dict
 
@@ -95,7 +148,7 @@ print(Solution().contains_variation("abc", "ab"))        # False
 print(Solution().contains_variation("aa", "aab"))        # True
 ```
 
-```java run
+```java run viz=array viz-root=s
 import java.util.*;
 
 public class Main {
@@ -171,35 +224,47 @@ public class Main {
 
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+## Dry Run
 
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
+Walk Example 1 — `s1 = "abc"`, `s2 = "edbaclm"`, window size `3`. The target map is `{a:1, b:1, c:1}`:
 
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
+```
+s1_frequency = {a:1, b:1, c:1}
+start=0, end=0, frequency={}
 
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
+end=0  add e → freq={e:1}            size 1 < 3 → continue
+end=1  add d → freq={e:1,d:1}        size 2 < 3 → continue
+end=2  add b → freq={e:1,d:1,b:1}    size 3 == 3 → {e,d,b} ≠ target
+                                      drop s2[0]=e → freq={d:1,b:1}, start=1
+end=3  add a → freq={d:1,b:1,a:1}    size 3 == 3 → {d,b,a} ≠ target
+                                      drop s2[1]=d → freq={b:1,a:1}, start=2
+end=4  add c → freq={b:1,a:1,c:1}    size 3 == 3 → {a,b,c} == target → return true
 
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
+result = true
+```
 
-<!-- TODO: Solution — missing, needs to be written -->
-<!--       Guidance: Python block then Java block -->
+The result `true` matches the expected output — the window `"bac"` at `start=2` has map `{a:1, b:1, c:1}`, equal to `s1`'s map.
 
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
+## Complexity Analysis
 
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table: time / space / why -->
+| Measure | Value | Why |
+|---|---|---|
+| Time  | **O(N · A)** | `N = len(s2)`; `end` sweeps once with `O(1)` map edits, but each full-window map-equality check costs `O(A)` for an alphabet of size `A` (constant for fixed alphabets, so effectively `O(N)`). |
+| Space | **O(A)** | Two maps — `s1`'s and the window's — each bounded by the alphabet size `A`. |
 
-<!-- TODO: Edge Cases — missing, needs to be written -->
-<!--       Guidance: table, min 5 rows -->
+The counter optimisation in the Approach note collapses the per-window check to `O(1)`, giving a strict `O(N)` time bound.
 
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->
+## Edge Cases
+
+| Case | Example | Expected | Reasoning |
+|---|---|---|---|
+| Equal single chars | `s1 = "a", s2 = "a"` | `true` | The one-character window matches `s1`'s map `{a:1}`. |
+| Reversed pair | `s1 = "ab", s2 = "ba"` | `true` | `"ba"` is a permutation of `"ab"`; maps both `{a:1, b:1}`. |
+| Exact match | `s1 = "abc", s2 = "abc"` | `true` | The whole of `s2` is the single window and matches. |
+| `s2` shorter than `s1` | `s1 = "abc", s2 = "ab"` | `false` | No window of size `3` exists in a length-`2` string. |
+| Repeated letters | `s1 = "aa", s2 = "aab"` | `true` | The window `"aa"` matches `s1`'s map `{a:2}`. |
+| No permutation | `s1 = "abc", s2 = "defghiab"` | `false` | No length-`3` window equals `{a:1, b:1, c:1}`. |
+
+## Key Takeaway
+
+This is a pattern-match shape of the fixed window: the size is `len(s1)`, and a window matches when its frequency map equals `s1`'s. Returning on the first match makes it the single-answer cousin of Anagram Finder, which appends every matching index instead.

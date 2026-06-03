@@ -93,7 +93,7 @@ Capture endpoints, reverse, stitch.
 ### Solution
 
 
-```python run
+```python run viz=linked-list viz-root=head
 from typing import Optional
 
 
@@ -188,7 +188,7 @@ print(to_list(Solution().reverse_the_given_segment(from_list([1, 2, 3, 4, 5]), 1
 print(to_list(Solution().reverse_the_given_segment(from_list([1, 2, 3, 4, 5]), 3, 5)))   # [1, 2, 5, 4, 3]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {

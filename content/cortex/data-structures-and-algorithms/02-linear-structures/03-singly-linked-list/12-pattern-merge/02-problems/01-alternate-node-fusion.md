@@ -81,68 +81,980 @@ Run the dummy-head splice loop with a boolean selector that flips each iteration
 ### Solution
 
 > ▶ Interactive Diagram — Alternate node fusion in-place — list A on row 0, list B on row 1. Each iteration splices one node into the tail, alternating between A and B; when one list runs out the remainder of the other gets attached whole.
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Alternate node fusion — Example 1: [1,2,3] + [4,5,6] → [1,4,2,5,3,6]",
-  "direction": "single",
-  "wrapAt": 4,
-  "nodes": [
-    {"id": "d",  "value": "·"},
-    {"id": "a1", "value": "1"},
-    {"id": "a2", "value": "2"},
-    {"id": "a3", "value": "3"},
-    {"id": "b1", "value": "4"},
-    {"id": "b2", "value": "5"},
-    {"id": "b3", "value": "6"}
-  ],
-  "head": "d",
-  "sections": [
-    {"name": "Init",      "startIdx": 0},
-    {"name": "Iter A/B ×3", "startIdx": 1},
-    {"name": "Tail attach", "startIdx": 7}
-  ],
   "steps": [
     {
-      "links": [["a1","a2"],["a2","a3"],["b1","b2"],["b2","b3"]],
-      "markers": [{"name": "dummy", "nodeId": "d"}, {"name": "headA", "nodeId": "a1"}, {"name": "headB", "nodeId": "b1"}, {"name": "current", "nodeId": "d"}],
-      "msg": "Init: dummy node created, current = dummy. mergeFirst = true. List A on row 0 (1→2→3); list B on row 1 (4→5→6)."
+      "nodes": [
+        {
+          "id": "d",
+          "label": "·",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a1",
+          "label": "1",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a2",
+          "label": "2",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b1",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b2",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b3",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "a1",
+          "to": "a2",
+          "label": "next"
+        },
+        {
+          "from": "a2",
+          "to": "a3",
+          "label": "next"
+        },
+        {
+          "from": "b1",
+          "to": "b2",
+          "label": "next"
+        },
+        {
+          "from": "b2",
+          "to": "b3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "dummy",
+          "target": "d",
+          "color": "#6b7280"
+        },
+        {
+          "name": "headA",
+          "target": "a1",
+          "color": "#6b7280"
+        },
+        {
+          "name": "headB",
+          "target": "b1",
+          "color": "#6b7280"
+        },
+        {
+          "name": "current",
+          "target": "d",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Init: dummy node created, current = dummy. mergeFirst = true. List A on row 0 (1→2→3); list B on row 1 (4→5→6).",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["d","a1"],["a1","a2"],["a2","a3"],["b1","b2"],["b2","b3"]],
-      "markers": [{"name": "dummy", "nodeId": "d"}, {"name": "headA", "nodeId": "a2"}, {"name": "headB", "nodeId": "b1"}, {"name": "current", "nodeId": "a1"}],
-      "msg": "Iter 1 (A): tail.next = currentA → dummy → 1. Advance currentA to 2, tail to 1. mergeFirst = false."
+      "nodes": [
+        {
+          "id": "d",
+          "label": "·",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a1",
+          "label": "1",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a2",
+          "label": "2",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b1",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b2",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b3",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "d",
+          "to": "a1",
+          "label": "next"
+        },
+        {
+          "from": "a1",
+          "to": "a2",
+          "label": "next"
+        },
+        {
+          "from": "a2",
+          "to": "a3",
+          "label": "next"
+        },
+        {
+          "from": "b1",
+          "to": "b2",
+          "label": "next"
+        },
+        {
+          "from": "b2",
+          "to": "b3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "dummy",
+          "target": "d",
+          "color": "#6b7280"
+        },
+        {
+          "name": "headA",
+          "target": "a2",
+          "color": "#6b7280"
+        },
+        {
+          "name": "headB",
+          "target": "b1",
+          "color": "#6b7280"
+        },
+        {
+          "name": "current",
+          "target": "a1",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Iter 1 (A): tail.next = currentA → dummy → 1. Advance currentA to 2, tail to 1. mergeFirst = false.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["d","a1"],["a1","b1"],["a2","a3"],["b1","b2"],["b2","b3"]],
-      "markers": [{"name": "dummy", "nodeId": "d"}, {"name": "headA", "nodeId": "a2"}, {"name": "headB", "nodeId": "b2"}, {"name": "current", "nodeId": "b1"}],
-      "msg": "Iter 2 (B): tail.next = currentB → 1 → 4 (overwrites the old 1→2 link). Advance currentB to 5, tail to 4."
+      "nodes": [
+        {
+          "id": "d",
+          "label": "·",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a1",
+          "label": "1",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a2",
+          "label": "2",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b1",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b2",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b3",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "d",
+          "to": "a1",
+          "label": "next"
+        },
+        {
+          "from": "a1",
+          "to": "b1",
+          "label": "next"
+        },
+        {
+          "from": "a2",
+          "to": "a3",
+          "label": "next"
+        },
+        {
+          "from": "b1",
+          "to": "b2",
+          "label": "next"
+        },
+        {
+          "from": "b2",
+          "to": "b3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "dummy",
+          "target": "d",
+          "color": "#6b7280"
+        },
+        {
+          "name": "headA",
+          "target": "a2",
+          "color": "#6b7280"
+        },
+        {
+          "name": "headB",
+          "target": "b2",
+          "color": "#6b7280"
+        },
+        {
+          "name": "current",
+          "target": "b1",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Iter 2 (B): tail.next = currentB → 1 → 4 (overwrites the old 1→2 link). Advance currentB to 5, tail to 4.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["d","a1"],["a1","b1"],["b1","a2"],["a2","a3"],["b2","b3"]],
-      "markers": [{"name": "dummy", "nodeId": "d"}, {"name": "headA", "nodeId": "a3"}, {"name": "headB", "nodeId": "b2"}, {"name": "current", "nodeId": "a2"}],
-      "msg": "Iter 3 (A): tail.next = currentA → 4 → 2. Advance currentA to 3, tail to 2."
+      "nodes": [
+        {
+          "id": "d",
+          "label": "·",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a1",
+          "label": "1",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a2",
+          "label": "2",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b1",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b2",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b3",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "d",
+          "to": "a1",
+          "label": "next"
+        },
+        {
+          "from": "a1",
+          "to": "b1",
+          "label": "next"
+        },
+        {
+          "from": "b1",
+          "to": "a2",
+          "label": "next"
+        },
+        {
+          "from": "a2",
+          "to": "a3",
+          "label": "next"
+        },
+        {
+          "from": "b2",
+          "to": "b3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "dummy",
+          "target": "d",
+          "color": "#6b7280"
+        },
+        {
+          "name": "headA",
+          "target": "a3",
+          "color": "#6b7280"
+        },
+        {
+          "name": "headB",
+          "target": "b2",
+          "color": "#6b7280"
+        },
+        {
+          "name": "current",
+          "target": "a2",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Iter 3 (A): tail.next = currentA → 4 → 2. Advance currentA to 3, tail to 2.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["d","a1"],["a1","b1"],["b1","a2"],["a2","b2"],["b2","b3"]],
-      "markers": [{"name": "dummy", "nodeId": "d"}, {"name": "headA", "nodeId": "a3"}, {"name": "headB", "nodeId": "b3"}, {"name": "current", "nodeId": "b2"}],
-      "msg": "Iter 4 (B): tail.next = currentB → 2 → 5. Advance currentB to 6, tail to 5."
+      "nodes": [
+        {
+          "id": "d",
+          "label": "·",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a1",
+          "label": "1",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a2",
+          "label": "2",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b1",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b2",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b3",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "d",
+          "to": "a1",
+          "label": "next"
+        },
+        {
+          "from": "a1",
+          "to": "b1",
+          "label": "next"
+        },
+        {
+          "from": "b1",
+          "to": "a2",
+          "label": "next"
+        },
+        {
+          "from": "a2",
+          "to": "b2",
+          "label": "next"
+        },
+        {
+          "from": "b2",
+          "to": "b3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "dummy",
+          "target": "d",
+          "color": "#6b7280"
+        },
+        {
+          "name": "headA",
+          "target": "a3",
+          "color": "#6b7280"
+        },
+        {
+          "name": "headB",
+          "target": "b3",
+          "color": "#6b7280"
+        },
+        {
+          "name": "current",
+          "target": "b2",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Iter 4 (B): tail.next = currentB → 2 → 5. Advance currentB to 6, tail to 5.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["d","a1"],["a1","b1"],["b1","a2"],["a2","b2"],["b2","a3"]],
-      "markers": [{"name": "dummy", "nodeId": "d"}, {"name": "headA", "nodeId": "a3"}, {"name": "headB", "nodeId": "b3"}, {"name": "current", "nodeId": "a3"}],
-      "msg": "Iter 5 (A): tail.next = currentA → 5 → 3. Advance currentA to null, tail to 3. currentA is now null — exit loop."
+      "nodes": [
+        {
+          "id": "d",
+          "label": "·",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a1",
+          "label": "1",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a2",
+          "label": "2",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b1",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b2",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b3",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "d",
+          "to": "a1",
+          "label": "next"
+        },
+        {
+          "from": "a1",
+          "to": "b1",
+          "label": "next"
+        },
+        {
+          "from": "b1",
+          "to": "a2",
+          "label": "next"
+        },
+        {
+          "from": "a2",
+          "to": "b2",
+          "label": "next"
+        },
+        {
+          "from": "b2",
+          "to": "a3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "dummy",
+          "target": "d",
+          "color": "#6b7280"
+        },
+        {
+          "name": "headA",
+          "target": "a3",
+          "color": "#6b7280"
+        },
+        {
+          "name": "headB",
+          "target": "b3",
+          "color": "#6b7280"
+        },
+        {
+          "name": "current",
+          "target": "a3",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Iter 5 (A): tail.next = currentA → 5 → 3. Advance currentA to null, tail to 3. currentA is now null — exit loop.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["d","a1"],["a1","b1"],["b1","a2"],["a2","b2"],["b2","a3"],["a3","b3"]],
-      "markers": [{"name": "dummy", "nodeId": "d"}, {"name": "headB", "nodeId": "b3"}, {"name": "current", "nodeId": "a3"}],
-      "msg": "Tail attach: currentB still has nodes. tail.next = currentB → 3 → 6. Done."
+      "nodes": [
+        {
+          "id": "d",
+          "label": "·",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a1",
+          "label": "1",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a2",
+          "label": "2",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b1",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b2",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b3",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "d",
+          "to": "a1",
+          "label": "next"
+        },
+        {
+          "from": "a1",
+          "to": "b1",
+          "label": "next"
+        },
+        {
+          "from": "b1",
+          "to": "a2",
+          "label": "next"
+        },
+        {
+          "from": "a2",
+          "to": "b2",
+          "label": "next"
+        },
+        {
+          "from": "b2",
+          "to": "a3",
+          "label": "next"
+        },
+        {
+          "from": "a3",
+          "to": "b3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "dummy",
+          "target": "d",
+          "color": "#6b7280"
+        },
+        {
+          "name": "headB",
+          "target": "b3",
+          "color": "#6b7280"
+        },
+        {
+          "name": "current",
+          "target": "a3",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Tail attach: currentB still has nodes. tail.next = currentB → 3 → 6. Done.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["d","a1"],["a1","b1"],["b1","a2"],["a2","b2"],["b2","a3"],["a3","b3"]],
-      "markers": [{"name": "head", "nodeId": "a1"}],
-      "msg": "Return dummy.next — head of the alternate-fused list: 1 → 4 → 2 → 5 → 3 → 6. O(n+m) time, O(1) extra space (only the dummy)."
+      "nodes": [
+        {
+          "id": "d",
+          "label": "·",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a1",
+          "label": "1",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a2",
+          "label": "2",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b1",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b2",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b3",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "d",
+          "to": "a1",
+          "label": "next"
+        },
+        {
+          "from": "a1",
+          "to": "b1",
+          "label": "next"
+        },
+        {
+          "from": "b1",
+          "to": "a2",
+          "label": "next"
+        },
+        {
+          "from": "a2",
+          "to": "b2",
+          "label": "next"
+        },
+        {
+          "from": "b2",
+          "to": "a3",
+          "label": "next"
+        },
+        {
+          "from": "a3",
+          "to": "b3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "a1",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Return dummy.next — head of the alternate-fused list: 1 → 4 → 2 → 5 → 3 → 6. O(n+m) time, O(1) extra space (only the dummy).",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Alternate node fusion — Example 1: [1,2,3] + [4,5,6] → [1,4,2,5,3,6]"
 }
 ```
 
@@ -251,7 +1163,7 @@ print(to_list(Solution().alternate_node_fusion(from_list([1]), from_list([2, 3, 
 print(to_list(Solution().alternate_node_fusion(from_list([1, 2, 3]), from_list([4]))))             # [1, 4, 2, 3]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {

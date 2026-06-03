@@ -110,7 +110,7 @@ print(sorted(Solution().odd_occurring_element_ii([7, 7, 7, 4])))                
 print(sorted(Solution().odd_occurring_element_ii([0, 1, 0, 0, 1, 1, 2, 2, 2, 3])))           # [1, 3]
 ```
 
-```java run
+```java run viz=array viz-root=arr
 import java.util.*;
 
 public class Main {

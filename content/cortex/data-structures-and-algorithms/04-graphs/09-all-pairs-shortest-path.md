@@ -299,7 +299,7 @@ print(Solution().floyd_warshall_algorithm([[], []]))      # [[0, -1], [-1, 0]]
 print(Solution().floyd_warshall_algorithm([[[1, 3]], []])) # [[0, 3], [-1, 0]]
 ```
 
-```java run
+```java run viz=graph viz-root=graph
 import java.util.*;
 
 public class Main {

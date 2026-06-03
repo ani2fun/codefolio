@@ -67,7 +67,7 @@ After fully exploring "what configurations exist with the queen for row 0 in col
 
 ### The Solution
 
-```python run
+```python run viz=array viz-root=board
 from typing import List
 
 class Solution:
@@ -175,7 +175,7 @@ print(len(Solution().solve_n_queens(5)))              # 10
 print(len(Solution().solve_n_queens(6)))              # 4
 ```
 
-```java run
+```java run viz=array viz-root=board
 import java.util.*;
 
 public class Main {

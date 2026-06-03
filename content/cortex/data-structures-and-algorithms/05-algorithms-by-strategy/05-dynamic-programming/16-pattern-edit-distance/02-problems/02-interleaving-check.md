@@ -113,7 +113,7 @@ print(Solution().interleaving_check("ab", "cd", "acbd"))                    # Tr
 print(Solution().interleaving_check("ab", "cd", "abdc"))                    # False — wrong order
 ```
 
-```java run
+```java run viz=grid viz-root=dp
 import java.util.*;
 
 public class Main {

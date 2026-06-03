@@ -57,6 +57,11 @@ export default defineConfig({
             if (id.includes("/@terrastruct/d2")) return "d2";
             if (id.includes("/katex")) return "katex";
             if (id.includes("/prismjs")) return "prismjs";
+            // Monaco core + the React wrapper + any web-worker entry points
+            // ride together. Loaded only when a Cortex chapter mounts a
+            // runnable block (Scala.js imports `@markdown/monaco` from inside
+            // RunnableCodeBlock's render path).
+            if (id.includes("/monaco-editor") || id.includes("/@monaco-editor/")) return "monaco";
           }
           return null;
         },

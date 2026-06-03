@@ -22,7 +22,68 @@ Given `arr` and a positive integer `k`, return an array containing the count of 
 > -   **Input:** `arr = [1,2,3,4], k = 1` → **Output:** `[1, 1, 1, 1]`
 
 <details>
-<summary><h2>Approach</h2></summary>
+<summary><strong>Examples</strong></summary>
+
+**Example 1**
+```
+Input:  arr = [2, 1, 2, 3, 2, 1, 4, 5], k = 5
+Output: [3, 3, 4, 5]
+Explanation: windows [2,1,2,3,2]→{2,1,3}=3, [1,2,3,2,1]→{1,2,3}=3,
+[2,3,2,1,4]→{2,3,1,4}=4, [3,2,1,4,5]→{3,2,1,4,5}=5.
+```
+
+**Example 2**
+```
+Input:  arr = [1, 1, 2, 4], k = 3
+Output: [2, 3]
+Explanation: windows [1,1,2]→{1,2}=2, [1,2,4]→{1,2,4}=3.
+```
+
+**Example 3**
+```
+Input:  arr = [1, 2, 3, 4], k = 1
+Output: [1, 1, 1, 1]
+Explanation: every size-1 window holds exactly one distinct value.
+```
+
+**Example 4**
+```
+Input:  arr = [5, 5, 5], k = 3
+Output: [1]
+Explanation: the only window [5,5,5] holds one distinct value → [1].
+```
+
+</details>
+
+## Intuition
+
+The structural property that makes this a **fixed-sized sliding window** problem is the phrase *every contiguous subarray of size `k`* — the answer is one number per window, and the window width is pinned at `k`. The number of distinct elements in a window is exactly the number of keys in its frequency map, so the map is the running summary the pattern maintains.
+
+The window's two pointers each carry a fixed job. The `end` pointer adds the entering value and bumps its count; the `start` pointer drops the leaving value once the window has reached size `k`. The count of distinct elements is `len(map)` — but only if a key is removed the moment its count falls to zero, so the map's size never counts a value that has left the window.
+
+The naive approach breaks the time budget. For each of the `n − k + 1` windows it rebuilds a fresh set or map by scanning all `k` elements, costing `O(N·k)` time for `O(k)` space. That re-counts the `k − 1` shared elements every slide. The sliding window edits the map in `O(1)` per step, so each window's distinct count is read directly from `len(map)`.
+
+## Applying the Diagnostic Questions
+
+| Check | Answer for Subarray Distinctness |
+|---|---|
+| **Q1.** Is the window size fixed at exactly `k`? | **Yes** — one distinct count is reported per size-`k` window; the size is given in the input. |
+| **Q2.** Is the input a linear sequence? | **Yes** — an integer array, walked index by index. |
+| **Q3.** Is the per-window answer read from an `O(1)`-updatable map? | **Yes** — the distinct count is `len(map)`, read in `O(1)` once the window is full. |
+| **Q4.** Is the per-step work `O(1)` amortised? | **Yes** — one increment on expand, one decrement (plus an optional key delete) on contract. |
+
+## Approach
+
+Slide a window of size `k`, and report the map's key count each time the window is full.
+
+1. **Add the entering element.** Read `arr[end]` and increment its count in the map.
+2. **Report when the window is full.** When `end − start + 1 == k`, append `len(map)` — the distinct count for this exact window — to the result.
+3. **Contract from the left.** Still inside the full-window branch, decrement `arr[start]`'s count, delete the key if it reaches zero, and advance `start`.
+4. **Advance the right edge.** Increment `end` and continue until the sweep ends.
+5. **Return the result.** The list holds one distinct count per window, `n − k + 1` entries in total.
+
+<details>
+<summary><strong>How the distinct count is maintained</strong></summary>
 
 
 The number of *distinct* elements in the window is exactly `len(freq_map)` — the number of keys with non-zero count. The trick: when a frequency drops to zero on contraction, **delete the key** from the map so the size reflects only currently-present elements.
@@ -63,7 +124,7 @@ m -> d
 
 
 
-```python run
+```python run viz=array viz-root=result
 from collections import defaultdict
 from typing import List
 
@@ -118,7 +179,7 @@ print(Solution().subarray_distinctness([1, 2, 3, 4], 4))               # [4]
 print(Solution().subarray_distinctness([5, 5, 5], 3))                  # [1]
 ```
 
-```java run
+```java run viz=array viz-root=result
 import java.util.*;
 
 public class Main {
@@ -190,35 +251,49 @@ public class Main {
 
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+## Dry Run
 
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
+Walk Example 1 — `arr = [2, 1, 2, 3, 2, 1, 4, 5]`, `k = 5`. The map fills for four steps, then reports and contracts on each full window:
 
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
+```
+start=0, end=0, frequency={}, result=[]
 
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
+end=0  add 2 → freq={2:1}              size 1 < k → continue
+end=1  add 1 → freq={2:1,1:1}          size 2 < k → continue
+end=2  add 2 → freq={2:2,1:1}          size 3 < k → continue
+end=3  add 3 → freq={2:2,1:1,3:1}      size 4 < k → continue
+end=4  add 2 → freq={2:3,1:1,3:1}      size 5 == k → append len=3 → result=[3]
+                                        drop arr[0]=2 → freq={2:2,1:1,3:1}, start=1
+end=5  add 1 → freq={2:2,1:2,3:1}      size 5 == k → append len=3 → result=[3,3]
+                                        drop arr[1]=1 → freq={2:2,1:1,3:1}, start=2
+end=6  add 4 → freq={2:2,1:1,3:1,4:1}  size 5 == k → append len=4 → result=[3,3,4]
+                                        drop arr[2]=2 → freq={2:1,1:1,3:1,4:1}, start=3
+end=7  add 5 → freq={2:1,1:1,3:1,4:1,5:1}  size 5 == k → append len=5 → result=[3,3,4,5]
+                                        drop arr[3]=3 → freq={2:1,1:1,4:1,5:1}, start=4
 
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
+result = [3, 3, 4, 5]
+```
 
-<!-- TODO: Solution — missing, needs to be written -->
-<!--       Guidance: Python block then Java block -->
+The result `[3, 3, 4, 5]` matches the expected output — note the append uses `len(map)` *before* the contraction, so each report reflects the full size-`5` window.
 
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
+## Complexity Analysis
 
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table: time / space / why -->
+| Measure | Value | Why |
+|---|---|---|
+| Time  | **O(N)** | `end` sweeps the array once; each step is one insert, at most one decrement-and-delete, and one `len` read — all amortised `O(1)`. |
+| Space | **O(k)** | The map holds at most `k` distinct values; the result list adds `O(n − k + 1)` for the per-window output. |
 
-<!-- TODO: Edge Cases — missing, needs to be written -->
-<!--       Guidance: table, min 5 rows -->
+## Edge Cases
 
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->
+| Case | Example | Expected | Reasoning |
+|---|---|---|---|
+| Single element | `arr = [1], k = 1` | `[1]` | One window of size `1` with one distinct value. |
+| `k == 1` | `arr = [1, 2, 3, 4], k = 1` | `[1, 1, 1, 1]` | Every size-`1` window holds exactly one distinct value. |
+| All identical | `arr = [5, 5, 5], k = 3` | `[1]` | The only window has one distinct value despite three elements. |
+| `k == n` | `arr = [1, 2, 3, 4], k = 4` | `[4]` | One window covering the whole array; all four values distinct. |
+| Repeats within window | `arr = [1, 1, 1, 1], k = 2` | `[1, 1, 1]` | Each size-`2` window is `[1, 1]` → one distinct value, three windows. |
+| Mixed counts | `arr = [1, 1, 2, 4], k = 3` | `[2, 3]` | `[1,1,2]`→`{1,2}`=2, `[1,2,4]`→`{1,2,4}`=3. |
+
+## Key Takeaway
+
+This is the per-window-report shape of the fixed window: append `len(map)` once each window reaches size `k`. The result holds exactly `n − k + 1` values, and deleting zero-count keys is what keeps `len(map)` an honest distinct count.

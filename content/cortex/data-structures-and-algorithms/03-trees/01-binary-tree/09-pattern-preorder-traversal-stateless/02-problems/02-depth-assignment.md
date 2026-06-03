@@ -112,7 +112,7 @@ t7 = from_level_order([1, 2, 3, 4, 5, 6, 7])
 Solution().depth_assignment(t7); print(to_level_order(t7))   # [0, 1, 1, 2, 2, 2, 2]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

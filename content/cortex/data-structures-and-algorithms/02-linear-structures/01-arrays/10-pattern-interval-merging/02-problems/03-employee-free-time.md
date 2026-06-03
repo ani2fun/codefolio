@@ -139,7 +139,7 @@ print(Solution().employee_free_time([[1, 2], [4, 5], [7, 8]]))                  
 print(Solution().employee_free_time([[1, 10], [2, 5], [6, 8]]))                   # []   — all inside one interval
 ```
 
-```java run
+```java run viz=grid viz-root=meetings
 import java.util.*;
 
 public class Main {

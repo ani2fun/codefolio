@@ -75,6 +75,35 @@ Each element stores a single parent pointer, forming a forest. The "leader" of a
 - `find(x)`: walk up parent pointers until reaching the root.
 - `union(x, y)`: find both roots; make one the parent of the other.
 
+```d3 widget=union-find
+{
+  "title": "DSU — initial state (n=5)",
+  "steps": [
+    {
+      "nodes": [
+        {"id": "0", "label": "0", "kind": "root", "slot": 0, "meta": [], "cardId": "", "layoutKind": ""},
+        {"id": "1", "label": "1", "kind": "root", "slot": 1, "meta": [], "cardId": "", "layoutKind": ""},
+        {"id": "2", "label": "2", "kind": "root", "slot": 2, "meta": [], "cardId": "", "layoutKind": ""},
+        {"id": "3", "label": "3", "kind": "root", "slot": 3, "meta": [], "cardId": "", "layoutKind": ""},
+        {"id": "4", "label": "4", "kind": "root", "slot": 4, "meta": [], "cardId": "", "layoutKind": ""}
+      ],
+      "edges": [
+        {"from": "0", "to": "0", "label": ""},
+        {"from": "1", "to": "1", "label": ""},
+        {"from": "2", "to": "2", "label": ""},
+        {"from": "3", "to": "3", "label": ""},
+        {"from": "4", "to": "4", "label": ""}
+      ],
+      "cursor": [], "highlight": [], "changed": [], "removed": [],
+      "annotation": "Initial state: parent = [0, 1, 2, 3, 4]. Each element is its own root.",
+      "line": 0, "frames": [], "cardCursor": []
+    }
+  ]
+}
+```
+
+<p align="center"><strong>Initial state: each element is its own root. parent[i] = i for all i.</strong></p>
+
 ```mermaid
 ---
 config:
@@ -266,7 +295,7 @@ if __name__ == "__main__":
     print(f"Max depth in 100-element chain after one find: {max(depths)}    (would be 99 without compression)")
 ```
 
-```java run
+```java run viz=grid viz-root=edges
 public class Main {
     static int[] parent, rank_;
 
@@ -295,6 +324,73 @@ public class Main {
     }
 }
 ```
+
+```d3 widget=union-find
+{
+  "title": "DSU — parent-pointer array after two unions",
+  "steps": [
+    {
+      "nodes": [
+        {"id": "0", "label": "0", "kind": "root", "slot": 0, "meta": [], "cardId": "", "layoutKind": ""},
+        {"id": "1", "label": "1", "kind": "root", "slot": 1, "meta": [], "cardId": "", "layoutKind": ""},
+        {"id": "2", "label": "2", "kind": "root", "slot": 2, "meta": [], "cardId": "", "layoutKind": ""},
+        {"id": "3", "label": "3", "kind": "root", "slot": 3, "meta": [], "cardId": "", "layoutKind": ""},
+        {"id": "4", "label": "4", "kind": "root", "slot": 4, "meta": [], "cardId": "", "layoutKind": ""}
+      ],
+      "edges": [
+        {"from": "0", "to": "0", "label": ""},
+        {"from": "1", "to": "1", "label": ""},
+        {"from": "2", "to": "2", "label": ""},
+        {"from": "3", "to": "3", "label": ""},
+        {"from": "4", "to": "4", "label": ""}
+      ],
+      "cursor": [], "highlight": [], "changed": [], "removed": [],
+      "annotation": "Initial: parent = [0, 1, 2, 3, 4]. Five disjoint components.",
+      "line": 0, "frames": [], "cardCursor": []
+    },
+    {
+      "nodes": [
+        {"id": "0", "label": "0", "kind": "node", "slot": 0, "meta": [], "cardId": "", "layoutKind": ""},
+        {"id": "1", "label": "1", "kind": "root", "slot": 1, "meta": [], "cardId": "", "layoutKind": ""},
+        {"id": "2", "label": "2", "kind": "root", "slot": 2, "meta": [], "cardId": "", "layoutKind": ""},
+        {"id": "3", "label": "3", "kind": "root", "slot": 3, "meta": [], "cardId": "", "layoutKind": ""},
+        {"id": "4", "label": "4", "kind": "root", "slot": 4, "meta": [], "cardId": "", "layoutKind": ""}
+      ],
+      "edges": [
+        {"from": "0", "to": "1", "label": ""},
+        {"from": "1", "to": "1", "label": ""},
+        {"from": "2", "to": "2", "label": ""},
+        {"from": "3", "to": "3", "label": ""},
+        {"from": "4", "to": "4", "label": ""}
+      ],
+      "cursor": [], "highlight": ["0", "1"], "changed": ["0"], "removed": [],
+      "annotation": "After union(0, 1): parent[0] = 1. Elements 0 and 1 share root 1.",
+      "line": 0, "frames": [], "cardCursor": []
+    },
+    {
+      "nodes": [
+        {"id": "0", "label": "0", "kind": "node", "slot": 0, "meta": [], "cardId": "", "layoutKind": ""},
+        {"id": "1", "label": "1", "kind": "root", "slot": 1, "meta": [], "cardId": "", "layoutKind": ""},
+        {"id": "2", "label": "2", "kind": "node", "slot": 2, "meta": [], "cardId": "", "layoutKind": ""},
+        {"id": "3", "label": "3", "kind": "root", "slot": 3, "meta": [], "cardId": "", "layoutKind": ""},
+        {"id": "4", "label": "4", "kind": "root", "slot": 4, "meta": [], "cardId": "", "layoutKind": ""}
+      ],
+      "edges": [
+        {"from": "0", "to": "1", "label": ""},
+        {"from": "1", "to": "1", "label": ""},
+        {"from": "2", "to": "3", "label": ""},
+        {"from": "3", "to": "3", "label": ""},
+        {"from": "4", "to": "4", "label": ""}
+      ],
+      "cursor": [], "highlight": ["2", "3"], "changed": ["2"], "removed": [],
+      "annotation": "After union(2, 3): parent[2] = 3. Three components remain: {0,1}, {2,3}, {4}.",
+      "line": 0, "frames": [], "cardCursor": []
+    }
+  ]
+}
+```
+
+<p align="center"><strong>Parent-pointer array after two union operations.</strong></p>
 
 ***
 

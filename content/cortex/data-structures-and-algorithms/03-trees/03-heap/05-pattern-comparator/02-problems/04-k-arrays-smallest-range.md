@@ -69,7 +69,7 @@ flowchart LR
 
 
 
-```python run
+```python run viz=array viz-root=heap
 import heapq
 from typing import List
 
@@ -151,7 +151,7 @@ print(Solution().k_arrays_smallest_range([[1, 2], [1, 2]]))               # [1, 
 print(Solution().k_arrays_smallest_range([[5], [5]]))                     # [5, 5] — same values
 ```
 
-```java run
+```java run viz=array viz-root=heap
 import java.util.*;
 
 public class Main {

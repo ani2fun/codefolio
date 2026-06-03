@@ -19,7 +19,7 @@ The complexity is **O(|A| · |B|)** worst case — every node in A might be the 
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional, List
 
 
@@ -133,7 +133,7 @@ print(Solution().subtree_detection(
 ))   # False (value not found)
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

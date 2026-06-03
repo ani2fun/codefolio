@@ -88,7 +88,7 @@ print(Solution().full_binary_tree(from_level_order([1, 2, 3, 4, 5, 6, 7])))     
 print(Solution().full_binary_tree(from_level_order([1, 2, 3, 4, 5])))               # False (node 3 has no children)
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

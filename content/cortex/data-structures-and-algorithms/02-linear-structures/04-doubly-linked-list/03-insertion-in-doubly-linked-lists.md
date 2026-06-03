@@ -1,6 +1,6 @@
 ---
 title: "Insertion In Doubly Linked Lists"
-summary: "<!-- TODO: summary -->"
+summary: "Five insertion variants for a doubly linked list — at head, at tail, after a given node, before a given node, at a distance — all reducing to the same four-pointer splice. The backward pointer turns insert-before from O(n) into O(1) but doubles the number of links you must remember to wire."
 ---
 
 # 3. Insertion in Doubly Linked Lists
@@ -17,18 +17,99 @@ But there's a catch — and it's the catch that catches everyone the first time.
 
 ## Table of contents
 
-1. [Understanding insertion at beginning](#understanding-insertion-at-beginning)
-2. [Insert at beginning](#insert-at-beginning)
-3. [Understanding insertion at end](#understanding-insertion-at-end)
-4. [Insert at end](#insert-at-end)
-5. [Understanding insertion after the given node](#understanding-insertion-after-the-given-node)
-6. [Insert after the given node](#insert-after-the-given-node)
-7. [Understanding insertion before a given node](#understanding-insertion-before-the-given-node)
-8. [Insert before the given node](#insert-before-the-given-node)
-9. [Understanding insertion at a given distance](#understanding-insertion-at-a-given-distance)
-10. [Insert at given distance](#insert-at-given-distance)
+1. [Understanding the Problem](#understanding-the-problem)
+2. [Supported Operations](#supported-operations)
+3. [Internal Mechanics](#internal-mechanics)
+4. [Understanding insertion at beginning](#understanding-insertion-at-beginning)
+5. [Insert at beginning](#insert-at-beginning)
+6. [Understanding insertion at end](#understanding-insertion-at-end)
+7. [Insert at end](#insert-at-end)
+8. [Understanding insertion after the given node](#understanding-insertion-after-the-given-node)
+9. [Insert after the given node](#insert-after-the-given-node)
+10. [Understanding insertion before a given node](#understanding-insertion-before-the-given-node)
+11. [Insert before the given node](#insert-before-the-given-node)
+12. [Understanding insertion at a given distance](#understanding-insertion-at-a-given-distance)
+13. [Insert at given distance](#insert-at-given-distance)
+14. [Working Example](#working-example)
+15. [Edge Cases and Pitfalls](#edge-cases-and-pitfalls)
+16. [Production Reality](#production-reality)
+17. [Practice Ladder](#practice-ladder)
+18. [Quiz](#quiz)
+19. [Further Reading](#further-reading)
+20. [Cross-Links](#cross-links)
+21. [Final Takeaway](#final-takeaway)
 
 ***
+
+# Understanding the Problem
+
+Insertion in a doubly linked list is the operation that pays back the extra `prev` pointer the structure carries. A singly linked list charges `O(n)` time for any operation that needs the predecessor of a known node — *insert before*, *delete this node*, *splice around here* — because the only direction the list can travel is forward. A doubly linked list stores the backward link at every node, so the predecessor is always one dereference away.
+
+The trap is in counting pointers:
+
+- **Singly linked list** — each node holds one outbound pointer (`next`). Every insertion is two pointer writes, *if* the predecessor is in hand; otherwise the walk dominates.
+- **Doubly linked list** — each node holds two outbound pointers (`prev` and `next`). Every insertion is *four* pointer writes, all of them required to keep both chains consistent.
+
+To make this concrete: inserting `6` between `7` and `3` in `5 ⇄ 7 ⇄ 3` is a one-line splice on paper and a four-line splice in code — `new.next = 3`, `new.prev = 7`, `7.next = new`, `3.prev = new`. Skip the fourth line and the forward chain still walks `5 → 7 → 6 → 3`, but walking the list *backward* from `3` jumps over `6` straight to `7` because `3.prev` was never updated. The bug renders the list silently broken in one direction.
+
+So the key idea is: a doubly linked list trades twice the per-node memory and twice the pointer bookkeeping for `O(1)` insertion at *every* known reference — head, tail, before-a-node, after-a-node. The walk only reappears when the input is an index, because indices can't be dereferenced.
+
+---
+
+# Supported Operations
+
+A doubly linked list supports the same five insertion variants as a singly linked list — distinguished by *what reference you already hold*. The splice is now four pointer writes; the cost still varies with how far you have to walk to reach the splice point.
+
+| Operation | Inputs | Time | Space | Notes |
+|---|---|---|---|---|
+| Insert at beginning | `head`, `data` | `O(1)` | `O(1)` | Three pointer writes (new node has no predecessor); independent of list length. |
+| Insert at end | `tail`, `data` | `O(1)` with cached tail / `O(n)` without | `O(1)` | If the list caches a `tail` pointer the splice is `O(1)`; otherwise walk to the tail. |
+| Insert after given node | `node`, `data` | `O(1)` | `O(1)` | Node reference is given; no walk needed. |
+| Insert before given node | `head`, `node`, `data` | `O(1)` | `O(1)` | The `prev` pointer gives the predecessor for free — the singly-list walk vanishes. |
+| Insert at distance `X` | `head`, `X`, `data` | `O(X)` time | `O(1)` | Walk `X − 1` steps, then splice. Out-of-range `X` returns the list unchanged. |
+
+Two pieces are constant across the table: every variant allocates **one** node (`O(1)` extra space) and every variant ends in the same four-pointer splice. The variability is purely in the *walk*.
+
+To make this concrete: insert-before in a singly linked list is `O(n)` time because the predecessor must be searched for; in a doubly linked list the predecessor is `node.prev`, so the same operation collapses to `O(1)`. Insert-at-distance still pays `O(X)` time because indices don't dereference — the back pointer doesn't help you "jump" to position 500.
+
+So the tradeoff is: the doubly linked list buys constant-time predecessor access (and therefore constant-time *insert before*, *delete this node*) at the cost of one extra pointer per node and double the splice bookkeeping. Random access remains `O(n)` — the back pointer fixes the predecessor problem, not the indexing problem.
+
+---
+
+# Internal Mechanics
+
+Every insertion in a doubly linked list — at the head, at the tail, after a node, before a node, or at a distance — compiles down to the same four pointer writes. Memorise these once and every variant in this lesson becomes a checklist exercise.
+
+The four pointer writes (when both neighbours exist):
+
+- **`new.next = successor`** — wire the new node forward.
+- **`new.prev = predecessor`** — wire the new node backward.
+- **`predecessor.next = new`** — redirect the predecessor's forward link.
+- **`successor.prev = new`** — redirect the successor's backward link (the *mirror* update).
+
+The order matters: **always wire the new node's `.next` and `.prev` first, then redirect the neighbours.** If you write `predecessor.next = new` before reading `predecessor.next` into `new.next`, the original successor is lost — you've overwritten the only forward reference to the rest of the list. The mirror rule is the same on the `prev` side.
+
+To make this concrete: suppose we want to insert `6` between `7` and `3` in `5 ⇄ 7 ⇄ 3`. With `predecessor = node(7)` and `successor = node(3)`:
+
+- `new.next = 7.next` — `new` now points forward at `3`.
+- `new.prev = 7` — `new` now points backward at `7`.
+- `7.next = new` — `7`'s forward pointer flips from `3` to `new`.
+- `3.prev = new` — `3`'s backward pointer flips from `7` to `new`.
+
+After the four writes, the chain reads `5 ⇄ 7 ⇄ new ⇄ 3` in both directions. Skip the last write and the forward chain is correct but `3.prev` still says `7` — backward traversal hops over `new` as if it didn't exist.
+
+The same four-step pattern covers every variant — what changes is whether the predecessor or successor is `null`:
+
+- **Insert at head**: predecessor is `null`, successor is the old head. Three writes (`new.next`, `new.prev = null`, `old_head.prev`); the missing fourth is the caller updating the head reference.
+- **Insert at tail**: predecessor is the old tail, successor is `null`. Three writes; the missing fourth is `new.next = null`.
+- **Insert after given**: both neighbours exist *unless* the given node is the tail (`given.next == null`), in which case the successor-mirror write is skipped.
+- **Insert before given**: both neighbours exist *unless* the given node is the head (`given.prev == null`), in which case the new node becomes the new head.
+
+So the core insight is: every insertion is "allocate, then four pointer writes, in the order new-node-first / neighbours-second" — what differs across variants is which of the four reduce to `null` writes and which (if any) the caller has to skip with a null guard.
+
+> 🖼 Diagram — TODO: four-frame splice — allocate the new node, wire `new.next`, wire `new.prev`, redirect `predecessor.next`, redirect `successor.prev`; a fifth frame illustrating the silent corruption when `successor.prev` is forgotten.
+
+---
 
 # Understanding insertion at beginning
 
@@ -110,7 +191,7 @@ flowchart TB
 When implementing the logic for the insert-at-beginning operation, we consider both possible cases (empty / non-empty) and write the code for each in conditional blocks.
 
 
-```python run
+```python run viz=linked-list viz-root=head
 """
 Definition for doubly-linked list.
 class ListNode:
@@ -154,7 +235,7 @@ class Solution:
         return new_node
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 /**
  * Definition for doubly-linked list.
  * class ListNode {
@@ -324,7 +405,7 @@ print(to_list(Solution().insert_at_beginning(from_list([5, 5, 5]), 5)))       # 
 print(to_list(Solution().insert_at_beginning(from_list([10, 20]), 5)))        # [5, 10, 20]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -506,7 +587,7 @@ flowchart TB
 We consider both cases and handle them in conditional blocks.
 
 
-```python run
+```python run viz=linked-list viz-root=head
 """
 Definition for doubly-linked list.
 class ListNode:
@@ -550,7 +631,7 @@ class Solution:
         return new_node
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 /**
  * Definition for doubly-linked list.
  * class ListNode {
@@ -747,7 +828,7 @@ t6 = Solution().insert_at_end(to_tail(from_list([10])), 20)
 print(to_list(head_of(t6)))    # [10, 20]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -927,7 +1008,7 @@ flowchart TB
 We will be given the node, **after** which we will perform the insertion.
 
 
-```python run
+```python run viz=linked-list viz-root=head
 """
 Definition for doubly-linked list.
 class ListNode:
@@ -969,7 +1050,7 @@ class Solution:
             new_node.next.prev = new_node
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 /**
  * Definition for doubly-linked list.
  * class ListNode {
@@ -1171,7 +1252,7 @@ Solution().insert_after_the_given_node(get_node(h6, 20), 25)
 print(to_list(h6))    # [10, 20, 25, 30, 40]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -1412,7 +1493,7 @@ flowchart TB
 ## Implementation
 
 
-```python run
+```python run viz=linked-list viz-root=head
 """
 Definition for doubly-linked list.
 class ListNode:
@@ -1476,7 +1557,7 @@ class Solution:
         return head
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 /**
  * Definition for doubly-linked list.
  * class ListNode {
@@ -1714,7 +1795,7 @@ h5 = from_list([1, 2])
 print(to_list(Solution().insert_before_the_given_node(h5, None, 9)))              # [1, 2]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -1999,7 +2080,7 @@ flowchart LR
 When implementing the logic for insert at a distance `X`, we keep all the possible cases in mind and write the code for each in conditional blocks.
 
 
-```python run
+```python run viz=linked-list viz-root=head
 """
 Definition for doubly-linked list.
 class ListNode:
@@ -2072,7 +2153,7 @@ class Solution:
         return head
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 /**
  * Definition for doubly-linked list.
  * class ListNode {
@@ -2338,7 +2419,7 @@ print(to_list(Solution().insert_at_given_distance(from_list([1]), 0, 9)))       
 print(to_list(Solution().insert_at_given_distance(from_list([1, 2, 3]), 10, 9)))       # [1, 2, 3] (X beyond length)
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -2476,67 +2557,166 @@ Once the walk lands on the node at position X − 1, the splice is the same four
 </details>
 
 </details>
-<details>
-<summary><h2>Final Takeaway</h2></summary>
 
+***
 
-Five insertion variants, one underlying skill: **always update four pointers, in a save-before-clobber order, and always mirror.** The doubly linked list earns its keep when the input is a *node reference* — insert before, insert after, insert at beginning, insert at end all collapse to O(1). When the input is an *index*, you still pay for the walk, just like in a singly linked list — the extra `prev` pointer doesn't help because indices don't dereference.
+# Working Example
 
-> **The Insertion Checklist** — every time you splice a node into a doubly linked list, ask yourself the same four questions. Drill them until they're automatic:
+Five insertion variants, one splice pattern. The table below walks the same data — `head ⇄ 5 ⇄ 7 ⇄ 3 ⇄ 10` — through each variant and shows where the cost goes.
+
+| Variant | Walk cost | Splice cost | Total | Result |
+|---|---|---|---|---|
+| At beginning, `data = 6` | 0 steps (head is given) | `O(1)` (3 pointer writes) | **`O(1)`** | `6 ⇄ 5 ⇄ 7 ⇄ 3 ⇄ 10` |
+| At end, `data = 6` (tail given) | 0 steps (tail is given) | `O(1)` (3 pointer writes) | **`O(1)`** | `5 ⇄ 7 ⇄ 3 ⇄ 10 ⇄ 6` |
+| After given node `node(7)`, `data = 6` | 0 steps (node is given) | `O(1)` (4 pointer writes) | **`O(1)`** | `5 ⇄ 7 ⇄ 6 ⇄ 3 ⇄ 10` |
+| Before given node `node(7)`, `data = 6` | 0 steps (`prev` is free) | `O(1)` (4 pointer writes) | **`O(1)`** | `5 ⇄ 6 ⇄ 7 ⇄ 3 ⇄ 10` |
+| At distance `X = 2`, `data = 6` | 2 steps | `O(1)` (4 pointer writes) | **`O(X)`** | `5 ⇄ 7 ⇄ 6 ⇄ 3 ⇄ 10` |
+
+Every row that has a non-null predecessor and a non-null successor ends in the same four-line splice: `new.next = successor; new.prev = predecessor; predecessor.next = new; successor.prev = new`. Rows where one neighbour is `null` drop the corresponding mirror write.
+
+So the core insight is: **whenever a doubly linked-list problem hands you a pointer to "where" — head, tail, or any node — the insert is `O(1)` time. The back pointer eliminates the singly-list walk that *insert before* used to require.** Only insert-at-distance still costs the walk, because indices can't be dereferenced.
+
+> **The Insertion Checklist** — every time you splice a node into a doubly linked list, ask the same four questions. Drill them until they're automatic:
 >
 > 1. **What does the new node's `next` point to?**
 > 2. **What does the new node's `prev` point to?**
 > 3. **What `next` pointer in the existing list now points to the new node?**
 > 4. **What `prev` pointer in the existing list now points to the new node?**
 >
-> Skip any one and you've corrupted the chain in one direction. The bug will hide until someone walks backward.
+> Skip any one and you've corrupted the chain in one direction. The bug hides until someone walks backward.
 
-> **Transfer challenge:** Given the head of a sorted doubly linked list and a value `v`, write a function that inserts `v` while preserving sorted order. (Hint: use forward traversal to find the insertion point, then *insert before the given node* — your O(1) splice does the rest.)
+> **Transfer Challenge:** Given the head of a sorted doubly linked list and a value `v`, write a function that inserts `v` while preserving sorted order. What is the time complexity? Could a doubly linked list ever beat `O(n)` for *sorted insertion* given the structure has no random access?
 >
-> <details>
-> <summary>Solution sketch</summary>
+> <details><summary><strong>Answer</strong></summary>
 >
-> Walk forward until you find the first node whose value is ≥ `v` (or fall off the end). If you fell off, insert at end. If you stopped at the head, insert at beginning. Otherwise, insert before the stopped node. The walk is O(N); the splice is O(1).
+> The walk to find the insertion point is `O(n)` time — no back pointer helps here because the value-based search still has to visit nodes in order. Once the search stops at the first node whose value is ≥ `v`, the splice is `O(1)` using *insert before the given node* (or `O(1)` *insert at end* if the search fell off). So total cost is `O(n)` time, `O(1)` space.
+>
+> No: sorted insertion on any *linked* structure is `O(n)` time because finding the position is inherently sequential. To beat that bound you need a different structure entirely — a balanced BST or skip list — that supports `O(log n)` search.
 >
 > </details>
 
-Up next: **deletion**. Same checklist, played in reverse — except now there's a wrinkle. Deleting a node breaks the chain in *two* places, and the same "save before clobber" discipline that kept insertion safe will save us again.
+---
 
-</details>
+# Edge Cases and Pitfalls
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+The doubly-linked splice has four pointer writes, which means four places to forget. Most insertion bugs land on a forgotten mirror update, a `null` neighbour the code didn't guard, or a head/tail reference the caller didn't refresh. Keep this list open when you write any of the five variants.
 
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
+- **Forgetting the mirror update.** Updating `predecessor.next` without updating `successor.prev` (or vice versa) leaves the forward chain correct and the backward chain broken — backward traversal hops over the new node as if it doesn't exist. The bug is invisible until someone walks `prev` and the test suite doesn't. Rule: **every link is two pointers, not one.**
+- **Wrong pointer-write order.** `predecessor.next = new_node` *before* `new_node.next = predecessor.next` overwrites the only reference to the successor; reading `predecessor.next` afterwards yields `new_node` itself. Same hazard mirrored on the `prev` side. Rule: **wire the new node's `.next` and `.prev` first, then redirect the neighbours.**
+- **Inserting into an empty list.** `head == null` (or `tail == null` for the tail-keyed variant) is a separate code path for every variant. The new node's `prev` and `next` are both `null` and the node becomes the entire list. Skip the guard and you'll dereference `null` on the very first mirror write.
+- **Inserting into a single-node list.** The single node is simultaneously head and tail. *Insert at beginning* and *insert at end* both produce a two-node list, but via different code paths — verify both branches are tested, including that the *other* endpoint reference is updated by the caller.
+- **`node` argument is `null` (insert-after, insert-before).** A `null` reference has no neighbours to splice between. The function should return cleanly, not crash on `node.next` or `node.prev`.
+- **Given node's neighbour is `null` (head/tail edge).** *Insert after the tail* has `node.next == null` — the line `node.next.prev = new_node` would dereference `null`. Guard with `if (new_node.next != null) new_node.next.prev = new_node`. The mirror case applies to *insert before the head*.
+- **`X` is out of range (insert-at-distance).** `X > length(list)` and `X < 0` are both invalid positions. The reference implementation returns `head` unchanged for `X > length`; reject negatives explicitly if the caller can supply them.
+- **Confusing `X = 0` with `X = 1`.** A position of `0` means *before* the head (the new node becomes the new head); `X = 1` means *between* node 0 and node 1. Off-by-one here produces results that look almost right and pass shallow tests.
+- **Forgetting to return the new head when it changes.** *Insert at beginning* and *insert before head* both change which node is the head. If the function returns the old `head` reference, the caller's pointer still points at the second node — the new head is unreachable and silently leaks.
+- **Mismatched tail reference after a head insertion (or vice versa).** If the list caches a tail pointer alongside the head, the caller must refresh it whenever the head insertion produces the *first* node of a previously-empty list (because the new node is also the new tail). The same applies in reverse to tail insertions on empty lists.
 
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
+***
 
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
+# Production Reality
 
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
+Doubly linked lists are the structure of choice whenever a system needs `O(1)` splicing from *both* ends — and especially when it needs `O(1)` removal of an arbitrary node already in hand.
 
-<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
-<!--       Guidance: bulleted list of gotchas -->
+**[Linux kernel `list_head`]** — uses **a circular doubly linked intrusive list with `list_add` doing four pointer writes** — because every subsystem that holds an object reference (scheduler, VFS, network) can splice it in or out in `O(1)` time without a separate container allocation.
 
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+The kernel's circular doubly linked list is embedded directly into each struct via a `list_head` field. Any code that holds a pointer to the struct gets `O(1)` insertion *and* `O(1)` removal — the back pointer is what makes "unlink this node" constant-time without a head reference. Source: [include/linux/list.h](https://github.com/torvalds/linux/blob/master/include/linux/list.h).
 
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+**[Java's `LinkedList`]** — uses **a doubly linked list with cached `first` and `last` pointers** — because `addFirst`/`addLast`/`removeFirst`/`removeLast` are all `O(1)` time, and the back pointer makes `ListIterator.remove()` constant-time too.
 
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
+`java.util.LinkedList` keeps head and tail node references on the list itself, so prepending and appending are both four-pointer writes. The `Deque` interface it implements relies entirely on the doubly-linked property — singly-linked would force `O(n)` removal from the tail. Source: [LinkedList.java](https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/java/util/LinkedList.java).
 
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+**[Python's `collections.OrderedDict` and `lru_cache`]** — uses **a doubly linked list of dictionary entries** — because `move_to_end(...)` must splice an arbitrary entry to either end in `O(1)` time, which requires the back pointer.
 
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
+The underlying hash table gives `O(1)` lookup; the doubly linked list threaded through the entries gives `O(1)` reordering. The LRU cache evicts from one end and promotes from the middle on every hit — both operations are `O(1)` only because every node knows its predecessor. A singly linked list here would degrade `move_to_end` to `O(n)` time. Source: [odictobject.c](https://github.com/python/cpython/blob/main/Objects/odictobject.c) <!-- VERIFY: confirm the doubly-linked threading lives in odictobject.c and not _collectionsmodule.c -->.
 
-<!-- TODO: Final Takeaway — missing, needs to be written -->
-<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->
+**[Redis `adlist`]** — uses **a doubly linked list with cached `head`, `tail`, and `len`** — because pub/sub queues and the slow-log are append-and-trim workloads where both ends must be `O(1)` and arbitrary-node deletion (e.g. unsubscribing a client) must also be `O(1)`.
+
+Redis maintains a doubly linked list with cached endpoints. `LPUSH`/`RPUSH` and the symmetric `LPOP`/`RPOP` are all `O(1)` time; cancelling a subscriber or expiring a message uses the back pointer to splice the node out without re-walking the list. Source: [adlist.c](https://github.com/redis/redis/blob/unstable/src/adlist.c).
+
+**[Browser DOM `Node.parentNode` / `Node.previousSibling`]** — uses **a doubly linked list of child nodes per parent** — because DOM operations like `insertBefore`, `removeChild`, and `replaceChild` require `O(1)` access to siblings on both sides.
+
+Every DOM node carries `nextSibling` and `previousSibling` references. `parentNode.insertBefore(new, ref)` is the spec-mandated four-pointer splice; without the back pointer, removing a child would force the engine to walk the parent's child list every time. Source: the DOM Living Standard — [§4.4 Mutation methods](https://dom.spec.whatwg.org/#mutation-method-macro).
+
+**[Database B-tree leaf chains]** — uses **a doubly linked list connecting leaf pages** — because range scans (`WHERE x BETWEEN a AND b`) need to walk leaves forward *and* backward, and concurrent inserts splice new leaves into the chain in `O(1)` time.
+
+Most relational engines (PostgreSQL, MySQL InnoDB, SQLite) link B-tree leaf pages with both forward and backward pointers. The back pointer is what makes descending-order range scans cheap and enables "fix up the previous leaf" during a page split. Source: [PostgreSQL nbtree README](https://github.com/postgres/postgres/blob/master/src/backend/access/nbtree/README).
+
+***
+
+# Practice Ladder
+
+Five problems, easiest first. Try each unaided; hit the hint only after ten minutes stuck; don't peek at solutions until you've made the splice *do something* in code.
+
+| # | Problem | Pattern | Difficulty | Hint |
+|---|---------|---------|------------|------|
+| 1 | [Reverse a List](./06-pattern-reversal/02-problems/01-reverse-a-list.md) | [Reversal](./06-pattern-reversal/01-pattern.md) | Easy | At each step, swap `current.prev` and `current.next` and advance — the four-pointer splice you drilled here, applied `n` times. The back pointer makes reversal *symmetric* — no save-before-clobber gymnastics. |
+| 2 | [Pairwise Swap](./07-pattern-reversal-subproblem/02-problems/01-pairwise-swap.md) | [Reversal Subproblem](./07-pattern-reversal-subproblem/01-pattern.md) | Easy | Each pair-swap is "remove this node, insert before its predecessor" — two splices using the operations from this lesson. The `prev` pointer is what makes "insert before predecessor" `O(1)`. |
+| 3 | [Two Sum](./08-pattern-two-pointers/02-problems/02-two-sum.md) | [Two Pointers](./08-pattern-two-pointers/01-pattern.md) | Easy | Initialise `left = head`, `right = tail` (only possible because we have a tail pointer or can walk via `prev` from the end). The back pointer is what makes `right = right.prev` work in `O(1)` time. |
+| 4 | [Relocate Node](./09-pattern-reorder/02-problems/01-relocate-node.md) | [Reorder](./09-pattern-reorder/01-pattern.md) | Medium | Detach the source node (`O(1)` using its `prev` and `next`), then insert before the destination (`O(1)` using `dest.prev`). Two splices, total `O(1)` time once you've found both nodes. |
+| 5 | [Reverse the Given Segment](./06-pattern-reversal/02-problems/04-reverse-the-given-segment.md) | [Reversal](./06-pattern-reversal/01-pattern.md) | Medium | Detach the segment with two splices (using `prev` to find the predecessor of the start), reverse it in place, then re-attach with two more splices. Eight pointer writes total. |
+
+Once these feel automatic, you've internalised every move the reversal, two-pointer, and reorder patterns will ask of you — and the four-pointer splice disappears into muscle memory.
+
+***
+
+# Quiz
+
+Test your grip before moving on. One answer per question; reveal only after you have committed to one.
+
+**[Recall] Q: How many pointer writes does a "splice between two existing nodes" require in a doubly linked list?**
+Four — `new.next`, `new.prev`, `predecessor.next`, `successor.prev`. All four are required to keep both chains consistent.
+
+**[Recall] Q: For *insert before a given node* on a doubly linked list, what is the time complexity? Why is it different from the singly-linked version?**
+`O(1)` time. The doubly linked list stores the predecessor at `node.prev` — no walk is needed. The singly-linked version is `O(n)` time because the predecessor must be searched for from the head.
+
+**[Reasoning] Q: Why must `new_node.next = predecessor.next` happen *before* `predecessor.next = new_node`?**
+Because `predecessor.next = new_node` overwrites the only reference to the original successor; reading `predecessor.next` afterwards yields `new_node` itself, producing a self-loop and dropping the rest of the list. The same hazard mirrors on the `prev` side.
+
+**[Reasoning] Q: When inserting after a given node, why is the line `new_node.next.prev = new_node` guarded by a null check?**
+Because the given node could be the tail, in which case `new_node.next` is `null` and dereferencing it crashes. The mirror update is skipped — there is no successor whose `prev` needs fixing.
+
+**[Tradeoff] Q: When does the extra `prev` pointer pay for itself, and when is it pure overhead?**
+It pays whenever you need `O(1)` removal of a node you already hold (LRU caches, intrusive kernel lists), or `O(1)` *insert before* without a head walk. It is pure overhead — one extra pointer per node — when the workload is forward-traversal-only (e.g. a streaming queue), in which case a singly linked list with cached tail is strictly cheaper.
+
+***
+
+# Further Reading
+
+Curated paths in, not a syllabus. Read in order of the annotation; come back for the rest when you need depth.
+
+- **[CLRS — Chapter 10: Elementary Data Structures](https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/)**
+  ★ Essential — the canonical reference for doubly linked-list insertion, deletion, and the sentinel-node trick that collapses every head/tail edge case.
+- **[Sedgewick & Wayne — Algorithms, 4th ed., §1.3 Bags, Queues and Stacks](https://algs4.cs.princeton.edu/13stacks/)**
+  ★ Essential — implements doubly linked lists as the backing for deque, with diagrams that make the four-pointer splice visual.
+- **[The Linux Kernel Linked Lists API](https://www.kernel.org/doc/html/latest/core-api/kernel-api.html#list-management-functions)**
+  ◆ Advanced — the intrusive circular doubly linked list — `list_add`, `list_del`, `container_of` — how production C systems get zero-allocation `O(1)` insert and `O(1)` arbitrary-node removal.
+- **[Java `LinkedList.linkBefore` source](https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/java/util/LinkedList.java)**
+  → Reference — the exact four-pointer-write splice as a JDK method, with cached head/tail pointers and the `Node<E>` private inner class.
+- **[Python `OrderedDict` design notes](https://github.com/python/cpython/blob/main/Objects/odictobject.c)**
+  → Reference — how a doubly linked list threaded through a hash table's entries gives `O(1)` `move_to_end` and powers `functools.lru_cache`.
+
+***
+
+# Cross-Links
+
+**Prerequisites**
+
+- [Introduction to Doubly Linked Lists](./01-introduction-to-doubly-linked-lists.md) — node structure with `prev` and `next`, the `head`/`tail` reference pair, and why every link is two pointers.
+- [Traversal in Doubly Linked Lists](./02-traversal-in-doubly-linked-lists.md) — forward and backward walks, the cost model insertion piggybacks on for the at-distance variant.
+- [Insertion in Singly Linked Lists](../03-singly-linked-list/03-insertion-in-singly-linked-lists.md) — the single-direction baseline; *insert before* is `O(n)` there and `O(1)` here, which is exactly why doubly linked lists exist.
+
+**What comes next**
+
+- [Deletion in Doubly Linked Lists](./04-deletion-in-doubly-linked-lists.md) — the mirror operation; same four-pointer discipline, played in reverse to unlink rather than splice.
+- [Pattern: Reversal](./06-pattern-reversal/01-pattern.md) — the first major doubly-linked pattern; the back pointer makes reversal symmetric — no save-before-clobber gymnastics.
+- [Pattern: Two Pointers](./08-pattern-two-pointers/01-pattern.md) — uses both ends of the list as starting positions; only possible because the back pointer makes `right = right.prev` `O(1)`.
+- [Design a Doubly Linked List](./10-design-a-doubly-linked-list/01-design-a-doubly-linked-list.md) — wraps all the insertion variants into a single API with cached head, tail, and length.
+
+***
+
+## Final Takeaway
+
+1. **Core mechanic:** every insertion in a doubly linked list is "allocate a node, wire its `.next` and `.prev` to the neighbours, then redirect the neighbours' `.next` and `.prev` back at it" — four pointer writes, always in the order new-node-first / neighbours-second.
+2. **Dominant tradeoff:** insertion at any known reference — head, tail, before-a-node, after-a-node — is `O(1)` time regardless of list size; the price is one extra pointer per node and four pointer writes per splice instead of two.
+3. **One thing to remember:** every link is two pointers, not one — if the forward chain looks correct but you forgot the mirror update, backward traversal is silently broken and the bug will hide until someone walks `prev`.

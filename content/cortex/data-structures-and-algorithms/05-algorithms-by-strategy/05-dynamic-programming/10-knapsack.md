@@ -299,7 +299,7 @@ if __name__ == "__main__":
     print(sol.knapsack([4, 5, 6],    [1, 2, 3],    3))    # 0
 ```
 
-```java run
+```java run viz=array viz-root=weights
 public class Main {
     static class Solution {
 
@@ -403,7 +403,7 @@ Final maxValue[4][10] = 13. ✓
 
 `dp[i][w]` only reads from `dp[i - 1][*]` — the previous row. So one 1D array suffices, *if* you iterate `w` from `capacity` down to `weights[i - 1]`. Iterating downward ensures `dp[w - weights[i - 1]]` still holds the *previous* row's value when we read it — going upward would let item `i` get picked twice.
 
-```python run
+```python run viz=array viz-root=dp
 def zero_one_knapsack_1d(weights, values, capacity):
     dp = [0] * (capacity + 1)
     for i in range(len(weights)):
@@ -563,7 +563,7 @@ print(Solution().zero_one_knapsack_ii([1, 2, 3], [6, 10, 12], 5))       # [0, 1,
 print(Solution().zero_one_knapsack_ii([10], [100], 5))                   # []
 ```
 
-```java run
+```java run viz=graph viz-root=dp
 import java.util.*;
 
 public class Main {
@@ -793,7 +793,7 @@ if __name__ == "__main__":
     print(sol.knapsack([1, 3, 4], [1, 3, 4], 6))   # 6
 ```
 
-```java run
+```java run viz=array viz-root=weights
 public class Main {
     static class Solution {
 
@@ -844,7 +844,7 @@ public class Main {
 
 Unbounded knapsack collapses to a clean 1D form because the include term reads *the same row*. We don't need history of previous items beyond what's already in `dp[w]`:
 
-```python run
+```python run viz=array viz-root=dp
 def unbounded_knapsack_1d(weights, values, capacity):
     dp = [0] * (capacity + 1)
     for i in range(len(weights)):
@@ -947,7 +947,7 @@ if __name__ == "__main__":
     print(sol.knapsack([1, 2, 3], [1, 3, 4], [2, 2, 1], 5))   # 7
 ```
 
-```java run
+```java run viz=array viz-root=weights
 public class Main {
     static class Solution {
 

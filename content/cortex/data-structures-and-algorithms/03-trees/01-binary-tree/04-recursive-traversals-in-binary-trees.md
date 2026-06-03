@@ -1,6 +1,6 @@
 ---
 title: "Recursive Traversals In Binary Trees"
-summary: "<!-- TODO: summary -->"
+summary: "One three-line recursive function, three orderings. Move the visit step before, between, or after the two recursive calls and you get preorder, inorder, or postorder — each O(N) time, O(h) space, and each the right tool for a different real job."
 ---
 
 # 4. Recursive Traversals in Binary Trees
@@ -28,6 +28,17 @@ This lesson walks through all three, in order, with mermaid diagrams of the trav
 3. [Inorder traversal — left → root → right](#inorder-traversal--left--root--right)
 4. [Postorder traversal — left → right → root](#postorder-traversal--left--right--root)
 5. [Comparing the three](#comparing-the-three)
+6. [Understanding the problem](#understanding-the-problem)
+7. [Supported operations](#supported-operations)
+8. [Internal mechanics](#internal-mechanics)
+9. [Working example](#working-example)
+10. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
+11. [Production reality](#production-reality)
+12. [Quiz](#quiz)
+13. [Practice ladder](#practice-ladder)
+14. [Further reading](#further-reading)
+15. [Cross-links](#cross-links)
+16. [Final takeaway](#final-takeaway)
 
 ***
 
@@ -259,7 +270,7 @@ print(Solution().recursive_preorder_traversal(from_level_order([1, 2, 3, 4, 5, 6
 print(Solution().recursive_preorder_traversal(from_level_order([5, 5, 5, 5, 5])))             # [5, 5, 5, 5, 5]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {
@@ -502,7 +513,7 @@ print(Solution().recursive_inorder_traversal(from_level_order([1, 2, 3, 4, 5, 6,
 print(Solution().recursive_inorder_traversal(from_level_order([5, 5, 5, 5, 5])))              # [5, 5, 5, 5, 5]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {
@@ -737,7 +748,7 @@ print(Solution().recursive_postorder_traversal(from_level_order([1, 2, 3, 4, 5, 
 print(Solution().recursive_postorder_traversal(from_level_order([5, 5, 5, 5, 5])))              # [5, 5, 5, 5, 5]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {
@@ -879,46 +890,191 @@ flowchart TB
 
 ***
 
+# Understanding the Problem
+
+A linear structure has one degree of freedom: move forward or backward, and a single pass visits every element. A binary tree spreads across two dimensions — down into children, across between siblings. So "visit every node once" is no longer a single obvious path. The question this lesson answers: how do you reach every node of a two-dimensional shape using a one-dimensional sequence of steps?
+
+Any sequence of moves that eventually touches every node counts as a traversal, but most such sequences are awkward to code. Two families dominate because they are easy to write and reason about:
+
+- **Depth-first** — plunge as deep as possible along one branch before backing up to try another. The three orderings in this lesson (preorder, inorder, postorder) are all depth-first.
+- **Breadth-first** — visit all nodes at one depth before descending to the next. This is level-order traversal, covered in its own pattern later.
+
+Recursion makes depth-first traversal almost free to express. To make this concrete: a binary tree *is* "a node plus a left subtree plus a right subtree," and a recursive function is "do some work plus two recursive calls" — the same shape. So the key idea is: the traversal problem is really the problem of imposing a one-dimensional order on a two-dimensional structure, and recursion solves it by mirroring the tree's own recursive definition.
+
+***
+
+# Supported Operations
+
+There is one operation here, parameterised three ways: walk the whole tree, visiting each node exactly once, in an order set by *where* the visit step sits relative to the two recursive calls. The three sections above are those three parameterisations — this table is the synthesis, not a new claim.
+
+| Operation | Visit order | Time | Space | Signature use |
+|---|---|---|---|---|
+| Preorder | root → left → right | `O(N)` | `O(h)` | Serialise, clone, emit prefix notation |
+| Inorder | left → root → right | `O(N)` | `O(h)` | Read a BST in sorted order |
+| Postorder | left → right → root | `O(N)` | `O(h)` | Free a tree, evaluate an expression, aggregate from children |
+
+Every entry costs `O(N)` time because each node is visited once and the per-node work is `O(1)`. Every entry costs `O(h)` space for the recursion stack, where `h` is the tree's height — the stack never holds more than one frame per level on the current root-to-node path. To make this concrete: all three differ by a single line swap, shown in the implementations above, yet produce three different output sequences. So the core insight is: these are not three algorithms but one algorithm with the visit step slid to three positions, which is why they share identical complexity and differ only in output order.
+
+***
+
+# Internal Mechanics
+
+The recursion *is* the mechanism. "[The recursive shape](#the-recursive-shape--visit-left-right-in-some-order)" above lays out its skeleton: a base case that returns on `null`, then visit, recurse-left, recurse-right in some order. Two facts about how that skeleton runs on real hardware explain both the complexity and the failure mode.
+
+- **The call stack is the bookkeeping.** Each recursive call pushes a frame holding the current node and the position within visit/left/right. Descending pushes frames; returning pops them. The deepest the stack ever gets equals the length of the current root-to-leaf path, which is bounded by the tree's height `h` — that is the source of the `O(h)` space.
+- **The base case is the stop signal.** A `null` child is not an error; it is the boundary that ends one branch of the descent and triggers a return. Every node is reached because every non-`null` child becomes a recursive call, and the walk terminates because every branch eventually hits `null`.
+
+To make this concrete: on a balanced tree of `N` nodes the height is `log N`, so the stack holds at most `O(log N)` frames; on a one-sided skew of `N` nodes the height is `N`, so the stack holds `O(N)` frames and can overflow. So the core insight is: the visit order is a code-ordering choice, but the `O(N)` time and `O(h)` space are properties of the call stack — every node enters and leaves the stack exactly once, and the stack's peak depth is the tree's height.
+
+***
+
+# Working Example
+
+The diagrams above show *which* nodes come out in *what* order. This trace shows *why*: it follows the call stack frame by frame for a preorder walk, so the `O(h)` space claim becomes something you can see. Use the same tree as above:
+
+```
+        1
+       / \
+      2   3
+     /     \
+    4       7
+```
+
+Read the stack top-down; `→` marks the frame currently executing. A frame is pushed on each recursive call and popped on return. The `out` column shows the result list after the visit step fires:
+
+```
+action                          call stack (top = current)     out
+push preorder(1)                1                               []
+  visit 1                       1                               [1]
+  push preorder(2)              1, 2                            [1]
+    visit 2                     1, 2                            [1,2]
+    push preorder(4)            1, 2, 4                         [1,2]
+      visit 4                   1, 2, 4                         [1,2,4]
+      left(4)=null  → return    1, 2, 4                         [1,2,4]
+      right(4)=null → return    1, 2                            [1,2,4]
+    right(2)=null   → return    1                               [1,2,4]
+  push preorder(3)              1, 3                            [1,2,4]
+    visit 3                     1, 3                            [1,2,4,3]
+    left(3)=null    → return    1, 3                            [1,2,4,3]
+    push preorder(7)            1, 3, 7                         [1,2,4,3]
+      visit 7                   1, 3, 7                         [1,2,4,3,7]
+      return (both null)        1, 3                            [1,2,4,3,7]
+    return                      1                               [1,2,4,3,7]
+  return                        (empty)                         [1,2,4,3,7]
+```
+
+The result is `[1, 2, 4, 3, 7]`, matching the preorder diagram exactly. The stack peaked at three frames — `1, 2, 4` and later `1, 3, 7` — which equals the height of this tree. So the core insight is: the recursion visits `N` nodes for `O(N)` time, but it only ever holds `h` frames at once for `O(h)` space, and you can watch both bounds appear in the trace — one push-and-pop per node, a peak depth equal to the height.
+
+> Switching to inorder or postorder changes only *which line inside each frame* writes to `out` — the frames pushed and popped are identical. That is the whole lesson in one sentence.
+
+***
+
+# Edge Cases and Pitfalls
+
+Almost every recursive-traversal bug traces to one of two roots: a missing or wrong base case, or forgetting that the stack depth is the tree's height. The traversal logic itself is three lines, so the traps live in the boundaries around it. Keep this list open the first time a tree recursion misbehaves.
+
+- **Forgetting the `null` base case.** Without the `if node is null: return` guard, the first leaf's child dereferences `null` and crashes. The base case is not optional decoration — it is the only thing that stops the descent. Every traversal function must check for `null` before reading `node.val`, `node.left`, or `node.right`.
+- **Recursing before the empty-tree check, or missing it.** A `null` *root* means the whole tree is empty and the result is an empty list — not an error. The same `null` check that handles leaf children handles the empty tree, which is why the guard sits at the very top of the function. Code that assumes a non-`null` root throws on empty input.
+- **Putting the visit step in the wrong position.** Preorder, inorder, and postorder differ only by where `visit(node)` sits relative to the two recursive calls. Misplacing it — visiting after the left recursion when you meant preorder — silently returns the wrong order with no crash. The output is plausible-looking but incorrect, which makes this the hardest traversal bug to spot. Check the order against a tiny hand-traced example.
+- **Stack overflow on a deep skew tree.** Recursion costs `O(h)` stack space, and a one-sided tree has `h = N`. A sequentially built naive BST of a million nodes is a chain of a million frames, which exceeds the default stack on most runtimes and throws a stack-overflow. The next lesson's iterative traversals exist precisely to bound this with an explicit heap-allocated stack.
+- **Swapping left and right "to simplify".** The two recursive calls are *ordered*: left before right. Swapping them turns preorder into a mirror-image traversal and breaks inorder's sorted-output guarantee on a BST. The order of the two recursions is as load-bearing as the position of the visit step.
+- **Assuming inorder yields sorted output on any tree.** Inorder produces ascending values *only on a binary search tree*. On an arbitrary binary tree it yields left-root-right order, which is not sorted. Reaching for inorder to "sort" a non-BST returns a meaningless sequence.
+
+So the key idea is: the three-line body is hard to get wrong, so every pitfall is a question about the edges — is the base case present, is the visit step in the right slot, and is the tree shallow enough that `O(h)` frames fit on the stack? Name the base case, hand-trace a five-node example, and respect the height bound, and the traversal behaves.
+
+***
+
+# Production Reality
+
+Recursive depth-first traversal is the silent workhorse behind anything that has to process a hierarchy whole — emit it, evaluate it, or tear it down. The systems below are worth knowing by the order they pick.
+
+**[Compilers and interpreters]** — uses **postorder traversal of the abstract syntax tree** — because a node's value (the result of evaluating an expression) depends on its children's values, so children must be evaluated before the parent combines them.
+
+**[Expression printers and pretty-printers]** — uses **inorder traversal with parentheses** — because infix notation places the operator *between* its operands, which is exactly the left-root-right visit order.
+
+**[Tree serialisation and `clone()` routines]** — uses **preorder traversal with `null` markers** — because writing the root before its subtrees lets a reader reconstruct each parent before attaching the children it owns.
+
+**[Manual-memory tree destructors (C++ `delete`, RAII)]** — uses **postorder traversal** — because freeing a parent before its children would strand the child pointers, so the children must be released first while they are still reachable.
+
+**[Build systems (`make`, Bazel) and package managers]** — uses **postorder traversal of the dependency graph** — because a target can only be built after its dependencies, which is a postorder over the DAG of "depends-on" edges.
+
+**[Database B-tree and index iterators]** — uses **inorder traversal** — because reading the keys of an ordered search tree in sorted order is precisely what an index range scan needs, and inorder delivers it in `O(N)` time, `O(h)` space.
+
+***
+
+# Quiz
+
+Test your grip before moving on. Commit to an answer before revealing it.
+
+**[Recall] Q: What are the three depth-first orderings, and where does the visit step sit in each?**
+Preorder visits the node *before* both recursive calls (root → left → right), inorder visits it *between* them (left → root → right), and postorder visits it *after* both (left → right → root).
+
+**[Recall] Q: What is the time and space complexity of any of the three recursive traversals?**
+`O(N)` time, because each of the `N` nodes is visited exactly once with `O(1)` work, and `O(h)` space for the recursion stack, where `h` is the tree's height.
+
+**[Reasoning] Q: Why is inorder traversal the one that reads a binary search tree in sorted order?**
+A BST keeps every left descendant smaller than its node and every right descendant larger, so visiting all of the left subtree, then the node, then all of the right subtree emits values in ascending order at every level.
+
+**[Reasoning] Q: Why does a skew tree make recursive traversal risk a stack overflow when a balanced tree does not?**
+Stack space is `O(h)`; a balanced tree has `h = log N` so the stack holds `O(log N)` frames, but a one-sided skew has `h = N` so the stack holds `O(N)` frames and can exceed the runtime's stack limit.
+
+**[Tradeoff] Q: When would you choose postorder over preorder for a tree computation?**
+Choose postorder when a node's result depends on its children's results — subtree sizes, heights, freeing memory, expression evaluation — and choose preorder when the parent must be emitted or created before its children, as in serialisation or cloning.
+
+***
+
+# Practice Ladder
+
+Five problems to turn "visit, then recurse into both children" into a reflex. All five live in this chapter's pattern directories, where each traversal order becomes the backbone of a family of problems. Try each unaided; reach for the hint after ten minutes; do not peek at solutions until you have written something runnable.
+
+| # | Problem | Pattern | Difficulty | Hint |
+|---|---------|---------|------------|------|
+| 1 | [Sum of Path](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-problems-sum-of-path) | [Preorder Traversal (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-pattern) | Easy | Carry a running sum *down* into the children — preorder, because the parent's contribution is known before the recursion. `O(N)` time, `O(h)` space. |
+| 2 | [Sum of Leaves](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-problems-sum-of-leaves) | [Postorder Traversal (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-pattern) | Easy | A leaf is the node where both children are `null`; recurse into both sides and add up what they return. `O(N)` time, `O(h)` space. |
+| 3 | [Height of a Binary Tree](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-problems-height-of-a-binary-tree) | [Postorder Traversal (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-pattern) | Easy | Return `-1` for a `null` node, else `1 + max(left, right)` — the parent computes its answer from already-returned child answers, which is postorder. `O(N)` time, `O(h)` space. |
+| 4 | [Root to Leaf Path (Sum Check)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateless-problems-root-to-leaf-path-sum-check) | [Root-to-Leaf Path (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateless-pattern) | Medium | Subtract each node's value from the target on the way down; a leaf where the remainder hits zero is a matching path. `O(N)` time, `O(h)` space. |
+| 5 | [Identical Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-simultaneous-traversal-problems-identical-trees) | [Simultaneous Traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-simultaneous-traversal-pattern) | Medium | Recurse into both trees in lockstep, comparing node values and structure at each step; any mismatch means they differ. `O(N)` time, `O(h)` space. |
+
+Once these feel automatic, "lay a fancier visit step onto the recursive skeleton" has stopped being a trick and become a reflex — and the pattern chapters can land their punches.
+
+***
+
+# Further Reading
+
+Curated paths in, not a syllabus. Read in order of the annotation; come back for the rest when you need depth.
+
+- **[Iterative Traversals in Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-iterative-traversals-in-binary-trees)**
+  ★ Essential — the next lesson; re-implements all three orderings with an explicit stack so a deep skew tree cannot overflow the call stack.
+- **[Constructing a Binary Tree](/cortex/data-structures-and-algorithms/trees-binary-tree-constructing-a-binary-tree)**
+  ★ Essential — builds a tree from traversal sequences, the inverse of what this lesson produces, and shows why preorder-plus-inorder pins down a unique tree.
+- **[CLRS — Section 12.1: Binary Search Trees](https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/)**
+  ◆ Advanced — the formal proof that inorder traversal of a BST yields sorted order, plus the predecessor and successor operations built on it.
+- **[Introduction to Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-introduction-to-binary-trees)**
+  → Reference — the root, leaf, height, and depth vocabulary this lesson leans on when it talks about `O(h)` stack space.
+- **[Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis)**
+  → Reference — what `O(N)` time and `O(h)` space mean precisely, and why the height term dominates the space cost of a recursive traversal.
+
+***
+
+# Cross-Links
+
+**Prerequisites**
+
+- [Linked-List Implementation of Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-linked-list-implementation-of-binary-trees) — the `TreeNode` with `val`, `left`, and `right` that every traversal in this lesson recurses over.
+- [Introduction to Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-introduction-to-binary-trees) — the root, leaf, and height vocabulary the `O(h)` space bound depends on.
+- [Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis) — the meaning of the `O(N)` time and `O(h)` space claims these traversals make.
+
+**What comes next**
+
+- [Iterative Traversals in Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-iterative-traversals-in-binary-trees) — the same three orderings driven by an explicit stack, so arbitrarily deep trees never overflow the call stack.
+- [Constructing a Binary Tree](/cortex/data-structures-and-algorithms/trees-binary-tree-constructing-a-binary-tree) — rebuilding a tree from its traversal sequences, the next thing you do once you can produce them.
+
+***
+
 ## Final Takeaway
-
-Recursive traversals are the gateway drug to tree algorithms. Once the *shape* — base case + visit + two recursions — is muscle memory, every later pattern in this chapter (subtree sums, heights, balanced-checks, path sums, LCAs, validation) is just a *fancier visit step* layered onto the same skeleton.
-
-1. **The traversal *is* the recursion.** A tree's recursive definition (*"node + two subtrees"*) maps one-to-one onto a recursive function (*"do work + two recursive calls"*). Resist the urge to write iterative versions until you've fully internalised the recursive ones — every iterative tree algorithm is just a recursive one with a manually-managed stack, and you'll appreciate the abstraction the recursive form gives you.
-2. **The order of V/L/R changes everything.** Three lines in the same function, three different output sequences, three different real-world applications. Memorise which order matches which need: pre = root-first (build), in = sorted (BST), post = root-last (free, evaluate).
-3. **Stack space is paid in tree height.** Every recursive call adds a frame to the call stack; on a balanced tree this is `O(log N)`, on a skew tree it's `O(N)`. For trees of height millions (yes, they happen — sequential insertion into a naive BST), recursive traversals can blow the stack. The next lesson — iterative traversals with an explicit stack — exists precisely to dodge that bullet.
 
 > *Coming up — iterative traversals. Same three orderings, but implemented with an explicit stack so we can traverse arbitrarily deep trees without risking a stack overflow. The iterative versions are uglier than the recursive ones, but they're production-grade for adversarial inputs and they teach you a lot about how the recursive call stack actually works under the hood.*
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
-
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
-
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
-
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
-
-<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
-<!--       Guidance: bulleted list of gotchas -->
-
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
-
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
-
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
-
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
-
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
+1. **Core mechanic:** one three-line recursive function — base case on `null`, then visit, recurse-left, recurse-right — walks every node once; sliding the visit step before, between, or after the two recursions gives preorder, inorder, or postorder, all `O(N)` time and `O(h)` space.
+2. **Dominant tradeoff:** you gain the simplest possible expression of a full tree walk — the code mirrors the tree's own recursive definition — but you pay `O(h)` call-stack space, which is `O(log N)` on a balanced tree and `O(N)` on a skew tree that can overflow the stack.
+3. **One thing to remember:** the order of V/L/R is the entire decision — pre = root-first (build, serialise), in = sorted (BST iteration), post = root-last (free, evaluate, aggregate) — and every later tree algorithm in this chapter layers a fancier visit step onto this same skeleton.

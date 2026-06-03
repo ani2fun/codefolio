@@ -310,7 +310,7 @@ if __name__ == "__main__":
     print(f"In-order: {t.inorder()}")
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 public class Main {
     static final boolean RED = true, BLACK = false;
     static class Node {

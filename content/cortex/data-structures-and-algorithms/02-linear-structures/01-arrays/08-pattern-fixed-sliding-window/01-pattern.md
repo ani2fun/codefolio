@@ -237,18 +237,503 @@ Three things to supply when solving a specific problem:
 Array: `[2, 5, 1, 3, 7, 4]`, window size `k = 4`, function `f` = sum.
 
 > ▶ Interactive Diagram — Complete execution on [2, 5, 1, 3, 7, 4] with k=4. Three windows of size 4 are processed: sums 11, 16, 15. Each window is derived from the previous with one subtraction and one addition.
-```d3 widget=array-traversal
+```d3 widget=array-1d
 {
-  "items": ["2", "5", "1", "3", "7", "4"],
-  "title": "Fixed sliding window of size k = 4 on [2, 5, 1, 3, 7, 4]",
   "steps": [
-    { "markers": [{"name": "start", "index": 0, "color": "#3b82f6"}, {"name": "end", "index": 0, "color": "#f59e0b"}], "range": {"lo": 0, "hi": 0}, "msg": "end=0 — add arr[0]=2 → window=[2], size 1 < 4 → skip process." },
-    { "markers": [{"name": "start", "index": 0, "color": "#3b82f6"}, {"name": "end", "index": 1, "color": "#f59e0b"}], "range": {"lo": 0, "hi": 1}, "msg": "end=1 — add arr[1]=5 → window=[2, 5], size 2 < 4 → skip process." },
-    { "markers": [{"name": "start", "index": 0, "color": "#3b82f6"}, {"name": "end", "index": 2, "color": "#f59e0b"}], "range": {"lo": 0, "hi": 2}, "msg": "end=2 — add arr[2]=1 → window=[2, 5, 1], size 3 < 4 → skip process." },
-    { "markers": [{"name": "start", "index": 0, "color": "#3b82f6"}, {"name": "end", "index": 3, "color": "#f59e0b"}], "range": {"lo": 0, "hi": 3}, "msg": "end=3 — add arr[3]=3 → window=[2, 5, 1, 3], size = k → process sum = 11." },
-    { "markers": [{"name": "start", "index": 1, "color": "#3b82f6"}, {"name": "end", "index": 4, "color": "#f59e0b"}], "range": {"lo": 1, "hi": 4}, "msg": "end=4 — add 7 → size 5 > 4 → remove arr[0]=2, start=1 → window=[5, 1, 3, 7] → process sum = 16." },
-    { "markers": [{"name": "start", "index": 2, "color": "#3b82f6"}, {"name": "end", "index": 5, "color": "#f59e0b"}], "range": {"lo": 2, "hi": 5}, "msg": "end=5 — add 4 → size 5 > 4 → remove arr[1]=5, start=2 → window=[1, 3, 7, 4] → process sum = 15." }
-  ]
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "start",
+          "target": "0",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "0",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "0"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "end=0 — add arr[0]=2 → window=[2], size 1 < 4 → skip process.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "start",
+          "target": "0",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "1",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "0",
+        "1"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "end=1 — add arr[1]=5 → window=[2, 5], size 2 < 4 → skip process.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "start",
+          "target": "0",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "2",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "0",
+        "1",
+        "2"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "end=2 — add arr[2]=1 → window=[2, 5, 1], size 3 < 4 → skip process.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "start",
+          "target": "0",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "3",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "end=3 — add arr[3]=3 → window=[2, 5, 1, 3], size = k → process sum = 11.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "start",
+          "target": "1",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "4",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "end=4 — add 7 → size 5 > 4 → remove arr[0]=2, start=1 → window=[5, 1, 3, 7] → process sum = 16.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "start",
+          "target": "2",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "5",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "end=5 — add 4 → size 5 > 4 → remove arr[1]=5, start=2 → window=[1, 3, 7, 4] → process sum = 15.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    }
+  ],
+  "title": "Fixed sliding window of size k = 4 on [2, 5, 1, 3, 7, 4]"
 }
 ```
 
@@ -411,18 +896,503 @@ w2 -> w3: "remove 12, add 3"
 <p align="center"><strong>Three windows of size k=4 slide through the array. Each slide removes one element from the left and adds one from the right — the sum updates in O(1) each time.</strong></p>
 
 > ▶ Interactive Diagram — Step-by-step execution on `[1, 12, -5, -6, 50, 3]` with `k = 4` — three valid windows of size 4 produce averages 0.50, 12.75, 10.50; `maxAverage = 12.75` after the middle window.
-```d3 widget=array-traversal
+```d3 widget=array-1d
 {
-  "items": ["1", "12", "-5", "-6", "50", "3"],
-  "title": "Maximum average subarray on [1, 12, -5, -6, 50, 3], k = 4",
   "steps": [
-    { "markers": [{"name": "start", "index": 0, "color": "#3b82f6"}, {"name": "end", "index": 0, "color": "#f59e0b"}], "range": {"lo": 0, "hi": 0}, "msg": "end=0 — add 1 → sum = 1, window=[1], size 1 < 4." },
-    { "markers": [{"name": "start", "index": 0, "color": "#3b82f6"}, {"name": "end", "index": 1, "color": "#f59e0b"}], "range": {"lo": 0, "hi": 1}, "msg": "end=1 — add 12 → sum = 13, window=[1, 12], size 2 < 4." },
-    { "markers": [{"name": "start", "index": 0, "color": "#3b82f6"}, {"name": "end", "index": 2, "color": "#f59e0b"}], "range": {"lo": 0, "hi": 2}, "msg": "end=2 — add −5 → sum = 8, window=[1, 12, −5], size 3 < 4." },
-    { "markers": [{"name": "start", "index": 0, "color": "#3b82f6"}, {"name": "end", "index": 3, "color": "#f59e0b"}], "range": {"lo": 0, "hi": 3}, "msg": "end=3 — add −6 → sum = 2, window=[1, 12, −5, −6] → avg = 0.50; maxAvg = 0.50." },
-    { "markers": [{"name": "start", "index": 1, "color": "#3b82f6"}, {"name": "end", "index": 4, "color": "#f59e0b"}], "range": {"lo": 1, "hi": 4}, "msg": "end=4 — add 50, remove arr[0]=1 → sum = 51, window=[12, −5, −6, 50] → avg = 12.75; maxAvg = 12.75 ★." },
-    { "markers": [{"name": "start", "index": 2, "color": "#3b82f6"}, {"name": "end", "index": 5, "color": "#f59e0b"}], "range": {"lo": 2, "hi": 5}, "msg": "end=5 — add 3, remove arr[1]=12 → sum = 42, window=[−5, −6, 50, 3] → avg = 10.50; maxAvg stays 12.75 → answer: 12.75." }
-  ]
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "12",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "-5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "-6",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "50",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "start",
+          "target": "0",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "0",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "0"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "end=0 — add 1 → sum = 1, window=[1], size 1 < 4.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "12",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "-5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "-6",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "50",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "start",
+          "target": "0",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "1",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "0",
+        "1"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "end=1 — add 12 → sum = 13, window=[1, 12], size 2 < 4.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "12",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "-5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "-6",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "50",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "start",
+          "target": "0",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "2",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "0",
+        "1",
+        "2"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "end=2 — add −5 → sum = 8, window=[1, 12, −5], size 3 < 4.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "12",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "-5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "-6",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "50",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "start",
+          "target": "0",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "3",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "end=3 — add −6 → sum = 2, window=[1, 12, −5, −6] → avg = 0.50; maxAvg = 0.50.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "12",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "-5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "-6",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "50",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "start",
+          "target": "1",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "4",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "end=4 — add 50, remove arr[0]=1 → sum = 51, window=[12, −5, −6, 50] → avg = 12.75; maxAvg = 12.75 ★.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "12",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "-5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "-6",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "50",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "start",
+          "target": "2",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "5",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "end=5 — add 3, remove arr[1]=12 → sum = 42, window=[−5, −6, 50, 3] → avg = 10.50; maxAvg stays 12.75 → answer: 12.75.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    }
+  ],
+  "title": "Maximum average subarray on [1, 12, -5, -6, 50, 3], k = 4"
 }
 ```
 

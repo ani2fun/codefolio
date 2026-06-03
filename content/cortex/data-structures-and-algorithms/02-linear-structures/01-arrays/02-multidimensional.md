@@ -311,7 +311,7 @@ flowchart LR
 ## Declaring a 2D Array in Python
 
 
-```python run
+```python run viz=array viz-root=ages
 from typing import List
 
 # 4 classes (rows) of 5 students each (cols) — 5 instead of 60 keeps the demo readable.
@@ -335,7 +335,7 @@ for row_index in range(rows):
     print(f"Class {row_index}:", ages[row_index])
 ```
 
-```java run
+```java run viz=array viz-root=ages
 import java.util.Arrays;
 
 public class Main {
@@ -706,7 +706,7 @@ arr: {
 Higher-level languages like Python and JavaScript inherently provide a **list** instead of a raw array. A list has a dynamic size and can store elements of different types — so the programmer doesn't need to provide a size when declaring or initializing a multidimensional array.
 
 
-```python run
+```python run viz=array viz-root=numbers2d
 # Since Python lists are dynamic, they can be extended
 # after creation
 
@@ -736,7 +736,7 @@ cols: int = 3
 dynamic2d: List[List[int]] = [[0]*cols for _ in range(rows)]
 ```
 
-```java run
+```java run viz=array viz-root=numbers2d
 public class Main {
     public static void main(String[] args) {
 
@@ -821,7 +821,7 @@ The pattern generalises naturally:
 Different programming languages have different syntax, but the underlying access mechanism is the same.
 
 
-```python run
+```python run viz=array viz-root=numbers2d
 from typing import List
 
 # Initializing a 2D array
@@ -845,7 +845,7 @@ print("Element at (0,1,1):", numbers3d[0][1][1])
 print("Element at (1,2,0):", numbers3d[1][2][0])
 ```
 
-```java run
+```java run viz=array viz-root=numbers2d
 public class Main {
     public static void main(String[] args) {
 
@@ -923,7 +923,7 @@ arr.i.style.stroke: "#d97706"
 <p align="center"><strong>Multidimensional array elements can be modified using indices for all dimensions (highlighted = being updated).</strong></p>
 
 
-```python run
+```python run viz=array viz-root=numbers2d
 from typing import List
 
 # Initializing a 2D array
@@ -947,7 +947,7 @@ numbers3d[0][1][1] = 40
 numbers3d[1][2][0] = 110
 ```
 
-```java run
+```java run viz=array viz-root=numbers2d
 public class Main {
     public static void main(String[] args) {
 
@@ -1248,7 +1248,7 @@ flowchart LR
 <p align="center"><strong>Traversing a 2D array requires two nested loops — one per dimension.</strong></p>
 
 
-```python run
+```python run viz=array viz-root=numbers2d
 from typing import List
 
 # Initializing a 2D array
@@ -1272,7 +1272,7 @@ for row in numbers2d:
     print()
 ```
 
-```java run
+```java run viz=array viz-root=numbers2d
 public class Main {
     public static void main(String[] args) {
 
@@ -1307,7 +1307,7 @@ public class Main {
 For a 3D array, just add one more nesting level:
 
 
-```python run
+```python run viz=array viz-root=numbers3d
 from typing import List
 
 # Initializing a 3D array
@@ -1326,7 +1326,7 @@ for matrix in numbers3d:
     print()
 ```
 
-```java run
+```java run viz=array viz-root=numbers3d
 public class Main {
     public static void main(String[] args) {
 
@@ -1623,7 +1623,7 @@ The memory ribbon therefore fills up in this exact sequence:
 You can verify this yourself — run the code below and watch the order elements are visited:
 
 
-```python run
+```python run viz=grid viz-root=arr
 arr = [
     [10, 20, 30, 40],  # Row 0
     [50, 60, 70, 80],  # Row 1
@@ -1637,7 +1637,7 @@ for i in range(3):
         print(f"arr[{i}][{j}] = {arr[i][j]}")
 ```
 
-```java run
+```java run viz=grid viz-root=arr
 public class Main {
     public static void main(String[] args) {
         int[][] arr = {
@@ -2325,7 +2325,7 @@ flowchart TB
 
 ### Solution
 
-```python run
+```python run viz=array viz-root=path
 from typing import List
 
 class Solution:
@@ -2365,7 +2365,7 @@ print(Solution().row_major_traversal([[1, 2, 3]]))                           # [
 print(Solution().row_major_traversal([[1], [2], [3]]))                       # [1, 2, 3] — single column
 ```
 
-```java run
+```java run viz=array viz-root=path
 import java.util.Arrays;
 
 public class Main {
@@ -3374,7 +3374,7 @@ The one critical change vs. row-major: **`col` is the outer loop variable, `row`
 
 ### Solution
 
-```python run
+```python run viz=array viz-root=path
 from typing import List
 
 class Solution:
@@ -3416,7 +3416,7 @@ print(Solution().column_major_traversal([[1, 2, 3]]))                           
 print(Solution().column_major_traversal([[1], [2], [3]]))                       # [1, 2, 3] — single column
 ```
 
-```java run
+```java run viz=array viz-root=path
 import java.util.Arrays;
 
 public class Main {
@@ -3495,7 +3495,7 @@ Trace through `[[3, 2, 1, 7], [0, 6, 3, 2]]`:
 
 
 
-```python run
+```python run viz=grid viz-root=matrix
 # Same matrix, same indexing — only the loop order differs.
 matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
 rows = len(matrix)
@@ -3509,7 +3509,7 @@ print("Row-major:    ", row_major)   # [1, 2, 3, 4, 5, 6, 7, 8, 9]
 print("Column-major: ", col_major)   # [1, 4, 7, 2, 5, 8, 3, 6, 9]
 ```
 
-```java run
+```java run viz=grid viz-root=matrix
 import java.util.*;
 
 public class Main {

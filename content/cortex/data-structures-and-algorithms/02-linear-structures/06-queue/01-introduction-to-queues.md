@@ -1,6 +1,8 @@
 ---
 title: "Introduction To Queues"
-summary: "<!-- TODO: summary -->"
+summary: "A linear container with two ends — enqueue at the back, dequeue from the front, both O(1). The first-in-first-out workspace behind schedulers, message brokers, producer-consumer pipelines, and every breadth-first traversal."
+prereqs:
+  - linear-structures-arrays-introduction
 ---
 
 # 1. Introduction to Queues
@@ -23,6 +25,15 @@ This lesson lays the foundation: the FIFO contract, the four properties every qu
 2. [Exploring a possible solution](#exploring-a-possible-solution)
 3. [Key properties of a queue](#key-properties-of-a-queue)
 4. [Overview of supported operations](#overview-of-supported-operations)
+5. [Internal mechanics](#internal-mechanics)
+6. [Working example](#working-example)
+7. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
+8. [Production reality](#production-reality)
+9. [Quiz](#quiz)
+10. [Practice ladder](#practice-ladder)
+11. [Further reading](#further-reading)
+12. [Cross-links](#cross-links)
+13. [Final takeaway](#final-takeaway)
 
 ***
 
@@ -588,40 +599,157 @@ flowchart LR
 
 ***
 
+# Internal Mechanics
+
+A queue is not a primitive type — it is an *interface* layered over a storage structure, and the storage is almost always one of two things: an array used as a ring, or a singly linked list with a tail pointer. The FIFO contract is identical in both; only the bookkeeping differs. The hard part is unique to the queue: *both* ends move, so the implementation has to track two markers instead of a stack's one.
+
+- **Array-backed queue** — one buffer plus two integers, `frontIndex` and `size` (or, equivalently, `frontIndex` and `backIndex`). `enqueue` writes at the slot one past the back and grows `size`; `dequeue` reads the slot at `frontIndex`, then advances `frontIndex` forward. Because both indices march toward the high end, a naive array runs out of room while the low slots sit empty — so production array queues wrap the indices modulo the capacity, reusing the freed slots. That wrap is the **circular array** (the next lesson builds it). Each operation touches one slot and one or two integers — `O(1)` time, `O(1)` extra space.
+- **Linked-list-backed queue** — a chain of heap nodes plus *two* references: `head` (the front, where dequeue happens) and `tail` (the back, where enqueue happens). `enqueue` allocates a node and links it after `tail`, then reassigns `tail`; `dequeue` reads `head.val`, then advances `head` to `head.next`. The `tail` pointer is what keeps enqueue `O(1)` — without it, reaching the back would cost an `O(n)` walk. No element ever moves, so even the worst case is `O(1)` time, at the cost of one pointer of overhead and one allocation per node.
+
+The array version is the more revealing one, because the two-end problem is laid bare. A stack reuses index `0` automatically — it only ever grows and shrinks at the top. A queue cannot, because its two ends drift apart: the front leaves a trail of dead slots behind it as it advances. To make this concrete: with capacity `5`, after three enqueues and two dequeues, `frontIndex = 2` and the back sits at index `2` as well, with indices `0` and `1` now stale. The next enqueue must wrap back to index `0` rather than report "full" — that is precisely the circular trick, and it is the entire engineering content of the array implementation.
+
+So the key idea is: a queue is a discipline imposed on ordinary storage, not a new kind of storage. Two markers — `frontIndex` plus `size` for an array, or `head` plus `tail` for a linked list — are the entire state that turns a buffer or a chain into a FIFO container, and tracking *both* ends is what keeps every operation `O(1)`.
+
+---
+
+## Key Takeaway
+
+A queue is an interface over a ring-buffer array or a head-and-tail linked list. Because items leave from one end and arrive at the other, the implementation tracks two markers — `frontIndex` + `size` for an array, `head` + `tail` for a linked list. Those two markers, plus modular wrap-around on the array, are why enqueue, dequeue, front, back, and size are all `O(1)` time and `O(1)` space.
+
+***
+
+# Working Example
+
+Trace an array-backed queue through one full life cycle — empty, three enqueues, a peek at each end, two dequeues — and watch `frontIndex` and `size` carry the entire story.
+
+**Step 1 — start empty.** The backing array has capacity `5`; every slot is unused, `frontIndex = 0`, and `size = 0`. Because `size == 0`, `isEmpty()` returns `true`. Any `dequeue()`, `front()`, or `back()` here is a programming error and must be guarded against.
+
+**Step 2 — `enqueue(3)`.** The back is at `frontIndex + size = 0`, so write `3` into `arr[0]` and increment `size` to `1`. The queue is now `[3]`; the front is `3`, the back is `3`, and the size is `1`. Cost: one array write and one integer increment — `O(1)` time, `O(1)` space.
+
+**Step 3 — `enqueue(5)` then `enqueue(7)`.** Each enqueue repeats the same two motions, writing one slot past the current back. After `enqueue(5)`: `arr[1] = 5`, `size = 2`, queue `[3, 5]`. After `enqueue(7)`: `arr[2] = 7`, `size = 3`, queue `[3, 5, 7]`. The front value `3` has not moved since step 2 — `frontIndex` is still `0` — while the back has advanced to index `2`.
+
+**Step 4 — `front()` and `back()`.** Read `arr[frontIndex]`, which is `arr[0] = 3`, and return it without changing anything. Read the back at `arr[frontIndex + size - 1]`, which is `arr[2] = 7`. The queue is unchanged: still `[3, 5, 7]`, size still `3`. These two peeks are the only inspectors that read a *value*; neither moves a marker.
+
+**Step 5 — `dequeue()` twice.** The first `dequeue()` reads `arr[0]` (returns `3`), advances `frontIndex` to `1`, and decrements `size` to `2`; the queue is `[5, 7]`. The second `dequeue()` reads `arr[1]` (returns `5`), advances `frontIndex` to `2`, and decrements `size` to `1`; the queue is `[7]`. Each dequeue returns the *oldest* survivor — `3` before `5` — which is the FIFO contract made literal. Note that indices `0` and `1` now hold stale values no operation can reach; the circular trick in the next lesson is what reclaims them.
+
+> 🖼 Diagram — TODO: 6-frame trace of an array-backed queue (capacity 5) — empty (frontIndex = 0, size = 0), after enqueue(3)/enqueue(5)/enqueue(7), after front/back peek (unchanged), after two dequeues — with frontIndex and the back slot highlighted in every frame.
+
+The core insight is: `frontIndex` and `size` are the whole machine. Every enqueue writes at `frontIndex + size` and grows `size`; every dequeue reads at `frontIndex`, then advances it and shrinks `size`; `front` and `back` read without moving anything. Trace those rules on any input and you can predict the queue's state at every step.
+
+---
+
+## Key Takeaway
+
+The full life cycle is enqueue (write at the back, grow `size`), peek (`front` reads the low end, `back` reads the high end), and dequeue (read at `frontIndex`, then advance it and shrink `size`). Master that index arithmetic on a five-element array and the same logic — plus modular wrap-around — scales to any queue you will ever implement.
+
+***
+
+# Edge Cases and Pitfalls
+
+Almost every queue bug is one of three mistakes: operating on an empty queue, overflowing a bounded one, or mishandling the two ends as they drift apart. All three come from forgetting that a queue has *two* moving markers and that the front may point at nothing. Train your eye to check the boundary before every read.
+
+- **Dequeue, front, or back on an empty queue.** When `size == 0` (array) or `head == null` (linked list), there is no front to return. Reading `arr[frontIndex]` returns a stale value; dereferencing a null `head` faults. Guard every `dequeue`/`front`/`back` with an `isEmpty()` check — some implementations return a sentinel like `-1`, others throw, but none may read a non-existent front. This costs `O(1)` and prevents the most common queue crash.
+- **The "false full" trap in a naive array queue.** Both ends march toward the high index, so the back can hit `capacity - 1` while the front sits in the middle, leaving live-looking empty slots at the start. A naive implementation reports "full" and rejects the enqueue even though `size < capacity`. The fix is the circular array: wrap the back to index `0` with modular arithmetic. Skipping the wrap wastes `O(n)` space and breaks a still-valid enqueue.
+- **Forgetting to update `tail` in a linked-list queue.** Enqueue must both link the new node after the old `tail` *and* reassign `tail` to it. Updating only `head.next` logic (the stack habit) leaves `tail` pointing at a stale node, so the next enqueue links in the wrong place and silently drops data. Always reassign `tail` on every enqueue, and remember the single-element case where enqueue must set *both* `head` and `tail`.
+- **The resize hides an `O(n)` enqueue.** An unbounded array-backed queue is amortised `O(1)` per enqueue, but the occasional growth step copies all `n` elements into a larger buffer — that single enqueue is `O(n)` time and allocates `O(n)` new space. Fine on average; a problem under a hard real-time deadline, where a linked-list queue's worst-case `O(1)` enqueue is the safer choice.
+- **Assuming dequeued data is erased.** An array-backed `dequeue` typically only advances `frontIndex`; the value still sits in the slot until a later enqueue wraps around and overwrites it. If the queue holds references to large objects or secrets, the stale slot pins that memory (a leak) or leaves sensitive data readable. Null the slot explicitly when that matters.
+- **Reaching for the middle, or confusing FIFO with LIFO.** The interface exposes only the front and the back — by design. Code that wants "the third item from the front" is using the wrong structure; that desire is the signal to reach for an array or a deque instead. And remember the order: a queue returns items in *arrival* order, the opposite of a stack. Expecting most-recent-first from a queue is the classic mix-up.
+
+So the key idea is: before any `dequeue`, `front`, or `back`, ask "is there a front?"; before any `enqueue`, ask "is there room — and have both markers been updated?". Empty, full, and the two-end drift are the three states where a queue's invariants are easiest to break, and every classic queue bug lives in skipping one of those checks.
+
+***
+
+# Production Reality
+
+Queues are everywhere a system needs to process work in arrival order — decoupling, fairness, and breadth-first exploration all reduce to a queue. The places below are worth knowing by name.
+
+**[OS process scheduler]** — uses **a ready-queue of runnable threads** — because the kernel must hand the CPU to waiting threads in a fair order, and a queue guarantees no runnable thread is starved while newer ones cut ahead.
+
+**[Printer and I/O spoolers]** — uses **a job queue feeding a single device** — because one printer or disk serves one request at a time, and FIFO order means documents print in the order submitted rather than at random.
+
+**[Message brokers (Kafka, RabbitMQ, SQS)]** — uses **a durable networked queue between producers and consumers** — because decoupling senders from receivers lets each side scale independently, and the queue absorbs bursts so a slow consumer never blocks a fast producer.
+
+**[Breadth-first search]** — uses **a queue of frontier nodes to visit** — because BFS must explore all nodes at the current distance before going deeper, and a queue dequeues nodes in exactly that level-by-level order.
+
+**[Web-server request handling]** — uses **a bounded accept-queue of pending connections** — because requests arrive faster than threads free up, and a bounded queue applies back-pressure (rejecting or blocking) instead of exhausting memory under load.
+
+**[Async/await and event-loop runtimes]** — uses **a task queue of ready callbacks** — because the runtime runs one task at a time and must schedule pending continuations fairly, draining the queue in submission order each tick.
+
+***
+
+# Quiz
+
+Test your grip before moving on. Commit to an answer before revealing it.
+
+**[Recall] Q: What two operations define a queue, and at which end does each act?**
+`enqueue` adds an item to the back and `dequeue` removes the item from the front — they act at *opposite* ends, which is what creates the FIFO order.
+
+**[Recall] Q: In an array-backed queue, which two pieces of state track the contents, and how is the back slot located?**
+A `frontIndex` and a `size` field track the contents, and the back slot is at `frontIndex + size - 1` (modulo capacity once the queue wraps).
+
+**[Reasoning] Q: Why does a linked-list-backed queue need a `tail` pointer when a stack does not?**
+A queue enqueues at one end and dequeues at the other, so it must reach the back in `O(1)` — the `tail` pointer provides that, whereas a stack touches only one end and needs `head` alone.
+
+**[Reasoning] Q: Why does a naive array queue report "full" while empty slots remain, and what fixes it?**
+Both indices march toward the high end, so the back reaches the array's edge while dequeued slots sit unused at the front; treating the array as a ring with modular wrap-around reclaims those slots.
+
+**[Tradeoff] Q: When would you back a queue with a linked list instead of a circular array?**
+Choose the linked list when you need worst-case `O(1)` enqueue with no amortised resize copy (it matters under hard real-time deadlines); choose the circular array for cache locality and lower per-item memory, accepting the occasional `O(n)` resize.
+
+***
+
+# Practice Ladder
+
+Five problems to turn enqueue and dequeue into reflexes. The queue chapter has no pattern-problem files of its own, so these reach into the breadth-first patterns that *run* on a queue — level-order traversal (trees) and shortest-path BFS (graphs). Try each unaided; reach for the hint after ten minutes; do not peek at solutions until you have written something runnable.
+
+| # | Problem | Pattern | Difficulty | Hint |
+|---|---------|---------|------------|------|
+| 1 | [Level Sum](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-problems-level-sum) | [Level-Order Traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-pattern) | Easy | Enqueue the root, then repeatedly dequeue a whole level by reading the current `size` before the inner loop; sum each level's values. `O(n)` time, `O(n)` space. |
+| 2 | [Deepest Leaves Sum](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-problems-deepest-leaves-sum) | [Level-Order Traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-pattern) | Easy | Same level-by-level dequeue loop; overwrite a running sum at each new level so the last level processed holds the answer. |
+| 3 | [Zigzag Traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-problems-zigzag-traversal) | [Level-Order Traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-pattern) | Medium | Keep the FIFO queue for level boundaries, but reverse the *output* order on alternate levels — the queue stays unchanged; only the collection step flips. |
+| 4 | [Minimum Steps in a Grid](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-breadth-first-search-problems-minimum-steps-in-a-grid) | [Shortest Path (BFS)](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-breadth-first-search-pattern) | Medium | Enqueue the start cell, dequeue and enqueue unvisited neighbours; the FIFO order guarantees the first time you reach the target is the shortest path. |
+| 5 | [Nearest Distance](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-breadth-first-search-problems-nearest-distance) | [Shortest Path (BFS)](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-breadth-first-search-pattern) | Medium | Seed the queue with *all* sources at once (multi-source BFS); one shared FIFO wavefront expands outward and labels every cell with its nearest distance. |
+
+Once these feel automatic, enqueue and dequeue have stopped being syntax and become structural reflexes — and the breadth-first chapters can land their punches.
+
+***
+
+# Further Reading
+
+Curated paths in, not a syllabus. Read in order of the annotation; come back for the rest when you need depth.
+
+- **[CLRS — Section 10.1: Stacks and Queues](https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/)**
+  ★ Essential — the canonical reference, with the array-backed `ENQUEUE`/`DEQUEUE` pseudocode and the wrap-around overflow/underflow conditions stated as invariants.
+- **[Array Implementation of Queues](/cortex/data-structures-and-algorithms/linear-structures-queue-array-implementation-of-queues)**
+  ★ Essential — the next lesson; builds the `frontIndex` + `size` machine from this chapter into a real circular-array queue.
+- **[Linked List Implementation of Queues](/cortex/data-structures-and-algorithms/linear-structures-queue-linked-list-implementation-of-queues)**
+  ◆ Advanced — the head-and-tail variant, and the case for worst-case `O(1)` enqueue over the array's amortised `O(1)`.
+- **[Python `collections.deque` — official docs](https://docs.python.org/3/library/collections.html#collections.deque)**
+  → Reference — why `deque` (not `list`) is the idiomatic Python queue: `append` / `popleft` are both `O(1)`, whereas `list.pop(0)` is `O(n)`.
+- **[Java `Queue` / `ArrayDeque` API](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Queue.html)**
+  → Reference — the modern Java queue interface; `ArrayDeque` is the recommended general-purpose implementation, and `LinkedList` also implements `Queue`.
+
+***
+
+# Cross-Links
+
+**Prerequisites**
+
+- [Introduction to Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-introduction) — the contiguous buffer that backs the circular-array queue, and the source of the amortised-`O(1)` append behind enqueue.
+- [Introduction to Singly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-introduction-to-singly-linked-lists) — the head-and-tail node chain that backs the linked-list queue; the `tail` pointer is what keeps enqueue `O(1)`.
+- [Introduction to Stacks](/cortex/data-structures-and-algorithms/linear-structures-stack-introduction-to-stacks) — the LIFO sibling; understanding why a stack needs one marker makes it obvious why a queue needs two.
+- [Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis) — what `O(1)` enqueue/dequeue and an amortised `O(n)` resize actually mean, and how to read them off a loop.
+
+**What comes next**
+
+- [Array Implementation of Queues](/cortex/data-structures-and-algorithms/linear-structures-queue-array-implementation-of-queues) — turns the `frontIndex` + `size` model into runnable code with the circular-array wrap; the natural choice when capacity is bounded or cache locality matters.
+- [Linked List Implementation of Queues](/cortex/data-structures-and-algorithms/linear-structures-queue-linked-list-implementation-of-queues) — the head-and-tail build; the natural choice when enqueue and dequeue must be worst-case `O(1)` without amortisation.
+- [Design a Queue](/cortex/data-structures-and-algorithms/linear-structures-queue-design-a-queue-design-a-queue) — the capstone design challenge that assembles the full queue interface from the two implementations above.
+
+***
+
 ## Final Takeaway
 
-The queue is one of the two foundational ordered-access data structures (the other being its sibling, the stack). Three things to walk away with:
-
-1. **FIFO is fairness as code.** The queue's two-end restriction exists *to enforce* that the next dequeue returns the oldest still-present item. Any operation that would violate that — middle insertion, middle removal, traversal — is forbidden by design.
-2. **Enqueue and dequeue are O(1).** The whole interface is constant-time. The only nuance is around capacity: a bounded queue rejects on full; an unbounded queue pays an occasional O(N) resize when its underlying storage grows.
-3. **Queues power breadth-first thinking.** Anywhere you find yourself thinking *"process the oldest pending item next"* — whether it's level-order tree traversal, BFS in a graph, scheduling, message dispatch, or producer–consumer coordination — you are describing a queue. Recognising the shape is half the battle.
-
-> *Coming up — implementations. The next lesson builds a queue on a **circular array** (the natural choice when capacity is bounded; the cyclic trick is genuinely beautiful), and the lesson after on a **linked list** (the natural choice when both ends must support O(1) work without bookkeeping). The lesson after that is the famous "queue out of stacks / stack out of queues" interview duo. Hold onto the FIFO mental model — every implementation that follows is just a different way to mechanise it.*
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
-
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
-
-<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
-<!--       Guidance: bulleted list of gotchas -->
-
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
-
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
-
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
-
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
-
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
+1. **Core mechanic:** a queue is a linear container with two ends, exposing `enqueue` (add to the back) and `dequeue` (remove from the front) — both `O(1)` time and `O(1)` space — so the next item out is always the oldest item still in.
+2. **Dominant tradeoff:** you gain a clean FIFO guarantee and constant-time access to both ends; you give up all access to the middle, and you must track *two* moving markers — a bounded queue can overflow while a naive array wastes freed slots until you make it circular.
+3. **One thing to remember:** the queue is the engine of breadth-first thinking — anytime you need to "process the oldest pending item next" (scheduling, message dispatch, level-order traversal, BFS), you are describing a queue, and recognising that shape is half the battle.

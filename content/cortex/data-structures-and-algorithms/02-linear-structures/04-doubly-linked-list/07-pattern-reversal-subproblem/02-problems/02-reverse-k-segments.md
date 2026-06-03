@@ -8,9 +8,9 @@ difficulty: medium
 
 # Reverse K-segments
 
-## The Problem
+## Problem Statement
 
-Given the **head** of a doubly linked list and a positive integer **k**, reverse the list in groups of `k`. If the trailing fragment has fewer than `k` nodes, leave it alone.
+Given the **head** of a doubly linked list and a positive integer **k**, reverse the list in groups of `k`. If the trailing fragment has fewer than `k` nodes, leave it alone. Both the forward and backward chains must remain consistent after every chunk reversal.
 
 ```
 Input : head = [5, 7, 3, 10, 6, 8], k = 3
@@ -26,6 +26,50 @@ Output:        [5, 7, 3, 10, 6]
 Explanation: list length 5 < k=8 → no reversal happens.
 ```
 
+---
+
+<details>
+<summary><h2>Examples</h2></summary>
+
+**Example 1**
+```
+Input:  head = [5, 7, 3, 10, 6, 8], k = 3
+Output: [3, 7, 5, 8, 6, 10]
+Explanation: Two full chunks of three exist. Reverse each: (5, 7, 3) → (3, 7, 5) and (10, 6, 8) → (8, 6, 10). Concatenate to [3, 7, 5, 8, 6, 10] with both prev and next chains intact.
+```
+
+**Example 2**
+```
+Input:  head = [5, 7, 3, 10, 6], k = 2
+Output: [7, 5, 10, 3, 6]
+Explanation: Two full pairs reverse: (5, 7) → (7, 5) and (3, 10) → (10, 3). The trailing single node 6 is shorter than k and stays in place.
+```
+
+**Example 3**
+```
+Input:  head = [5, 7, 3, 10, 6], k = 8
+Output: [5, 7, 3, 10, 6]
+Explanation: The full list is shorter than k, so no chunk is reversed and the input is returned unchanged.
+```
+
+**Example 4**
+```
+Input:  head = [1, 2, 3, 4, 5, 6], k = 6
+Output: [6, 5, 4, 3, 2, 1]
+Explanation: Exactly one full chunk of size 6 spans the whole list; the inner reversal flips the entire list once.
+```
+
+</details>
+<details>
+<summary><h2>Intuition</h2></summary>
+
+The **structural property** is that the rewrite is a sequence of `length / k` independent in-place reversals on disjoint chunks of size `k`. Each chunk is a self-contained subproblem: swap `prev`/`next` on every node inside `[start, end]` and re-stitch the four boundary links so neither chain breaks. The trailing fragment of size `length % k` is short-circuited — the outer loop runs exactly `length / k` times, so any leftover nodes never enter a reversal call. This is the general fixed-size form of pairwise swap (`k = 2`).
+
+The **pointer placement** uses the four boundary pointers from the chapter pattern. `start` marks the chunk's first node; `end = getNodeAtPosition(start, k)` walks `k − 1` hops to mark its last node; the helper reads `leftBound = start.prev` and `rightBound = end.next` internally before the flip starts. After reversal, the old `start` is the chunk's tail and `start.next` is the next chunk's head (the seam stitch put it there in both directions). The first-chunk seam is detected post-hoc: `end.prev == None` after a reversal means the predecessor was `None`, so the global `head` must be updated.
+
+What **breaks if you reach for value-copying**? Reading all values into an array, reversing each k-sized window in the array, and writing the values back is `O(n)` time but `O(n)` extra space — and on a doubly linked list it dodges the harder half of the contract, which is keeping `prev` and `next` mutually consistent through the rewrite. Re-traversing the list from `head` to find each chunk's boundary inflates the cost to `O(n²)`. Both shortcuts miss the point: the algorithm should walk each node a constant number of times and rewrite both pointer directions in place. The shared `reverse(start, end)` helper enforces both — one forward walk per chunk, four-pointer bidirectional stitch in `O(1)`.
+
+</details>
 <details>
 <summary><h2>What Does "Reverse In Groups of K" Mean?</h2></summary>
 
@@ -63,11 +107,14 @@ flowchart TB
 <details>
 <summary><h2>Applying the Diagnostic Questions</h2></summary>
 
+Reverse-k-segments is the canonical reversal-subproblem problem — the entire chapter pattern is structured around it. The diagnostic confirms the fit precisely.
 
-| Question | Answer |
+| Check | Answer for Reverse-K-Segments |
 |---|---|
-| **Q1.** Can the problem be broken into smaller subproblems? | **Yes** — `length / k` independent reversals |
-| **Q2.** Can each subproblem be solved by reversing a part? | **Yes** — reverse the segment from `start` to the k-th node |
+| **Q1.** Can the problem or solution be broken down into smaller subproblems? | **Yes** — the rewrite decomposes into `length / k` independent reversals on disjoint contiguous chunks of size `k`. The chunks do not share state. |
+| **Q2.** Can any subproblem be solved by reversing a part of the linked list? | **Yes** — each chunk reversal is one call to `reverse(start, end)` from chapter pattern 06; the helper swaps `prev`/`next` on every node in `[start, end]` and re-stitches the four boundary links bidirectionally. |
+| **Q3.** Does the algorithm only need to walk each node a constant number of times? | **Yes** — `getNodeAtPosition` walks `k − 1` hops to find `end`, and the inner reversal walks the same `k` nodes once. Each node is touched twice across one outer pass. |
+| **Q4.** Is each chunk's boundary computable from local state? | **Yes** — `end` is `start` plus `k`, and the seam re-attachment uses `start.prev`/`end.next` (read inside the helper). The length precomputation runs once before the loop and stays constant memory. |
 
 ### Q1 — Why "length / k independent reversals"?
 
@@ -275,7 +322,7 @@ head = from_list([1, 2])
 print(to_list(Solution().reverse_k_segments(head, 3)))  # [1, 2]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -464,27 +511,54 @@ This trace shows why integer division is the right choice: zero complete windows
 | `length` not multiple of `k` | `[1,2,3,4,5], k=2` | `[2,1,4,3,5]` | Trailing 5 is the dropped fractional tail |
 
 </details>
+<details>
+<summary><h2>Approach</h2></summary>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+Six numbered steps. No code; the solution block above is the implementation.
 
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
+1. **Guard the trivial cases.** If `head` is `None`, the list has only one node, or `k == 1`, no chunk can or should be reversed. Return `head` unchanged.
+2. **Precompute the chunk count.** Walk the list once to find `length`, then set `total_segments = length // k`. The trailing fragment of `length % k` nodes is implicitly skipped because the loop runs exactly `total_segments` times.
+3. **Initialise the boundary pointer.** Set `start = head`. There is no separate `leftBound` variable — the `reverse` helper reads `start.prev` directly, so the predecessor is always available without a separate cache.
+4. **Drive the outer loop `total_segments` times.** For each iteration, find the chunk's end: `end = getNodeAtPosition(start, k)` walks `k − 1` hops forward from `start`. Then call `reverse(start, end)` to swap `prev`/`next` on every node in `[start, end]` and bidirectionally stitch the four boundary links.
+5. **Detect the first-chunk seam.** After the reversal, check `end.prev == None`. If true, the predecessor was `None` and this is the first chunk — update `head = end`. Otherwise the previous chunk's tail already re-attaches via the bidirectional stitch inside `reverse`.
+6. **Slide the boundary forward.** Set `start = start.next`. After the reversal, the old `start` is the chunk's tail, so `start.next` is the next chunk's head — the seam stitch put it there in both directions.
 
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
+</details>
+<details>
+<summary><h2>Dry Run — Example 1</h2></summary>
 
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
+`head = [5, 7, 3, 10, 6, 8]`, `k = 3`. Precompute `length = 6`, `total_segments = 6 // 3 = 2`. Initial state: `start = 5`.
 
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
+**Iteration 1 — chunk `(5, 7, 3)`:**
 
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
+| step | state |
+|---|---|
+| `end = getNodeAtPosition(start, 3)` | `end = 3` (advance `start` two hops) |
+| `reverse(5, 3)` | `leftBound = 5.prev = None`, `rightBound = 3.next = 10`. Swap `prev`/`next` on nodes 5, 7, 3; stitch `5.next = 10`, `10.prev = 5`, `3.prev = None`, no `leftBound.next` write because `leftBound is None`. List now `3 ↔ 7 ↔ 5 ↔ 10 ↔ 6 ↔ 8`. |
+| `end.prev is None` → promote head | `head = 3` |
+| `start = start.next` | `start = 10` (old `start` node 5 is now the chunk's tail) |
 
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->
+List after iteration 1: `3 ↔ 7 ↔ 5 ↔ 10 ↔ 6 ↔ 8`.
+
+**Iteration 2 — chunk `(10, 6, 8)`:**
+
+| step | state |
+|---|---|
+| `end = getNodeAtPosition(start, 3)` | `end = 8` |
+| `reverse(10, 8)` | `leftBound = 10.prev = 5`, `rightBound = 8.next = None`. Swap `prev`/`next` on nodes 10, 6, 8; stitch `10.next = None`, `8.prev = 5`, `5.next = 8`. List now `3 ↔ 7 ↔ 5 ↔ 8 ↔ 6 ↔ 10`. |
+| `end.prev is not None` (`8.prev = 5`) → head unchanged | `head = 3` |
+| `start = start.next` | `start = None` |
+
+List after iteration 2: `3 ↔ 7 ↔ 5 ↔ 8 ↔ 6 ↔ 10`.
+
+**Loop ends** (`total_segments = 2` iterations completed).
+
+**Return:** `head = 3`, traversal yields `[3, 7, 5, 8, 6, 10]` ✓. The reverse-direction traversal from node 10 (`10.prev = 6, 6.prev = 8, 8.prev = 5, 5.prev = 7, 7.prev = 3, 3.prev = None`) confirms the backward chain is consistent.
+
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
+Reverse-k-segments on a doubly linked list is pairwise swap generalised — precompute `length / k`, run that many chunk reversals via the bidirectional `reverse(start, end)` helper, and let the trailing fragment of `length % k` nodes pass through untouched. The first-chunk seam is detected post-hoc by `end.prev == None`; both `prev` and `next` chains stay consistent because the helper re-stitches all four boundary links in one block after the per-node swap.
+
+</details>

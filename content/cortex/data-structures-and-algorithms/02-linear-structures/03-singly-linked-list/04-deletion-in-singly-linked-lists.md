@@ -127,45 +127,217 @@ When the list is empty, any attempt to delete a node is unnecessary because ther
 
 Update **head** to hold the reference of the next node (the second node), effectively unlinking the first node. In GC languages (Java, Python, JS), the old head is automatically collected. In C/C++, we explicitly free/delete it.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Delete first node — advance head; old head is freed",
-  "direction": "single",
-  "nodes": [
-    {"id": "n1", "value": "5"},
-    {"id": "n2", "value": "7"},
-    {"id": "n3", "value": "3"},
-    {"id": "n4", "value": "10"}
-  ],
-  "head": "n1",
   "steps": [
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "current", "nodeId": "n1"}],
-      "msg": "Before: head → 5 → 7 → 3 → 10. Mark first node for removal."
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n1",
+          "color": "#10b981"
+        },
+        {
+          "name": "current",
+          "target": "n1",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Before: head → 5 → 7 → 3 → 10. Mark first node for removal.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n1", "value": "5", "style": "removed"},
-        {"id": "n2", "value": "7"},
-        {"id": "n3", "value": "3"},
-        {"id": "n4", "value": "10"}
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "head", "nodeId": "n2"}],
-      "msg": "head = head.next — head now points to node(7)"
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n2",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [
+        "n1"
+      ],
+      "annotation": "head = head.next — head now points to node(7)",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n2", "value": "7"},
-        {"id": "n3", "value": "3"},
-        {"id": "n4", "value": "10"}
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "head", "nodeId": "n2"}],
-      "msg": "Old head unreachable → freed (GC in Java/Python; explicit free in C). O(1)."
+      "edges": [
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n2",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Old head unreachable → freed (GC in Java/Python; explicit free in C). O(1).",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Delete first node — advance head; old head is freed"
 }
 ```
 
@@ -183,7 +355,7 @@ Update **head** to hold the reference of the next node (the second node), effect
 ## Implementation
 
 
-```python run
+```python run viz=linked-list viz-root=head
 """
 Definition for singly-linked list.
 class ListNode:
@@ -218,7 +390,7 @@ class Solution:
         return head
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 /**
  * Definition for singly-linked list.
  * class ListNode {
@@ -282,7 +454,7 @@ Given the **head** of a singly linked list, write a function to delete the first
 
 
 
-```python run
+```python run viz=linked-list viz-root=head
 from typing import Optional
 
 
@@ -345,7 +517,7 @@ print(to_list(Solution().delete_first_node(from_list([1, 2]))))          # [2]
 print(to_list(Solution().delete_first_node(from_list([1, 2, 3, 4, 5])))) # [2, 3, 4, 5]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -441,50 +613,288 @@ Deleting the last node is the same as deleting the first node when only one node
 
 In this scenario, we need to update the pointer of the second last node in the list to hold `null` and then delete the last node. We need access to the list's last and second last nodes to accomplish this. We will traverse the list from the beginning while keeping track of the **current** and  nodes. This way, when we reach the last node, we will have access to the second last node. Thereafter, we can update the pointer of the second last node to `null`, or more intuitively, to the next of the last node, which should already be `null`, and then delete the last node.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Delete last node — walk with previous + current; unlink tail",
-  "direction": "single",
-  "nodes": [
-    {"id": "n1", "value": "5"},
-    {"id": "n2", "value": "7"},
-    {"id": "n3", "value": "3"},
-    {"id": "n4", "value": "10"}
-  ],
-  "head": "n1",
   "steps": [
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "previous", "nodeId": "n1"}, {"name": "current", "nodeId": "n2"}],
-      "msg": "Start: previous=head, current=head.next"
-    },
-    {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "previous", "nodeId": "n3"}, {"name": "current", "nodeId": "n4"}],
-      "msg": "Walk until current is the tail (current.next == null). previous now holds the second-last."
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "previous",
+          "target": "n1",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "current",
+          "target": "n2",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Start: previous=head, current=head.next",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n1", "value": "5"},
-        {"id": "n2", "value": "7"},
-        {"id": "n3", "value": "3"},
-        {"id": "n4", "value": "10", "style": "removed"}
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n2"],["n2","n3"]],
-      "markers": [{"name": "previous", "nodeId": "n3"}],
-      "msg": "previous.next = null — tail is now unreachable"
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "previous",
+          "target": "n3",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "current",
+          "target": "n4",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Walk until current is the tail (current.next == null). previous now holds the second-last.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n1", "value": "5"},
-        {"id": "n2", "value": "7"},
-        {"id": "n3", "value": "3"}
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n2"],["n2","n3"]],
-      "markers": [{"name": "head", "nodeId": "n1"}],
-      "msg": "Free old tail. Final list: 5 → 7 → 3. O(n) walk + O(1) unlink."
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "previous",
+          "target": "n3",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [
+        "n4"
+      ],
+      "annotation": "previous.next = null — tail is now unreachable",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n1",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Free old tail. Final list: 5 → 7 → 3. O(n) walk + O(1) unlink.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Delete last node — walk with previous + current; unlink tail"
 }
 ```
 
@@ -823,7 +1233,7 @@ Given the **head** of a singly linked list, write a function to delete the last 
 
 
 
-```python run
+```python run viz=linked-list viz-root=head
 from typing import Optional
 
 
@@ -906,7 +1316,7 @@ print(to_list(Solution().delete_last_node(from_list([1, 2]))))          # [1]
 print(to_list(Solution().delete_last_node(from_list([1, 2, 3, 4, 5])))) # [1, 2, 3, 4]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -1013,33 +1423,132 @@ When the list is empty, meaning it contains no elements, any attempt to delete a
 
 If the data matches the first node, this case becomes the same as **deleting the first node**. We update the **head** to store the reference to the second node and delete the old head.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Target is the head — single pointer update, head advances",
-  "direction": "single",
-  "nodes": [
-    {"id": "n1", "value": "5"},
-    {"id": "n2", "value": "7"},
-    {"id": "n3", "value": "3"}
-  ],
-  "head": "n1",
   "steps": [
     {
-      "links": [["n1","n2"],["n2","n3"]],
-      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "current", "nodeId": "n1"}],
-      "msg": "Before: target matches the head"
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n1",
+          "color": "#10b981"
+        },
+        {
+          "name": "current",
+          "target": "n1",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Before: target matches the head",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n1", "value": "5", "style": "removed"},
-        {"id": "n2", "value": "7"},
-        {"id": "n3", "value": "3"}
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n2"],["n2","n3"]],
-      "markers": [{"name": "head", "nodeId": "n2"}],
-      "msg": "head = head.next — old head unreachable, freed. O(1)."
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n2",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [
+        "n1"
+      ],
+      "annotation": "head = head.next — old head unreachable, freed. O(1).",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Target is the head — single pointer update, head advances"
 }
 ```
 
@@ -1056,45 +1565,217 @@ If the data matches the first node, this case becomes the same as **deleting the
 
 To delete a node that is not the first node of the linked list, we need access to the node 1 step before the one to be deleted. We will traverse the list from the beginning while keeping track of the **current** and nodes. This way, when we reach the node with the given data, we will have access to its previous node, which we need to update.Deleting the given node involves a three-step process.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Interior deletion — prev + current walk, then splice prev.next over current",
-  "direction": "single",
-  "nodes": [
-    {"id": "n1", "value": "5"},
-    {"id": "n2", "value": "7"},
-    {"id": "n3", "value": "3"},
-    {"id": "n4", "value": "10"}
-  ],
-  "head": "n1",
   "steps": [
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "previous", "nodeId": "n1"}, {"name": "current", "nodeId": "n2"}],
-      "msg": "Walk: prev=node(5), current=node(7). Match. Stop."
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "previous",
+          "target": "n1",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "current",
+          "target": "n2",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Walk: prev=node(5), current=node(7). Match. Stop.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n1", "value": "5"},
-        {"id": "n2", "value": "7", "style": "removed"},
-        {"id": "n3", "value": "3"},
-        {"id": "n4", "value": "10"}
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n3"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "previous", "nodeId": "n1"}],
-      "msg": "prev.next = current.next — node(5) now points past node(7) to node(3)"
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "previous",
+          "target": "n1",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [
+        "n2"
+      ],
+      "annotation": "prev.next = current.next — node(5) now points past node(7) to node(3)",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n1", "value": "5"},
-        {"id": "n3", "value": "3"},
-        {"id": "n4", "value": "10"}
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n3"],["n3","n4"]],
-      "markers": [{"name": "head", "nodeId": "n1"}],
-      "msg": "Free current. Final: 5 → 3 → 10. O(n) walk + O(1) unlink."
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n1",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Free current. Final: 5 → 3 → 10. O(n) walk + O(1) unlink.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Interior deletion — prev + current walk, then splice prev.next over current"
 }
 ```
 
@@ -1111,34 +1792,229 @@ To delete a node that is not the first node of the linked list, we need access t
 
 If the data provided does not match the data of any node in the linked list, then such a node does not exist in the list, so we return the existing **head**.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Target not in list — traversal falls off, return head unchanged",
-  "direction": "single",
-  "nodes": [
-    {"id": "n1", "value": "5"},
-    {"id": "n2", "value": "7"},
-    {"id": "n3", "value": "3"},
-    {"id": "n4", "value": "10"}
-  ],
-  "head": "n1",
   "steps": [
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "current", "nodeId": "n1"}],
-      "msg": "Looking for value 99. Start at head."
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n1",
+          "color": "#10b981"
+        },
+        {
+          "name": "current",
+          "target": "n1",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Looking for value 99. Start at head.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "current", "nodeId": "n4"}],
-      "msg": "Walk through 5 → 7 → 3 → 10 — no match"
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "n4",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Walk through 5 → 7 → 3 → 10 — no match",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "head", "nodeId": "n1"}],
-      "msg": "current = current.next becomes null — target not found. Return head unchanged."
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n1",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "current = current.next becomes null — target not found. Return head unchanged.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Target not in list — traversal falls off, return head unchanged"
 }
 ```
 
@@ -1635,7 +2511,7 @@ Given the **head** of a singly linked list and a **data** value, write a functio
 
 
 
-```python run
+```python run viz=linked-list viz-root=head
 from typing import Optional
 
 
@@ -1743,7 +2619,7 @@ print(to_list(Solution().delete_node_with_given_data(from_list([7]), 7)))       
 print(to_list(Solution().delete_node_with_given_data(from_list([3, 3, 3]), 3)))       # [3, 3]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -1877,7 +2753,7 @@ Given the **head** of a singly linked list and a **data** value, write a functio
 
 
 
-```python run
+```python run viz=linked-list viz-root=head
 from typing import Optional
 
 
@@ -1974,7 +2850,7 @@ print(to_list(Solution().delete_nodes_with_given_data(from_list([7]), 7)))      
 print(to_list(Solution().delete_nodes_with_given_data(from_list([1, 2, 5, 5]), 5)))           # [1, 2]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -2103,23 +2979,68 @@ If the list is empty and contains no elements, we cannot find the given node bec
 
 When the given node is the last node in the list, attempting to delete a node after it becomes an invalid operation. This is because, by definition, the last node has no successor, i.e., no node following it in the sequence. We can return the **head** because no other operation needs to be done.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Delete after given node — given is the tail: no successor, return unchanged",
-  "direction": "single",
-  "nodes": [
-    {"id": "n1", "value": "5"},
-    {"id": "n2", "value": "7"},
-    {"id": "n3", "value": "3"}
-  ],
-  "head": "n1",
   "steps": [
     {
-      "links": [["n1","n2"],["n2","n3"]],
-      "markers": [{"name": "current", "nodeId": "n3"}],
-      "msg": "given is node(3); given.next is null — nothing to delete. Return head unchanged."
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "n3",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "given is node(3); given.next is null — nothing to delete. Return head unchanged.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Delete after given node — given is the tail: no successor, return unchanged"
 }
 ```
 
@@ -2133,45 +3054,217 @@ When the given node is the last node in the list, attempting to delete a node af
 
 To delete a node after a given node, we can update the pointer of the given node to skip over the node that needs to be deleted. Then, we can remove the node that we want to delete.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Delete after given node — O(1): redirect given.next past the victim",
-  "direction": "single",
-  "nodes": [
-    {"id": "n1", "value": "5"},
-    {"id": "n2", "value": "7"},
-    {"id": "n3", "value": "3"},
-    {"id": "n4", "value": "10"}
-  ],
-  "head": "n1",
   "steps": [
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "current", "nodeId": "n2"}, {"name": "next", "nodeId": "n3"}],
-      "msg": "given = node(7); given.next = node(3) is the victim"
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "n2",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "next",
+          "target": "n3",
+          "color": "#8b5cf6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "given = node(7); given.next = node(3) is the victim",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n1", "value": "5"},
-        {"id": "n2", "value": "7"},
-        {"id": "n3", "value": "3", "style": "removed"},
-        {"id": "n4", "value": "10"}
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n2"],["n2","n4"],["n3","n4"]],
-      "markers": [{"name": "current", "nodeId": "n2"}],
-      "msg": "given.next = victim.next — node(7) now points past node(3) to node(10)"
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "n2",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [
+        "n3"
+      ],
+      "annotation": "given.next = victim.next — node(7) now points past node(3) to node(10)",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n1", "value": "5"},
-        {"id": "n2", "value": "7"},
-        {"id": "n4", "value": "10"}
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n2"],["n2","n4"]],
-      "markers": [{"name": "head", "nodeId": "n1"}],
-      "msg": "Free victim. Final: 5 → 7 → 10. O(1)."
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n1",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Free victim. Final: 5 → 7 → 10. O(1).",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Delete after given node — O(1): redirect given.next past the victim"
 }
 ```
 
@@ -2449,7 +3542,7 @@ Given the **head** of a singly linked list and a **random** **node** in a linked
 
 
 
-```python run
+```python run viz=linked-list viz-root=head
 from typing import Optional
 
 
@@ -2532,7 +3625,7 @@ h5 = from_list([1, 2])
 print(to_list(Solution().delete_node_after_the_given_node(h5, h5)))           # [1]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -2643,23 +3736,68 @@ If the list is empty and contains no elements, we cannot find the given node bec
 
 When the given node is the first node in the list, attempting to delete a node before it becomes an invalid operation. This is because, by definition, the first node has no predecessor, i.e., no node preceding it in the sequence. We can return the **head** because no other operation needs to be done.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Delete before given node — given is the head: no predecessor, return unchanged",
-  "direction": "single",
-  "nodes": [
-    {"id": "n1", "value": "5"},
-    {"id": "n2", "value": "7"},
-    {"id": "n3", "value": "3"}
-  ],
-  "head": "n1",
   "steps": [
     {
-      "links": [["n1","n2"],["n2","n3"]],
-      "markers": [{"name": "current", "nodeId": "n1"}],
-      "msg": "given == head — no node precedes it. Return head unchanged."
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "n1",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "given == head — no node precedes it. Return head unchanged.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Delete before given node — given is the head: no predecessor, return unchanged"
 }
 ```
 
@@ -2673,33 +3811,137 @@ When the given node is the first node in the list, attempting to delete a node b
 
 This is a unique situation because removing the node before the second node essentially means deleting the linked list's head node. As learned earlier, this scenario is identical to **deleting the first node**. We need to update the head to store the reference to the second node and then delete the old head.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Delete before given node — given is second: collapses to 'delete the head'",
-  "direction": "single",
-  "nodes": [
-    {"id": "n1", "value": "5"},
-    {"id": "n2", "value": "7"},
-    {"id": "n3", "value": "3"}
-  ],
-  "head": "n1",
   "steps": [
     {
-      "links": [["n1","n2"],["n2","n3"]],
-      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "current", "nodeId": "n2"}, {"name": "next", "nodeId": "n1"}],
-      "msg": "given == second node; the predecessor is the head — head is the victim"
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n1",
+          "color": "#10b981"
+        },
+        {
+          "name": "current",
+          "target": "n2",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "next",
+          "target": "n1",
+          "color": "#8b5cf6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "given == second node; the predecessor is the head — head is the victim",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n1", "value": "5", "style": "removed"},
-        {"id": "n2", "value": "7"},
-        {"id": "n3", "value": "3"}
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n2"],["n2","n3"]],
-      "markers": [{"name": "head", "nodeId": "n2"}],
-      "msg": "head = head.next — node(5) freed. O(1)."
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n2",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [
+        "n1"
+      ],
+      "annotation": "head = head.next — node(5) freed. O(1).",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Delete before given node — given is second: collapses to 'delete the head'"
 }
 ```
 
@@ -2716,45 +3958,217 @@ This is a unique situation because removing the node before the second node esse
 
 To delete the node before a given node, we need to access the node two steps before the given node. We traverse the linked list while keeping track of the **current**,  and **previousToPrevious** nodes. As soon as we reach the given node, we update the pointer of the **previousToPrevious** node to hold the reference to the current node and then delete the node.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Interior deletion — prev + current walk, then splice prev.next over current",
-  "direction": "single",
-  "nodes": [
-    {"id": "n1", "value": "5"},
-    {"id": "n2", "value": "7"},
-    {"id": "n3", "value": "3"},
-    {"id": "n4", "value": "10"}
-  ],
-  "head": "n1",
   "steps": [
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "previous", "nodeId": "n1"}, {"name": "current", "nodeId": "n2"}],
-      "msg": "Walk: prev=node(5), current=node(7). Match. Stop."
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "previous",
+          "target": "n1",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "current",
+          "target": "n2",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Walk: prev=node(5), current=node(7). Match. Stop.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n1", "value": "5"},
-        {"id": "n2", "value": "7", "style": "removed"},
-        {"id": "n3", "value": "3"},
-        {"id": "n4", "value": "10"}
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n3"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "previous", "nodeId": "n1"}],
-      "msg": "prev.next = current.next — node(5) now points past node(7) to node(3)"
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "previous",
+          "target": "n1",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [
+        "n2"
+      ],
+      "annotation": "prev.next = current.next — node(5) now points past node(7) to node(3)",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n1", "value": "5"},
-        {"id": "n3", "value": "3"},
-        {"id": "n4", "value": "10"}
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n3"],["n3","n4"]],
-      "markers": [{"name": "head", "nodeId": "n1"}],
-      "msg": "Free current. Final: 5 → 3 → 10. O(n) walk + O(1) unlink."
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n1",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Free current. Final: 5 → 3 → 10. O(n) walk + O(1) unlink.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Interior deletion — prev + current walk, then splice prev.next over current"
 }
 ```
 
@@ -3264,7 +4678,7 @@ Given the **head** of a singly linked list and a **random node** in the list, wr
 
 
 
-```python run
+```python run viz=linked-list viz-root=head
 from typing import Optional
 
 
@@ -3377,7 +4791,7 @@ h6 = from_list([1, 2])
 print(to_list(Solution().delete_node_before_the_given_node(h6, h6.next)))       # [2]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -3519,33 +4933,132 @@ If the list is empty and contains no elements, we cannot find the given node bec
 
 If the given node matches the first node, this case becomes the same as **deleting the first node**. We update the **head** to store the reference to the second node and delete the old head.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Target is the head — single pointer update, head advances",
-  "direction": "single",
-  "nodes": [
-    {"id": "n1", "value": "5"},
-    {"id": "n2", "value": "7"},
-    {"id": "n3", "value": "3"}
-  ],
-  "head": "n1",
   "steps": [
     {
-      "links": [["n1","n2"],["n2","n3"]],
-      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "current", "nodeId": "n1"}],
-      "msg": "Before: target matches the head"
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n1",
+          "color": "#10b981"
+        },
+        {
+          "name": "current",
+          "target": "n1",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Before: target matches the head",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n1", "value": "5", "style": "removed"},
-        {"id": "n2", "value": "7"},
-        {"id": "n3", "value": "3"}
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n2"],["n2","n3"]],
-      "markers": [{"name": "head", "nodeId": "n2"}],
-      "msg": "head = head.next — old head unreachable, freed. O(1)."
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n2",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [
+        "n1"
+      ],
+      "annotation": "head = head.next — old head unreachable, freed. O(1).",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Target is the head — single pointer update, head advances"
 }
 ```
 
@@ -3562,45 +5075,217 @@ If the given node matches the first node, this case becomes the same as **deleti
 
 To delete a node that is not the first node of the linked list, we need access to the node 1 step before the one to be deleted. We will traverse the list from the beginning while keeping track of the **current** and nodes. This way, when we reach the given node, we will have access to its previous node, which we need to update. Deleting the given node involves a three step process.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Interior deletion — prev + current walk, then splice prev.next over current",
-  "direction": "single",
-  "nodes": [
-    {"id": "n1", "value": "5"},
-    {"id": "n2", "value": "7"},
-    {"id": "n3", "value": "3"},
-    {"id": "n4", "value": "10"}
-  ],
-  "head": "n1",
   "steps": [
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "previous", "nodeId": "n1"}, {"name": "current", "nodeId": "n2"}],
-      "msg": "Walk: prev=node(5), current=node(7). Match. Stop."
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "previous",
+          "target": "n1",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "current",
+          "target": "n2",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Walk: prev=node(5), current=node(7). Match. Stop.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n1", "value": "5"},
-        {"id": "n2", "value": "7", "style": "removed"},
-        {"id": "n3", "value": "3"},
-        {"id": "n4", "value": "10"}
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n3"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "previous", "nodeId": "n1"}],
-      "msg": "prev.next = current.next — node(5) now points past node(7) to node(3)"
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "previous",
+          "target": "n1",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [
+        "n2"
+      ],
+      "annotation": "prev.next = current.next — node(5) now points past node(7) to node(3)",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n1", "value": "5"},
-        {"id": "n3", "value": "3"},
-        {"id": "n4", "value": "10"}
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n3"],["n3","n4"]],
-      "markers": [{"name": "head", "nodeId": "n1"}],
-      "msg": "Free current. Final: 5 → 3 → 10. O(n) walk + O(1) unlink."
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n1",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Free current. Final: 5 → 3 → 10. O(n) walk + O(1) unlink.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Interior deletion — prev + current walk, then splice prev.next over current"
 }
 ```
 
@@ -4096,7 +5781,7 @@ Given the **head** of a singly linked list and a **random node** in that linked 
 
 
 
-```python run
+```python run viz=linked-list viz-root=head
 from typing import Optional, List, Any
 
 
@@ -4208,7 +5893,7 @@ h6 = from_list([1, 2])
 print(to_list(Solution().delete_the_given_node(h6, h6)))                # [2]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -4360,53 +6045,344 @@ X = 0
 
 When we need to delete a specific node from a list, we should traverse the list until we reach the node just before the one we want to delete. Keep track of the current node and traverse `X-1` steps instead of `X`. At the end of the loop, we will reach the node one step before the node that needs to be deleted. Then, the problem becomes **deleting a node after a given node**, where the given node is the node one step before the node that has to be deleted. Update the reference in the given node's pointer to point to the node after the one that has to be deleted. Once the connections have been updated, safely delete the next node.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Delete at distance X = 2 in size-5 list — walk X−1 hops, then unlink",
-  "direction": "single",
-  "nodes": [
-    {"id": "n0", "value": "5"},
-    {"id": "n1", "value": "7"},
-    {"id": "n2", "value": "3"},
-    {"id": "n3", "value": "10"},
-    {"id": "n4", "value": "4"}
-  ],
-  "head": "n0",
   "steps": [
     {
-      "links": [["n0","n1"],["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "current", "nodeId": "n0"}],
-      "msg": "Start: current=head, counter=0. Walk X−1 = 1 hop."
-    },
-    {
-      "links": [["n0","n1"],["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "current", "nodeId": "n1"}, {"name": "next", "nodeId": "n2"}],
-      "msg": "After 1 hop, current at node(7). current.next = node(3) is the victim."
+      "nodes": [
+        {
+          "id": "n0",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n1",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n0",
+          "to": "n1",
+          "label": "next"
+        },
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "n0",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Start: current=head, counter=0. Walk X−1 = 1 hop.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n0", "value": "5"},
-        {"id": "n1", "value": "7"},
-        {"id": "n2", "value": "3", "style": "removed"},
-        {"id": "n3", "value": "10"},
-        {"id": "n4", "value": "4"}
+        {
+          "id": "n0",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n1",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n0","n1"],["n1","n3"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "current", "nodeId": "n1"}],
-      "msg": "current.next = current.next.next — node(7) now points past node(3) to node(10)"
+      "edges": [
+        {
+          "from": "n0",
+          "to": "n1",
+          "label": "next"
+        },
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "n1",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "next",
+          "target": "n2",
+          "color": "#8b5cf6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "After 1 hop, current at node(7). current.next = node(3) is the victim.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n0", "value": "5"},
-        {"id": "n1", "value": "7"},
-        {"id": "n3", "value": "10"},
-        {"id": "n4", "value": "4"}
+        {
+          "id": "n0",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n1",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n0","n1"],["n1","n3"],["n3","n4"]],
-      "markers": [{"name": "head", "nodeId": "n0"}],
-      "msg": "Free victim. Final: 5 → 7 → 10 → 4. O(X) walk + O(1) unlink."
+      "edges": [
+        {
+          "from": "n0",
+          "to": "n1",
+          "label": "next"
+        },
+        {
+          "from": "n1",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "n1",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [
+        "n2"
+      ],
+      "annotation": "current.next = current.next.next — node(7) now points past node(3) to node(10)",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "n0",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n1",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n0",
+          "to": "n1",
+          "label": "next"
+        },
+        {
+          "from": "n1",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n0",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Free victim. Final: 5 → 7 → 10 → 4. O(X) walk + O(1) unlink.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Delete at distance X = 2 in size-5 list — walk X−1 hops, then unlink"
 }
 ```
 
@@ -4427,28 +6403,125 @@ This indicates an invalid query. For example, we cannot delete the 10th node in 
 
 This is also an invalid case. To clarify, let's consider a list of size 5. In this scenario, the potential values of `X` could range from 0 to 4, meaning `[0, 4]`. Therefore, an input 5 would be invalid. It's important to note that X represents the distance from the head node, not the node's position.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Delete at distance X = 5 in size-3 list — walk falls off, return head unchanged",
-  "direction": "single",
-  "nodes": [
-    {"id": "n0", "value": "5"},
-    {"id": "n1", "value": "7"},
-    {"id": "n2", "value": "3"}
-  ],
-  "head": "n0",
   "steps": [
     {
-      "links": [["n0","n1"],["n1","n2"]],
-      "markers": [{"name": "current", "nodeId": "n2"}],
-      "msg": "Walking forward — counter reaches 2 at node(3). Target X−1 = 4."
+      "nodes": [
+        {
+          "id": "n0",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n1",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n0",
+          "to": "n1",
+          "label": "next"
+        },
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "n2",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Walking forward — counter reaches 2 at node(3). Target X−1 = 4.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["n0","n1"],["n1","n2"]],
-      "markers": [{"name": "head", "nodeId": "n0"}],
-      "msg": "current = current.next becomes null before counter hits 4. X=5 out of range (valid range [0, 2]). Return head unchanged."
+      "nodes": [
+        {
+          "id": "n0",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n1",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n0",
+          "to": "n1",
+          "label": "next"
+        },
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n0",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "current = current.next becomes null before counter hits 4. X=5 out of range (valid range [0, 2]). Return head unchanged.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Delete at distance X = 5 in size-3 list — walk falls off, return head unchanged"
 }
 ```
 
@@ -4922,7 +6995,7 @@ Given the **head** of a singly linked list and distance **X**, write a function 
 
 
 
-```python run
+```python run viz=linked-list viz-root=head
 from typing import Optional
 
 
@@ -5025,7 +7098,7 @@ print(to_list(Solution().delete_node_at_given_distance(from_list([1, 2]), 5)))  
 print(to_list(Solution().delete_node_at_given_distance(from_list([1, 2]), 1)))         # [1]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {

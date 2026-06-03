@@ -246,7 +246,7 @@ print(Solution().dijikstras_algorithm([[[1, 5]], []], 0))   # [0, 5]
 print(Solution().dijikstras_algorithm([[[1, 3]], [[2, 4]], []], 0))  # [0, 3, 7]
 ```
 
-```java run
+```java run viz=graph viz-root=graph
 import java.util.*;
 
 public class Main {
@@ -620,7 +620,7 @@ print(Solution().belman_ford_algorithm([[[1,1]],[[2,-3]],[[0,1]]], 0))         #
 print(Solution().belman_ford_algorithm([[[1,3]], [[2,4]], []], 0))              # [0, 3, 7]
 ```
 
-```java run
+```java run viz=graph viz-root=graph
 import java.util.*;
 
 public class Main {

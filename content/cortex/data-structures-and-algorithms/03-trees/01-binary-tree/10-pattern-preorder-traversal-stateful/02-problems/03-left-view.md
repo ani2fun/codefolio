@@ -132,7 +132,7 @@ print(Solution().left_view(from_level_order([1, None, 2, None, 3])))            
 print(Solution().left_view(from_level_order([1, 2, 3, 4, 5, 6, 7])))            # [1, 2, 4]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

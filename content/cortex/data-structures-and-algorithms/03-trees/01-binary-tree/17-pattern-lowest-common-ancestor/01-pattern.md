@@ -61,7 +61,7 @@ flowchart TB
 ## Generic pattern
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional
 
 
@@ -161,7 +161,7 @@ root6 = TreeNode(1)                                         # single node
 print(Solution().lowest_common_ancestor(root6, root6, root6).val)  # 1
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

@@ -253,7 +253,7 @@ head = from_list([5, 4, 3, 2, 1])
 print(to_list(Solution().value_partition(head, 3)))   # [2, 1, 5, 4, 3]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -461,27 +461,83 @@ Result: [1, 2, 2, 4, 3, 5] ✓
 | Duplicates of `X` | `[1,3,3,2], X=3` | `[1,2,3,3]` | The two 3's go to greater (since `≥`), order preserved. |
 
 </details>
+<details>
+<summary><h2>Examples</h2></summary>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+**Example 1**
+```
+Input:  head = [1, 4, 3, 2, 5, 2], X = 3
+Output: [1, 2, 2, 4, 3, 5]
+Explanation: Less-than-X stripe (vals < 3) = 1 ⇄ 2 ⇄ 2 in input order. Greater-or-equal stripe (vals ≥ 3) = 4 ⇄ 3 ⇄ 5 in input order. Concatenate with the mirror wired: 2 (last less).next = 4 AND 4.prev = 2.
+```
 
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
+**Example 2**
+```
+Input:  head = [2, 1], X = 2
+Output: [1, 2]
+Explanation: Less stripe = 1; greater stripe = 2. Concatenate: 1.next = 2 AND 2.prev = 1.
+```
 
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
+**Example 3**
+```
+Input:  head = [5, 4, 3, 2, 1], X = 3
+Output: [2, 1, 5, 4, 3]
+Explanation: Less stripe = 2 ⇄ 1 (input order); greater stripe = 5 ⇄ 4 ⇄ 3 (input order). Concatenate gives [2, 1, 5, 4, 3].
+```
 
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
+**Example 4**
+```
+Input:  head = [5, 6, 7], X = 3
+Output: [5, 6, 7]
+Explanation: Every value is ≥ X, so the less stripe is empty. The merge returns the greater stripe directly — equal to the input.
+```
 
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
+</details>
+<details>
+<summary><h2>Intuition</h2></summary>
 
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
+The **structural property** that makes this a reorder problem is that the output reuses every input node — only `prev` and `next` fields change — and the target order is decided by a simple `O(1)` classifier on each node's value. The split-and-merge pipeline fits cleanly: route nodes into two buckets by `val < X`, then concatenate with the mirror. The "preserve relative order within each bucket" requirement is the stability constraint, and it is satisfied automatically because each pass walks the input in forward order and appends to the bucket tail — the order in which two nodes hit the same bucket is the order they leave it.
 
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->
+The **pointer placement** follows directly. Maintain four cursors: `less_head` (a dummy) / `less_tail` grow the bucket of nodes with `val < X`; `greater_head` (a dummy) / `greater_tail` grow the bucket of nodes with `val >= X`. A single `current` walks the input. Each iteration reads `current.val`, evaluates the comparison against `X`, and splices `current` onto the chosen bucket's tail with both `tail.next = current` AND `current.prev = tail`. After the loop, both bucket tails terminate with `null` AND both new heads' `prev` fields are zeroed; the merge step is `less_tail.next = greater_head` AND `greater_head.prev = less_tail` — one paired splice.
+
+What **breaks if you reach for a naive approach**? Copying every value into two arrays, concatenating, and rebuilding a fresh DLL works in `O(n)` time but pays `O(n)` extra memory and allocates `n` new nodes. Trying an in-place "swap nodes when out of order" pass like array quickselect partition is much harder on a DLL than on an array — every node swap requires patching four boundary links (two `next` and two `prev`), and on non-adjacent swaps you must locate two sets of neighbours. The two-bucket split avoids the swap problem entirely: every node is appended exactly once with both directions wired, and the chain is never partially broken.
+
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
+| Check | Answer for Value Partition |
+|---|---|
+| **Q1.** Does the problem rearrange the nodes of one input DLL in place? | **Yes** — every input node appears in the output exactly once; only `prev` and `next` fields change. |
+| **Q2.** Can the target be expressed as classifier + selector? | **Yes** — `f1(node) = node.val < X` routes nodes into less / greater-or-equal buckets in `O(1)` per node; `f2 = concatenate` joins the buckets with `lessTail.next = greaterHead` and `greaterHead.prev = lessTail`. |
+| **Q3.** Are the sub-lists bounded in count and walkable in one pass? | **Yes** — exactly two buckets; the merge step is a single mirrored splice. |
+| **Q4.** Is `O(1)` extra space sufficient? | **Yes** — two dummy heads plus a handful of cursors regardless of input size. The output reuses the input nodes — no fresh allocations beyond the throwaway dummies. |
+
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
+
+Run the reorder pipeline with `f1 = (val < X)` and `f2 = concatenate`, with the mirror wired on every attach.
+
+1. **Short-circuit trivial inputs.** If `head` is `null` or `head.next` is `null`, return `head` unchanged. A list with zero or one node is already trivially partitioned.
+2. **Initialise the two bucket skeletons.** Create `less_dummy = ListNode(0)` and `less_tail = less_dummy`; create `greater_dummy = ListNode(0)` and `greater_tail = greater_dummy`. The dummies anchor the splices so the first node in each bucket needs no special case.
+3. **Walk the input with a single cursor.** Set `current = head`. Loop while `current` is non-`null`. Each iteration evaluates `current.val < X`.
+4. **Inside the loop, splice into the chosen bucket with the mirror.** If the value is less than `X`, write `less_tail.next = current` AND `current.prev = less_tail`, then advance `less_tail = less_tail.next`. Otherwise do the mirrored splice onto `greater_tail`. The append-to-tail discipline preserves the input's relative order within each bucket — *if* you append, never prepend.
+5. **Advance the walk.** After the bucket splice, set `current = current.next`. The splice rewrote `tail.next` and `current.prev`; `current.next` still points into the input chain.
+6. **Terminate both buckets in both directions.** When the loop exits, set `less_tail.next = null` and `greater_tail.next = null` (forward terminators) AND zero each non-empty bucket's new head's `prev`. Without the back-link nulls, both heads still point back at their throwaway dummies — a dangling reference that breaks backward traversal.
+7. **Concatenate the buckets with the mirror.** Walk to the end of the less bucket (or use the saved `less_tail`), then write `less_tail.next = greater_head` AND `greater_head.prev = less_tail`. Handle the two edge cases inline: if the less bucket is empty, return the greater bucket's head; if the greater bucket is empty, return the less bucket's head — neither needs the concat step.
+8. **Return the head of the merged list.** Skip the throwaway `less_dummy` and return `less_dummy.next` (or `greater_dummy.next` when the less bucket is empty).
+
+</details>
+<details>
+<summary><h2>Dry Run — Example 1</h2></summary>
+
+See the **Trace — head = [1, 4, 3, 2, 5, 2], X = 3** block inside *Solution & Analysis* above for the line-by-line walk. The key beats: six iterations split the list into `less: 1 ⇄ 2 ⇄ 2` (input order) and `greater: 4 ⇄ 3 ⇄ 5` (input order); the terminate step zeroes the `next` fields at the bucket tails AND the `prev` fields at the new heads so neither dummy survives in the chain; the concat step writes `last-less-2.next = 4` AND `4.prev = last-less-2` so the join is mirrored. Final list: `1 ⇄ 2 ⇄ 2 ⇄ 4 ⇄ 3 ⇄ 5`.
+
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
+Value-partition is the stable-partition variant of reorder on a DLL — the classifier reads `val < X` and the merge step is plain concatenation, each splice paired with its mirror. The bucket-append discipline (append to the tail, never the head) is what guarantees the stability the problem requires; the mirror writes keep `prev` honest.
+
+</details>

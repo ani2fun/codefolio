@@ -105,7 +105,7 @@ print(Solution().number_sequence(1, 1))   # [[1]]
 print(len(Solution().number_sequence(3, 3)))  # 27
 ```
 
-```java run
+```java run viz=graph viz-root=sequences
 import java.util.*;
 
 public class Main {

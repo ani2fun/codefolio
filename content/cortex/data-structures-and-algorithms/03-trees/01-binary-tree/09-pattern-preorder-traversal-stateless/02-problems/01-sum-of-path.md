@@ -142,7 +142,7 @@ t7 = from_level_order([3, 1, 4, 1, 5, 9, 2])
 Solution().sum_of_path(t7); print(to_level_order(t7))   # [3, 4, 7, 5, 9, 16, 9]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

@@ -174,7 +174,7 @@ print(Solution().phone_combinations("9"))    # ['w', 'x', 'y', 'z']
 print(len(Solution().phone_combinations("23")))  # 9
 ```
 
-```java run
+```java run viz=graph viz-root=current_combination
 import java.util.*;
 
 public class Main {

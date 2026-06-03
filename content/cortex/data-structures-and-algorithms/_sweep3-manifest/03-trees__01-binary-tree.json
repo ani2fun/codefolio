@@ -9,8 +9,8 @@
       "files": [
         "03-trees/01-binary-tree/01-introduction-to-binary-trees.md"
       ],
-      "status": "pending",
-      "todos_filled": 0,
+      "status": "done",
+      "todos_filled": 11,
       "verify_flags": 0,
       "memorize_migrated": false
     },
@@ -20,8 +20,8 @@
       "files": [
         "03-trees/01-binary-tree/02-array-implementation-of-binary-trees.md"
       ],
-      "status": "pending",
-      "todos_filled": 0,
+      "status": "done",
+      "todos_filled": 11,
       "verify_flags": 0,
       "memorize_migrated": false
     },
@@ -31,8 +31,8 @@
       "files": [
         "03-trees/01-binary-tree/03-linked-list-implementation-of-binary-trees.md"
       ],
-      "status": "pending",
-      "todos_filled": 0,
+      "status": "done",
+      "todos_filled": 11,
       "verify_flags": 0,
       "memorize_migrated": false
     },
@@ -42,8 +42,8 @@
       "files": [
         "03-trees/01-binary-tree/04-recursive-traversals-in-binary-trees.md"
       ],
-      "status": "pending",
-      "todos_filled": 0,
+      "status": "done",
+      "todos_filled": 11,
       "verify_flags": 0,
       "memorize_migrated": false
     },
@@ -53,8 +53,8 @@
       "files": [
         "03-trees/01-binary-tree/05-iterative-traversals-in-binary-trees.md"
       ],
-      "status": "pending",
-      "todos_filled": 0,
+      "status": "done",
+      "todos_filled": 11,
       "verify_flags": 0,
       "memorize_migrated": false
     },
@@ -64,8 +64,8 @@
       "files": [
         "03-trees/01-binary-tree/06-constructing-a-binary-tree.md"
       ],
-      "status": "pending",
-      "todos_filled": 0,
+      "status": "done",
+      "todos_filled": 11,
       "verify_flags": 0,
       "memorize_migrated": false
     },
@@ -75,8 +75,8 @@
       "files": [
         "03-trees/01-binary-tree/07-insertion-in-binary-trees.md"
       ],
-      "status": "pending",
-      "todos_filled": 0,
+      "status": "done",
+      "todos_filled": 12,
       "verify_flags": 0,
       "memorize_migrated": false
     },

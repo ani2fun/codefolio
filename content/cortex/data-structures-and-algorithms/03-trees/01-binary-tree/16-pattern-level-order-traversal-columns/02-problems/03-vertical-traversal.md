@@ -108,7 +108,7 @@ print(Solution().vertical_traversal(from_level_order([1, None, 2, None, None, No
 print(Solution().vertical_traversal(from_level_order([1, 2, 3])))                          # [[2], [1], [3]]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

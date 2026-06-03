@@ -10,7 +10,7 @@ summary: Schema, indexes, transactions, isolation levels — and EXPLAIN ANALYZE
 
 ## 1. Motivation
 
-In **February 2016**, Nick Craver published [*Stack Overflow: The Architecture — 2016 Edition*](https://nickcraver.com/blog/2016/02/17/stack-overflow-the-architecture-2016-edition/). The site served roughly **1.3 billion page views per month**, and the number that stuck with the industry was buried in the hardware list: **2 SQL Servers**, primary + replica, holding the whole canonical state of the network. Two database servers ran the entirety of Stack Overflow, Server Fault, Super User, and the other ~170 Stack Exchange sites combined — 209 GB of RAM each, ~ 4 TB of SSD, peak ~ 11 000 queries per second. That's it.
+In **February 2016**, Nick Craver published [*Stack Overflow: The Architecture — 2016 Edition*](https://nickcraver.com/blog/2016/02/17/stack-overflow-the-architecture-2016-edition/). The site served roughly **2 billion page views per month**, and the number that stuck with the industry was buried in the hardware list: **2 SQL Servers**, primary + replica, holding the whole canonical state of the network. Two database servers ran the entirety of Stack Overflow, Server Fault, Super User, and the other ~170 Stack Exchange sites combined — 384 GB of RAM and ~4 TB of PCIe SSD, peak ~11,000 queries per second. That's it.
 
 What lets one Postgres or one SQL Server go that far is not magic. It's the same toolkit the rest of the industry has and routinely doesn't use well: well-indexed schemas, queries shaped to the planner's strengths, sane isolation levels, the disciplined operational hygiene of `ANALYZE` / `VACUUM` / monitoring. Three years later, [Kyle Kingsbury's Jepsen analysis of Postgres 12.3](https://jepsen.io/analyses/postgresql-12.3) showed that even the *isolation levels* are subtler than the documentation lets on — the SQL standard, Postgres's documentation, and the actual implementation each tell a slightly different story.
 
@@ -90,7 +90,7 @@ In practice, "3NF or better" is the right default. **Denormalisation** — delib
 
 An index is a separate data structure that maps **a key (column value) → row location on disk**. The default index in every relational database in 2026 is the **B-tree** — Postgres calls it `btree`, MySQL/InnoDB makes it the *primary* organisation of the table itself.
 
-A B-tree of `N` rows has depth `⌈log_fanout(N / rowsPerPage)⌉`. For typical Postgres values (fanout ≈ 100 entries per index page, rowsPerPage ≈ 100 rows per heap page), a million-row table has a B-tree of depth 3. **An indexed point lookup is 3 random page reads.** Drag the slider below from 100 rows to 100 million; the depth changes by *one*. The sequential-scan alternative grows linearly with the table size — by 1 M rows the index is ~1000× faster, by 100 M rows ~100 000×.
+A B-tree on `N` rows has depth `⌈log_fanout(N)⌉`. For a typical Postgres index fanout of ≈ 100 entries per page, a million-row table has a B-tree of depth 3. **An indexed point lookup is ~3 random page reads.** Drag the slider below from 100 rows to 100 million and the depth barely moves — it grows by just one level per ~100× more rows (≈1 to ≈4 across the whole range). The sequential-scan alternative, by contrast, grows linearly with table size (≈ `N / rowsPerPage` pages) — by 1 M rows the index is ~1000× faster, by 100 M rows ~100 000×.
 
 ```d3 widget=btree-walker
 {

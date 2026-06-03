@@ -146,7 +146,7 @@ print(Solution().consecutive_ones([1, 1, 1, 1]))                           # 4  
 print(Solution().consecutive_ones([1, 1, 1, 1, 0, 1]))                    # 4  — ones at end
 ```
 
-```java run
+```java run viz=array viz-root=arr
 public class Main {
     static class Solution {
         public int consecutiveOnes(int[] arr) {
@@ -211,47 +211,831 @@ public class Main {
 
 
 > ▶ Interactive Diagram — TODO: add caption
-```d3 widget=array-traversal
+```d3 widget=array-1d
 {
-  "items": ["1", "1", "1", "0", "0", "0", "1", "1", "1", "1", "0"],
-  "title": "Consecutive Ones on [1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0]",
   "steps": [
     {
-      "keys":    ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"],
-      "markers": [{ "name": "end", "index": 0, "color": "#10b981" }],
-      "msg": "arr[0] = 1 → count_ones = 1. max_ones = 0."
+      "nodes": [
+        {
+          "id": "a",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "d",
+          "label": "0",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "e",
+          "label": "0",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "f",
+          "label": "0",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "g",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "h",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "i",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 8,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "j",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 9,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "k",
+          "label": "0",
+          "kind": "cell",
+          "meta": [],
+          "slot": 10,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "end",
+          "target": "a",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "arr[0] = 1 → count_ones = 1. max_ones = 0.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "keys":    ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"],
-      "markers": [{ "name": "end", "index": 2, "color": "#10b981" }],
-      "msg": "After three 1s in a row: count_ones = 3. max_ones still 0 (no 0 seen yet)."
+      "nodes": [
+        {
+          "id": "a",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "d",
+          "label": "0",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "e",
+          "label": "0",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "f",
+          "label": "0",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "g",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "h",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "i",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 8,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "j",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 9,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "k",
+          "label": "0",
+          "kind": "cell",
+          "meta": [],
+          "slot": 10,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "end",
+          "target": "c",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "After three 1s in a row: count_ones = 3. max_ones still 0 (no 0 seen yet).",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "keys":    ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"],
-      "markers": [{ "name": "end", "index": 3, "color": "#10b981" }],
-      "msg": "arr[3] = 0 → process: max_ones = max(0, 3) = 3. Reset count_ones = 0."
+      "nodes": [
+        {
+          "id": "a",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "d",
+          "label": "0",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "e",
+          "label": "0",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "f",
+          "label": "0",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "g",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "h",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "i",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 8,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "j",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 9,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "k",
+          "label": "0",
+          "kind": "cell",
+          "meta": [],
+          "slot": 10,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "end",
+          "target": "d",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "arr[3] = 0 → process: max_ones = max(0, 3) = 3. Reset count_ones = 0.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "keys":    ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"],
-      "markers": [{ "name": "end", "index": 5, "color": "#10b981" }],
-      "msg": "More 0s — max_ones stays 3, count_ones stays 0."
+      "nodes": [
+        {
+          "id": "a",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "d",
+          "label": "0",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "e",
+          "label": "0",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "f",
+          "label": "0",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "g",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "h",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "i",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 8,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "j",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 9,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "k",
+          "label": "0",
+          "kind": "cell",
+          "meta": [],
+          "slot": 10,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "end",
+          "target": "f",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "More 0s — max_ones stays 3, count_ones stays 0.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "keys":    ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"],
-      "markers": [{ "name": "end", "index": 9, "color": "#10b981" }],
-      "msg": "Four 1s at indices 6..9: count_ones = 4. max_ones still 3."
+      "nodes": [
+        {
+          "id": "a",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "d",
+          "label": "0",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "e",
+          "label": "0",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "f",
+          "label": "0",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "g",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "h",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "i",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 8,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "j",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 9,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "k",
+          "label": "0",
+          "kind": "cell",
+          "meta": [],
+          "slot": 10,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "end",
+          "target": "j",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Four 1s at indices 6..9: count_ones = 4. max_ones still 3.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "keys":    ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"],
-      "markers": [{ "name": "end", "index": 10, "color": "#10b981" }],
-      "msg": "arr[10] = 0 → process: max_ones = max(3, 4) = 4. Reset count_ones = 0."
+      "nodes": [
+        {
+          "id": "a",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "d",
+          "label": "0",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "e",
+          "label": "0",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "f",
+          "label": "0",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "g",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "h",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "i",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 8,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "j",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 9,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "k",
+          "label": "0",
+          "kind": "cell",
+          "meta": [],
+          "slot": 10,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "end",
+          "target": "k",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "arr[10] = 0 → process: max_ones = max(3, 4) = 4. Reset count_ones = 0.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "keys":    ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"],
-      "markers": [],
-      "msg": "Loop ends. Final check: max_ones = max(4, 0) = 4. Return 4."
+      "nodes": [
+        {
+          "id": "a",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "d",
+          "label": "0",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "e",
+          "label": "0",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "f",
+          "label": "0",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "g",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "h",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "i",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 8,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "j",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 9,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "k",
+          "label": "0",
+          "kind": "cell",
+          "meta": [],
+          "slot": 10,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Loop ends. Final check: max_ones = max(4, 0) = 4. Return 4.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Consecutive Ones on [1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0]"
 }
 ```
 

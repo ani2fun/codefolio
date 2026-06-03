@@ -71,24 +71,87 @@ Two design decisions shape every linked-list class you'll ever write:
    *No `tail`* — `append` is O(n) but there's one less invariant to maintain.
 
 > ▶ Interactive Diagram — The SinglyLinkedList object owns three pieces of state — head (always), currentSize (usually cached), and tail (sometimes cached). The trade-offs are the whole design.
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "SinglyLinkedList state — head (always) + currentSize (cached) + tail (optional)",
-  "direction": "single",
-  "nodes": [
-    {"id": "n1", "value": "3"},
-    {"id": "n2", "value": "8"},
-    {"id": "n3", "value": "2"},
-    {"id": "n4", "value": "1"}
-  ],
-  "head": "n1",
   "steps": [
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "tail", "nodeId": "n4"}],
-      "msg": "head + cached currentSize is the minimal viable design; tail is optional (makes append O(1) but costs an extra field to maintain)"
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "8",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "2",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "1",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n1",
+          "color": "#10b981"
+        },
+        {
+          "name": "tail",
+          "target": "n4",
+          "color": "#8b5cf6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "head + cached currentSize is the minimal viable design; tail is optional (makes append O(1) but costs an extra field to maintain)",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "SinglyLinkedList state — head (always) + currentSize (cached) + tail (optional)"
 }
 ```
 
@@ -326,7 +389,7 @@ print(ll2.remove(9))                      # True   (remove head)
 print(to_list(ll2.head))                  # [5]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {

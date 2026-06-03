@@ -1,6 +1,6 @@
 ---
 title: "Introduction To Binary Trees"
-summary: "<!-- TODO: summary -->"
+summary: "Hierarchy is everywhere — folders, the DOM, syntax trees, org charts — and a linear structure cannot capture it. The binary tree caps every node at two ordered children, and that one restriction unlocks fast search, heaps, parsers, and every recursive tree algorithm in the course."
 ---
 
 # 1. Introduction to Binary Trees
@@ -21,9 +21,36 @@ This first lesson sets up the language: what a tree *is*, what each part is *cal
 
 ## Table of contents
 
-1. [Understanding a binary tree](#understanding-a-binary-tree)
-2. [Key tree terminologies](#key-tree-terminologies)
-3. [Types and properties of binary trees](#types-and-properties-of-binary-trees)
+1. [Understanding the problem](#understanding-the-problem)
+2. [Understanding a binary tree](#understanding-a-binary-tree)
+3. [Key tree terminologies](#key-tree-terminologies)
+4. [Types and properties of binary trees](#types-and-properties-of-binary-trees)
+5. [Supported operations](#supported-operations)
+6. [Internal mechanics](#internal-mechanics)
+7. [Working example](#working-example)
+8. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
+9. [Production reality](#production-reality)
+10. [Quiz](#quiz)
+11. [Practice ladder](#practice-ladder)
+12. [Further reading](#further-reading)
+13. [Cross-links](#cross-links)
+14. [Final takeaway](#final-takeaway)
+
+***
+
+# Understanding the Problem
+
+A binary tree exists to model **hierarchy** — data where one item *contains* or *precedes* others, and a single line cannot capture the relationship. The structures you already know all store data in a sequence. The moment a problem says "parent", "child", "contains", or "branches into", that sequence is the wrong shape.
+
+Three families of real problems force this need:
+
+- **Containment** — a folder holds files and other folders; a JSON object nests objects; an HTML page nests elements. Each thing lives *inside* exactly one parent.
+- **Decision and search** — a guessing game halves the search space at every step; a sorted dictionary lets you skip past whole ranges. Each choice branches into a smaller sub-problem.
+- **Precedence and derivation** — arithmetic groups `(a + b) * c` so the parenthesised part resolves first; a compiler parses source into the order operations must run. Each operation depends on its sub-expressions.
+
+To make this concrete: a file path like `/home/user/photos/trip.jpg` is a *walk down a hierarchy*. The slash is not a separator between equals — it is an edge from a parent folder to a child. Storing those folders in a flat array loses the one fact that matters: which folder contains which.
+
+So the key idea is: a binary tree captures "this node owns these two sub-things" directly in the structure, so the relationship is `O(1)` to follow and the whole hierarchy is `O(n)` to store for `n` nodes. The rest of this lesson builds the vocabulary that lets you *describe* such a structure precisely.
 
 ***
 
@@ -505,46 +532,184 @@ flowchart TB
 
 ***
 
+# Supported Operations
+
+A binary tree exposes a small set of structural operations. Every one of them is built on the same recursive shape — visit a node, then recurse into its two subtrees. The table below summarises the core operations and their cost on a tree of `n` nodes with height `h`.
+
+| Operation | Time | Space | Notes |
+|---|---|---|---|
+| Access a child | `O(1)` time | `O(1)` space | Follow the `left` or `right` reference — one pointer dereference. |
+| Traverse all nodes | `O(n)` time | `O(h)` space | Visit every node once; recursion stack holds at most one root-to-leaf path. |
+| Search (unordered tree) | `O(n)` time | `O(h)` space | No ordering, so a target may be anywhere — every node may need a visit. |
+| Compute height | `O(n)` time | `O(h)` space | Post-order: a node's height needs both children's heights first. |
+| Insert a node | `O(h)` time | `O(1)` space | Walk to the chosen parent, then attach as `left` or `right`. |
+| Delete a node | `O(h)` time | `O(1)` space | Find the node, detach it, then re-link or relocate its subtrees. |
+
+Two of these costs deserve a direct caveat. **Search is `O(n)` time, not `O(log n)`.** A plain binary tree imposes no ordering, so a lookup cannot discard half the tree the way a binary *search* tree does. To make this concrete: finding the value `42` in an unordered tree of 1,000 nodes may touch all 1,000, because `42` could sit in any position. Ordering is what later chapters add to buy `O(log n)` search.
+
+The space column tells the second half of the story. Every recursive operation costs `O(h)` space for the call stack, where `h` is the height. On a **balanced** tree `h ≈ log₂ n`, so the stack stays shallow. On a **skew** tree `h = n − 1`, so the stack is as deep as the tree is tall — deep enough to overflow on a large input. So the tradeoff is: a binary tree gives `O(1)`-time child access and `O(n)`-time full traversal, but every "how fast" answer for search and per-operation depth is really a question about the tree's *height*, which its shape decides.
+
+***
+
+# Internal Mechanics
+
+A binary tree is stored as a set of **node objects connected by references**, and the entire structure hangs off a single `root` reference. This is the linked representation — the one this lesson assumes, and the one the next lesson contrasts with an array layout.
+
+Each node bundles three things together:
+
+- **a value** — the payload the node carries (a number, a string, an object).
+- **a `left` reference** — points to the root of the left subtree, or is `null`.
+- **a `right` reference** — points to the root of the right subtree, or is `null`.
+
+A `null` reference is the structure's way of saying "no child here". A leaf is precisely a node whose `left` and `right` are *both* `null`; a degree-1 node has exactly one non-null child. The whole tree is reachable from `root` by following these references downward — and `root` itself is `null` when the tree is empty.
+
+To make this concrete: a three-node tree with root `1`, left child `2`, and right child `3` is three node objects. The `1` node's `left` points at the `2` node and its `right` points at the `3` node. The `2` and `3` nodes each have `left` and `right` set to `null`. Holding the `1` node is holding the entire tree — lose that reference and all three nodes become unreachable, garbage-collected memory.
+
+This layout is what makes the recursive definition *operational*. The definition says a binary tree is either empty (`null`) or a node with a left and a right subtree. That maps one-to-one onto the references: a reference is either `null`, or it points to a node carrying its own `left` and `right`. Every recursive algorithm in the chapter is written against this shape: check for `null` (the base case), otherwise process the node and recurse on `left` and `right`.
+
+So the key idea is: the tree is a graph of `O(n)` node objects wired by parent-to-child references and reachable from one `root` handle. The `null` reference does double duty — empty-tree sentinel and end-of-subtree marker. The alternative is packing a tree into a flat array by index arithmetic, the subject of the next lesson, which trades pointer flexibility for cache-friendly compactness.
+
+***
+
+# Working Example
+
+Trace a small binary tree from empty to five nodes, then read three properties off it — height, a root-to-leaf path, and the result of a search. Every step uses only the references described above, so the mechanics stay concrete.
+
+**Step 1 — start empty.** The tree is a single `root` reference set to `null`. It holds zero nodes. A traversal returns immediately, a search returns "not found", and a delete is a no-op. The empty tree's height is conventionally `−1` (no edges), which makes a single node's height work out to `0`.
+
+**Step 2 — insert the root.** Create a node holding `1` with `left = null` and `right = null`, and point `root` at it. The tree now has one node, which is *both* the root and a leaf. Its height is `0` — zero edges down to the nearest leaf, because it is its own leaf.
+
+**Step 3 — insert two children of the root.** Attach a node `2` as `root.left` and a node `3` as `root.right`. Node `1` now has degree 2; nodes `2` and `3` are leaves at depth `1`. The tree is a perfect tree of height `1` with `2² − 1 = 3` nodes.
+
+**Step 4 — insert two children under node `2`.** Attach node `4` as `2.left` and node `5` as `2.right`. Nodes `4` and `5` are leaves at depth `2`. Node `3` is still a leaf at depth `1`. The tree now has five nodes, and its shape is the same one drawn in the terminology diagrams above.
+
+**Step 5 — read three properties.** Walk the finished tree:
+
+```
+        1            depth 0   (root)
+       / \
+      2   3          depth 1   (3 is a leaf)
+     / \
+    4   5            depth 2   (4 and 5 are leaves)
+```
+
+- **Height of the tree** = `2`. The longest root-to-leaf path is `1 → 2 → 4` (or `1 → 2 → 5`), which is two edges. Node `3`'s path is shorter, so it does not set the height.
+- **Path from root to node `5`** = `1 → 2 → 5`, length `2` edges (or `3` nodes). It is the *only* such path, because a tree has exactly one path between any two nodes.
+- **Search for value `5`** with no ordering visits nodes until it finds the match: `1` (no), `2` (no), `4` (no), `5` (yes) under a pre-order walk — up to `O(n)` work. The tree's lack of ordering is exactly why the search cannot skip node `4`.
+
+So the key idea is: building the tree is a sequence of "create node, point a parent reference at it" steps. Reading any property is then a recursive walk costing `O(n)` time and `O(h)` space — here `n = 5` and `h = 2`.
+
+***
+
+## Key Takeaway
+
+A binary tree is built one node at a time by attaching children to a parent's `left` or `right` reference, and every property — height, depth, path, or search result — is recovered by a recursive walk costing `O(n)` time and `O(h)` space.
+
+***
+
+# Edge Cases and Pitfalls
+
+Almost every binary-tree bug traces to one of two roots: forgetting the `null` base case, or assuming the tree is balanced when its shape is adversarial. Train your eye to ask, on every tree algorithm, "what happens on the empty tree, and what happens on a skew tree?".
+
+- **The empty tree (`root == null`).** Every recursive tree function must handle `null` as its first line — it is both the empty-tree case and the recursion's base case. Omitting it dereferences a `null` reference and crashes. The fix is a guard: `if (node == null) return <base value>` before touching `node.left` or `node.right`.
+- **The single-node tree.** A one-node tree is *both* root and leaf, with height `0`. Code that assumes the root has children — or that a leaf is never the root — mis-handles this case. Check it explicitly whenever an algorithm treats the root and the leaves differently.
+- **The skew (degenerate) tree.** Insert values in sorted order into a naive tree and you build a skew tree of height `n − 1`. Every `O(h)` operation becomes `O(n)` time, and the `O(h)` recursion stack becomes `O(n)` deep — deep enough to overflow the stack on a large input. A binary tree gives no balance guarantee on its own; self-balancing trees in later chapters are the fix.
+- **Confusing height with depth.** Depth is measured *from the root down* to a node; height is measured *from a node down to its deepest leaf*. They are not interchangeable: the root's depth is `0` but its height is the height of the whole tree. Mixing them produces off-by-one and wrong-direction bugs in any path-length calculation.
+- **The off-by-one in path and height conventions.** Height and path length can be counted in *edges* or in *nodes*, and the two differ by exactly one. This course counts edges, so a single node has height `0` and a leaf has height `0`. Some textbooks count nodes, making a leaf's height `1`. Always confirm the convention before writing a function named `height()` — a silent off-by-one corrupts every comparison built on it.
+- **Treating left and right as interchangeable.** In a binary tree the left/right distinction is part of the structure's identity. A node with one child on the *left* is a different tree from the same node with that child on the *right*, and traversals visit the two in a different order. Swapping the two references is a structural change, not a cosmetic one.
+
+So the key idea is: a binary tree's correctness rests on two habits. Guard every recursion with the `null` base case, and never assume a shape the input does not guarantee. The empty tree and the skew tree are where the `O(n)`-time, `O(n)`-space failures hide.
+
+***
+
+# Production Reality
+
+Binary trees and their direct descendants run anywhere a system needs hierarchy, ordered lookup, or branching decisions. The places below are worth knowing by name.
+
+**[Database and filesystem indexes]** — uses **a balanced search tree (B-tree / B+-tree, a generalised binary search tree)** — because index lookups and range scans must stay `O(log n)` time as the table grows to billions of rows, which only a height-balanced tree guarantees.
+
+**[Priority queues and OS schedulers]** — uses **a binary heap (a complete binary tree)** — because the scheduler must repeatedly extract the highest-priority task in `O(log n)` time, and a complete tree packs into an array with zero pointer overhead.
+
+**[Compilers and interpreters]** — uses **an abstract syntax tree (a binary or n-ary tree)** — because source code is inherently nested, and evaluating `(a + b) * c` in the right order means walking the tree bottom-up so each operation sees its operands first.
+
+**[The DOM in every web browser]** — uses **a tree of element nodes** — because HTML nests elements inside elements, and laying out, styling, and event-bubbling all traverse the parent-child hierarchy directly.
+
+**[Huffman coding in file compression]** — uses **a full binary tree of symbol frequencies** — because assigning shorter bit-paths to frequent symbols is exactly a root-to-leaf walk, and a full binary tree guarantees every symbol is a leaf with a unique prefix-free code.
+
+**[Decision trees and game-playing engines]** — uses **a tree of decision branches** — because each choice spawns sub-choices, and engines like a chess AI search the branching tree of future positions to pick a move.
+
+***
+
+# Quiz
+
+Test your grip before moving on. Commit to an answer before revealing it.
+
+**[Recall] Q: What exactly makes a tree a *binary* tree, and why does the left/right distinction matter?**
+Every node has *at most two* children, and the two child positions are *ordered* — a node with one child on the left is a structurally different tree from the same node with that child on the right, so the left/right label is part of the tree's identity.
+
+**[Recall] Q: How do depth and height differ for a given node?**
+Depth counts the edges from the *root down to* the node, while height counts the edges from the node *down to* its deepest leaf — so the root's depth is always `0` and its height equals the height of the whole tree.
+
+**[Reasoning] Q: Why is search in a plain binary tree `O(n)` time rather than `O(log n)`?**
+A plain binary tree imposes no ordering on its values, so a target may sit in any node and the search cannot discard a subtree without inspecting it — only a binary *search* tree's ordering enables the `O(log n)` skip.
+
+**[Reasoning] Q: Why does almost every recursive tree algorithm cost `O(h)` space even when it does `O(1)` work per node?**
+The recursion call stack holds one frame per node along the current root-to-leaf path, so its depth is the tree's height `h` — `O(log n)` on a balanced tree but `O(n)` on a skew tree.
+
+**[Tradeoff] Q: A complete binary tree can be stored either as linked nodes or packed into an array. What does the array layout gain and give up?**
+The array packs the tree with zero pointer overhead and cache-friendly index arithmetic (`left = 2i + 1`, `right = 2i + 2`), but it gives up the flexibility to represent arbitrary sparse shapes without wasting array slots on the gaps.
+
+***
+
+# Practice Ladder
+
+Five problems to turn the recursive shape — "handle `null`, then recurse left and right" — into a reflex. All five live in this chapter's pattern directories, where a single tree walk does the work. Try each unaided; reach for the hint after ten minutes; do not peek at solutions until you have written something runnable.
+
+| # | Problem | Pattern | Difficulty | Hint |
+|---|---------|---------|------------|------|
+| 1 | [Sum of Leaves](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-problems-sum-of-leaves) | [Postorder Traversal (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-pattern) | Easy | Recurse left and right; at a leaf (`left` and `right` both `null`) return the node's value, otherwise return the sum of the two recursive calls. `O(n)` time, `O(h)` space. |
+| 2 | [Height of a Binary Tree](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-problems-height-of-a-binary-tree) | [Postorder Traversal (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-pattern) | Easy | A node's height is `1 + max(height(left), height(right))`; the empty tree returns `−1` so a single node returns `0`. The post-order shape is forced — you need both child heights first. |
+| 3 | [Level Sum](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-problems-level-sum) | [Level-Order Traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-pattern) | Easy | Process the tree level by level with a queue; sum the values dequeued at each level. The level boundary is the queue size captured before the level starts. |
+| 4 | [Sum of Path](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-problems-sum-of-path) | [Preorder Traversal (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-pattern) | Medium | Carry the running path value *down* into the recursion (pre-order), adding the current node before recursing — the value flows top-to-bottom, not bottom-up. |
+| 5 | [Lowest Common Ancestor](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-lowest-common-ancestor-problems-lowest-common-ancestor) | [Lowest Common Ancestor](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-lowest-common-ancestor-pattern) | Medium | Recurse for both targets; a node where one target is found in its left subtree and the other in its right is the LCA. Uniqueness of the root-to-node path is what makes the answer well-defined. |
+
+Once these feel automatic, "walk the tree and handle `null`" has stopped being a trick and become a reflex — and the pattern chapters can land their punches.
+
+***
+
+# Further Reading
+
+Curated paths in, not a syllabus. Read in order of the annotation; come back for the rest when you need depth.
+
+- **[Array Implementation of Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-array-implementation-of-binary-trees)**
+  ★ Essential — the next lesson; shows how a complete tree packs into an array with `left = 2i + 1` index arithmetic and zero pointers.
+- **[Recursive Traversals in Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-recursive-traversals-in-binary-trees)**
+  ★ Essential — turns the recursive definition from this lesson into the three traversal orders that nearly every tree problem is built on.
+- **[CLRS — Chapter 10: Elementary Data Structures (Rooted Trees)](https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/)**
+  ◆ Advanced — the formal treatment of tree representations, including the left-child/right-sibling encoding for trees of arbitrary degree.
+- **[Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis)**
+  → Reference — what `O(h)` versus `O(n)` actually mean, and why a tree's height drives every per-operation cost.
+
+***
+
+# Cross-Links
+
+**Prerequisites**
+
+- [Introduction to Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-introduction) — the contiguous, indexable buffer the next lesson uses to store a complete tree without pointers.
+- [Introduction to Singly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-introduction-to-singly-linked-lists) — the node-and-reference building block; a binary tree is the same idea with two child references instead of one `next`.
+- [Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis) — the `O(log n)`-versus-`O(n)` vocabulary that explains why a balanced tree beats a skew one.
+
+**What comes next**
+
+- [Array Implementation of Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-array-implementation-of-binary-trees) — store a tree compactly by index arithmetic; the natural fit for complete trees and heaps.
+- [Linked List Implementation of Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-linked-list-implementation-of-binary-trees) — the node-and-pointer representation in full, the right choice for arbitrary tree shapes.
+- [Recursive Traversals in Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-recursive-traversals-in-binary-trees) — the algorithmic core of the chapter; pre-order, in-order, and post-order walks over the recursive structure.
+
+***
+
 ## Final Takeaway
 
-The vocabulary we built in this lesson — root, leaf, internal, edge, path, subtree, depth, height, level — is the language *every* tree algorithm in the rest of the chapter speaks. Three big ideas to walk away with:
-
-1. **Trees are recursive by construction.** *A binary tree is either empty, or a root with a left subtree and a right subtree.* That two-line definition is the entire intuition for traversals, construction, height calculation, LCA — every recursive algorithm you'll write on trees mirrors that recursive shape. Train yourself to *see* a tree as "node + two smaller trees" and you'll find the recursion writing itself.
-2. **Height is everything.** An algorithm that does O(1) work per level on a balanced tree is O(log N); the same algorithm on a skew tree is O(N). The tree's *shape* — not just its size — determines the cost. The whole point of *self-balancing* trees in later chapters is to *force* `O(log N)` height regardless of insertion order.
-3. **Names matter — they unlock specialisations.** *Complete* trees can be stored in arrays (next lesson). *Perfect* trees have closed-form formulas for size and height. *Full* trees obey `leaves = internal + 1`. Recognising which special shape you're dealing with often saves you from re-deriving the same identities.
-
-> *Coming up — the next two lessons cover the two ways to actually <em>store</em> a binary tree in memory: <strong>arrays</strong> (compact, index-arithmetic, perfect for complete trees and heaps) and <strong>linked nodes</strong> (flexible, the right choice for arbitrary tree shapes). After that, the chapter pivots to <em>traversals</em> — the algorithmic core of nearly every tree problem you'll ever solve.*
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
-
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
-
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
-
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
-
-<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
-<!--       Guidance: bulleted list of gotchas -->
-
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
-
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
-
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
-
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
-
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
+1. **Core mechanic:** a binary tree models hierarchy as a graph of nodes, each holding a value and *at most two* ordered child references (`left`, `right`), reachable from a single `root`, with `null` marking both an empty tree and the end of a subtree.
+2. **Dominant tradeoff:** you gain a structure that captures parent-child relationships directly and recurses cleanly into two subproblems; you give up any guarantee on shape — height ranges from `O(log n)` when balanced to `O(n)` when skew, and every per-operation cost follows that height.
+3. **One thing to remember:** a binary tree is *either empty, or a root with a left subtree and a right subtree* — that recursive definition is the engine behind every traversal, construction, and analysis in the rest of the chapter.

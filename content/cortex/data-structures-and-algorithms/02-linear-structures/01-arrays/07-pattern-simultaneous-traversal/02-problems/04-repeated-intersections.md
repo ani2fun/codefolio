@@ -120,7 +120,7 @@ Count occurrences of every value in `arr1` into a hash map, then count occurrenc
 
 ### The Solution
 
-```python run
+```python run viz=array viz-root=result
 from typing import List
 
 class Solution:
@@ -166,7 +166,7 @@ print(Solution().repeated_intersections([1, 2, 2, 2], [2, 2]))            # [2, 
 print(Solution().repeated_intersections([1, 2, 3], [1, 2, 3]))            # [1, 2, 3] — identical arrays
 ```
 
-```java run
+```java run viz=array viz-root=result
 import java.util.*;
 
 public class Main {

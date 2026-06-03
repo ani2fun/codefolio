@@ -390,7 +390,7 @@ a8 = [5, 2, 8, 1, 9, 3]
 Solution().three_way_quick_sort(a8); print(a8)     # [1, 2, 3, 5, 8, 9]
 ```
 
-```java run
+```java run viz=array viz-root=arr
 import java.util.Arrays;
 
 public class Main {

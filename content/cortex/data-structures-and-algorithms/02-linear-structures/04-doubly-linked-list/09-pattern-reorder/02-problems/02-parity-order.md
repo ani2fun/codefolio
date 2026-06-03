@@ -226,7 +226,7 @@ head = from_list([1, 2, 3, 4, 5, 6])
 print(to_list(Solution().parity_order(head)))   # [1, 3, 5, 2, 4, 6]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -421,27 +421,83 @@ Result: [2, 3, 8, 1, 4] ✓
 | All odd-length | `[1,2,3]` | `[1, 3, 2]` | Odd stripe gets 2 nodes, even gets 1. |
 
 </details>
+<details>
+<summary><h2>Examples</h2></summary>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+**Example 1**
+```
+Input:  head = [2, 1, 3, 4, 8]   (1-indexed: [1]:2  [2]:1  [3]:3  [4]:4  [5]:8)
+Output: [2, 3, 8, 1, 4]
+Explanation: Odd-indexed values (positions 1, 3, 5) form the odd stripe: 2 ⇄ 3 ⇄ 8. Even-indexed values (positions 2, 4) form the even stripe: 1 ⇄ 4. Concatenate odd before even with mirror updates: 2 ⇄ 3 ⇄ 8 ⇄ 1 ⇄ 4.
+```
 
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
+**Example 2**
+```
+Input:  head = []
+Output: []
+Explanation: Empty in, empty out — nothing to splice.
+```
 
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
+**Example 3**
+```
+Input:  head = [1, 2, 3, 4]
+Output: [1, 3, 2, 4]
+Explanation: Odd stripe = 1 ⇄ 3; even stripe = 2 ⇄ 4. Concatenate: 1 ⇄ 3 ⇄ 2 ⇄ 4 with 3.next = 2 and 2.prev = 3.
+```
 
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
+**Example 4**
+```
+Input:  head = [1, 2, 3, 4, 5, 6]
+Output: [1, 3, 5, 2, 4, 6]
+Explanation: Odd stripe = 1 ⇄ 3 ⇄ 5; even stripe = 2 ⇄ 4 ⇄ 6. The relative order within each stripe matches the input.
+```
 
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
+</details>
+<details>
+<summary><h2>Intuition</h2></summary>
 
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
+The **structural property** that makes this a reorder problem is that the output reuses every input node in a different order — the work is purely structural, with no value comparison. The reorder is decided by each node's 1-based position in the input, which is an `O(1)` classifier evaluated while you walk the list. On a DLL, both directions of every splice must stay in sync, so each append wires two pointers instead of one — but the pipeline shape is identical to the singly-linked version.
 
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->
+The **pointer placement** follows directly. Maintain four cursors plus a counter. `odd_dummy` / `odd_tail` grow the odd-indexed sub-list; `even_dummy` / `even_tail` grow the even-indexed sub-list; `current` walks the input; `counter` (starting at `1`) tracks the current 1-based index. Each iteration evaluates `counter % 2 == 1` to choose a bucket, splices `current` onto that bucket's tail with both `tail.next = current` and `current.prev = tail`, advances `current` and increments `counter`. After the loop, terminate both buckets in both directions — null the new heads' `prev` AND the tails' `next` — then concatenate with `odd_tail.next = even_head` AND `even_head.prev = odd_tail`.
+
+What **breaks if you reach for a naive approach**? Copying every value into two arrays, concatenating, and rebuilding a fresh DLL works in `O(n)` time but pays `O(n)` extra memory and allocates `n` new nodes. Trying to do it with in-place node swaps on a single DLL is even messier than on a singly-linked list — every swap risks corrupting either chain because there's no `O(1)` way to swap two non-adjacent DLL nodes (each swap requires patching four boundary links). The two-bucket split sidesteps the swap problem entirely: each node is appended exactly once with both directions wired on the way in.
+
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
+| Check | Answer for Parity Order |
+|---|---|
+| **Q1.** Does the problem rearrange the nodes of one input DLL in place? | **Yes** — every input node appears in the output exactly once; only `prev` and `next` fields change. |
+| **Q2.** Can the target be expressed as classifier + selector? | **Yes** — `f1(node, counter) = counter % 2` routes nodes into odd / even buckets in `O(1)` per node; `f2 = concatenate` joins the even bucket after the odd bucket with `oddTail.next = evenHead` and `evenHead.prev = oddTail`. |
+| **Q3.** Are the sub-lists bounded in count and walkable in one pass? | **Yes** — exactly two buckets; the merge step is a single mirrored splice. |
+| **Q4.** Is `O(1)` extra space sufficient? | **Yes** — two dummy heads plus a handful of cursors (`odd_tail`, `even_tail`, `current`, `counter`) regardless of input size. |
+
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
+
+Run the reorder pipeline with `f1 = counter % 2` and `f2 = concatenate`, with both directions wired on every attach.
+
+1. **Short-circuit trivial inputs.** If `head` is `null` or `head.next` is `null`, return `head` unchanged. A list with zero or one node already satisfies the target shape.
+2. **Initialise the two bucket skeletons.** Create `odd_dummy = ListNode(0)` and `odd_tail = odd_dummy`; create `even_dummy = ListNode(0)` and `even_tail = even_dummy`. The dummies let every splice use the same shape without a special case for the first node in each bucket; the dummies' `prev` fields never get read, so they need not be initialised.
+3. **Initialise the walk state.** Set `current = head` and `counter = 1`. The counter is 1-based to match the problem's "indices start at 1" rule.
+4. **Loop while `current` is non-`null`.** Each iteration evaluates `counter % 2`. If the result is `1` (odd index), splice `current` onto `odd_tail` by writing both `odd_tail.next = current` and `current.prev = odd_tail`, then advance `odd_tail`. Otherwise (even index), do the mirrored splice onto `even_tail`.
+5. **Advance the walk.** After the bucket splice, set `current = current.next` and `counter += 1`. The order matters: the splice rewrote `tail.next` and `current.prev`, but `current.next` still points into the input chain, so we read it one more time to advance.
+6. **Terminate both buckets in both directions.** When the loop exits, set `odd_tail.next = null` and `even_tail.next = null` (forward terminators) AND `odd_dummy.next.prev = null` and `even_dummy.next.prev = null` (back-link terminators on the new heads, when the buckets are non-empty). Without the back-link nulls, the new heads' `prev` still points at the throwaway dummies — a dangling reference that breaks backward traversal.
+7. **Concatenate the buckets with the mirror.** Walk `odd_head`'s suffix to its tail (the loop's `odd_tail` already holds this reference), then set `odd_tail.next = even_head` AND `even_head.prev = odd_tail`. The merged list is now bidirectionally consistent.
+8. **Return the head of the merged list.** Skip the throwaway `odd_dummy` and return `odd_dummy.next`.
+
+</details>
+<details>
+<summary><h2>Dry Run — Example 1</h2></summary>
+
+See the **Trace — head = [2, 1, 3, 4, 8]** block inside *Solution & Analysis* above for the line-by-line walk. The key beats: five iterations split the list into `odd: 2 ⇄ 3 ⇄ 8` and `even: 1 ⇄ 4`; the terminate step nulls both ends of both buckets in both directions; the concatenate step writes `8.next = 1` AND `1.prev = 8` so the join is mirrored. Final list: `2 ⇄ 3 ⇄ 8 ⇄ 1 ⇄ 4`.
+
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
+Parity-order is the canonical reorder example on a DLL — the classifier reads a counter, not a value, and the merge step is plain concatenation with two mirrored writes (`tail.next = head` AND `head.prev = tail`). Master the bucket-append-with-mirror discipline here and every other concatenate-after-split variant on a DLL is a one-line swap of the classifier.
+
+</details>

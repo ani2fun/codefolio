@@ -1,9 +1,6 @@
 package codefolio.client.components.cortex
 
-import codefolio.shared.viz.*
-
 import scala.scalajs.js
-import scala.util.Try
 
 /**
  * The one robust Python tracer (ADR-0018). Wraps user Python in a `sys.settrace` harness that captures, per
@@ -13,12 +10,9 @@ import scala.util.Try
  *
  * The server-side `/api/run` is unchanged: the wrapped program prints its trace as JSON between
  * `__CFHEAP_BEGIN__` / `__CFHEAP_END__` markers, after the user's own stdout. [[parse]] splits the two back
- * apart and decodes the JSON into the shared [[HeapTrace]] model.
+ * apart via the shared [[MarkedTrace]] decoder and returns a [[MarkedTrace.TraceResult]].
  */
 object PythonTracer:
-
-  /** A parsed trace plus the user program's own stdout (everything printed before the marker). */
-  final case class TraceResult(trace: HeapTrace, programStdout: String)
 
   private val BeginMarker = "__CFHEAP_BEGIN__"
   private val EndMarker   = "__CFHEAP_END__"
@@ -36,7 +30,7 @@ object PythonTracer:
   /** Wrap user Python in the heap-snapshot tracer harness. The result is a runnable Python program. */
   def wrap(userSource: String): String =
     val encoded = base64Encode(userSource)
-    s"""import sys, json, base64, math
+    s"""import sys, json, base64, math, types
        |
        |_cf_source = base64.b64decode("$encoded").decode("utf-8")
        |_cf_steps = []
@@ -45,6 +39,32 @@ object PythonTracer:
        |_cf_max_objects = 400
        |_cf_max_depth = 60
        |_cf_max_payload = 512 * 1024
+       |
+       |# Modules whose objects are stdlib/library internals — not user data. We render
+       |# instances of types from these modules as opaque (no field recursion), so
+       |# `from collections import deque` / `from typing import Optional` don't drag the
+       |# entire metaclass tree into every heap snapshot.
+       |_cf_opaque_modules = frozenset((
+       |    "typing", "_collections_abc", "collections.abc", "abc",
+       |    "_typeshed", "_collections", "_weakrefset", "weakref",
+       |))
+       |
+       |# True when `v` is class/module/function/built-in machinery that we want to
+       |# represent as a single opaque node — no `__dict__` recursion. Without this guard,
+       |# importing `deque` would dump deque's ~50 method/wrapper entries into the heap
+       |# every step, blowing the trace past the 512 KB payload cap and starving the
+       |# `autoDetectRoot` heuristic (which then picks `deque` as the visualisation root).
+       |def _cf_is_opaque(v):
+       |    if isinstance(v, type): return True
+       |    if isinstance(v, types.ModuleType): return True
+       |    if isinstance(v, (types.FunctionType, types.BuiltinFunctionType,
+       |                       types.MethodType, types.BuiltinMethodType,
+       |                       types.MethodWrapperType, types.WrapperDescriptorType,
+       |                       types.MethodDescriptorType, types.GetSetDescriptorType,
+       |                       types.MemberDescriptorType)):
+       |        return True
+       |    mod = getattr(type(v), "__module__", "")
+       |    return mod in _cf_opaque_modules
        |
        |def _cf_scalar(v):
        |    if v is None or isinstance(v, bool) or isinstance(v, int):
@@ -55,7 +75,10 @@ object PythonTracer:
        |        return (True, v if len(v) <= 80 else v[:80] + "\\u2026")
        |    return (False, None)
        |
-       |def _cf_snapshot(items):
+       |# Snapshot the full call stack — a list of (fn_name, locals_items) pairs, innermost first — into
+       |# the ADR-0021 frames/heap shape. One shared heap across frames so an object referenced from two
+       |# frames (a closure capture, a recursion's outer-frame argument) is a single node, not duplicated.
+       |def _cf_snapshot(frame_specs):
        |    heap = {}
        |    def visit(v, depth):
        |        is_s, sv = _cf_scalar(v)
@@ -66,6 +89,13 @@ object PythonTracer:
        |            return {"ref": oid}
        |        if len(heap) >= _cf_max_objects or depth >= _cf_max_depth:
        |            _cf_truncated[0] = True
+       |            return {"ref": oid}
+       |        # Render classes / modules / functions / typing-internals as opaque — see
+       |        # `_cf_is_opaque`. The object still gets an id and appears once in the heap,
+       |        # so any frame local referencing it still has something to point at; we just
+       |        # don't recurse into its `__dict__`.
+       |        if _cf_is_opaque(v):
+       |            heap[oid] = {"type": "object", "cls": type(v).__name__, "fields": {}}
        |            return {"ref": oid}
        |        heap[oid] = None
        |        if isinstance(v, (list, tuple)):
@@ -90,23 +120,37 @@ object PythonTracer:
        |                    fields[fk] = visit(fv, depth + 1)
        |            heap[oid] = {"type": "object", "cls": type(v).__name__, "fields": fields}
        |        return {"ref": oid}
-       |    locs = {}
-       |    for k, v in items:
-       |        if isinstance(k, str) and not k.startswith("_cf_") and not k.startswith("__"):
-       |            locs[k] = visit(v, 0)
-       |    return locs, heap
+       |    frames_out = []
+       |    for fn_name, items in frame_specs:
+       |        locs = {}
+       |        for k, v in items:
+       |            if isinstance(k, str) and not k.startswith("_cf_") and not k.startswith("__"):
+       |                locs[k] = visit(v, 0)
+       |        frames_out.append({"fn": fn_name, "locals": locs})
+       |    return frames_out, heap
+       |
+       |# Walk frame.f_back to collect every traced-file frame on the call stack, innermost first. Frames
+       |# from the harness wrapper itself (filename != "<traced>") are skipped, so `frames[0]` is always
+       |# the user's currently-executing function and `frames[-1]` is the user's outermost scope.
+       |def _cf_collect_frames(frame):
+       |    specs = []
+       |    cur = frame
+       |    while cur is not None:
+       |        if cur.f_code.co_filename == "<traced>":
+       |            specs.append((cur.f_code.co_name, list(cur.f_locals.items())))
+       |        cur = cur.f_back
+       |    return specs
        |
        |def _cf_tracer(frame, event, arg):
        |    if event in ("line", "call", "return") and frame.f_code.co_filename == "<traced>":
        |        if frame.f_lineno <= 0:
        |            return _cf_tracer
        |        try:
-       |            locs, heap = _cf_snapshot(list(frame.f_locals.items()))
+       |            frames_data, heap = _cf_snapshot(_cf_collect_frames(frame))
        |            _cf_steps.append({
        |                "line": frame.f_lineno,
        |                "event": event,
-       |                "fn": frame.f_code.co_name,
-       |                "locals": locs,
+       |                "frames": frames_data,
        |                "heap": heap,
        |            })
        |        except Exception:
@@ -129,7 +173,11 @@ object PythonTracer:
        |        _cf_payload = json.dumps({"steps": _cf_steps, "truncated": _cf_truncated[0]})
        |        if len(_cf_payload) <= _cf_max_payload or len(_cf_steps) <= 1:
        |            break
-       |        _cf_steps = _cf_steps[len(_cf_steps) // 4 + 1:]
+       |        # Drop the LAST quarter (not the first) — keeps the algorithm's initial
+       |        # state and early progression, matching the "showing the first part of the
+       |        # run" banner. The tail's converged state is usually less informative than
+       |        # the setup + first iterations.
+       |        _cf_steps = _cf_steps[:-(len(_cf_steps) // 4 + 1)]
        |        _cf_truncated[0] = True
        |    sys.stdout.write("\\n$BeginMarker")
        |    sys.stdout.write(_cf_payload)
@@ -143,81 +191,6 @@ object PythonTracer:
   /**
    * Split the harness output: everything before `__CFHEAP_BEGIN__` is the user's program stdout; the JSON
    * between the markers is the trace. Missing markers (compile error, fatal harness exception) → an empty
-   * trace and the raw stdout as program output.
+   * trace and the raw stdout as program output. Delegates to [[MarkedTrace.parse]].
    */
-  def parse(stdout: String): TraceResult =
-    val beginIdx = stdout.lastIndexOf(BeginMarker)
-    if beginIdx < 0 then TraceResult(HeapTrace(Nil, truncated = false), stdout.stripSuffix("\n"))
-    else
-      val afterBegin = stdout.substring(beginIdx + BeginMarker.length)
-      val endIdx     = afterBegin.indexOf(EndMarker)
-      val jsonRaw    = if endIdx < 0 then afterBegin else afterBegin.substring(0, endIdx)
-      val programOut = stdout.substring(0, beginIdx).stripSuffix("\n")
-      val trace      = Try(decodeTrace(jsonRaw.trim)).getOrElse(HeapTrace(Nil, truncated = false))
-      TraceResult(trace, programOut)
-
-  private def decodeTrace(json: String): HeapTrace =
-    val root      = js.JSON.parse(json)
-    val truncated = root.truncated.asInstanceOf[js.UndefOr[Boolean]].getOrElse(false)
-    val stepsArr  = root.steps.asInstanceOf[js.UndefOr[js.Array[js.Dynamic]]]
-    val steps     = stepsArr.toOption.fold(List.empty[HeapStep])(_.toList.map(decodeStep))
-    HeapTrace(steps, truncated)
-
-  private def decodeStep(s: js.Dynamic): HeapStep =
-    val line   = s.line.asInstanceOf[js.UndefOr[Int]].getOrElse(0)
-    val event  = s.event.asInstanceOf[js.UndefOr[String]].getOrElse("line")
-    val fn     = s.fn.asInstanceOf[js.UndefOr[String]].getOrElse("")
-    val locals = entriesOf(s.locals).map { case (k, v) => k -> decodeValue(v) }
-    val heap = entriesOf(s.heap).collect {
-      case (k, v) if v != null && !js.isUndefined(v) => k -> decodeObject(v)
-    }.toMap
-    HeapStep(line, event, fn, locals, heap)
-
-  /** Own-enumerable string keys of a JS object, as `(key, value)` pairs. */
-  private def entriesOf(d: js.Dynamic): List[(String, js.Dynamic)] =
-    if js.isUndefined(d) || d == null then Nil
-    else
-      val obj = d.asInstanceOf[js.Object]
-      js.Object.keys(obj).toList.map(k => k -> d.selectDynamic(k))
-
-  private def decodeValue(v: js.Dynamic): HeapValue =
-    if v == null then HeapValue.Scalar(HeapScalar.Null)
-    else
-      js.typeOf(v) match
-        case "number" =>
-          val d = v.asInstanceOf[Double]
-          if d.isWhole then HeapValue.Scalar(HeapScalar.I(d.toLong))
-          else HeapValue.Scalar(HeapScalar.D(d))
-        case "boolean" => HeapValue.Scalar(HeapScalar.B(v.asInstanceOf[Boolean]))
-        case "string"  => HeapValue.Scalar(HeapScalar.S(v.asInstanceOf[String]))
-        case "object" =>
-          v.ref.asInstanceOf[js.UndefOr[String]].toOption match
-            case Some(id) => HeapValue.Ref(id)
-            case None     => HeapValue.Scalar(HeapScalar.Null)
-        case _ => HeapValue.Scalar(HeapScalar.Null)
-
-  private def decodeObject(d: js.Dynamic): HeapObject =
-    d.selectDynamic("type").asInstanceOf[js.UndefOr[String]].getOrElse("object") match
-      case "list" | "tuple" =>
-        val kind =
-          if d.selectDynamic("type").asInstanceOf[String] == "tuple" then ArrKind.Tup
-          else ArrKind.Lst
-        val items = d.items
-          .asInstanceOf[js.UndefOr[js.Array[js.Dynamic]]]
-          .toOption
-          .fold(List.empty[HeapValue])(_.toList.map(decodeValue))
-        HeapObject.Arr(kind, items)
-      case "dict" =>
-        val entries = d.entries
-          .asInstanceOf[js.UndefOr[js.Array[js.Array[js.Dynamic]]]]
-          .toOption
-          .fold(List.empty[(HeapValue, HeapValue)]) { arr =>
-            arr.toList.collect {
-              case pair if pair.length >= 2 => decodeValue(pair(0)) -> decodeValue(pair(1))
-            }
-          }
-        HeapObject.Dict(entries)
-      case _ =>
-        val cls    = d.cls.asInstanceOf[js.UndefOr[String]].getOrElse("object")
-        val fields = entriesOf(d.fields).map { case (k, v) => k -> decodeValue(v) }
-        HeapObject.Instance(cls, fields)
+  def parse(stdout: String): MarkedTrace.TraceResult = MarkedTrace.parse(stdout)

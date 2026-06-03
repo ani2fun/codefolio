@@ -115,7 +115,7 @@ print(Solution().connected_components([[1],[0]], [1,0]))           # [[0]] — n
 print(Solution().connected_components([[1],[0]], [0,0]))           # []
 ```
 
-```java run
+```java run viz=graph viz-root=graph
 import java.util.*;
 
 public class Main {

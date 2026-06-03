@@ -1,6 +1,6 @@
 ---
 title: "Quadratic Probing"
-summary: "<!-- TODO: summary -->"
+summary: "An open-addressing hash table that replaces linear probing's one-slot walk with a quadratic jump `(start + a·i² + b·i) % capacity`, scattering colliding keys to break up the primary clusters that cripple linear probing — at the cost of secondary clustering, since keys sharing a start index still share a probe path."
 ---
 
 # 4. Quadratic Probing
@@ -19,13 +19,37 @@ There's still a price (every cure has its bug), and we'll meet it: **secondary c
 
 ## Table of contents
 
-1. [Introduction to quadratic probing](#introduction-to-quadratic-probing)
-2. [Key components of quadratic probing](#key-components-of-quadratic-probing)
-3. [Implementing the hash table class](#implementing-the-hash-table-class)
-4. [Search operation in quadratic probing](#search-operation-in-quadratic-probing)
-5. [Insert operation in quadratic probing](#insert-operation-in-quadratic-probing)
-6. [Delete operation in quadratic probing](#delete-operation-in-quadratic-probing)
-7. [Design a hash table with quadratic probing](#design-a-hash-table-with-quadratic-probing)
+1. [Understanding the problem](#understanding-the-problem)
+2. [Introduction to quadratic probing](#introduction-to-quadratic-probing)
+3. [Key components of quadratic probing](#key-components-of-quadratic-probing)
+4. [Supported operations](#supported-operations)
+5. [Internal mechanics](#internal-mechanics)
+6. [Implementing the hash table class](#implementing-the-hash-table-class)
+7. [Search operation in quadratic probing](#search-operation-in-quadratic-probing)
+8. [Insert operation in quadratic probing](#insert-operation-in-quadratic-probing)
+9. [Delete operation in quadratic probing](#delete-operation-in-quadratic-probing)
+10. [Working example](#working-example)
+11. [Design a hash table with quadratic probing](#design-a-hash-table-with-quadratic-probing)
+12. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
+13. [Production reality](#production-reality)
+14. [Quiz](#quiz)
+15. [Practice ladder](#practice-ladder)
+16. [Further reading](#further-reading)
+17. [Cross-links](#cross-links)
+18. [Final takeaway](#final-takeaway)
+
+***
+
+# Understanding the Problem
+
+Linear probing wins on cache locality but loses to **primary clustering** — and quadratic probing exists to keep the win while cutting the loss. The cause of clustering is the probe step itself. Linear probing always walks `+1` from a collision, so colliding keys land in consecutive slots, and any new key that hashes *anywhere into that run* extends it. A run of length `k` then absorbs new keys at a rate proportional to `k`, so clusters grow roughly as the square of their size and average probe length balloons past load factor `~0.7`.
+
+Quadratic probing attacks the step, not the storage. It keeps the single contiguous array and the three-state record, and changes only where the i-th probe lands:
+
+- **Same storage as linear probing.** One slab of records, every slot `EMPTY` / `OCCUPIED` / `DELETED`, so the cache-friendly streaming and zero pointer overhead survive intact.
+- **A widening step instead of a fixed one.** The i-th probe sits at `(start + a·i² + b·i) % capacity`, so successive collisions land `1`, `4`, `9`, `16`, … slots out (with `a=1, b=0`) rather than `1, 2, 3, 4`.
+
+To make this concrete: in linear probing, four keys colliding at index `5` pile into slots `5, 6, 7, 8` — a solid wall. In quadratic probing they scatter to `5`, `6`, `9`, `14` (offsets `0, 1, 4, 9`), so the next key that hashes to `6` no longer slams into a wall that reaches it. So the key idea is: quadratic probing trades linear probing's fixed step for a quadratically widening one — you keep the contiguous-array speed and gain a far gentler degradation curve, and you give up the guarantee that the probe visits every slot, which forces care in choosing `a`, `b`, and `capacity`.
 
 ***
 
@@ -235,6 +259,32 @@ flowchart LR
 <p align="center"><strong>The hash function picks the starting index; the quadratic offset (a·i² + b·i) determines where each subsequent probe lands. The two stages are independent, which is why both schemes can share the same hash function.</strong></p>
 
 </details>
+
+***
+
+# Supported Operations
+
+The interface is identical to linear probing — one read and two mutations, each the same shape of "hash the key, then probe." Only the probe step changes, so the operation set and its complexity profile carry over unchanged. A quadratic-probing table still offers no ordered iteration and no range query; the probe order has nothing to do with key order, so those operations would be meaningless here:
+
+| Operation | Average | Worst | Space | What it does |
+|---|---|---|---|---|
+| `search(key)` | `O(1)` | `O(N)` | `O(1)` | Probes the quadratic sequence from `hash(key)`; returns the value, or `-1` if an `EMPTY` slot or full scan is hit first |
+| `insert(key, value)` | `O(1)` | `O(N)` | `O(1)` | Updates in place if the key exists, else writes at the first non-`OCCUPIED` slot in the sequence; returns `false` if no slot is reachable |
+| `remove(key)` | `O(1)` | `O(N)` | `O(1)` | Probes to the matching slot and flips it to `DELETED`; a no-op if the key is absent |
+
+The worst case is `O(N)` in `capacity`, and it has one cause: a probe that has to walk all `capacity` iterations. Quadratic probing reaches that case less often than linear probing because the widening step keeps clusters from compounding — but it does not erase it, because keys that share a start index still share a probe path. To make this concrete: in a capacity-`8` table where keys `5`, `13`, and `21` all hash to index `5`, a search for `21` walks the quadratic offsets `+0, +1, +4` (slots `5, 6, 1`) before matching. So the core insight is: the operations and bounds match linear probing exactly — the only lever quadratic probing pulls is *how fast probe chains grow*, not what the operations cost in the worst case.
+
+***
+
+# Internal Mechanics
+
+A quadratic-probing table is one array plus one rule: when slot `start` is taken, try `(start + a·1² + b·1) % capacity`, then `(start + a·2² + b·2) % capacity`, and keep widening. The hash function picks only the *starting* index; the quadratic offset does the rest. Every operation is a variation on the same walk, and three slot states decide when it stops:
+
+- **`OCCUPIED`** — holds a live key-value pair. A probe compares the stored key and either matches or steps to the next offset.
+- **`EMPTY`** — never held a record. A *search* stops here immediately, because an absent key would have been placed at this slot or earlier in its probe sequence.
+- **`DELETED`** — a tombstone left by a prior removal. A *search* walks *past* it, but an *insert* may reuse it.
+
+The widening step is the whole difference from linear probing, and it cuts two ways. Because offset `i` grows as `i²`, the gap between successive probes grows without bound, which is what disperses collisions and starves primary clustering. The same growth, though, means the sequence can *revisit* slots and *skip* others before `capacity` iterations elapse. To make this concrete: at hash `5`, capacity `8`, `a=1, b=0`, the offsets `0, 1, 4, 9, 16, 25` land on slots `5, 6, 1, 6, 5, 2` — slot `6` and slot `5` recur, and slots `0, 3, 4, 7` never appear. So the core insight is: the array is passive storage and the quadratic offset plus the three-state tag are the only live machinery — correctness reduces to walking `(start + a·i² + b·i) % capacity` and reading each slot's state, but unlike linear probing the walk is not guaranteed to be a full permutation of the slots.
 
 ***
 
@@ -1181,6 +1231,20 @@ class MyHashTable {
 
 ***
 
+# Working Example
+
+Watching one slot pass through all three states shows why the `DELETED` tombstone earns its keep here too. Start with `MyHashTable(5, 1, 1)` — capacity `5`, constants `a=1, b=1`, every slot `EMPTY`, hash function `key % 5`. With these constants the i-th probe offset is `i² + i`, so the sequence from any start is `+0, +2, +6, +12, +20` — which modulo `5` visits the relative slots `0, 2, 1, 2, 0`. This run inserts a key, deletes it, then inserts a *different* key that hashes to the same start index, forcing the new key to reuse the tombstone:
+
+1. **`insert(0, 99)`** — `hash(0) = 0`. The occupied-pass finds no live key `0`, so the empty-pass runs: probe `i=0` lands on slot `0`, which is `EMPTY`, so write `(0, 99)` and mark it `OCCUPIED`. Returns `true`. Table: `[(0,99), —, —, —, —]`.
+2. **`remove(0)`** — `hash(0) = 0`. Probe `i=0` finds slot `0` `OCCUPIED` with key `0`, so flip it to `DELETED`. The pair stays physically in the slot; only the tag changes. Table: `[DELETED, —, —, —, —]`.
+3. **`search(0)`** — `hash(0) = 0`. The occupied-pass checks slot `0` (`DELETED`, not a match), then offset `+2` → slot `2`, offset `+6 mod 5` → slot `1`, and so on, finding no `OCCUPIED` key `0` anywhere. Returns `-1`. The delete is visible to search.
+4. **`insert(5, 7)`** — `hash(5) = 5 % 5 = 0`, the same start index as key `0`. The occupied-pass finds no live key `5`, so the empty-pass runs. Probe `i=0` lands on slot `0`, and because `DELETED` counts as writable it stops there, overwriting the tombstone with `(5, 7)`. Returns `true`. Table: `[(5,7), —, —, —, —]`.
+5. **`search(5)`** — `hash(5) = 0`. Probe `i=0` finds slot `0` `OCCUPIED` with key `5`, an immediate match. Returns `7`.
+
+The sequence returns `true`, then `-1` (key `0` is gone), then `true`, then `7`. Step `3` is the crux: had `remove` set slot `0` to `EMPTY`, a longer probe chain would orphan every record beyond the erased slot — the bug the next section catalogues. Step `4` shows the tombstone's payoff: the freed slot is reclaimed on the first colliding insert, so deletions do not leak capacity. So the core insight is: the three-state machine behaves exactly as it did under linear probing — `OCCUPIED` matches, `EMPTY` halts a search, `DELETED` keeps a chain searchable while letting inserts recycle the slot — and only the *path* the probe takes between slots has changed.
+
+***
+
 # Design a hash table with quadratic probing
 
 ## Problem Statement
@@ -1394,7 +1458,7 @@ print(t2.insert(0, 7))              # True — re-insert into DELETED slot
 print(t2.search(0))                 # 7
 ```
 
-```java run
+```java run viz=graph viz-root=table
 import java.util.*;
 
 public class Main {
@@ -1586,39 +1650,108 @@ Two big lessons:
 
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+***
 
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
+# Edge Cases and Pitfalls
 
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
+Quadratic probing inherits every linear-probing trap and adds one of its own: the probe sequence is no longer guaranteed to visit every slot. Keep this list open the next time a quadratic table refuses to insert into a table that still has room:
 
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
+- **Picking `a`, `b`, and `capacity` that can't reach a free slot.** The probe sequence `(start + a·i² + b·i) % capacity` may cycle through a subset of slots and never touch the rest. The classic safe choice is a **prime `capacity` with `a=1, b=0` and load factor under `0.5`** — under those conditions the first `capacity / 2` probes hit distinct slots. Get the combination wrong and an insert can return `false` while empty slots sit unreachable.
+- **Mistaking secondary clustering for a bug.** Two keys with the *same* `hash(key)` follow the *identical* probe path, because `a·i² + b·i` depends only on `i`, never the key. Their collision chain is just as long as linear probing's — it merely spreads across non-adjacent slots. The fix is not a code change here; it is double hashing, which gives each key its own stride.
+- **Setting a deleted slot to `EMPTY` instead of `DELETED`.** Same corruption as linear probing: erasing a slot mid-chain makes a search stop early and orphans every record placed past it. Flip the slot to `DELETED` so searches walk past it and inserts can reuse it.
+- **Stopping a search on the first non-`OCCUPIED` slot.** A search must halt on `EMPTY` but keep walking on `DELETED`, because the key may have been inserted before the slot was tombstoned. Treating `DELETED` like `EMPTY` reintroduces the orphaning bug from the read side.
+- **Inserting without the two-pass check.** Insert probes twice on purpose: `probe_for_occupied_index` first, to confirm the key is absent anywhere in the sequence, then `probe_for_empty_index` to find a writable slot. Skipping the first pass can write a duplicate whose original copy sits further along the sequence.
+- **Forgetting the modulo wrap or letting the offset overflow.** Every probe step is `(start + a·i² + b·i) % capacity`. Because `a·i²` grows fast, large `i` can overflow a fixed-width integer and produce a negative index — guard with `((x % n) + n) % n` (as the frozen Java solution does) so the index stays in `[0, capacity)`.
+- **Letting the load factor climb past `0.5`.** Quadratic probing's reachability guarantee evaporates above half-full even with a prime capacity, and probe lengths climb toward `O(N)`. A production table rehashes into a larger (still prime) array before the load factor gets dangerous.
 
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
+***
 
-<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
-<!--       Guidance: bulleted list of gotchas -->
+# Production Reality
 
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+Pure textbook quadratic probing — `+i²` over a single array — is rarer in production than the *idea* behind it: vary the probe step so collisions disperse without leaving the contiguous array. The systems below either use quadratic-family probing directly or apply the same dispersal trick.
 
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+**[Microsoft .NET `Dictionary<TKey,TValue>`]** — uses **quadratic-style probing over a bucketed array with prime-sized capacity** — because prime sizing keeps the widening probe sequence reaching distinct slots, dispersing collisions better than a fixed `+1` step.
 
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
+**[CPython's `dict` and `set`]** — uses **open addressing with a perturbation recurrence that mixes the full hash into each probe** — because a key-dependent perturbation breaks the secondary clustering that a key-independent `a·i² + b·i` sequence would leave behind.
 
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+<!-- VERIFY: older Java HotSpot symbol/string tables historically used quadratic probing; confirm against a current OpenJDK build, as internal table implementations have shifted over releases. -->
+**[Java HotSpot's internal symbol and string tables]** — uses **quadratic probing over a fixed open-addressed array** — because the dispersal cuts primary clustering on a hot lookup path while keeping the table on one cache-friendly slab.
 
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
+**[Boost / general-purpose `quadratic_probing` hash containers]** — uses **textbook quadratic probing with a power-of-two or prime capacity** — because the quadratic step is cheap to compute and degrades far more gracefully than linear probing as the table fills.
 
-<!-- TODO: Final Takeaway — missing, needs to be written -->
-<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->
+**[A fixed-capacity in-memory cache sized as a prime]** — uses **`a=1, b=0` quadratic probing under a `0.5` load-factor ceiling** — because the prime-capacity reachability guarantee lets the cache serve hits from one or two cache lines while sidestepping linear probing's clusters.
+
+***
+
+# Quiz
+
+Test your grip before moving on. One answer per question; reveal only after you have committed to one.
+
+**[Recall] Q: What expression gives the i-th probe index in quadratic probing, and what is the textbook choice of constants?**
+`(start_index + a·i² + b·i) % capacity` — the textbook choice is `a=1, b=0`, which makes the offsets `0, 1, 4, 9, 16, …`.
+
+**[Recall] Q: Which clustering problem does quadratic probing solve, and which one does it introduce?**
+It breaks up **primary clustering** (consecutive runs around one hash index) but introduces **secondary clustering**, where keys sharing a start index follow the same probe path.
+
+**[Reasoning] Q: Why does the same offset formula cause secondary clustering?**
+The offset `a·i² + b·i` depends only on the iteration count `i`, never on the key, so two keys with the same `hash(key)` walk the identical sequence and never escape each other.
+
+**[Reasoning] Q: Why can an insert return `false` even when the table has empty slots?**
+The quadratic sequence may visit only a subset of slots before completing `capacity` iterations, so it can miss the empty ones entirely — which is why a prime capacity with `a=1, b=0` and load factor under `0.5` is the safe configuration.
+
+**[Tradeoff] Q: When would you choose quadratic probing over linear probing, and what do you accept in return?**
+Choose it when you want linear probing's cache locality but a gentler degradation curve as the table fills, accepting secondary clustering and the obligation to pick `a`, `b`, and a (usually prime) `capacity` that guarantee the probe can reach a free slot.
+
+***
+
+# Practice Ladder
+
+Five problems that lean on the hash-table contract this chapter builds, easiest first. Try each unaided; hit the hint after ten minutes; do not peek at solutions until you have written something runnable.
+
+| # | Problem | Pattern | Difficulty | Hint |
+|---|---------|---------|------------|------|
+| 1 | [First Non-Repeating Character](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting-problems-first-non-repeating-character) | [Counting](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting-pattern) | Easy | One pass to count every character into a map, a second pass to return the first with count `1`. The map's `O(1)` average lookup is the whole trick. `O(n)` time, `O(k)` space for `k` distinct keys. |
+| 2 | [Duplicate Detection](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-fixed-sized-sliding-window-problems-duplicate-detection) | [Fixed Sliding Window](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-fixed-sized-sliding-window-pattern) | Easy | Slide a window of width `k` and keep its members in a set; a failed insert means a duplicate inside the window. `O(n)` time, `O(k)` space. |
+| 3 | [Cluster Anagrams](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting-problems-cluster-anagrams) | [Counting](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting-pattern) | Medium | Build a canonical key per word (sorted letters or a 26-count signature) and bucket words under it in a map. Anagrams collapse to the same key. `O(n·L)` time. |
+| 4 | [Subarray Sum Equals K](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-variable-sized-sliding-window-problems-subarray-sum-equals-k) | [Variable Sliding Window](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-variable-sized-sliding-window-pattern) | Medium | Store running prefix sums in a map; for each index, look up `prefix − k` to count qualifying subarrays in `O(1)`. `O(n)` time, `O(n)` space. |
+| 5 | [Zero Sum Subarrays](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-prefix-sum-problems-zero-sum-subarrays) | [Prefix Sum](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-prefix-sum-pattern) | Medium | A repeated prefix sum means the span between the two indices sums to zero; a map from prefix value to count finds every such pair in one pass. `O(n)` time, `O(n)` space. |
+
+Once these feel automatic, the map has stopped being syntax and become a structural reflex — exactly what counting, windowing, and prefix-sum problems build on.
+
+***
+
+# Further Reading
+
+Curated paths in, not a syllabus. Read in order of the annotation; come back for the rest when you need depth.
+
+- **[CLRS — Chapter 11.4: Open Addressing](https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/)**
+  ★ Essential — the formal treatment of linear, quadratic, and double-hashing probe sequences, including why a quadratic sequence only guarantees reachability under specific capacity and load-factor conditions.
+- **[Knuth — *The Art of Computer Programming*, Vol. 3, §6.4](https://www-cs-faculty.stanford.edu/~knuth/taocp.html)**
+  ◆ Advanced — the original clustering analysis, where the expected probe counts for linear and quadratic schemes are derived in closed form against the load factor.
+- **[CPython `dict` implementation notes (`Objects/dictobject.c`)](https://github.com/python/cpython/blob/main/Objects/dictobject.c)**
+  ◆ Advanced — the perturbation recurrence CPython uses to mix the full hash into each probe, the production answer to the secondary clustering a pure quadratic sequence leaves behind.
+- **[Wikipedia — Quadratic probing](https://en.wikipedia.org/wiki/Quadratic_probing)**
+  → Reference — a compact statement of the probe formula, the prime-capacity reachability theorem, and the standard `a`, `b` choices to keep on hand.
+
+***
+
+# Cross-Links
+
+**Prerequisites**
+
+- [Introduction to Hash Tables](/cortex/data-structures-and-algorithms/linear-structures-hash-table-introduction-to-hash-tables) — the hash function, the load factor, and the collision problem every resolution scheme in this chapter is solving.
+- [Linear Probing](/cortex/data-structures-and-algorithms/linear-structures-hash-table-linear-probing) — the fixed-step scheme whose primary clustering quadratic probing is built to break up; the record, the three states, and the two-pass insert all carry over unchanged.
+- [Separate Chaining](/cortex/data-structures-and-algorithms/linear-structures-hash-table-separate-chaining) — the chained alternative whose unbounded growth and pointer chasing motivated open addressing in the first place.
+
+**What comes next**
+
+- [Double Hashing](/cortex/data-structures-and-algorithms/linear-structures-hash-table-double-hashing) — a second hash function gives each key its own probe stride, scattering collisions even further and curing the secondary clustering quadratic probing leaves behind.
+- [Design a HashMap](/cortex/data-structures-and-algorithms/linear-structures-hash-table-design-a-hash-map) — the capstone that puts a full open-addressed map together, resizing and all.
+
+***
+
+## Final Takeaway
+
+1. **Core mechanic:** resolve a collision by probing the quadratically widening sequence `(start + a·i² + b·i) % capacity` over one contiguous array, with the same three-state tag (`EMPTY` / `OCCUPIED` / `DELETED`) deciding whether a probe stops, matches, or continues.
+2. **Dominant tradeoff:** you gain linear probing's cache locality plus a far gentler degradation curve, because the widening step starves primary clustering; you give up the guarantee that the probe visits every slot, so `a`, `b`, and `capacity` (usually a prime, load factor under `0.5`) must be chosen to keep a free slot reachable.
+3. **One thing to remember:** the offset depends only on `i`, never the key — so keys that share a start index share a probe path forever, which is **secondary clustering**, and double hashing is the cure.

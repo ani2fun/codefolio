@@ -1,6 +1,6 @@
 ---
 title: "Iterative Traversals In Binary Trees"
-summary: "<!-- TODO: summary -->"
+summary: "Recursion leans on a megabyte-sized call stack that a deep tree can overflow — so replace it with an explicit heap-backed stack (preorder, inorder, postorder) or a queue (level-order). Same visit orders, O(n) time, O(h) or O(w) space, but no crash on adversarial depth."
 ---
 
 # 5. Iterative Traversals in Binary Trees
@@ -26,6 +26,17 @@ This lesson covers all four classical iterative traversals: **preorder, inorder,
 3. [Iterative inorder — drain the left spine](#iterative-inorder--drain-the-left-spine)
 4. [Iterative postorder — the elegant trick](#iterative-postorder--the-elegant-trick)
 5. [Level-order traversal — using a queue](#level-order-traversal--using-a-queue)
+6. [Understanding the problem](#understanding-the-problem)
+7. [Supported operations](#supported-operations)
+8. [Internal mechanics](#internal-mechanics)
+9. [Working example](#working-example)
+10. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
+11. [Production reality](#production-reality)
+12. [Quiz](#quiz)
+13. [Practice ladder](#practice-ladder)
+14. [Further reading](#further-reading)
+15. [Cross-links](#cross-links)
+16. [Final takeaway](#final-takeaway)
 
 ***
 
@@ -223,7 +234,7 @@ print(Solution().iterative_preorder_traversal(from_level_order([1, 2, 3, 4, 5, 6
 print(Solution().iterative_preorder_traversal(from_level_order([5, 5, 5, 5, 5])))              # [5, 5, 5, 5, 5]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {
@@ -474,7 +485,7 @@ print(Solution().iterative_inorder_traversal(from_level_order([1, 2, 3, 4, 5, 6,
 print(Solution().iterative_inorder_traversal(from_level_order([5, 5, 5, 5, 5])))              # [5, 5, 5, 5, 5]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {
@@ -651,7 +662,7 @@ The original CodeIntuition approach pushes each node onto the stack *twice* — 
 We'll push the values onto the output and reverse once at the end — *appending* is O(1) while *prepending* a list/vector is O(N). For Python's `deque` you can use `appendleft` directly.
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from collections import deque
 
 def postorder_iter(root):
@@ -666,7 +677,7 @@ def postorder_iter(root):
     return list(out)
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 public static List<Integer> postorderIter(TreeNode root) {
     LinkedList<Integer> out = new LinkedList<>();
     if (root == null) return out;
@@ -773,7 +784,7 @@ enqueue 7 → q=[4, 5, 7]"]
 
 ### Implementation
 
-```python run
+```python run viz=binary-tree viz-root=root
 from collections import deque
 
 def level_order(root):
@@ -796,7 +807,7 @@ root = TreeNode(1, TreeNode(2, TreeNode(4), TreeNode(5)), TreeNode(3, None, Tree
 print(level_order(root))   # [1, 2, 3, 4, 5, 7]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 public static List<Integer> levelOrder(TreeNode root) {
     List<Integer> out = new ArrayList<>();
     if (root == null) return out;
@@ -833,39 +844,225 @@ Iterative traversals are the production-grade siblings of the recursive ones. Sa
 
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+# Understanding the Problem
 
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
+The recursive traversals from the previous lesson are correct, compact, and dangerous in exactly one situation: a deep tree. Every recursive call consumes a frame on the **call stack**, and that stack is a small, fixed region the operating system hands each thread. A tree taller than the stack can hold frames overflows it and crashes the program. That is the gap the iterative traversals fill.
 
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
+The danger has two parts, and they are distinct:
 
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
+- **The mechanism** — recursion stores its pending work *implicitly*, as suspended stack frames. You never see the stack, so you never bound it.
+- **The threat** — tree height is set by the *input*, not by your code. A skewed tree of `N` nodes has height `N`, and untrusted input can make `N` as large as it likes.
 
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
+To make this concrete: a balanced tree of one million nodes has height about `20`, so it recurses `20` frames deep and never strains the stack. A degenerate left-leaning chain of fifty thousand nodes has height `50,000`, recurses `50,000` frames deep, and blows an `8 MB` stack long before it finishes. Same node count, opposite outcome — and the difference is shape, which the caller does not control.
 
-<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
-<!--       Guidance: bulleted list of gotchas -->
+The [Why iterative?](#why-iterative--the-call-stack-is-small) section above sizes this exactly: a `1 MB` stack holds roughly `8,000–16,000` frames. So the key idea is: iterative traversal moves the pending-work bookkeeping off the call stack and onto an **explicit** stack or queue on the heap, where there are gigabytes of room. You trade three lines of recursive elegance for a guarantee the algorithm survives any depth.
 
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+---
 
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+# Supported Operations
 
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
+A traversal is not a data structure with a menu of operations — it is one operation, "visit every node in a defined order," realised four different ways. The four classical orders are the operations this lesson supports, and they split cleanly into two families by the container they carry pending work in.
 
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+The four traversals, each fully built in its own section above:
 
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
+- **Iterative preorder** — visit a node *before* descending, using an explicit stack. Built in [Iterative preorder](#iterative-preorder--the-simplest-one).
+- **Iterative inorder** — visit a node *between* its left and right subtrees, using an explicit stack. Built in [Iterative inorder](#iterative-inorder--drain-the-left-spine).
+- **Iterative postorder** — visit a node *after* both subtrees, via reverse-of-modified-preorder, using an explicit stack. Built in [Iterative postorder](#iterative-postorder--the-elegant-trick).
+- **Level-order** — visit nodes breadth-first, level by level, using a **queue**. Built in [Level-order traversal](#level-order-traversal--using-a-queue).
 
-<!-- TODO: Final Takeaway — missing, needs to be written -->
-<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->
+To make the trade-offs comparable, here is every operation with its complexity and the one fact that distinguishes it. `N` is the node count, `h` the tree height, `w` the maximum width of any level.
+
+| Operation | Container | Time | Space | Visit order on the example tree |
+|---|---|---|---|---|
+| Iterative preorder | explicit stack | `O(N)` | `O(h)` | `1 → 2 → 4 → 5 → 3` (root first) |
+| Iterative inorder | explicit stack | `O(N)` | `O(h)` | `4 → 2 → 5 → 1 → 3` (sorted, for a BST) |
+| Iterative postorder | explicit stack | `O(N)` | `O(h)` + `O(N)` output | `4 → 5 → 2 → 3 → 1` (children first) |
+| Level-order (BFS) | queue | `O(N)` | `O(w)` | `1 → 2 → 3 → 4 → 5` (by depth) |
+
+So the key idea is: all four cost `O(N)` time, because each node is pushed or enqueued once and removed once. The *only* axis that differs is space. The three depth-first orders pay `O(h)`; level-order pays `O(w)`; which is cheaper depends entirely on the tree's shape.
+
+---
+
+# Internal Mechanics
+
+The single idea under every iterative traversal is that **recursion is a stack you cannot see, so make a stack you can**. A recursive call suspends the caller's frame — its local variables and the point to resume at — and pushes a new frame; a return pops back. An explicit traversal replays that exact discipline with a heap-allocated container, which is why the visit orders come out identical to the recursive versions.
+
+The depth-first and breadth-first families differ in one choice — the container — and that choice is the whole distinction:
+
+- **Stack (LIFO)** — the most recently pushed node comes off first, so the traversal plunges down one branch before backtracking. That is depth-first, and it powers preorder, inorder, and postorder.
+- **Queue (FIFO)** — the earliest enqueued node comes off first, so a level is fully drained before its children are touched. That is breadth-first, and it powers level-order.
+
+The mechanics of each individual algorithm — preorder's visit-while-descending, inorder's drain-the-left-spine, postorder's reverse-of-modified-preorder, level-order's drain-by-level — are traced step by step in the four sections above, each with a worked stack or queue evolution. To make the unifying point concrete: take any depth-first traversal here and swap its stack for a queue, and the output reorganises into level-order; the algorithm's skeleton barely changes, only the container does.
+
+So the core insight is: choosing a stack versus a queue *is* choosing DFS versus BFS. That single container choice also sets where work piles up — `O(h)` along one root-to-leaf path for the stack, `O(w)` for one level in the queue. This is the deepest reusable idea in the lesson, and it generalises straight from trees to graphs.
+
+---
+
+# Working Example
+
+Trace iterative preorder on the example tree to watch the explicit stack replay what recursion would have done implicitly. The tree has root `1` with children `2` and `3`, and `2` has children `4` and `5`. The expected output is `1 → 2 → 4 → 5 → 3`. The algorithm keeps a `current` pointer and a stack; the inner loop visits and pushes while walking left, and the outer loop pops to pivot right.
+
+```
+tree:        1
+            / \
+           2   3
+          / \
+         4   5
+
+start:   current = 1   stack = []          output = []
+```
+
+**Step 1 — descend the left spine from `1`.** Visit `1` (append it), push `1`, move to its left child `2`. Visit `2`, push `2`, move to `4`. Visit `4`, push `4`, move to `4.left`, which is `null`. The inner loop stops.
+
+```
+visit 1, push 1   →   current = 2   stack = [1]        output = [1]
+visit 2, push 2   →   current = 4   stack = [1,2]      output = [1,2]
+visit 4, push 4   →   current = null stack = [1,2,4]   output = [1,2,4]
+```
+
+**Step 2 — pop `4`, pivot right.** Pop `4` off the stack and set `current = 4.right`, which is `null`. Nothing to descend, so the inner loop does not run.
+
+```
+pop 4   →   current = null   stack = [1,2]   output = [1,2,4]
+```
+
+**Step 3 — pop `2`, pivot right into `5`.** Pop `2`, set `current = 2.right = 5`. The inner loop runs: visit `5`, push `5`, move to `5.left = null`.
+
+```
+pop 2   →   current = 5      stack = [1]     output = [1,2,4]
+visit 5, push 5   →   current = null   stack = [1,5]   output = [1,2,4,5]
+```
+
+**Step 4 — pop `5`, pivot right.** Pop `5`, set `current = 5.right = null`. Inner loop does not run.
+
+```
+pop 5   →   current = null   stack = [1]     output = [1,2,4,5]
+```
+
+**Step 5 — pop `1`, pivot right into `3`.** Pop `1`, set `current = 1.right = 3`. The inner loop runs: visit `3`, push `3`, move to `3.left = null`. Then pop `3`, set `current = 3.right = null`. Both `current` and the stack are now empty, so the outer loop ends.
+
+```
+pop 1   →   current = 3      stack = []      output = [1,2,4,5]
+visit 3, push 3   →   current = null   stack = [3]   output = [1,2,4,5,3]
+pop 3   →   current = null   stack = []      output = [1,2,4,5,3]   ← done
+```
+
+Each of the five nodes was pushed once and popped once, so the work is `O(N)` time. The stack never held more than three nodes — the height of the tree — confirming the `O(h)` space bound. The same `1 → 2 → 4 → 5 → 3` order a recursive preorder produces falls out, but with the pending work held in a container we sized ourselves.
+
+---
+
+## Key Takeaway
+
+An iterative traversal is deferred-work bookkeeping: push or enqueue a node, then later pop or dequeue it to do its work. The container's discipline alone decides the visit order. Every node is touched twice — once on the way in, once on the way out. So the cost is `O(N)` time, with `O(h)` space for a stack-based order and `O(w)` for the queue-based one.
+
+---
+
+# Edge Cases and Pitfalls
+
+Almost every iterative-traversal bug traces to one root cause: the explicit stack or queue must replay recursion *exactly*. A single misplaced push, pop, or visit silently changes the output order. Unlike a stack overflow, these failures do not crash — they return a plausible-looking wrong answer. Train your eye to check three things on every iterative traversal: the empty-tree guard, the visit *position*, and the child push *order*.
+
+This consolidated list collects the cross-cutting traps; the per-traversal sections above each carry their own *Edge cases* subsection for order-specific details.
+
+- **Forgetting the empty-tree guard.** A `null` root must return an empty result, not enter the loop. Preorder and inorder handle this naturally — the outer loop condition `current` or stack non-empty is false at the start — but the postorder and level-order code explicitly checks `if root is None: return` first. Skip the guard in the queue version and you enqueue `null`, then dequeue and dereference it, crashing on the first iteration. Cost of the guard is `O(1)` time.
+- **Putting the visit in the wrong place.** Preorder appends `current.val` *inside* the left-descent loop; inorder appends it *after* the pop, before pivoting right. The stack-and-`current` skeleton is otherwise identical. Move that one line and preorder becomes inorder — the [preorder section](#iterative-preorder--the-simplest-one) calls this out explicitly. The bug returns a valid traversal of the wrong kind, which is hard to spot without checking the expected order.
+- **Pushing children in the wrong order.** A stack is LIFO, so to pop the left child *first* you must push it *last*. Iterative preorder pushes right-then-left; reverse-of-modified-preorder postorder pushes left-then-right (because it wants right out first). Flip the push order and the left and right subtrees come out swapped. This is `O(1)` per node either way, so the cost is correctness, not speed.
+- **Choosing the wrong container for the goal.** A stack gives a depth-first order; a queue gives breadth-first. If a problem says "by level," "shortest path in an unweighted graph," or "nearest first," it wants a queue. Reaching for a stack there produces a depth-first walk that visits the right nodes in the wrong order — the [level-order section](#level-order-traversal--using-a-queue) shows a stack would yield a preorder variant instead.
+- **Assuming iterative is always cheaper in space.** Depth-first iterative uses `O(h)` space, best for *wide, shallow* trees; level-order uses `O(w)` space, best for *tall, narrow* trees. For a perfect tree the bottom level holds about `N/2` nodes, so level-order costs `O(N)` space while the depth-first stack costs only `O(log N)`. Picking BFS for a bushy tree can use far more memory than the DFS it replaced.
+- **Mutating the tree mid-traversal.** The explicit stack or queue holds raw node references, not snapshots. Rewiring a `left` or `right` pointer on a node still waiting in the container changes where the traversal goes when that node is processed. The result is a traversal of a tree that no longer matches the one you started with. Finish the traversal before restructuring, or traverse a copy.
+
+So the key idea is: iterative traversals fail quietly, not loudly. The stack-overflow crash you were avoiding is replaced by subtle order bugs. Verify the visit position and push order against the expected output rather than trusting that "it ran."
+
+---
+
+# Production Reality
+
+Iterative traversals show up wherever code must walk a tree or graph whose depth is unbounded or untrusted, and wherever "process by level" is the requirement. The places below are worth knowing by name.
+
+**[JSON and XML parsers]** — uses **iterative depth-first traversal with an explicit stack** — because documents can nest arbitrarily deeply, and a recursive descent would overflow the call stack on adversarial input (`O(N)` time, `O(h)` space, no crash).
+
+**[Language runtimes marking the heap (garbage collectors)]** — uses **iterative graph traversal with an explicit work-list** — because the live-object graph can be millions deep, far past any call-stack limit, so the collector manages its own stack on the heap.
+
+**[Shortest path on an unweighted graph]** — uses **breadth-first search with a queue** — because BFS dequeues nodes in non-decreasing distance order, so the first time it reaches the target is provably the fewest-edge path (`O(V + E)` time, `O(w)` space for the frontier).
+
+**[Filesystem and web crawlers fetching "nearest first"]** — uses **level-order traversal with a queue** — because draining one level before the next visits shallow directories or pages before deep ones, matching the "breadth before depth" priority crawlers want.
+
+**[UI layout and rendering engines walking a view tree]** — uses **iterative traversal with an explicit stack** — because deeply nested component trees from user-authored markup must not crash the render thread, and an explicit stack bounds the memory predictably.
+
+**[Network and routing protocols flooding by hop count]** — uses **breadth-first search** — because processing nodes in order of hop distance computes minimum-hop reachability directly, which is exactly what distance-vector and broadcast algorithms need.
+
+---
+
+# Quiz
+
+Test your grip before moving on. Commit to an answer before revealing it.
+
+**[Recall] Q: Which container does each traversal family use, and what visit order does each produce?**
+The three depth-first orders (preorder, inorder, postorder) use a **stack** and plunge down one branch before backtracking; level-order uses a **queue** and visits the tree breadth-first, one full level at a time.
+
+**[Recall] Q: For an iterative preorder, where is a node's value recorded relative to the left-spine descent?**
+A node is visited *while descending the left spine* — appended inside the inner loop, before pushing the node and moving to its left child — which is exactly what makes the order preorder rather than inorder.
+
+**[Reasoning] Q: Why is iterative postorder usually written as reverse-of-modified-preorder instead of a single-stack state-tracking scheme?**
+Postorder `L R V` is the element-wise reverse of modified-preorder `V R L`. So a right-first preorder, reversed, needs one stack and no per-node state. The push-twice approach instead doubles stack usage and adds a conditional.
+
+**[Tradeoff] Q: A tree is perfectly balanced with one million nodes. Does iterative DFS or BFS use less memory, and by how much?**
+DFS uses far less. Its stack holds at most the height, about `O(log N)` ≈ `20` nodes. BFS holds the widest level, about `N/2` ≈ `500,000` nodes. So DFS is `O(h)` space against BFS's `O(w)` ≈ `O(N)` space here.
+
+**[Tradeoff] Q: The input is a tree deserialised from untrusted network data. Why prefer the iterative traversal over the cleaner recursive one?**
+Tree height is controlled by the input, so an adversary can send a degenerate chain whose depth overflows the megabyte-sized call stack and crashes the process. The iterative version holds pending work on the heap and tolerates any depth in `O(N)` time.
+
+---
+
+# Practice Ladder
+
+Five problems to turn "swap the container, swap the traversal family" into a reflex. All five live in this chapter's level-order pattern directory, where a queue is the workhorse behind every by-level computation. Try each unaided; reach for the hint after ten minutes; do not peek at solutions until you have written something runnable.
+
+| # | Problem | Pattern | Difficulty | Hint |
+|---|---------|---------|------------|------|
+| 1 | [Level Sum](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-problems-level-sum) | [Level-Order Traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-pattern) | Easy | Snapshot the queue size at the top of each outer iteration, then dequeue exactly that many nodes to isolate one level and accumulate its sum. `O(N)` time, `O(w)` space. |
+| 2 | [Deepest Leaves Sum](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-problems-deepest-leaves-sum) | [Level-Order Traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-pattern) | Easy | Reset the running sum to zero at the start of every level; whatever sum survives after the last level drained is the deepest-leaves sum. `O(N)` time, `O(w)` space. |
+| 3 | [Zigzag Traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-problems-zigzag-traversal) | [Level-Order Traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-pattern) | Medium | Run standard level-order, but reverse the collected values on every other level using a level-parity flag — the queue order never changes, only the output order per level. |
+| 4 | [Complete Binary Tree Check](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-problems-complete-binary-tree-check) | [Level-Order Traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-pattern) | Medium | Enqueue `null` children too; once you dequeue the first `null`, every remaining node must also be `null` for the tree to be complete. |
+| 5 | [Cousin Check](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-problems-cousin-check) | [Level-Order Traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-pattern) | Medium | Two nodes are cousins when they sit at the same depth with different parents; track depth and parent per level during BFS and compare both targets. |
+
+Once these feel automatic, "process this tree by level" stops being a trick and becomes a reach for the queue.
+
+---
+
+# Further Reading
+
+Curated paths in, not a syllabus. Read in order of the annotation; come back for the rest when you need depth.
+
+- **[Recursive Traversals in Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-recursive-traversals-in-binary-trees)**
+  ★ Essential — the recursive originals these iterative versions replay; read it first to see what the explicit stack is simulating.
+- **[Introduction to Stacks](/cortex/data-structures-and-algorithms/linear-structures-stack-introduction-to-stacks)**
+  ★ Essential — the LIFO container behind every depth-first iterative traversal; its `push`/`pop`/`peek` are the moves used here.
+- **[Introduction to Queues](/cortex/data-structures-and-algorithms/linear-structures-queue-introduction-to-queues)**
+  ★ Essential — the FIFO container behind level-order; the `enqueue`/`dequeue` discipline *is* the level-by-level order.
+- **[Level-Order Traversal pattern](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-pattern)**
+  ◆ Advanced — generalises the level-order skeleton into a reusable template for the whole family of by-level problems.
+- **[CLRS — Section 22.2: Breadth-First Search](https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/)**
+  → Reference — the formal treatment of BFS on general graphs, of which tree level-order is the specialisation.
+
+---
+
+# Cross-Links
+
+**Prerequisites**
+
+- [Recursive Traversals in Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-recursive-traversals-in-binary-trees) — the three recursive orders this lesson rebuilds iteratively; without them the explicit-stack versions have nothing to mirror.
+- [Introduction to Stacks](/cortex/data-structures-and-algorithms/linear-structures-stack-introduction-to-stacks) — the LIFO discipline the depth-first traversals lean on.
+- [Introduction to Queues](/cortex/data-structures-and-algorithms/linear-structures-queue-introduction-to-queues) — the FIFO discipline level-order depends on.
+
+**What comes next**
+
+- [Constructing a Binary Tree](/cortex/data-structures-and-algorithms/trees-binary-tree-constructing-a-binary-tree) — the inverse problem; rebuild the unique tree from two traversal sequences.
+- [Level-Order Traversal pattern](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-pattern) — turns the queue-based traversal into a reusable problem-solving template.
+
+---
+
+## Final Takeaway
+
+1. **Core mechanic:** an iterative traversal replays recursion's hidden bookkeeping on an explicit heap-allocated container — a stack for depth-first orders (preorder, inorder, postorder), a queue for breadth-first level-order — visiting every node once in `O(N)` time with `O(h)` space for the stack or `O(w)` space for the queue.
+2. **Dominant tradeoff:** you gain a crash-proof traversal that tolerates arbitrarily deep, even adversarial, trees; you give up the three-line clarity of recursion and take on manual push, pop, and visit-position bookkeeping that fails silently when wrong.
+3. **One thing to remember:** the container is the traversal family — stack means DFS, queue means BFS — so swapping the one line that chooses it swaps the entire visit order, and that single idea carries straight from trees to graphs.

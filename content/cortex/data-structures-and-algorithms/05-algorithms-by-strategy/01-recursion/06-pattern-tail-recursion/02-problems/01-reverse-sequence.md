@@ -133,7 +133,7 @@ state: "n=0 — base case fires, return" {
 
 ### The Solution
 
-```python run
+```python run viz=array viz-root=result
 from typing import List
 
 class Solution:
@@ -175,7 +175,7 @@ print(Solution().reverse_sequence(3))   # [3, 2, 1]
 print(Solution().reverse_sequence(10))  # [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
 ```
 
-```java run
+```java run viz=array viz-root=result
 import java.util.*;
 
 public class Main {

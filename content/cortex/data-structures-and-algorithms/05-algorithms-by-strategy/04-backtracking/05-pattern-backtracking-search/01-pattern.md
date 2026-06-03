@@ -107,7 +107,7 @@ This template handles "find one" search. For "find all," replace step 3's "if tr
 A clean, language-agnostic skeleton illustrating the search recipe with explicit undo. The scenario is a generic maze-style "can I reach the goal?" search.
 
 
-```python run
+```python run viz=grid viz-root=maze
 from typing import List
 
 class Solution:
@@ -143,7 +143,7 @@ if __name__ == "__main__":
     print(Solution().find_path(maze))   # True
 ```
 
-```java run
+```java run viz=grid viz-root=maze
 public class Main {
     static class Solution {
         public boolean findPath(int[][] maze) {

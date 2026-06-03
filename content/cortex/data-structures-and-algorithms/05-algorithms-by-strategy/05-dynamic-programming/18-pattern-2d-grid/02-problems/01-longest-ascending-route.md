@@ -134,7 +134,7 @@ print(Solution().longest_ascending_route([[1, 1], [1, 1]]))                    #
 print(Solution().longest_ascending_route([[3, 4, 5], [3, 2, 6], [2, 2, 1]])) # 4
 ```
 
-```java run
+```java run viz=grid viz-root=matrix
 import java.util.*;
 
 public class Main {

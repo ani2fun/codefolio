@@ -1,6 +1,6 @@
 ---
 title: "Separate Chaining"
-summary: "<!-- TODO: summary -->"
+summary: "Resolve hash collisions by turning every array slot into a growable chain: hash to a slot in O(1), then walk a short linked list to read, write, or remove. Search, insert, and delete stay O(1) average and degrade to O(N) only when one chain absorbs every key."
 ---
 
 # 2. Separate Chaining
@@ -17,13 +17,37 @@ This is the *most intuitive* way to resolve collisions, the one used inside Java
 
 ## Table of contents
 
-1. [Introduction to separate chaining](#introduction-to-separate-chaining)
-2. [Key components of separate chaining](#key-components-of-separate-chaining)
-3. [Implementing the hash table class](#implementing-the-hash-table-class)
-4. [Search operation in separate chaining](#search-operation-in-separate-chaining)
-5. [Insert operation in separate chaining](#insert-operation-in-separate-chaining)
-6. [Delete operation in separate chaining](#delete-operation-in-separate-chaining)
-7. [Design a hash table with separate chaining](#design-a-hash-table-with-separate-chaining)
+1. [Understanding the problem](#understanding-the-problem)
+2. [Introduction to separate chaining](#introduction-to-separate-chaining)
+3. [Key components of separate chaining](#key-components-of-separate-chaining)
+4. [Supported operations](#supported-operations)
+5. [Internal mechanics](#internal-mechanics)
+6. [Implementing the hash table class](#implementing-the-hash-table-class)
+7. [Search operation in separate chaining](#search-operation-in-separate-chaining)
+8. [Insert operation in separate chaining](#insert-operation-in-separate-chaining)
+9. [Delete operation in separate chaining](#delete-operation-in-separate-chaining)
+10. [Working example](#working-example)
+11. [Design a hash table with separate chaining](#design-a-hash-table-with-separate-chaining)
+12. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
+13. [Production reality](#production-reality)
+14. [Quiz](#quiz)
+15. [Practice ladder](#practice-ladder)
+16. [Further reading](#further-reading)
+17. [Cross-links](#cross-links)
+18. [Final takeaway](#final-takeaway)
+
+***
+
+# Understanding the Problem
+
+A hash function maps an unbounded universe of keys onto a finite array, so two different keys will eventually land on the same index — that clash is a **collision**, and every hash table must answer one question: when slot `i` is already taken, where does the new key go? A perfect hash function with no collisions is impossible in general, because there are more possible keys than slots. The table cannot avoid collisions; it can only decide how to *absorb* them.
+
+Two families of answers exist, and they split on a single decision — does a colliding key stay at its hashed slot or move elsewhere?
+
+- **Separate chaining** — the key stays at its slot, which is widened into a growable container holding every key that hashed there.
+- **Open addressing** — the key moves to a different slot in the same array, found by a probe sequence (the next lesson's subject).
+
+To make this concrete: insert keys `5`, `9`, and `13` into a table of capacity `4` with `hash(key) = key mod 4`. All three compute index `1`, so all three collide. Separate chaining stores all three at index `1` inside one chain; open addressing would scatter them to indices `1`, `2`, `3`. So the key idea is: a collision is unavoidable whenever keys outnumber slots, and separate chaining resolves it by letting the slot grow rather than relocating the key.
 
 ***
 
@@ -215,12 +239,12 @@ populated: "After inserts — chains have grown at colliding slots" {
 
 In this course, the chain inside each slot is a **doubly linked list**. To keep the lessons focused on hashing rather than on re-implementing a linked list, we use the standard library's linked-list type wherever the language provides one. (You already built one in the previous section — feel free to swap in your own version once the table works.)
 
-```python run
+```python run viz=array viz-root=table
 # Using lists as linked list in python
 table: List[List[Record]] = [[] for _ in range(capacity)]
 ```
 
-```java run
+```java run viz=array viz-root=table
 // Import the LinkedList class
 import java.util.LinkedList;
 
@@ -275,6 +299,31 @@ int hashFunction(int key) {
 ```
 
 </details>
+
+***
+
+# Supported Operations
+
+Three operations make up the public interface, and the table exposes nothing else — no indexed access, no ordered iteration, no range query. A hash table is a *dictionary*: it maps keys to values and answers "what is stored under this key?" in near-constant time. Everything else would force a scan of the whole structure, defeating the point. The three operations divide into one read and two mutations:
+
+| Operation | Average time | Worst time | Space | What it does |
+|---|---|---|---|---|
+| `search(key)` | `O(1)` | `O(N)` | `O(1)` | Hash to a chain, walk it, return the value or `-1` |
+| `insert(key, value)` | `O(1)` | `O(N)` | `O(1)` | Hash to a chain, update if the key exists, else append |
+| `remove(key)` | `O(1)` | `O(N)` | `O(1)` | Hash to a chain, unlink the matching node; no-op if absent |
+
+The `O(N)` worst case is shared by all three because each one walks a single chain, and that chain can hold every key in the table when the hash function collapses every key onto one slot. The `O(1)` average holds when the hash function spreads keys evenly, keeping the average chain length near `1`. To make this concrete: insert `1000` keys into a capacity-`1000` table with a good hash, and each chain holds roughly one record, so a search touches one node. So the core insight is: every operation is "hash to a chain, then walk it," which is why all three share the same complexity envelope and why chain length — not table size — decides their real cost.
+
+***
+
+# Internal Mechanics
+
+The table is an array of chains, and the hash function is the only thing that decides which chain a key belongs to — once you know the chain, every operation is a linked-list walk. The internal array has a fixed length, set at construction and never changed; what grows is the chain *inside* a slot. This separation is the whole mechanism: the hash function does `O(1)` index arithmetic, and the chain does the collision bookkeeping. The two pieces work in sequence on every call:
+
+- **Stage 1 — hash** maps the key to an index with `key mod capacity`, a single arithmetic operation that is always `O(1)`.
+- **Stage 2 — walk** scans the chain at that index, comparing each stored key to the target until it matches or the chain ends.
+
+The chain's length is governed by the **load factor** — the ratio of stored records to array slots, written `α = N / capacity`. With a good hash function, the average chain length equals `α`, so search and insert cost `O(1 + α)` time. Keep `α` near `1` and operations are effectively constant; let `α` climb to `100` and every chain holds about a hundred nodes, so every operation walks a hundred steps. To make this concrete: a capacity-`4` table holding `400` keys has `α = 100`, and a "constant-time" lookup now costs `100` comparisons. So the core insight is: the hash routes in `O(1)` and the chain walk costs `O(α)`, so a separate-chaining table stays fast exactly as long as its load factor stays small — which is why production tables resize to keep `α` bounded.
 
 ***
 
@@ -1146,6 +1195,28 @@ worst: "Worst — every key in one chain, target at the very end (or absent)" {
 
 ***
 
+# Working Example
+
+Watching one chain grow, mutate, and shrink is the fastest way to make the three operations click. Start with `MyHashTable(4)` — an empty array of four chains, hash function `key mod 4`. This run inserts a collision storm into slot `1`, updates a key in place, searches a hit and a miss, then deletes from the middle of the chain. Each step touches exactly one chain:
+
+```text
+Start:  capacity = 4, hash(key) = key mod 4
+        table = [ [], [], [], [] ]
+
+1. insert(5, A)   hash(5) = 1   slot 1 empty, append      table[1] = [(5,A)]
+2. insert(9, B)   hash(9) = 1   collision, 9 absent, append  table[1] = [(5,A), (9,B)]
+3. insert(13, C)  hash(13) = 1  collision, 13 absent, append table[1] = [(5,A), (9,B), (13,C)]
+4. insert(9, Z)   hash(9) = 1   walk chain, 9 FOUND, update  table[1] = [(5,A), (9,Z), (13,C)]
+5. search(13)     hash(13) = 1  walk past (5,A),(9,Z), match → return C
+6. search(7)      hash(7) = 3   slot 3 empty, chain ends   → return -1
+7. remove(9)      hash(9) = 1   walk to (9,Z), unlink node   table[1] = [(5,A), (13,C)]
+8. search(9)      hash(9) = 1   walk (5,A),(13,C), no match → return -1
+```
+
+Three facts fall out of the trace. Step 3 shows three keys living at one index with the array length still `4` — the collision storm widened slot `1` instead of spilling into slots `2` or `3`. Step 4 proves insert is search-with-a-twist: it found `9` already present and overwrote `B` with `Z` rather than appending a duplicate, so the chain length did not change. Step 7 shrinks the chain by unlinking the middle node, and step 8 confirms the key is gone. So the core insight is: every operation hashes to one chain and then reads, rewrites, or unlinks a node inside it — the array length never moves, only the chain at the touched slot does.
+
+***
+
 # Design a hash table with separate chaining
 
 Time for the boss fight. You'll now implement a complete hash table with separate chaining from scratch — every operation we've built, plus one new one to flex your understanding.
@@ -1441,38 +1512,103 @@ The two big lessons to carry forward:
 </details>
 
 <!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
 
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
+# Edge Cases and Pitfalls
 
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
+The structure fits in a screenful, yet most of its bugs cluster around the chain walk and the load factor that decides how long that walk runs. This list is lesson-level — distinct from the boss-fight's per-input edge cases above — and worth keeping open the next time a chaining table misbehaves:
 
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
+- **Treating insert as a blind append.** Appending without first walking the chain lets two records with the same key coexist, so a later `search` returns whichever copy it hits first. The fix is the rule baked into the operation: walk the chain, update in place if the key is found, and append only after confirming the key is absent.
+- **Letting the load factor climb unchecked.** Average operation cost is `O(1 + α)` where `α = N / capacity`, so a table that never resizes degrades to a linked-list scan as `N` grows. A capacity-`4` table holding `400` keys has `α = 100` and every "constant-time" lookup walks `100` nodes. Production tables resize and rehash to hold `α` near a small constant.
+- **Assuming O(1) is guaranteed, not average.** The bounds are `O(1)` average and `O(N)` worst. An adversary who knows the hash function can craft keys that all collide into one chain, collapsing every operation to `O(N)` — the basis of algorithmic-complexity denial-of-service attacks. The fix is a randomised or cryptographic hash, not the toy `key mod capacity` used for teaching here.
+- **Forgetting that a missing key is not an error.** `search` on an absent key returns the `-1` sentinel and `remove` on an absent key is a silent no-op. Code that expects an exception will mishandle both. When `-1` is a legal stored value, the sentinel is ambiguous — prefer an explicit "found" flag or an `Optional` return.
+- **Ignoring per-node memory overhead.** Every chain node carries `prev` and `next` references on top of the `(key, value)` payload — about `16` extra bytes per node on a 64-bit system. A table of millions of tiny records spends a large fraction of its memory on pointers, which a contiguous open-addressing table avoids entirely.
+- **Paying for cache misses on long chains.** Chain nodes are separate heap allocations scattered across RAM, so walking a long chain is slow not from the `O(N)` step count alone but because each hop is a cache miss. Short chains hide this; long chains expose it, and it is the gap open addressing was built to close.
 
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
+***
 
-<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
-<!--       Guidance: bulleted list of gotchas -->
+# Production Reality
 
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+Separate chaining is the textbook default and the implementation behind several standard-library maps, chosen wherever predictable collision behaviour matters more than raw cache throughput. The systems below are worth knowing by name.
 
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+**[Java's `HashMap`]** — uses **separate chaining that upgrades a bucket from a linked list to a balanced tree once the bucket exceeds eight nodes** — because the tree caps a pathological bucket at `O(log N)` instead of `O(N)`, blunting hash-collision denial-of-service attacks while keeping short buckets cheap.
 
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
+**[Java's `HashSet`]** — uses **a `HashMap` of element-to-sentinel under the hood, so set membership is separate-chaining lookup** — because reusing the map's chaining machinery gives `O(1)` average `contains` with no new collision logic to maintain.
 
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+**[The C++ `std::unordered_map`]** — uses **separate chaining, mandated by the standard's bucket interface** — because the spec exposes `bucket_count`, `bucket_size`, and local bucket iterators, which only a chained layout can implement, guaranteeing references to elements stay valid across rehashes.
 
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
+**[A symbol table in a compiler or interpreter]** — uses **a chained hash table keyed by identifier name** — because scopes nest and shadow, and a chain per slot makes inserting and removing names as scopes open and close a localised `O(1)` operation.
 
-<!-- TODO: Final Takeaway — missing, needs to be written -->
-<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->
+**[Memcached's item hash table]** — uses **separate chaining over a bucket array that doubles and rehashes as the item count grows** — because a distributed cache must keep average chain length near one under churn, and chaining absorbs bursts of inserts without relocating existing items.
+
+***
+
+# Quiz
+
+Test your grip before moving on. One answer per question; reveal only after you have committed to one.
+
+**[Recall] Q: In separate chaining, what does each slot of the internal array hold?**
+A chain — a growable container (a doubly linked list in this lesson) holding every record whose key hashes to that slot.
+
+**[Recall] Q: What does `search` return when the key is not present, and what does `remove` do in the same case?**
+`search` returns the `-1` sentinel, and `remove` is a silent no-op that leaves the table unchanged.
+
+**[Reasoning] Q: Why do search, insert, and delete all share the same `O(1)` average and `O(N)` worst-case time?**
+Each one hashes to a single chain in `O(1)` and then walks that chain, so its cost is the chain length — about `1` when the hash spreads keys evenly, but `N` when every key collides into one chain.
+
+**[Reasoning] Q: Why must insert walk the chain before appending a new record?**
+To enforce dictionary semantics — if the key already exists, insert overwrites its value in place rather than appending a duplicate, so the table never holds two records with the same key.
+
+**[Tradeoff] Q: When would you reach for open addressing instead of separate chaining, and what do you give up?**
+Choose open addressing when cache locality and low memory overhead dominate, since its records live contiguously with no per-node pointers; you give up the unbounded slot capacity and the simple deletion that chaining offers, because probing tables need tombstones and degrade sharply as the load factor approaches `1`.
+
+***
+
+# Practice Ladder
+
+Five problems that exercise hashing as a counting and lookup tool, easiest first. Try each unaided; hit the hint after ten minutes; do not peek at solutions until you have written something runnable.
+
+| # | Problem | Pattern | Difficulty | Hint |
+|---|---------|---------|------------|------|
+| 1 | [First Non-Repeating Character](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting-problems-first-non-repeating-character) | [Counting](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting-pattern) | Easy | Count every character with a hash map in one pass, then scan again for the first count equal to `1`. `O(n)` time, `O(k)` space in the alphabet size. |
+| 2 | [Anagram Checker](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting-problems-anagram-checker) | [Counting](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting-pattern) | Easy | Two strings are anagrams when their character-frequency maps match; tally one string up and the other down, then check every count is zero. `O(n)` time. |
+| 3 | [Duplicate Detection](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-fixed-sized-sliding-window-problems-duplicate-detection) | [Fixed-Sized Sliding Window](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-fixed-sized-sliding-window-pattern) | Medium | Slide a fixed window and keep a hash set of its members; a key already in the set is the duplicate within range. `O(n)` time, `O(k)` space in the window width. |
+| 4 | [Subarray Sum Equals K](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-variable-sized-sliding-window-problems-subarray-sum-equals-k) | [Variable-Sized Sliding Window](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-variable-sized-sliding-window-pattern) | Medium | Store running prefix sums in a hash map; a subarray sums to `k` whenever `prefix - k` has been seen before. `O(n)` time, `O(n)` space. |
+| 5 | [Zero Sum Subarrays](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-prefix-sum-problems-zero-sum-subarrays) | [Prefix Sum](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-prefix-sum-pattern) | Medium | A repeated prefix sum means the slice between the two occurrences sums to zero; count occurrences of each prefix sum in a hash map. `O(n)` time, `O(n)` space. |
+
+Once these feel automatic, the hash map has stopped being a lookup table and become a counting-and-memo reflex — exactly what the counting, sliding-window, and prefix-sum patterns build on.
+
+***
+
+# Further Reading
+
+Curated paths in, not a syllabus. Read in order of the annotation; come back for the rest when you need depth.
+
+- **[CLRS — Chapter 11.2: Hash Tables (Collision resolution by chaining)](https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/)**
+  ★ Essential — the formal treatment of chaining, the load-factor analysis that proves `O(1 + α)` expected time, and the simple-uniform-hashing assumption the average case rests on.
+- **[Java `HashMap` source](https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/java/util/HashMap.java)**
+  ◆ Advanced — a production chaining table that treeifies a bucket past eight nodes; shows how the textbook structure is hardened against collision attacks and tuned for real workloads.
+- **[CppReference — `std::unordered_map`](https://en.cppreference.com/w/cpp/container/unordered_map)**
+  → Reference — the standard library's bucket interface (`bucket_count`, `load_factor`, `max_load_factor`, local iterators) that only a chained layout can satisfy; keep it for looking up the exact guarantees.
+
+***
+
+# Cross-Links
+
+**Prerequisites**
+
+- [Introduction To Hash Tables](/cortex/data-structures-and-algorithms/linear-structures-hash-table-introduction-to-hash-tables) — what a hash function is, the dictionary interface, and why collision resolution is a required component of every hash table.
+- [Introduction To Doubly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-introduction-to-doubly-linked-lists) — the chain inside each slot is a doubly linked list, and inserting and unlinking nodes is exactly the machinery reused here.
+- [Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis) — what `O(1)` average versus `O(N)` worst case means, and how the load factor `α` enters the per-operation cost.
+
+**What comes next**
+
+- [Linear Probing](/cortex/data-structures-and-algorithms/linear-structures-hash-table-linear-probing) — the open-addressing alternative that resolves collisions inside the same array, trading the chain for cache-friendly contiguous storage and a sharper failure mode.
+- [Memorize: Hash Table](/cortex/data-structures-and-algorithms/linear-structures-hash-table-memorize) — the single crib sheet distilling operations, complexities, and the chaining-versus-probing tradeoff across the whole chapter.
+
+***
+
+## Final Takeaway
+
+1. **Core mechanic:** every slot of the internal array is a growable chain, so each operation hashes to one chain in `O(1)` and then walks that chain to read, overwrite, or unlink a record.
+2. **Dominant tradeoff:** you gain unbounded slot capacity and the simplest possible deletion, with no load-factor ceiling; you give up cache locality and pay `prev`/`next` pointer overhead on every record, which a contiguous open-addressing table avoids.
+3. **One thing to remember:** chain length, not table size, decides the real cost — keep the load factor `α = N / capacity` near a small constant and every operation stays effectively `O(1)`.

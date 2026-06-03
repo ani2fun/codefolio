@@ -113,7 +113,7 @@ print(Solution().top_view(from_level_order([1, None, 2, None, None, None, 3]))) 
 print(Solution().top_view(from_level_order([1, 2, 3])))                                  # [2, 1, 3] balanced
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

@@ -1,6 +1,6 @@
 ---
 title: "Introduction To Hash Tables"
-summary: "<!-- TODO: summary -->"
+summary: "Stop searching, start computing — a hash function turns a key into an array index, so lookup, insert, and delete are O(1) on average. The structure behind every dictionary, database index, cache, and symbol table, paid for with inevitable collisions."
 ---
 
 # 1. Introduction to Hash Tables
@@ -24,6 +24,14 @@ That's a **hash table**. It's the data structure behind every database index, ev
 5. [Examples of hash functions](#examples-of-hash-functions)
 6. [Internal mechanics of a hash table](#internal-mechanics-of-a-hash-table)
 7. [Overview of supported operations](#overview-of-supported-operations)
+8. [Working example](#working-example)
+9. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
+10. [Production reality](#production-reality)
+11. [Quiz](#quiz)
+12. [Practice ladder](#practice-ladder)
+13. [Further reading](#further-reading)
+14. [Cross-links](#cross-links)
+15. [Final takeaway](#final-takeaway)
 
 ***
 
@@ -911,30 +919,137 @@ We'll spend the rest of the section dissecting both. For each, we'll see how it 
 
 > *What's next* — In the next lesson we'll dive into **separate chaining**: the simpler of the two families, and a deeply intuitive one. We'll meet the linked-list-per-slot trick, build it from scratch, watch it gracefully absorb collision after collision, and then push it until it breaks. Once you've seen separate chaining clearly, open addressing will read like a clever optimization on the same theme.
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+# Working Example
 
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
+Trace a hash table through one full life cycle — empty, three inserts, a search, a collision, a delete — and watch the hash function carry every operation to exactly one slot. Use an internal array of capacity `8` and the division hash function `hash(key) = (sum of character codes) mod 8`. The concrete index a real string hashes to depends on the character codes; here we fix the results so the mechanics stay in focus.
 
-<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
-<!--       Guidance: bulleted list of gotchas -->
+**Step 1 — start empty.** All `8` slots are unused. The table holds zero entries, so any `search` returns "not found" and any `delete` is a no-op. The load factor — entries divided by capacity — is `0`.
 
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+**Step 2 — insert three pairs.** Insert `('Karan', 4)`, and suppose `hash('Karan') = 0`; write the pair into slot `0`. Insert `('Hari', 7)` with `hash('Hari') = 1`; write it into slot `1`. Insert `('Neha', 23)` with `hash('Neha') = 2`; write it into slot `2`. Each insert is one hash computation plus one array write — `O(1)` time and `O(1)` space. The table now holds three entries in three distinct slots.
 
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+**Step 3 — `search('Neha')`.** Compute `hash('Neha') = 2`, read slot `2`, and find the pair `('Neha', 23)`. Compare the stored key to the query key: `'Neha' == 'Neha'`, so return the value `23`. The search touched exactly one slot — no scan of the other seven. That single-slot lookup is the entire `O(1)` promise made literal.
 
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
+**Step 4 — insert `('Riya', 12)` with a collision.** Suppose `hash('Riya') = 2` as well. Slot `2` already holds `('Neha', 23)`, a *different* key — this is a collision. The hash function did its job correctly; the clash is the structural cost of squeezing many keys into eight slots. The collision-resolution scheme now decides where `('Riya', 12)` actually lands: separate chaining appends it to a list hanging off slot `2`, while open addressing probes slot `3`, `4`, and so on for the first free slot. Either way, the *insert* is still anchored at the hashed index `2`.
 
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+**Step 5 — `delete('Hari')`.** Compute `hash('Hari') = 1`, read slot `1`, confirm the stored key matches `'Hari'`, and clear the entry. The table now holds three live entries. Deleting a key that was never inserted — say `delete('Zoya')` — hashes to some slot, finds no matching key, and returns as a no-op rather than an error.
 
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
+> 🖼 Diagram — TODO: 5-frame trace of a capacity-8 hash table — empty, after three inserts into slots 0/1/2, after search('Neha') hits slot 2, after insert('Riya') collides at slot 2, after delete('Hari') clears slot 1 — with the hashed slot highlighted in every frame.
 
-<!-- TODO: Final Takeaway — missing, needs to be written -->
-<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->
+The core insight is: the hash function routes every operation to one slot, and the only extra work happens when two keys land on the same one. Insert, search, and delete all share the same first two moves — hash the key, go to that slot — and differ only in what they do once they arrive.
+
+---
+
+## Key Takeaway
+
+Every operation is hash-then-act: compute the index in `O(1)`, then read, write, or clear that single slot. Collisions are the one wrinkle — when two keys share a slot, the resolution scheme decides the rest — but the average case touches exactly one slot, which is why insert, search, and delete are all `O(1)` time and `O(1)` space per call.
+
+***
+
+# Edge Cases and Pitfalls
+
+Almost every hash-table bug traces to one root cause: forgetting that collisions are inevitable and that performance depends on keeping them rare. A hash table is `O(1)` *on average*, not in the worst case — and the gap between those two is where the bugs live. Train your eye to ask, on every design, "what is my load factor, and what happens when keys cluster?".
+
+- **Assuming `O(1)` is guaranteed.** The average case is `O(1)` time, but the worst case is `O(N)` time — when every key hashes to the same slot, the structure degenerates into one long chain (separate chaining) or one long probe sequence (open addressing). A search then walks all `N` entries. A hash table is a *probabilistic* `O(1)`, and an adversary feeding crafted keys can force the `O(N)` worst case on purpose.
+- **A bad hash function that clusters keys.** A function that is mathematically uniform can still cluster on *real* keys with hidden patterns. The textbook trap is `key mod m` with a non-prime `m`: if every key is a multiple of `4` and `m = 8`, all keys collapse into slots `0` and `4`, wasting `O(N)` space and dragging lookups toward `O(N)` time. Pick `m` prime, or use a function that scrambles every bit of the key.
+- **Ignoring the load factor.** The load factor is entries divided by capacity. As it climbs toward `1`, collisions get more frequent and operations slow down. Production tables resize — allocate a larger array and **rehash** every existing key into it — once the load factor crosses a threshold (Java's `HashMap` uses `0.75`). A single resize is `O(N)` time and `O(N)` space; skipping it lets the table silently rot to `O(N)` per operation.
+- **Mutating a key after insertion.** A key's slot is fixed by `hash(key)` at insertion time. If you mutate the key afterwards — change a field that the hash reads — the table will recompute a *different* index on the next lookup and miss the entry entirely. The value is stranded in its old slot, unreachable. Use immutable keys, or never mutate a key while it lives in a table.
+- **Deleting under open addressing by clearing the slot outright.** Open addressing finds entries by probing a chain of slots. Clearing a slot in the middle of a probe sequence breaks the chain — later entries become unreachable because the search stops at the now-empty hole. The fix is a **tombstone**: a special marker that says "deleted, but keep probing past me". Naive deletion is a silent data-loss bug; the later collision-resolution lessons cover tombstones in full.
+- **Relying on iteration order.** A hash table stores entries by hash value, not by insertion order or sort order. Iterating yields keys in an order that is effectively arbitrary and can change across resizes or language versions. Code that assumes a stable or sorted order from a plain hash table is depending on an accident — reach for a tree-based map or an insertion-ordered map when order matters.
+
+So the key idea is: a hash table buys `O(1)` average time by accepting collisions, so every pitfall is really a question about collisions — how many, how clustered, and what the table does when they happen. Keep the load factor low, choose the hash function for the real keys, and respect the resolution scheme's deletion rules, and the `O(1)` promise holds.
+
+***
+
+# Production Reality
+
+Hash tables are everywhere a system needs near-instant lookup by key — dictionaries, caches, indexes, and dedup all reduce to hashing. The places below are worth knowing by name.
+
+**[Python `dict` and Java `HashMap`]** — uses **a hash table with resizing** — because the language's core associative type must offer average `O(1)` insert and lookup, and dynamic rehashing keeps the load factor low as the map grows.
+
+**[Database hash indexes]** — uses **a hash table over a column's values** — because equality lookups (`WHERE id = ?`) must resolve in average `O(1)` time, far faster than the `O(log N)` of a B-tree when no range scan is needed.
+
+**[In-memory caches (Redis, Memcached)]** — uses **a hash table keyed by the cache key** — because a cache's whole value proposition is sub-millisecond `GET`/`SET`, and only `O(1)` average-time keyed access delivers that under heavy traffic.
+
+**[Compiler and interpreter symbol tables]** — uses **a hash table mapping identifiers to declarations** — because every variable reference triggers a name lookup, and an `O(1)` average-time table keeps compilation linear in the size of the source rather than quadratic.
+
+**[Deduplication and set membership]** — uses **a hash set (a hash table storing only keys)** — because "have I seen this item before?" must answer in average `O(1)` time across millions of items, which a sorted list or array cannot match.
+
+**[Network routers and switches]** — uses **a hash table mapping addresses to ports or routes** — because a packet must be forwarded in the time between its arrival and the next one, and an `O(1)` average-time lookup on the destination address keeps line-rate forwarding feasible.
+
+***
+
+# Quiz
+
+Test your grip before moving on. Commit to an answer before revealing it.
+
+**[Recall] Q: What three pieces make up a hash table, and what does each contribute?**
+A **hash function** turns a key into an index, an **internal array** stores the `(key, value)` pairs at those indices, and a **collision-resolution scheme** decides what happens when two keys hash to the same slot.
+
+**[Recall] Q: Why does each array cell store the key alongside the value, when the index already came from the key?**
+Because collisions mean a slot may hold a *different* key than the one you hashed, so the stored key lets you confirm with one comparison that you found the right entry rather than a colliding stranger.
+
+**[Reasoning] Q: Why is a hash table `O(1)` on average but `O(N)` in the worst case?**
+On average a good hash function spreads keys evenly so each operation touches roughly one slot (`O(1)`); in the worst case every key hashes to the same slot and the structure degenerates into one chain of length `N`, so a lookup walks all `N` entries (`O(N)`).
+
+**[Reasoning] Q: Why must a hash function be deterministic and fast?**
+It must be deterministic because a value is stored at `hash(key)` and retrieved by recomputing `hash(key)` — a different result on retrieval would look in the wrong slot — and fast because it runs on *every* operation, so a slow hash makes the whole table slow.
+
+**[Tradeoff] Q: When would you choose a hash table over a balanced binary search tree?**
+Choose the hash table when you only need equality lookups and want average `O(1)` access; choose the tree when you need sorted order or range queries, which a hash table cannot provide despite its `O(log N)` being slower per point lookup.
+
+***
+
+# Practice Ladder
+
+Five problems to turn "hash the key, go to the slot" into a reflex. All five live in this chapter's pattern directories, where a hash table is the workhorse behind counting, key generation, and sliding-window membership. Try each unaided; reach for the hint after ten minutes; do not peek at solutions until you have written something runnable.
+
+| # | Problem | Pattern | Difficulty | Hint |
+|---|---------|---------|------------|------|
+| 1 | [First Non-Repeating Character](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting-problems-first-non-repeating-character) | [Counting](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting-pattern) | Easy | One pass to count each character into a hash table, a second pass to return the first whose count is `1`. `O(n)` time, `O(k)` space for `k` distinct characters. |
+| 2 | [Anagram Checker](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting-problems-anagram-checker) | [Counting](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting-pattern) | Easy | Count letters of the first string, then decrement for the second; an anagram leaves every count at zero. The hash table *is* the multiset comparison. |
+| 3 | [Cluster Anagrams](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting-problems-cluster-anagrams) | [Counting](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting-pattern) | Medium | Build a canonical key per word (sorted letters or a count signature) and group words under that key in a hash table — colliding keys are exactly the anagram groups. |
+| 4 | [Homomorphic Strings](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-pattern-generation-problems-homomorphic-strings) | [Key Generation](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-pattern-generation-pattern) | Medium | Map each character of one string to its counterpart in the other via a hash table; a consistent one-to-one mapping means the strings share a structure. |
+| 5 | [Duplicate Detection](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-fixed-sized-sliding-window-problems-duplicate-detection) | [Fixed-Sized Sliding Window](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-fixed-sized-sliding-window-pattern) | Medium | Slide a window of size `k` and keep its elements in a hash set; an insert that collides with an existing member means a duplicate sits within `k` positions. |
+
+Once these feel automatic, "store it in a hash table" has stopped being a trick and become a reflex — and the pattern chapters can land their punches.
+
+***
+
+# Further Reading
+
+Curated paths in, not a syllabus. Read in order of the annotation; come back for the rest when you need depth.
+
+- **[CLRS — Chapter 11: Hash Tables](https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/)**
+  ★ Essential — the canonical treatment, with the formal analysis of chaining, open addressing, and why a good hash function gives expected `O(1)` operations.
+- **[Separate Chaining](/cortex/data-structures-and-algorithms/linear-structures-hash-table-separate-chaining)**
+  ★ Essential — the next lesson; turns the "list per slot" idea from this chapter into a real, runnable collision-resolution scheme.
+- **[Linear Probing](/cortex/data-structures-and-algorithms/linear-structures-hash-table-linear-probing)**
+  ◆ Advanced — the first open-addressing scheme; absorbs collisions by probing nearby slots, and introduces the deletion subtlety that motivates tombstones.
+- **[Double Hashing](/cortex/data-structures-and-algorithms/linear-structures-hash-table-double-hashing)**
+  ◆ Advanced — the most collision-resistant open-addressing scheme, using a second hash function to spread probes and defeat clustering.
+- **[Python `dict` implementation notes](https://docs.python.org/3/library/stdtypes.html#dict)**
+  → Reference — the behaviour and guarantees of Python's built-in hash table, including average-case complexities and insertion-order preservation.
+
+***
+
+# Cross-Links
+
+**Prerequisites**
+
+- [Introduction to Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-introduction) — the contiguous buffer that backs every hash table, and the source of the `O(1)` indexed access the hash function exploits.
+- [Introduction to Singly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-introduction-to-singly-linked-lists) — the chain used per slot in separate chaining; the resolution scheme builds directly on it.
+- [Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis) — what average `O(1)` versus worst-case `O(N)` actually mean, and why a hash table's guarantee is probabilistic.
+
+**What comes next**
+
+- [Separate Chaining](/cortex/data-structures-and-algorithms/linear-structures-hash-table-separate-chaining) — the simpler collision-resolution family; stores all colliding keys in a linked list per slot.
+- [Linear Probing](/cortex/data-structures-and-algorithms/linear-structures-hash-table-linear-probing) — the open-addressing alternative; reroutes collisions to other slots in the same array, trading list overhead for cache locality.
+- [Design a Hash Map](/cortex/data-structures-and-algorithms/linear-structures-hash-table-design-a-hash-map-design-a-hash-map) — the capstone design challenge that assembles a full hash map from the hash function and a resolution scheme built in the lessons above.
+
+***
+
+## Final Takeaway
+
+1. **Core mechanic:** a hash table runs a key through a hash function to compute an array index, then stores or retrieves the `(key, value)` pair at that single slot — turning search into a calculation, with average `O(1)` time and `O(N)` space for `N` entries.
+2. **Dominant tradeoff:** you gain average `O(1)` insert, search, and delete; you give up sorted order and any worst-case guarantee — collisions are inevitable, so a bad hash function or a high load factor can drag operations to `O(N)` time.
+3. **One thing to remember:** stop searching, start computing — the hash function *derives* where data lives instead of finding it, and every other property of the structure (its speed, its collisions, its resizing) follows from that one move.

@@ -223,7 +223,7 @@ print(Solution().approximate_three_sum([1, 2, 3, 4], 6))      # 6 — exact hit:
 print(Solution().approximate_three_sum([-4, -1, 1, 2], -1))   # -1 — negative target
 ```
 
-```java run
+```java run viz=array viz-root=arr
 import java.util.*;
 
 public class Main {

@@ -168,7 +168,7 @@ if __name__ == "__main__":
         print(f"\nLongest repeated substring: {s[sa[max_lcp_i]:sa[max_lcp_i] + lcp[max_lcp_i]]!r}")
 ```
 
-```java run
+```java run viz=array viz-root=lcp
 import java.util.*;
 
 public class Main {

@@ -65,7 +65,7 @@ This is technically *unconditional* — every leaf is a valid permutation. We in
 
 ### The Solution
 
-```python run
+```python run viz=array viz-root=result
 from typing import List
 
 class Solution:
@@ -126,7 +126,7 @@ print(sorted(Solution().string_permutations("ba")))   # ['ab', 'ba']
 print(sorted(Solution().string_permutations("xyz")))  # ['xyz', 'xzy', 'yxz', 'yzx', 'zxy', 'zyx']
 ```
 
-```java run
+```java run viz=array viz-root=result
 import java.util.*;
 
 public class Main {

@@ -121,7 +121,7 @@ if __name__ == "__main__":
     print("100 random tests pass")
 ```
 
-```java run
+```java run viz=array viz-root=matches
 import java.util.*;
 
 public class Main {

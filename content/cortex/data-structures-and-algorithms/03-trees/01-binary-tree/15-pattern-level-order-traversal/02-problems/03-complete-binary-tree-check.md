@@ -56,7 +56,7 @@ flowchart LR
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 def is_complete(root):
     if root is None: return True
     q = deque([root]); seen_null = False
@@ -70,7 +70,7 @@ def is_complete(root):
     return True
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 public static boolean isComplete(TreeNode root) {
     if (root == null) return true;
     Deque<TreeNode> q = new ArrayDeque<>();

@@ -291,7 +291,7 @@ print(Solution().minimum_partitioning("abba"))    # 0
 print(Solution().minimum_partitioning("abcd"))    # 3
 ```
 
-```java run
+```java run viz=graph viz-root=dp
 public class Main {
     static class Solution {
         public int minimumPartitioning(String s) {

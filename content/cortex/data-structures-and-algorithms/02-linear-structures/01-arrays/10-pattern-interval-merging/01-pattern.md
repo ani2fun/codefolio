@@ -137,16 +137,231 @@ sweep -> state
 <p align="center"><strong>The sweep visits each interval in sorted order, updating shared state in O(1). One pass — no nested loops.</strong></p>
 
 > ▶ Interactive Diagram — TODO: add caption
-```d3 widget=array-traversal
+```d3 widget=array-1d
 {
-  "items": ["[1,3]", "[2,5]", "[4,7]", "[6,8]"],
-  "title": "Line sweep — visit sorted intervals left to right",
   "steps": [
-    { "markers": [{"name": "sweep", "index": 0, "color": "#f59e0b"}], "msg": "Sweep at [1,3] — state initialised (algorithm-specific)." },
-    { "markers": [{"name": "sweep", "index": 1, "color": "#f59e0b"}], "msg": "Sweep advances to [2,5] — state updated based on relation to previous." },
-    { "markers": [{"name": "sweep", "index": 2, "color": "#f59e0b"}], "msg": "Sweep advances to [4,7] — single O(1) state update." },
-    { "markers": [{"name": "sweep", "index": 3, "color": "#f59e0b"}], "msg": "Sweep advances to [6,8] — final state produces the answer." }
-  ]
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "[1,3]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "[2,5]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "[4,7]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "[6,8]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "sweep",
+          "target": "0",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Sweep at [1,3] — state initialised (algorithm-specific).",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "[1,3]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "[2,5]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "[4,7]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "[6,8]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "sweep",
+          "target": "1",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Sweep advances to [2,5] — state updated based on relation to previous.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "[1,3]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "[2,5]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "[4,7]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "[6,8]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "sweep",
+          "target": "2",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Sweep advances to [4,7] — single O(1) state update.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "[1,3]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "[2,5]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "[4,7]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "[6,8]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "sweep",
+          "target": "3",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Sweep advances to [6,8] — final state produces the answer.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    }
+  ],
+  "title": "Line sweep — visit sorted intervals left to right"
 }
 ```
 
@@ -331,54 +546,576 @@ flowchart TB
 <p align="center"><strong>Each iteration peeks at <code>merged.last</code> and either extends its end or appends a fresh interval. The sweep visits every input exactly once.</strong></p>
 
 > ▶ Interactive Diagram — TODO: add caption
-```d3 widget=array-traversal
+```d3 widget=array-1d
 {
-  "items": ["[1,3]", "[2,6]", "[8,10]", "[9,12]", "[15,18]"],
-  "title": "Interval merging on sorted arr = [[1,3], [2,6], [8,10], [9,12], [15,18]]",
-  "primaryLabel": "arr (sorted)",
-  "secondaryItems": ["[1,3]", "·", "·", "·", "·"],
-  "secondaryLabel": "merged",
   "steps": [
     {
-      "items": ["[1,3]", "[2,6]", "[8,10]", "[9,12]", "[15,18]"],
-      "markers": [{"name": "i", "index": 0, "color": "#3b82f6"}],
-      "secondaryItems": ["[1,3]", "·", "·", "·", "·"],
-      "secondaryKeys": ["m0", "m1", "m2", "m3", "m4"],
-      "msg": "Init: seed merged with arr[0]=[1,3]. Sweep starts from i=1."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "[1,3]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "[2,6]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "[8,10]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "[9,12]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p4",
+          "label": "[15,18]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m0",
+          "label": "[1,3]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m1",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m2",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m3",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m4",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "i",
+          "target": "p0",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Init: seed merged with arr[0]=[1,3]. Sweep starts from i=1.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "items": ["[1,3]", "[2,6]", "[8,10]", "[9,12]", "[15,18]"],
-      "markers": [{"name": "i", "index": 1, "color": "#3b82f6"}],
-      "secondaryItems": ["[1,6]", "·", "·", "·", "·"],
-      "secondaryKeys": ["m0", "m1", "m2", "m3", "m4"],
-      "secondaryMarkers": [{"name": "last", "index": 0, "color": "#f59e0b"}],
-      "msg": "i=1: arr[1]=[2,6]. 2 ≤ 3 (last.end) → EXTEND → merged.last = [1, max(3,6)] = [1,6]."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "[1,3]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "[2,6]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "[8,10]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "[9,12]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p4",
+          "label": "[15,18]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m0",
+          "label": "[1,6]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m1",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m2",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m3",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m4",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "i",
+          "target": "p1",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "last",
+          "target": "m0",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "i=1: arr[1]=[2,6]. 2 ≤ 3 (last.end) → EXTEND → merged.last = [1, max(3,6)] = [1,6].",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "items": ["[1,3]", "[2,6]", "[8,10]", "[9,12]", "[15,18]"],
-      "markers": [{"name": "i", "index": 2, "color": "#3b82f6"}],
-      "secondaryItems": ["[1,6]", "[8,10]", "·", "·", "·"],
-      "secondaryKeys": ["m0", "m1", "m2", "m3", "m4"],
-      "secondaryMarkers": [{"name": "last", "index": 1, "color": "#f59e0b"}],
-      "msg": "i=2: arr[2]=[8,10]. 8 > 6 → APPEND → merged = [[1,6], [8,10]]."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "[1,3]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "[2,6]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "[8,10]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "[9,12]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p4",
+          "label": "[15,18]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m0",
+          "label": "[1,6]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m1",
+          "label": "[8,10]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m2",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m3",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m4",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "i",
+          "target": "p2",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "last",
+          "target": "m1",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "i=2: arr[2]=[8,10]. 8 > 6 → APPEND → merged = [[1,6], [8,10]].",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "items": ["[1,3]", "[2,6]", "[8,10]", "[9,12]", "[15,18]"],
-      "markers": [{"name": "i", "index": 3, "color": "#3b82f6"}],
-      "secondaryItems": ["[1,6]", "[8,12]", "·", "·", "·"],
-      "secondaryKeys": ["m0", "m1", "m2", "m3", "m4"],
-      "secondaryMarkers": [{"name": "last", "index": 1, "color": "#f59e0b"}],
-      "msg": "i=3: arr[3]=[9,12]. 9 ≤ 10 → EXTEND → merged.last = [8, max(10,12)] = [8,12]."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "[1,3]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "[2,6]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "[8,10]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "[9,12]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p4",
+          "label": "[15,18]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m0",
+          "label": "[1,6]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m1",
+          "label": "[8,12]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m2",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m3",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m4",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "i",
+          "target": "p3",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "last",
+          "target": "m1",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "i=3: arr[3]=[9,12]. 9 ≤ 10 → EXTEND → merged.last = [8, max(10,12)] = [8,12].",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "items": ["[1,3]", "[2,6]", "[8,10]", "[9,12]", "[15,18]"],
-      "markers": [{"name": "i", "index": 4, "color": "#3b82f6"}],
-      "secondaryItems": ["[1,6]", "[8,12]", "[15,18]", "·", "·"],
-      "secondaryKeys": ["m0", "m1", "m2", "m3", "m4"],
-      "secondaryMarkers": [{"name": "last", "index": 2, "color": "#f59e0b"}],
-      "msg": "i=4: arr[4]=[15,18]. 15 > 12 → APPEND → merged = [[1,6], [8,12], [15,18]] ✓"
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "[1,3]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "[2,6]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "[8,10]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "[9,12]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p4",
+          "label": "[15,18]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m0",
+          "label": "[1,6]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m1",
+          "label": "[8,12]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m2",
+          "label": "[15,18]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m3",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m4",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "i",
+          "target": "p4",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "last",
+          "target": "m2",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "i=4: arr[4]=[15,18]. 15 > 12 → APPEND → merged = [[1,6], [8,12], [15,18]] ✓",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Interval merging on sorted arr = [[1,3], [2,6], [8,10], [9,12], [15,18]]"
 }
 ```
 
@@ -442,7 +1179,7 @@ The whole pattern — every "merge intervals" problem on every interview prep si
 The generic merge function below uses `<=` so touching intervals are merged. Flip it to `<` if your problem treats touching as non-overlapping.
 
 
-```python run
+```python run viz=array viz-root=merged
 class Solution:
     def merge_overlapping(
         self, arr: List[List[int]]
@@ -471,7 +1208,7 @@ class Solution:
         return merged
 ```
 
-```java run
+```java run viz=array viz-root=merged
 import java.util.*;
 
 class Solution {
@@ -630,59 +1367,581 @@ flowchart TB
 <p align="center"><strong>The sweep extends the highlighter twice and lifts it twice. Final answer: three non-overlapping busy windows.</strong></p>
 
 > ▶ Interactive Diagram — TODO: add caption
-```d3 widget=array-traversal
+```d3 widget=array-1d
 {
-  "items": ["[9,11]", "[10,12]", "[14,16]", "[15,17]", "[20,21]"],
-  "title": "Delivery intervals — merge on sorted [[9,11], [10,12], [14,16], [15,17], [20,21]]",
-  "primaryLabel": "sorted",
-  "secondaryItems": ["[9,11]", "·", "·", "·", "·"],
-  "secondaryLabel": "merged",
   "steps": [
     {
-      "items": ["[9,11]", "[10,12]", "[14,16]", "[15,17]", "[20,21]"],
-      "markers": [{"name": "i", "index": 0, "color": "#3b82f6"}],
-      "secondaryItems": ["[9,11]", "·", "·", "·", "·"],
-      "secondaryKeys": ["m0", "m1", "m2", "m3", "m4"],
-      "msg": "Init: seed merged with sorted[0]=[9,11]. Sweep from i=1."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "[9,11]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "[10,12]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "[14,16]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "[15,17]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p4",
+          "label": "[20,21]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m0",
+          "label": "[9,11]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m1",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m2",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m3",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m4",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "i",
+          "target": "p0",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Init: seed merged with sorted[0]=[9,11]. Sweep from i=1.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "items": ["[9,11]", "[10,12]", "[14,16]", "[15,17]", "[20,21]"],
-      "markers": [{"name": "i", "index": 1, "color": "#3b82f6"}],
-      "secondaryItems": ["[9,12]", "·", "·", "·", "·"],
-      "secondaryKeys": ["m0", "m1", "m2", "m3", "m4"],
-      "secondaryMarkers": [{"name": "last", "index": 0, "color": "#f59e0b"}],
-      "msg": "i=1: [10,12]. 10 ≤ 11 → EXTEND → merged.last = [9, max(11,12)] = [9,12]."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "[9,11]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "[10,12]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "[14,16]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "[15,17]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p4",
+          "label": "[20,21]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m0",
+          "label": "[9,12]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m1",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m2",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m3",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m4",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "i",
+          "target": "p1",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "last",
+          "target": "m0",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "i=1: [10,12]. 10 ≤ 11 → EXTEND → merged.last = [9, max(11,12)] = [9,12].",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "items": ["[9,11]", "[10,12]", "[14,16]", "[15,17]", "[20,21]"],
-      "markers": [{"name": "i", "index": 2, "color": "#3b82f6"}],
-      "secondaryItems": ["[9,12]", "[14,16]", "·", "·", "·"],
-      "secondaryKeys": ["m0", "m1", "m2", "m3", "m4"],
-      "secondaryMarkers": [{"name": "last", "index": 1, "color": "#f59e0b"}],
-      "msg": "i=2: [14,16]. 14 > 12 → APPEND → merged = [[9,12], [14,16]]."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "[9,11]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "[10,12]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "[14,16]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "[15,17]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p4",
+          "label": "[20,21]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m0",
+          "label": "[9,12]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m1",
+          "label": "[14,16]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m2",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m3",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m4",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "i",
+          "target": "p2",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "last",
+          "target": "m1",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "i=2: [14,16]. 14 > 12 → APPEND → merged = [[9,12], [14,16]].",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "items": ["[9,11]", "[10,12]", "[14,16]", "[15,17]", "[20,21]"],
-      "markers": [{"name": "i", "index": 3, "color": "#3b82f6"}],
-      "secondaryItems": ["[9,12]", "[14,17]", "·", "·", "·"],
-      "secondaryKeys": ["m0", "m1", "m2", "m3", "m4"],
-      "secondaryMarkers": [{"name": "last", "index": 1, "color": "#f59e0b"}],
-      "msg": "i=3: [15,17]. 15 ≤ 16 → EXTEND → merged.last = [14, max(16,17)] = [14,17]."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "[9,11]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "[10,12]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "[14,16]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "[15,17]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p4",
+          "label": "[20,21]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m0",
+          "label": "[9,12]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m1",
+          "label": "[14,17]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m2",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m3",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m4",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "i",
+          "target": "p3",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "last",
+          "target": "m1",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "i=3: [15,17]. 15 ≤ 16 → EXTEND → merged.last = [14, max(16,17)] = [14,17].",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "items": ["[9,11]", "[10,12]", "[14,16]", "[15,17]", "[20,21]"],
-      "markers": [{"name": "i", "index": 4, "color": "#3b82f6"}],
-      "secondaryItems": ["[9,12]", "[14,17]", "[20,21]", "·", "·"],
-      "secondaryKeys": ["m0", "m1", "m2", "m3", "m4"],
-      "secondaryMarkers": [{"name": "last", "index": 2, "color": "#f59e0b"}],
-      "msg": "i=4: [20,21]. 20 > 17 → APPEND → merged = [[9,12], [14,17], [20,21]] → 3 busy windows ✓"
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "[9,11]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "[10,12]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "[14,16]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "[15,17]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p4",
+          "label": "[20,21]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m0",
+          "label": "[9,12]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m1",
+          "label": "[14,17]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m2",
+          "label": "[20,21]",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m3",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m4",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "i",
+          "target": "p4",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "last",
+          "target": "m2",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "i=4: [20,21]. 20 > 17 → APPEND → merged = [[9,12], [14,17], [20,21]] → 3 busy windows ✓",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Delivery intervals — merge on sorted [[9,11], [10,12], [14,16], [15,17], [20,21]]"
 }
 ```
 
 
-```python run
+```python run viz=array viz-root=merged
 class Solution:
     def delivery_intervals(
         self, times: List[List[int]]
@@ -709,7 +1968,7 @@ class Solution:
         return merged
 ```
 
-```java run
+```java run viz=array viz-root=merged
 import java.util.*;
 
 class Solution {

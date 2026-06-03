@@ -151,7 +151,7 @@ if __name__ == "__main__":
     print(f"Articulations:  {articulations}     (expected [1, 3])")
 ```
 
-```java run
+```java run viz=graph viz-root=adj
 import java.util.*;
 
 public class Main {

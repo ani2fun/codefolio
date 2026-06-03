@@ -126,7 +126,7 @@ print(Solution().dislike_pairs(4, []))                          # True — no di
 print(Solution().dislike_pairs(3, [[0,1],[0,2],[1,2]]))         # False
 ```
 
-```java run
+```java run viz=graph viz-root=graph
 import java.util.*;
 
 public class Main {

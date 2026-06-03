@@ -126,7 +126,7 @@ print(Solution().odd_count(from_level_order([1, 2, None, 3])))                 #
 print(Solution().odd_count(from_level_order([1, 2, 3, 4, 5, 6, 7])))          # 4 (all leaves at depth 3, odd)
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

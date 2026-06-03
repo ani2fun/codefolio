@@ -99,7 +99,7 @@ print(Solution().level_sum(from_level_order([1, None, 2, None, None, None, 3])))
 print(Solution().level_sum(from_level_order([5, 5, 5, 5, 5, 5, 5])))         # [5, 10, 20] full balanced
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

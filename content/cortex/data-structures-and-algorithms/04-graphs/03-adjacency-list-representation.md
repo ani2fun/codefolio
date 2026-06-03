@@ -273,7 +273,7 @@ for i, neighbours in enumerate(adj):
     print(f"{i}: {neighbours}")
 ```
 
-```java run
+```java run viz=graph viz-root=adj
 import java.util.ArrayList;
 import java.util.List;
 
@@ -386,7 +386,7 @@ for i, n in enumerate(adj):
     print(f"{i}: {n}")
 ```
 
-```java run
+```java run viz=graph viz-root=adj
 import java.util.ArrayList;
 import java.util.List;
 
@@ -533,7 +533,7 @@ for i, n in enumerate(graph):
     print(f"{i} ({n.data}): {n.adj}")
 ```
 
-```java run
+```java run viz=graph viz-root=graph
 import java.util.ArrayList;
 import java.util.List;
 
@@ -733,7 +733,7 @@ print(Solution().clone_adjacency_list([[1, 2], [0], [0]]))              # [[1, 2
 print(Solution().clone_adjacency_list([[0]]))                           # [[0]]
 ```
 
-```java run
+```java run viz=graph viz-root=adj_list
 import java.util.*;
 
 public class Main {
@@ -872,7 +872,7 @@ print(Solution().adjacency_list_to_adjacency_matrix([[1, 2], [0, 2], [0, 1]]))
 print(Solution().adjacency_list_to_adjacency_matrix([[0]]))             # [[1]]
 ```
 
-```java run
+```java run viz=graph viz-root=adj_list
 import java.util.*;
 
 public class Main {
@@ -1017,7 +1017,7 @@ print(Solution().adjacency_matrix_to_adjacency_list([[0, 1, 1], [1, 0, 1], [1, 1
 # [[1, 2], [0, 2], [0, 1]]
 ```
 
-```java run
+```java run viz=graph viz-root=adj_matrix
 import java.util.*;
 
 public class Main {

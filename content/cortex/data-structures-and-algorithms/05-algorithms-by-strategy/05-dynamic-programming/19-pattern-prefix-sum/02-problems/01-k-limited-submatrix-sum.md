@@ -98,7 +98,7 @@ print(Solution().k_limited_submatrix_sum([[-1,-2],[-3,-4]], 1))            # -1 
 print(Solution().k_limited_submatrix_sum([[1,2,3],[4,5,6],[7,8,9]], 2))   # 28 — bottom-right 2x2
 ```
 
-```java run
+```java run viz=grid viz-root=matrix
 import java.util.*;
 
 public class Main {

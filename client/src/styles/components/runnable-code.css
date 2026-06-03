@@ -52,8 +52,21 @@
     .rcb__editor {
         @apply bg-[#2d2d2d] text-zinc-100;
     }
-    .rcb__editor-textarea {
-        @apply focus:outline-hidden;
+    /* Wrapper around the Monaco instance. Height is driven inline by the
+       Scala component's content-size hook; this rule just nukes the padding
+       (Monaco's own `options.padding` handles vertical space) and prevents
+       page scrolling on accidental wheel events landing on the editor. */
+    .rcb__editor--monaco {
+        @apply p-0 overflow-hidden;
+    }
+    /* Monaco renders its own background + gutter; force-clear any default
+       so the wrapper's #2d2d2d shows through and the theme registered in
+       `monaco.ts` is what the user sees. */
+    .rcb__editor--monaco .monaco-editor,
+    .rcb__editor--monaco .monaco-editor .overflow-guard,
+    .rcb__editor--monaco .monaco-editor-background,
+    .rcb__editor--monaco .monaco-editor .margin {
+        background-color: transparent !important;
     }
     /* Display-only variant for non-runnable tabs (pseudocode). Matches the
        editable editor's inline padding/font settings so tab-switching feels

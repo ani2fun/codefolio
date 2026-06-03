@@ -53,7 +53,7 @@ flowchart TB
 ## Generic pattern
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional
 
 class TreeNode:
@@ -71,7 +71,7 @@ def stateless_preorder(root: Optional[TreeNode], acc=0):
     stateless_preorder(root.right, new_acc)
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 static int f(int acc, int val) { return acc + val; }
 static void statelessPreorder(TreeNode node, int acc) {
     if (node == null) return;

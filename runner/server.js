@@ -50,8 +50,11 @@ function runProcess(cmd, args, cwd, stdin, timeoutMs) {
       child.kill("SIGKILL");
     }, timeoutMs);
 
-    child.stdout.on("data", (d) => { if (out.length < 512 * 1024) out += d; });
-    child.stderr.on("data", (d) => { if (err.length < 512 * 1024) err += d; });
+    // 1 MB cap matches BackendLimits.codeRunner.maxStdoutBytes in the shared module.
+    // The JVM tracer harness can produce up to ~800 KB of marker-delimited JSON for
+    // a long trace; capping below 1 MB silently truncates the payload mid-frame.
+    child.stdout.on("data", (d) => { if (out.length < 1024 * 1024) out += d; });
+    child.stderr.on("data", (d) => { if (err.length < 1024 * 1024) err += d; });
     child.on("close", (code) => {
       clearTimeout(timer);
       resolve({ out, err, code: code ?? -1, timedOut });

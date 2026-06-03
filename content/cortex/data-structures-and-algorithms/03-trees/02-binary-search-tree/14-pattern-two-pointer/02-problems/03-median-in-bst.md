@@ -38,7 +38,7 @@ The two-pointer pattern *naturally* finds the median: walk both iterators forwar
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional, List
 
 class TreeNode:
@@ -175,7 +175,7 @@ t6 = from_level_order([4, 2, 6, 1, 3, 5, 7])
 print(Solution().median_in_bst(t6))                   # 4  — odd, seven nodes, middle
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

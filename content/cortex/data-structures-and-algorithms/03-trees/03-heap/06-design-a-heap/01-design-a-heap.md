@@ -74,7 +74,7 @@ This is exactly the implementation we built in lesson 2, packaged as a class. Th
 
 
 
-```python run
+```python run viz=array viz-root=heap
 from typing import List
 
 class MaxHeap:
@@ -191,7 +191,7 @@ mh5.insert(3); mh5.insert(3); mh5.insert(3)
 print(mh5.extract_max()) # 3 — all same
 ```
 
-```java run
+```java run viz=array viz-root=heap
 import java.util.*;
 
 public class Main {
@@ -358,7 +358,7 @@ Identical to the max-heap, with `<` swapped for `>`. We name the helper "smalles
 
 
 
-```python run
+```python run viz=array viz-root=heap
 from typing import List
 
 class MinHeap:
@@ -477,7 +477,7 @@ mh5.insert(7); mh5.insert(7); mh5.insert(7)
 print(mh5.extract_min()) # 7 — all same
 ```
 
-```java run
+```java run viz=array viz-root=heap
 import java.util.*;
 
 public class Main {
@@ -823,7 +823,7 @@ mf5.add_num(100)
 print(mf5.find_median())  # 100.0 — single element
 ```
 
-```java run
+```java run viz=array viz-root=min_heap
 import java.util.*;
 
 public class Main {

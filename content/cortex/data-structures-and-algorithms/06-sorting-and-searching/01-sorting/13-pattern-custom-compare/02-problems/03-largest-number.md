@@ -79,7 +79,7 @@ print(Solution().largest_number([9, 1]))            # 91
 print(Solution().largest_number([10, 2]))           # 210
 ```
 
-```java run
+```java run viz=array viz-root=arr
 import java.util.*;
 
 public class Main {

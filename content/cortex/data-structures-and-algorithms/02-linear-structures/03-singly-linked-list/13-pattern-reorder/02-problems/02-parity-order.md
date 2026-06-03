@@ -211,7 +211,7 @@ print(to_list(Solution().parity_order(from_list([1, 2, 3, 4]))))            # [1
 print(to_list(Solution().parity_order(from_list([5, 5, 5, 5, 5]))))         # [5, 5, 5, 5, 5]  (all same)
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {

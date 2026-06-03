@@ -1,6 +1,8 @@
 ---
 title: "Introduction To Stacks"
-summary: "<!-- TODO: summary -->"
+summary: "A linear container restricted to one end — push and pop in O(1), nothing else. The last-in-first-out workspace behind undo, the call stack, bracket matching, and every depth-first traversal."
+prereqs:
+  - linear-structures-arrays-introduction
 ---
 
 # 1. Introduction to Stacks
@@ -23,12 +25,21 @@ This is the easiest data structure in the entire course, and the one whose ideas
 2. [Exploring a possible solution](#exploring-a-possible-solution)
 3. [Key properties of a stack](#key-properties-of-a-stack)
 4. [Overview of supported operations](#overview-of-supported-operations)
+5. [Internal mechanics](#internal-mechanics)
+6. [Working example](#working-example)
+7. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
+8. [Production reality](#production-reality)
+9. [Quiz](#quiz)
+10. [Practice ladder](#practice-ladder)
+11. [Further reading](#further-reading)
+12. [Cross-links](#cross-links)
+13. [Final takeaway](#final-takeaway)
 
 ***
 
 # Understanding the problem
 
-Some problems demand that data be processed in **reverse order of arrival**. Whatever went in last must come out first; whatever went in first must wait until everything above it has been dealt with. The technical name for this is **Last In, First Out (LIFO)** — sometimes equivalently called **First In, Last Out (FILO)**. They mean the same thing, just emphasising different ends.
+Some problems demand that data be processed in **reverse order of arrival**. Whatever went in last must come out first; whatever went in first waits until everything above it has been dealt with. The technical name is **Last In, First Out (LIFO)** — sometimes equivalently called **First In, Last Out (FILO)**. The two names mean the same thing; they emphasise different ends of the same rule.
 
 ```mermaid
 ---
@@ -198,7 +209,7 @@ size -> stk
 
 <p align="center"><strong>Stack interface in one diagram — only <code>push</code> changes the data; <code>pop</code> changes data and returns the removed item; <code>peek</code> and <code>size</code> just inspect. Four operations, total.</strong></p>
 
-In memory, a stack is conventionally drawn vertically with the top at the *top* of the page (matching the kitchen analogy), but in code you'll see it stored as a horizontal array where the *last index* is the top. The orientation is just notation; the LIFO contract is unchanged.
+A stack is conventionally drawn vertically, with the top at the *top* of the page to match the kitchen analogy. In code you'll see it stored as a horizontal array where the *last index* is the top. The orientation is only notation; the LIFO contract is identical either way.
 
 ```d2
 arr: stack as array {
@@ -231,7 +242,7 @@ arr: stack as array {
 
 > *Predict before reading on — if "the top is just the last element of an array", what's the time complexity of push and pop on a dynamic-array-backed stack? And what's the cost of <em>peeking</em> at the bottom of the stack?*
 >
-> Push and pop are amortised O(1) — appending to the end of a dynamic array and removing from the end are both constant-time on average. Peeking at the *bottom* is O(1) too in principle (just read index 0), but it's *not part of the stack interface* — the data structure refuses to expose it, on principle. The restriction is what makes it a stack.
+> Push and pop are amortised `O(1)` time and `O(1)` space — appending to the end of a dynamic array and removing from the end are both constant-time on average. Peeking at the *bottom* is `O(1)` too in principle (read index `0`), but it is *not part of the stack interface* — the data structure refuses to expose it. The restriction is what makes it a stack.
 
 ***
 
@@ -393,7 +404,7 @@ before -> after: "pop()"
 
 ## Size
 
-`size()` returns the number of items currently on the stack. Always O(1) — implementations typically maintain a counter that's updated by push and pop.
+`size()` returns the number of items currently on the stack. It is always `O(1)` time and `O(1)` space — implementations maintain a counter that push and pop keep up to date.
 
 ```d2
 direction: right
@@ -429,40 +440,157 @@ note -> stk: "" {style.stroke-dash: 3}
 
 ***
 
+# Internal Mechanics
+
+A stack is not a primitive type — it is an *interface* layered over a storage structure, and the storage is almost always one of two things: a dynamic array or a singly linked list. The LIFO contract is identical in both; only the bookkeeping differs. Two facts about that bookkeeping explain why the interface stays `O(1)` no matter which backing you pick:
+
+- **Array-backed stack** — one buffer plus a single integer, the `topIndex`. The index starts at `-1` for an empty stack and always points at the current top. `push` increments `topIndex`, then writes the value at that slot; `pop` reads the slot at `topIndex`, then decrements. The current size is `topIndex + 1`, so a separate size field is redundant. Both operations touch one array slot and one integer — `O(1)` time, `O(1)` extra space.
+- **Linked-list-backed stack** — a chain of heap nodes plus a single `head` reference that *is* the top. `push` allocates a node, points its `next` at the old head, and reassigns `head`; `pop` reads `head.val`, then advances `head` to `head.next`. No element ever moves, so even the worst case is `O(1)` time — but each node pays one pointer of overhead and one allocator round-trip.
+
+The array version is the more revealing one, because it shows why the bottom is unreachable by design rather than by accident. The data lives between index `0` and `topIndex`; anything past `topIndex` is stale and gets overwritten on the next push, so a popped value is never explicitly cleared. To reach the bottom you would have to read index `0` directly — which the interface refuses to expose, precisely so that no caller can depend on it.
+
+To make this concrete: start with an array-backed stack of capacity `4` and `topIndex = -1`. `push(3)` sets `topIndex = 0` and writes `3`. `push(5)` sets `topIndex = 1` and writes `5`. `push(7)` sets `topIndex = 2`. Now `pop()` reads `arr[2]` (returns `7`) and sets `topIndex = 1`. The `7` is still physically in `arr[2]`, but it is no longer part of the stack — the next `push` will clobber it.
+
+So the key idea is: a stack is a discipline imposed on ordinary storage, not a new kind of storage. One integer index (array) or one head pointer (linked list) is the entire state that turns a buffer or a chain into a LIFO container, and that single piece of state is what keeps every operation `O(1)`.
+
+---
+
+## Key Takeaway
+
+A stack is an interface over a dynamic array or a singly linked list. A single piece of state — the `topIndex` for an array, the `head` pointer for a linked list — is all that distinguishes the top from everything beneath it. That one variable is why push, pop, peek, and size are all `O(1)`.
+
+***
+
+# Working Example
+
+Trace an array-backed stack through one full life cycle — empty, three pushes, a peek, two pops — and watch the `topIndex` carry the entire story.
+
+**Step 1 — start empty.** The backing array has capacity `4`; every slot is unused and `topIndex = -1`. The size is `topIndex + 1 = 0`, so `isEmpty()` returns `true`. Any `pop()` or `peek()` here is a programming error and must be guarded against.
+
+**Step 2 — `push(3)`.** Increment `topIndex` to `0`, then write `3` into `arr[0]`. The stack is now `[3]`, the top is `3`, and the size is `1`. Cost: one integer increment and one array write — `O(1)` time, `O(1)` space.
+
+**Step 3 — `push(5)` then `push(7)`.** Each push repeats the same two motions. After `push(5)`: `topIndex = 1`, `arr[1] = 5`, stack `[3, 5]`. After `push(7)`: `topIndex = 2`, `arr[2] = 7`, stack `[3, 5, 7]`. The top is now `7`, the size is `3`, and the bottom value `3` has not moved since step 2.
+
+**Step 4 — `peek()`.** Read `arr[topIndex]`, which is `arr[2] = 7`, and return it *without* touching `topIndex`. The stack is unchanged: still `[3, 5, 7]`, size still `3`. This is the only difference between `peek` and `pop` — `peek` reads, `pop` reads *and* shrinks.
+
+**Step 5 — `pop()` twice.** The first `pop()` reads `arr[2]` (returns `7`) and decrements `topIndex` to `1`; the stack is `[3, 5]`. The second `pop()` reads `arr[1]` (returns `5`) and decrements `topIndex` to `0`; the stack is `[3]`. Each pop returns the most recently pushed survivor — `7` before `5` — which is the LIFO contract made literal.
+
+> 🖼 Diagram — TODO: 6-frame trace of an array-backed stack (capacity 4) — empty (topIndex = -1), after push(3)/push(5)/push(7), after peek (unchanged), after two pops — with topIndex highlighted in every frame.
+
+The core insight is: the `topIndex` is the whole machine. Every push moves it up one and writes; every pop reads and moves it down one; peek reads without moving it; size is one plus its value. Trace those four rules on any input and you can predict the stack's state at every step.
+
+---
+
+## Key Takeaway
+
+The full life cycle is push (increment then write), peek (read only), pop (read then decrement), with size derived as `topIndex + 1` throughout. Master the index arithmetic on a four-element array and the same logic scales to any stack you will ever implement.
+
+***
+
+# Edge Cases and Pitfalls
+
+Almost every stack bug is one of two mistakes: operating on an empty stack, or overflowing a bounded one. Both come from forgetting that the top is the *only* legal point of access and that it may not exist. Train your eye to check the boundary before every read.
+
+- **Pop or peek on an empty stack.** When `topIndex == -1` (array) or `head == null` (linked list), there is no top to return. Reading `arr[topIndex]` indexes `arr[-1]`; dereferencing a null `head` faults. Guard every `pop`/`peek` with an `isEmpty()` check — some implementations return a sentinel like `-1`, others throw, but none may read a non-existent top.
+- **Overflow on a bounded stack.** A fixed-capacity stack is full when `topIndex == capacity - 1`. Pushing anyway writes past the buffer — undefined behaviour in C, an `IndexOutOfBounds` exception in Java, silent corruption elsewhere. Check fullness before every push, or use an unbounded stack that resizes instead.
+- **The resize hides an `O(n)` push.** An unbounded array-backed stack is amortised `O(1)` per push, but the occasional growth step copies all `n` elements into a larger buffer — that single push is `O(n)` time and allocates `O(n)` new space. Fine on average; a problem under a hard real-time deadline, where a linked-list stack's worst-case `O(1)` push is safer.
+- **Assuming popped data is erased.** An array-backed `pop` typically only decrements `topIndex`; the value still sits in the slot until the next push overwrites it. If the stack holds references to large objects or secrets, the stale slot pins that memory (a leak) or leaves sensitive data readable. Null the slot explicitly when that matters.
+- **Reaching for the bottom or the middle.** The interface exposes only the top — by design. Code that wants "the element under the top" or "the third item down" is using the wrong structure; that desire is the signal to reach for an array or a deque instead. Forcing it by popping into a temporary buffer and pushing back is `O(n)` and a sign the abstraction is being abused.
+- **Forgetting LIFO reverses order.** Pushing a sequence and popping it returns the sequence *reversed*. This surprises people who expect first-in-first-out — that is a queue, not a stack. The reversal is a feature when you want it (string reversal, backtracking) and a bug when you did not.
+
+So the key idea is: before any `pop` or `peek`, ask "is there a top?"; before any `push`, ask "is there room?". Empty and full are the two states where the top is undefined or unavailable, and every classic stack bug lives in skipping one of those two checks.
+
+***
+
+# Production Reality
+
+Stacks are everywhere a system needs to remember "deal with the most recent thing first" — deferred work, nesting, and reversal all reduce to a stack. The places below are worth knowing by name.
+
+**[The CPU call stack]** — uses **a hardware-supported stack of activation records, addressed by the stack-pointer register (`rsp` on x86-64)** — because every function `call` must push a return address and every `ret` must pop it in `O(1)`, and nesting is strictly last-called-first-returned.
+
+**[The JVM operand stack]** — uses **a per-frame evaluation stack inside each method invocation** — because bytecode is stack-based: instructions push operands and pop results, so expression evaluation needs `O(1)` push/pop with no register allocation.
+
+**[Compilers and parsers]** — uses **an explicit stack for bracket matching and shift-reduce parsing** — because nested constructs (`(`, `[`, `{`, opening tags) must be closed in reverse order, which is exactly the LIFO contract.
+
+**[Editor undo/redo]** — uses **two stacks of edit deltas** — because undo must revert the *most recent* change first, and redo replays from the other stack, each step an `O(1)` push or pop.
+
+**[Browser back navigation]** — uses **a stack of visited page entries** — because *back* always returns the most recently visited page, and pushing each visit keeps the history in `O(1)` per click.
+
+**[Depth-first traversal]** — uses **an explicit stack (or the recursion call stack) of nodes to visit** — because DFS must fully explore the most recently discovered branch before backtracking, which a stack enforces by construction.
+
+***
+
+# Quiz
+
+Test your grip before moving on. Commit to an answer before revealing it.
+
+**[Recall] Q: What two operations define a stack, and at which end do they act?**
+`push` adds an item to the top and `pop` removes the item from the top — both act at the same single end, which is what creates the LIFO order.
+
+**[Recall] Q: In an array-backed stack, what value does `topIndex` hold when the stack is empty, and how is the size derived?**
+`topIndex` holds `-1` when empty, and the size is always `topIndex + 1`, so no separate size field is needed.
+
+**[Reasoning] Q: Why are push and pop `O(1)` time on both an array-backed and a linked-list-backed stack?**
+Both operate only at one end — the array touches the slot at `topIndex` and a linked list touches the `head` node — so no element ever shifts and the work is constant regardless of how many items the stack holds.
+
+**[Reasoning] Q: Why does the stack interface deliberately refuse to expose the bottom or the middle?**
+Exposing any element other than the top would break the LIFO guarantee that every algorithm built on a stack relies on, so the restriction is the feature, not a missing one.
+
+**[Tradeoff] Q: When would you back a stack with a linked list instead of a dynamic array?**
+Choose the linked list when you need worst-case `O(1)` push (no amortised resize copy, which matters under hard real-time deadlines); choose the array when you want cache locality and lower per-item memory, accepting the occasional `O(n)` resize.
+
+***
+
+# Practice Ladder
+
+Five problems to turn push and pop into reflexes before the pattern chapters take over. Try each unaided; reach for the hint after ten minutes; do not peek at solutions until you have written something runnable.
+
+| # | Problem | Pattern | Difficulty | Hint |
+|---|---------|---------|------------|------|
+| 1 | [Reverse the String](./08-pattern-reversal/02-problems/02-reverse-the-string.md) | [Reversal](./08-pattern-reversal/01-pattern.md) | Easy | Push every character, then pop them all — the LIFO order returns the string reversed. `O(n)` time, `O(n)` space. |
+| 2 | [Reverse an Array](./08-pattern-reversal/02-problems/03-reverse-an-array.md) | [Reversal](./08-pattern-reversal/01-pattern.md) | Easy | Same push-then-pop trick on array elements; notice it costs `O(n)` extra space, unlike the in-place two-pointer reverse from the arrays chapter. |
+| 3 | [Parentheses Checker](./11-pattern-sequence-validation/02-problems/01-parentheses-checker.md) | [Sequence Validation](./11-pattern-sequence-validation/01-pattern.md) | Easy | Push each opening bracket; on a closing bracket, pop and check it matches. A non-empty stack at the end means unclosed brackets. |
+| 4 | [Preceding Superior Element](./09-pattern-previous-closest-occurrence/02-problems/01-preceding-superior-element.md) | [Previous Closest Occurrence](./09-pattern-previous-closest-occurrence/01-pattern.md) | Medium | Keep a stack of candidates; pop everything smaller than the current value before reading the top as the answer. This is the monotonic-stack idea in seed form. |
+| 5 | [Succeeding Superior Element](./10-pattern-next-closest-occurrence/02-problems/01-succeeding-superior-element.md) | [Next Closest Occurrence](./10-pattern-next-closest-occurrence/01-pattern.md) | Medium | Walk left to right keeping a stack of indices waiting for a larger value; each pop resolves one answer in amortised `O(1)`. |
+
+Once these feel automatic, push and pop have stopped being syntax and become structural reflexes — and the pattern chapters can land their punches.
+
+***
+
+# Further Reading
+
+Curated paths in, not a syllabus. Read in order of the annotation; come back for the rest when you need depth.
+
+- **[CLRS — Section 10.1: Stacks and Queues](https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/)**
+  ★ Essential — the canonical reference, with the array-backed `PUSH`/`POP` pseudocode and the overflow/underflow conditions stated as invariants.
+- **[Array Implementation of Stacks](/cortex/data-structures-and-algorithms/linear-structures-stack-array-implementation-of-stacks)**
+  ★ Essential — the next lesson; builds the `topIndex` machine from this chapter into real, runnable code.
+- **[Linked List Implementation of Stacks](/cortex/data-structures-and-algorithms/linear-structures-stack-linked-list-implementation-of-stacks)**
+  ◆ Advanced — the head-pointer variant, and the case for worst-case `O(1)` push over the array's amortised `O(1)`.
+- **[Python `list` as a stack — official tutorial](https://docs.python.org/3/tutorial/datastructures.html#using-lists-as-stacks)**
+  → Reference — why `list.append` / `list.pop` are the idiomatic stack in Python, and when `collections.deque` is the better choice.
+- **[Java `Deque` / `ArrayDeque` API](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Deque.html)**
+  → Reference — the modern Java stack. The legacy `java.util.Stack` is synchronised and discouraged; `ArrayDeque` is the recommended replacement.
+
+***
+
+# Cross-Links
+
+**Prerequisites**
+
+- [Introduction to Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-introduction) — the contiguous buffer that backs the array implementation of a stack, and the source of the amortised-`O(1)` append behind push.
+- [Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis) — what `O(1)` push/pop and an amortised `O(n)` resize actually mean, and how to read them off a loop.
+
+**What comes next**
+
+- [Array Implementation of Stacks](/cortex/data-structures-and-algorithms/linear-structures-stack-array-implementation-of-stacks) — turns the `topIndex` model into runnable code; the natural choice when capacity is bounded or cache locality matters.
+- [Linked List Implementation of Stacks](/cortex/data-structures-and-algorithms/linear-structures-stack-linked-list-implementation-of-stacks) — the head-pointer build; the natural choice when push and pop must be worst-case `O(1)` without amortisation.
+- [Infix, Postfix, and Prefix Notations](/cortex/data-structures-and-algorithms/linear-structures-stack-infix-postfix-and-prefix-notations) — the first real payoff: expression notation, where a stack turns nested arithmetic into a single linear pass.
+
+***
+
 ## Final Takeaway
 
-A stack is the simplest non-trivial data structure in the course, and arguably the most pervasive. Three things to walk away with:
-
-1. **LIFO is a discipline, not a side effect.** The stack's restrictions exist *to enforce* the contract that the next pop returns the most recent push. Any operation that breaks that contract — insert in the middle, remove from the bottom — is forbidden by design.
-2. **Push and pop are O(1).** The whole interface is constant-time. The only nuance is around capacity: a fixed-size stack overflows on push when full; an unbounded stack pays an occasional O(N) resize when its underlying storage grows.
-3. **Stacks model deferred work.** Anywhere you find yourself thinking *"I'll deal with this later, after I finish the more recent thing"*, you're describing a stack. Bracket matching, function calls, undo, depth-first search, expression evaluation — all the same shape.
-
-> *Coming up — implementations. The next lesson builds a stack on top of a **dynamic array** (the natural choice when capacity is bounded or when you want cache locality), and the lesson after on top of a **linked list** (the natural choice when push/pop must be guaranteed O(1) without amortisation). Both implement the same interface; the trade-offs are subtle and worth knowing.*
-
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
-
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
-
-<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
-<!--       Guidance: bulleted list of gotchas -->
-
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
-
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
-
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
-
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
-
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
+1. **Core mechanic:** a stack is a linear container restricted to one end (the top), exposing `push` (add to top) and `pop` (remove from top) — both `O(1)` time and `O(1)` space — so the next item out is always the most recent item in.
+2. **Dominant tradeoff:** you gain a clean LIFO guarantee and constant-time access to the most recent item; you give up all access to the bottom and middle, and a bounded stack can overflow while an unbounded array-backed one pays an occasional `O(n)` resize.
+3. **One thing to remember:** the restriction *is* the feature — refusing every operation except push and pop at one end is exactly what lets every algorithm built on a stack trust that the next pop returns the most recent push.

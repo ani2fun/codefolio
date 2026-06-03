@@ -39,7 +39,7 @@ The mirror image of the previous problem. To track the K *smallest* values, use 
 
 
 
-```python run
+```python run viz=array viz-root=heap viz-kind=heap
 from typing import List
 import heapq
 
@@ -84,7 +84,7 @@ print(Solution().kth_smallest_element([5, 5, 5, 5], 2))        # 5 — all same
 print(Solution().kth_smallest_element([10, 1, 2, 9, 3], 3))    # 3 — sorted: [1,2,3,9,10]
 ```
 
-```java run
+```java run viz=array viz-root=heap viz-kind=heap
 import java.util.*;
 
 public class Main {

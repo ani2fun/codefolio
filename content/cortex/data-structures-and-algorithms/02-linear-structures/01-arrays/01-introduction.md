@@ -492,7 +492,7 @@ arr: array {
 Higher-level languages like Python inherently provide a **list** instead of a raw array. A list behaves like an array but has a dynamic size and can store elements of different types. However, the underlying machine-level implementation still uses basic arrays as the core data structure, which has a fixed size and type.
 
 
-```python run
+```python run viz=array viz-root=numbers
 from typing import List
 
 # Python lists are dynamic and can grow or shrink at runtime
@@ -511,7 +511,7 @@ numbers3: List[int] = [0] * size_n
 numbers4: List[int] = [i for i in range(5)]
 ```
 
-```java run
+```java run viz=array viz-root=numbers
 public class Main {
     public static void main(String[] args) {
         // Arrays in Java are always allocated on the heap
@@ -571,7 +571,7 @@ arr: array {
 Different languages have different syntax, but the underlying access mechanism is the same for all.
 
 
-```python run
+```python run viz=array viz-root=numbers
 from typing import List
 
 # Initializing an array (list)
@@ -583,7 +583,7 @@ print("1st value:", numbers[0])
 print("5th value:", numbers[4])
 ```
 
-```java run
+```java run viz=array viz-root=numbers
 public class Main {
     public static void main(String[] args) {
 
@@ -629,7 +629,7 @@ arr: array {
 <p align="center"><strong>Array elements can be modified via their indices (highlighted = being updated).</strong></p>
 
 
-```python run
+```python run viz=array viz-root=numbers
 from typing import List
 
 # Initializing an array (list)
@@ -647,7 +647,7 @@ print("3rd value:", numbers[2])
 print("5th value:", numbers[4])
 ```
 
-```java run
+```java run viz=array viz-root=numbers
 public class Main {
     public static void main(String[] args) {
 
@@ -680,36 +680,389 @@ Traversal is one of the most common operations on an array. It is the **only** w
 The pointer starts at index `0` and steps forward one cell at a time until it reaches the end:
 
 > ▶ Interactive Diagram — Traversing an array using a loop control variable index. Use Prev/Next/Play to step through.
-```d3 widget=array-traversal
+```d3 widget=array-1d
 {
-  "items": ["1", "2", "3", "4", "5"],
-  "title": "Traversing an array with a loop control variable",
   "steps": [
     {
-      "markers": [{ "name": "index", "index": 0, "color": "#3b82f6" }],
-      "msg": "Start at index = 0; read arr[0] = 1."
+      "nodes": [
+        {
+          "id": "0",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "index",
+          "target": "0",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Start at index = 0; read arr[0] = 1.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "markers": [{ "name": "index", "index": 1, "color": "#3b82f6" }],
-      "msg": "Advance: index = 1; read arr[1] = 2."
+      "nodes": [
+        {
+          "id": "0",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "index",
+          "target": "1",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Advance: index = 1; read arr[1] = 2.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "markers": [{ "name": "index", "index": 2, "color": "#3b82f6" }],
-      "msg": "Advance: index = 2; read arr[2] = 3."
+      "nodes": [
+        {
+          "id": "0",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "index",
+          "target": "2",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Advance: index = 2; read arr[2] = 3.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "markers": [{ "name": "index", "index": 3, "color": "#3b82f6" }],
-      "msg": "Advance: index = 3; read arr[3] = 4."
+      "nodes": [
+        {
+          "id": "0",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "index",
+          "target": "3",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Advance: index = 3; read arr[3] = 4.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "markers": [{ "name": "index", "index": 4, "color": "#3b82f6" }],
-      "msg": "Advance: index = 4; read arr[4] = 5."
+      "nodes": [
+        {
+          "id": "0",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "index",
+          "target": "4",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Advance: index = 4; read arr[4] = 5.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "markers": [],
-      "msg": "index = 5 ≥ length — loop ends. Every element has been visited exactly once."
+      "nodes": [
+        {
+          "id": "0",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "index = 5 ≥ length — loop ends. Every element has been visited exactly once.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Traversing an array with a loop control variable"
 }
 ```
 
@@ -718,7 +1071,7 @@ The pointer starts at index `0` and steps forward one cell at a time until it re
 Higher-level languages have built-in functions to get the array's length. For lower-level languages like C/C++, the programmer needs to track the array's size manually.
 
 
-```python run
+```python run viz=array viz-root=numbers
 from typing import List
 
 # Initializing an array (list)
@@ -747,7 +1100,7 @@ for index in range(len(numbers) - 1, -1, -1):
     print(numbers[index])
 ```
 
-```java run
+```java run viz=array viz-root=numbers
 public class Main {
     public static void main(String[] args) {
 

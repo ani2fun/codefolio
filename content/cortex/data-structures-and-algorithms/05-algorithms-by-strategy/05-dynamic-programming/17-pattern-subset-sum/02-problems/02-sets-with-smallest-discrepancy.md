@@ -131,7 +131,7 @@ print(Solution().sets_with_smallest_discrepancy([1, 2, 3]))        # 0  — [3] 
 print(Solution().sets_with_smallest_discrepancy([10, 1, 1, 1]))    # 7  — 13 total
 ```
 
-```java run
+```java run viz=graph viz-root=dp
 import java.util.*;
 
 public class Main {

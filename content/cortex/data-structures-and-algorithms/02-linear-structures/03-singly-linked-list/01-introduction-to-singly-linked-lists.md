@@ -40,65 +40,705 @@ The linked list is the most important data structure you'll ever learn. Everythi
 
 To better understand a linked list, let us first look at some common problems programmers face when designing software systems. When writing a program, we often need a collection of data items that can be accessed sequentially. E.g., a collection of names of all the students in a class. It is common for people to think this is not such a complex problem. What's so hard with it? We can use an **array** to store this data where the size of the array is equal to the number of students.
 
-```d3 widget=array-traversal
+```d3 widget=array-1d
 {
-  "title": "students[] — 4 names in one contiguous block, addressable by index",
-  "items": ["Alice", "Bob", "Carol", "David"],
   "steps": [
     {
-      "range": { "lo": 0, "hi": 3 },
-      "msg": "Every cell sits adjacent to the next — the index doubles as the offset from the array's base, so arr[i] is O(1)."
+      "nodes": [
+        {
+          "id": "0",
+          "label": "Alice",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "Bob",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "Carol",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "David",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [],
+      "highlight": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "Every cell sits adjacent to the next — the index doubles as the offset from the array's base, so arr[i] is O(1).",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "students[] — 4 names in one contiguous block, addressable by index"
 }
 ```
 
 This is an easy way to store data, but what if a new student joins the class? In this case, we will have to increase the size of the array by one, which is **not** possible. Well, we can solve this problem by creating a new array of a larger size, copying all the data from the previous array, and then adding the new student to it. However, this will be quite inefficient in terms of space and time complexity.
 
-```d3 widget=array-traversal
+```d3 widget=array-1d
 {
-  "items": ["Alice", "Bob", "Carol", "David"],
-  "title": "Insert by copying — allocate a bigger array, copy every element, then append the new item",
-  "primaryLabel": "Source array (size 4)",
-  "secondaryItems": ["·", "·", "·", "·", "·"],
-  "secondaryLabel": "Destination array (size 5)",
   "steps": [
     {
-      "markers": [{"name": "src", "index": 0}],
-      "secondaryMarkers": [{"name": "dst", "index": 0}],
-      "msg": "Allocate a new array of size 5. Both indices start at 0; the destination is empty."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "Alice",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "Bob",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "Carol",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "David",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s0",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s1",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s2",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s3",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s4",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "src",
+          "target": "p0",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "dst",
+          "target": "s0",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Allocate a new array of size 5. Both indices start at 0; the destination is empty.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "secondaryItems": ["Alice", "·", "·", "·", "·"],
-      "markers": [{"name": "src", "index": 1}],
-      "secondaryMarkers": [{"name": "dst", "index": 1}],
-      "msg": "Copy src[0]=Alice → dst[0]. Advance both indices."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "Alice",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "Bob",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "Carol",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "David",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s0",
+          "label": "Alice",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s1",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s2",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s3",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s4",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "src",
+          "target": "p1",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "dst",
+          "target": "s1",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Copy src[0]=Alice → dst[0]. Advance both indices.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "secondaryItems": ["Alice", "Bob", "·", "·", "·"],
-      "markers": [{"name": "src", "index": 2}],
-      "secondaryMarkers": [{"name": "dst", "index": 2}],
-      "msg": "Copy src[1]=Bob → dst[1]. Advance both indices."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "Alice",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "Bob",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "Carol",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "David",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s0",
+          "label": "Alice",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s1",
+          "label": "Bob",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s2",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s3",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s4",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "src",
+          "target": "p2",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "dst",
+          "target": "s2",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Copy src[1]=Bob → dst[1]. Advance both indices.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "secondaryItems": ["Alice", "Bob", "Carol", "·", "·"],
-      "markers": [{"name": "src", "index": 3}],
-      "secondaryMarkers": [{"name": "dst", "index": 3}],
-      "msg": "Copy src[2]=Carol → dst[2]. Advance both indices."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "Alice",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "Bob",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "Carol",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "David",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s0",
+          "label": "Alice",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s1",
+          "label": "Bob",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s2",
+          "label": "Carol",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s3",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s4",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "src",
+          "target": "p3",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "dst",
+          "target": "s3",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Copy src[2]=Carol → dst[2]. Advance both indices.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "secondaryItems": ["Alice", "Bob", "Carol", "David", "·"],
-      "markers": [{"name": "src", "index": 4}],
-      "secondaryMarkers": [{"name": "dst", "index": 4}],
-      "msg": "Copy src[3]=David → dst[3]. Source is exhausted; one cell remains in the destination."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "Alice",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "Bob",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "Carol",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "David",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s0",
+          "label": "Alice",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s1",
+          "label": "Bob",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s2",
+          "label": "Carol",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s3",
+          "label": "David",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s4",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "src",
+          "target": "p4",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "dst",
+          "target": "s4",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Copy src[3]=David → dst[3]. Source is exhausted; one cell remains in the destination.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "secondaryItems": ["Alice", "Bob", "Carol", "David", "Eve"],
-      "markers": [{"name": "src", "index": 4}],
-      "secondaryMarkers": [{"name": "dst", "index": 5}],
-      "msg": "Append the new item Eve at dst[4]. Done — 4 copies + 1 write, O(n) work to insert a single element."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "Alice",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "Bob",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "Carol",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "David",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s0",
+          "label": "Alice",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s1",
+          "label": "Bob",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s2",
+          "label": "Carol",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s3",
+          "label": "David",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s4",
+          "label": "Eve",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "src",
+          "target": "p4",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "dst",
+          "target": "s5",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Append the new item Eve at dst[4]. Done — 4 copies + 1 write, O(n) work to insert a single element.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Insert by copying — allocate a bigger array, copy every element, then append the new item"
 }
 ```
 
@@ -106,44 +746,471 @@ This is an easy way to store data, but what if a new student joins the class? In
 
 Now, let's consider another scenario. What if a student leaves the class? We can use the same process again. This time, we create a new array of smaller size and copy all the data items except the one we want to delete.
 
-```d3 widget=array-traversal
+```d3 widget=array-1d
 {
-  "items": ["Alice", "Bob", "Carol", "David"],
-  "title": "Delete by copying — allocate a smaller array and copy every element except the one being removed",
-  "primaryLabel": "Source array (size 4)",
-  "secondaryItems": ["·", "·", "·"],
-  "secondaryLabel": "Destination array (size 3)",
   "steps": [
     {
-      "markers": [{"name": "src", "index": 0}, {"name": "remove", "index": 1}],
-      "secondaryMarkers": [{"name": "dst", "index": 0}],
-      "msg": "Allocate a smaller array of size 3. Mark the index to remove (Bob at src[1]). Both indices start at 0."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "Alice",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "Bob",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "Carol",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "David",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s0",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s1",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s2",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "src",
+          "target": "p0",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "remove",
+          "target": "p1",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "dst",
+          "target": "s0",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Allocate a smaller array of size 3. Mark the index to remove (Bob at src[1]). Both indices start at 0.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "secondaryItems": ["Alice", "·", "·"],
-      "markers": [{"name": "src", "index": 1}, {"name": "remove", "index": 1}],
-      "secondaryMarkers": [{"name": "dst", "index": 1}],
-      "msg": "Copy src[0]=Alice → dst[0]. Advance both indices."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "Alice",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "Bob",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "Carol",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "David",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s0",
+          "label": "Alice",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s1",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s2",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "src",
+          "target": "p1",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "remove",
+          "target": "p1",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "dst",
+          "target": "s1",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Copy src[0]=Alice → dst[0]. Advance both indices.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "secondaryItems": ["Alice", "·", "·"],
-      "markers": [{"name": "src", "index": 2}, {"name": "remove", "index": 1}],
-      "secondaryMarkers": [{"name": "dst", "index": 1}],
-      "msg": "src[1]=Bob is the deletion target — skip it. Advance src only; dst stays at 1."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "Alice",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "Bob",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "Carol",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "David",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s0",
+          "label": "Alice",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s1",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s2",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "src",
+          "target": "p2",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "remove",
+          "target": "p1",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "dst",
+          "target": "s1",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "src[1]=Bob is the deletion target — skip it. Advance src only; dst stays at 1.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "secondaryItems": ["Alice", "Carol", "·"],
-      "markers": [{"name": "src", "index": 3}, {"name": "remove", "index": 1}],
-      "secondaryMarkers": [{"name": "dst", "index": 2}],
-      "msg": "Copy src[2]=Carol → dst[1]. Advance both indices."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "Alice",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "Bob",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "Carol",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "David",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s0",
+          "label": "Alice",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s1",
+          "label": "Carol",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s2",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "src",
+          "target": "p3",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "remove",
+          "target": "p1",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "dst",
+          "target": "s2",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Copy src[2]=Carol → dst[1]. Advance both indices.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "secondaryItems": ["Alice", "Carol", "David"],
-      "markers": [{"name": "src", "index": 4}, {"name": "remove", "index": 1}],
-      "secondaryMarkers": [{"name": "dst", "index": 3}],
-      "msg": "Copy src[3]=David → dst[2]. Source exhausted. Done — 3 copies + 1 skip, still O(n) work to remove a single element."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "Alice",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "Bob",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "Carol",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "David",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s0",
+          "label": "Alice",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s1",
+          "label": "Carol",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s2",
+          "label": "David",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "src",
+          "target": "p4",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "remove",
+          "target": "p1",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "dst",
+          "target": "s3",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Copy src[3]=David → dst[2]. Source exhausted. Done — 3 copies + 1 skip, still O(n) work to remove a single element.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Delete by copying — allocate a smaller array and copy every element except the one being removed"
 }
 ```
 
@@ -222,24 +1289,82 @@ Now that we know arrays' limitations and the situations where those limitations 
 
 A linked list is a linear and dynamic data structure that stores data sequentially at random memory locations. Instead of storing all the data items in a contiguous block of memory like arrays, a linked list stores them at random locations in memory. Whenever a new item is to be added, a new memory block is dynamically created to store this new value, which is then added to the chain of already existing items, effectively extending the **linked list**.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Singly linked list — each node points to the next; the tail points to null",
-  "direction": "single",
-  "nodes": [
-    {"id": "a", "value": "Alice"},
-    {"id": "b", "value": "Bob"},
-    {"id": "c", "value": "Carol"},
-    {"id": "d", "value": "David"}
-  ],
-  "head": "a",
   "steps": [
     {
-      "links": [["a","b"],["b","c"],["c","d"]],
-      "markers": [{"name": "head", "nodeId": "a"}],
-      "msg": "head → Alice → Bob → Carol → David → null"
+      "nodes": [
+        {
+          "id": "a",
+          "label": "Alice",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b",
+          "label": "Bob",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c",
+          "label": "Carol",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "d",
+          "label": "David",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "a",
+          "to": "b",
+          "label": "next"
+        },
+        {
+          "from": "b",
+          "to": "c",
+          "label": "next"
+        },
+        {
+          "from": "c",
+          "to": "d",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "a",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "head → Alice → Bob → Carol → David → null",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Singly linked list — each node points to the next; the tail points to null"
 }
 ```
 
@@ -249,61 +1374,271 @@ A linked list is a linear and dynamic data structure that stores data sequential
 
 A linked list guarantees the insertion and deletion of items from the **start** and **end** of the list in **O(1)** space and **O(1)** time. It also guarantees the insertion and deletion of any data item **without** using any extra space. You can imagine it as a dynamic sequential container whose size can be increased or decreased at will.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Insert and delete at the head are both O(1) — pointer updates only, no shifting",
-  "direction": "single",
-  "nodes": [
-    {"id": "z", "value": "Tara"},
-    {"id": "a", "value": "Alice"},
-    {"id": "b", "value": "Bob"},
-    {"id": "c", "value": "Carol"}
-  ],
-  "head": "a",
   "steps": [
     {
       "nodes": [
-        {"id": "a", "value": "Alice"},
-        {"id": "b", "value": "Bob"},
-        {"id": "c", "value": "Carol"}
+        {
+          "id": "a",
+          "label": "Alice",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b",
+          "label": "Bob",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c",
+          "label": "Carol",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["a","b"],["b","c"]],
-      "markers": [{"name": "head", "nodeId": "a"}],
-      "msg": "Starting list: head → Alice → Bob → Carol → null"
+      "edges": [
+        {
+          "from": "a",
+          "to": "b",
+          "label": "next"
+        },
+        {
+          "from": "b",
+          "to": "c",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "a",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Starting list: head → Alice → Bob → Carol → null",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "z", "value": "Tara", "style": "new"},
-        {"id": "a", "value": "Alice"},
-        {"id": "b", "value": "Bob"},
-        {"id": "c", "value": "Carol"}
+        {
+          "id": "z",
+          "label": "Tara",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a",
+          "label": "Alice",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b",
+          "label": "Bob",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c",
+          "label": "Carol",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["z","a"],["a","b"],["b","c"]],
-      "markers": [{"name": "head", "nodeId": "z"}],
-      "msg": "Insert at head: allocate Tara, point it to old head, repoint head — O(1)"
+      "edges": [
+        {
+          "from": "z",
+          "to": "a",
+          "label": "next"
+        },
+        {
+          "from": "a",
+          "to": "b",
+          "label": "next"
+        },
+        {
+          "from": "b",
+          "to": "c",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "z",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [
+        "z"
+      ],
+      "removed": [],
+      "annotation": "Insert at head: allocate Tara, point it to old head, repoint head — O(1)",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "z", "value": "Tara"},
-        {"id": "a", "value": "Alice", "style": "removed"},
-        {"id": "b", "value": "Bob"},
-        {"id": "c", "value": "Carol"}
+        {
+          "id": "z",
+          "label": "Tara",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a",
+          "label": "Alice",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b",
+          "label": "Bob",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c",
+          "label": "Carol",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["z","a"],["a","b"],["b","c"]],
-      "markers": [{"name": "head", "nodeId": "z"}],
-      "msg": "Now delete Alice: mark for removal — pointer fix-ups next"
+      "edges": [
+        {
+          "from": "z",
+          "to": "a",
+          "label": "next"
+        },
+        {
+          "from": "a",
+          "to": "b",
+          "label": "next"
+        },
+        {
+          "from": "b",
+          "to": "c",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "z",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [
+        "a"
+      ],
+      "annotation": "Now delete Alice: mark for removal — pointer fix-ups next",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "z", "value": "Tara"},
-        {"id": "b", "value": "Bob"},
-        {"id": "c", "value": "Carol"}
+        {
+          "id": "z",
+          "label": "Tara",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b",
+          "label": "Bob",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c",
+          "label": "Carol",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["z","b"],["b","c"]],
-      "markers": [{"name": "head", "nodeId": "z"}],
-      "msg": "Repoint Tara.next → Bob (skipping Alice); free Alice — O(1)"
+      "edges": [
+        {
+          "from": "z",
+          "to": "b",
+          "label": "next"
+        },
+        {
+          "from": "b",
+          "to": "c",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "z",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Repoint Tara.next → Bob (skipping Alice); free Alice — O(1)",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Insert and delete at the head are both O(1) — pointer updates only, no shifting"
 }
 ```
 
@@ -311,79 +1646,421 @@ A linked list guarantees the insertion and deletion of items from the **start** 
 
 Let us look at an example of insertion in a singly linked list to understand this better.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Insert 'Tara' after 'Bob' — three pointer updates, no shifting",
-  "direction": "single",
-  "nodes": [
-    {"id": "a", "value": "Alice"},
-    {"id": "b", "value": "Bob"},
-    {"id": "z", "value": "Tara"},
-    {"id": "c", "value": "Carol"},
-    {"id": "d", "value": "David"}
-  ],
-  "head": "a",
   "steps": [
     {
       "nodes": [
-        {"id": "a", "value": "Alice"},
-        {"id": "b", "value": "Bob"},
-        {"id": "c", "value": "Carol"},
-        {"id": "d", "value": "David"}
+        {
+          "id": "a",
+          "label": "Alice",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b",
+          "label": "Bob",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c",
+          "label": "Carol",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "d",
+          "label": "David",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["a","b"],["b","c"],["c","d"]],
-      "markers": [{"name": "current", "nodeId": "b"}],
-      "msg": "Walk to the insertion point — curr at Bob"
+      "edges": [
+        {
+          "from": "a",
+          "to": "b",
+          "label": "next"
+        },
+        {
+          "from": "b",
+          "to": "c",
+          "label": "next"
+        },
+        {
+          "from": "c",
+          "to": "d",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "b",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Walk to the insertion point — curr at Bob",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "a", "value": "Alice"},
-        {"id": "b", "value": "Bob"},
-        {"id": "z", "value": "Tara", "style": "new"},
-        {"id": "c", "value": "Carol"},
-        {"id": "d", "value": "David"}
+        {
+          "id": "a",
+          "label": "Alice",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b",
+          "label": "Bob",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "z",
+          "label": "Tara",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c",
+          "label": "Carol",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "d",
+          "label": "David",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["a","b"],["b","c"],["c","d"]],
-      "markers": [{"name": "current", "nodeId": "z"}],
-      "msg": "Step 1: allocate a new node holding 'Tara'"
+      "edges": [
+        {
+          "from": "a",
+          "to": "b",
+          "label": "next"
+        },
+        {
+          "from": "b",
+          "to": "c",
+          "label": "next"
+        },
+        {
+          "from": "c",
+          "to": "d",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "z",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [
+        "z"
+      ],
+      "removed": [],
+      "annotation": "Step 1: allocate a new node holding 'Tara'",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "a", "value": "Alice"},
-        {"id": "b", "value": "Bob"},
-        {"id": "z", "value": "Tara", "style": "new"},
-        {"id": "c", "value": "Carol"},
-        {"id": "d", "value": "David"}
+        {
+          "id": "a",
+          "label": "Alice",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b",
+          "label": "Bob",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "z",
+          "label": "Tara",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c",
+          "label": "Carol",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "d",
+          "label": "David",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["a","b"],["b","c"],["z","c"],["c","d"]],
-      "markers": [{"name": "current", "nodeId": "z"}],
-      "msg": "Step 2: new.next = Bob.next (point Tara at Carol)"
+      "edges": [
+        {
+          "from": "a",
+          "to": "b",
+          "label": "next"
+        },
+        {
+          "from": "b",
+          "to": "c",
+          "label": "next"
+        },
+        {
+          "from": "z",
+          "to": "c",
+          "label": "next"
+        },
+        {
+          "from": "c",
+          "to": "d",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "z",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [
+        "z"
+      ],
+      "removed": [],
+      "annotation": "Step 2: new.next = Bob.next (point Tara at Carol)",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "a", "value": "Alice"},
-        {"id": "b", "value": "Bob"},
-        {"id": "z", "value": "Tara"},
-        {"id": "c", "value": "Carol"},
-        {"id": "d", "value": "David"}
+        {
+          "id": "a",
+          "label": "Alice",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b",
+          "label": "Bob",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "z",
+          "label": "Tara",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c",
+          "label": "Carol",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "d",
+          "label": "David",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["a","b"],["b","z"],["z","c"],["c","d"]],
-      "markers": [{"name": "current", "nodeId": "b"}],
-      "msg": "Step 3: Bob.next = new (Bob now points to Tara)"
+      "edges": [
+        {
+          "from": "a",
+          "to": "b",
+          "label": "next"
+        },
+        {
+          "from": "b",
+          "to": "z",
+          "label": "next"
+        },
+        {
+          "from": "z",
+          "to": "c",
+          "label": "next"
+        },
+        {
+          "from": "c",
+          "to": "d",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "b",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Step 3: Bob.next = new (Bob now points to Tara)",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "a", "value": "Alice"},
-        {"id": "b", "value": "Bob"},
-        {"id": "z", "value": "Tara"},
-        {"id": "c", "value": "Carol"},
-        {"id": "d", "value": "David"}
+        {
+          "id": "a",
+          "label": "Alice",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b",
+          "label": "Bob",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "z",
+          "label": "Tara",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c",
+          "label": "Carol",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "d",
+          "label": "David",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["a","b"],["b","z"],["z","c"],["c","d"]],
-      "markers": [{"name": "head", "nodeId": "a"}],
-      "msg": "Done — Alice → Bob → Tara → Carol → David. Three pointer updates, O(1)."
+      "edges": [
+        {
+          "from": "a",
+          "to": "b",
+          "label": "next"
+        },
+        {
+          "from": "b",
+          "to": "z",
+          "label": "next"
+        },
+        {
+          "from": "z",
+          "to": "c",
+          "label": "next"
+        },
+        {
+          "from": "c",
+          "to": "d",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "a",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Done — Alice → Bob → Tara → Carol → David. Three pointer updates, O(1).",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Insert 'Tara' after 'Bob' — three pointer updates, no shifting"
 }
 ```
 
@@ -465,15 +2142,14 @@ node.next -> nullnode {style.stroke-dash: 4}
 To define a node in code, we create a Node class that encapsulates the information a singly linked list node must have: **data** and a reference to the next node. Our class should also have a constructor to initialize the values in nodes at the time of its creation. We can pass in a data value stored in the node and the reference to the next node. We are responsible for linking it to any other node when we see fit.
 
 
-```python run
-
+```python run viz=linked-list viz-root=head
 class ListNode:
     def __init__(self, val):
         self.val = val
         self.next = None
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 
 class ListNode {
     int val;
@@ -492,24 +2168,82 @@ class ListNode {
 
 A linked list is just a chain of nodes. Below is how these nodes chain together to form a singly linked list.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Logical chain — four nodes connected by next pointers; tail points to null",
-  "direction": "single",
-  "nodes": [
-    {"id": "n1", "value": "5"},
-    {"id": "n2", "value": "7"},
-    {"id": "n3", "value": "3"},
-    {"id": "n4", "value": "9"}
-  ],
-  "head": "n1",
   "steps": [
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "head", "nodeId": "n1"}],
-      "msg": "head → 5 → 7 → 3 → 9 → null"
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "9",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n1",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "head → 5 → 7 → 3 → 9 → null",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Logical chain — four nodes connected by next pointers; tail points to null"
 }
 ```
 
@@ -622,80 +2356,542 @@ Every data structure is essentially used to store, retrieve, and manipulate data
 
 All other complex operations can be implemented by mixing or piggybacking these fundamental operations. Let's examine some operations we can perform on a singly linked list.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Some operations on a singly linked list — traversal, insertion, deletion, search",
-  "direction": "single",
-  "nodes": [
-    {"id": "n1", "value": "5"},
-    {"id": "n2", "value": "7"},
-    {"id": "n3", "value": "3"},
-    {"id": "n4", "value": "9"}
-  ],
-  "head": "n1",
   "steps": [
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "head", "nodeId": "n1"}],
-      "msg": "Starting list: head → 5 → 7 → 3 → 9 → null"
-    },
-    {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "current", "nodeId": "n1"}],
-      "msg": "Traversal — start curr at head"
-    },
-    {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "current", "nodeId": "n3"}],
-      "msg": "Traversal — curr advances node-by-node (O(n))"
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "9",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n1",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Starting list: head → 5 → 7 → 3 → 9 → null",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n1", "value": "5"},
-        {"id": "n2", "value": "7"},
-        {"id": "n3", "value": "3"},
-        {"id": "ins", "value": "8", "style": "new"},
-        {"id": "n4", "value": "9"}
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "9",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n2"],["n2","n3"],["n3","ins"],["ins","n4"]],
-      "markers": [{"name": "current", "nodeId": "ins"}],
-      "msg": "Insertion — splice a new node holding 8 after the node holding 3"
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "n1",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Traversal — start curr at head",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n1", "value": "5"},
-        {"id": "n2", "value": "7", "style": "removed"},
-        {"id": "n3", "value": "3"},
-        {"id": "ins", "value": "8"},
-        {"id": "n4", "value": "9"}
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "9",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n2"],["n2","n3"],["n3","ins"],["ins","n4"]],
-      "markers": [{"name": "current", "nodeId": "n2"}],
-      "msg": "Deletion — mark the node holding 7 for removal"
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "n3",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Traversal — curr advances node-by-node (O(n))",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n1", "value": "5"},
-        {"id": "n3", "value": "3"},
-        {"id": "ins", "value": "8"},
-        {"id": "n4", "value": "9"}
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "ins",
+          "label": "8",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "9",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n3"],["n3","ins"],["ins","n4"]],
-      "markers": [{"name": "head", "nodeId": "n1"}],
-      "msg": "Repoint 5.next → 3, free 7 — list is now 5 → 3 → 8 → 9"
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "ins",
+          "label": "next"
+        },
+        {
+          "from": "ins",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "ins",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [
+        "ins"
+      ],
+      "removed": [],
+      "annotation": "Insertion — splice a new node holding 8 after the node holding 3",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n1", "value": "5"},
-        {"id": "n3", "value": "3", "style": "highlight"},
-        {"id": "ins", "value": "8"},
-        {"id": "n4", "value": "9"}
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "ins",
+          "label": "8",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "9",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n3"],["n3","ins"],["ins","n4"]],
-      "markers": [{"name": "current", "nodeId": "n3"}],
-      "msg": "Search for value 3 — walk the chain, match found at this node (O(n))"
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "ins",
+          "label": "next"
+        },
+        {
+          "from": "ins",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "n2",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [
+        "n2"
+      ],
+      "annotation": "Deletion — mark the node holding 7 for removal",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "ins",
+          "label": "8",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "9",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "ins",
+          "label": "next"
+        },
+        {
+          "from": "ins",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n1",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Repoint 5.next → 3, free 7 — list is now 5 → 3 → 8 → 9",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "ins",
+          "label": "8",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "9",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "ins",
+          "label": "next"
+        },
+        {
+          "from": "ins",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "n3",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [
+        "n3"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "Search for value 3 — walk the chain, match found at this node (O(n))",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Some operations on a singly linked list — traversal, insertion, deletion, search"
 }
 ```
 
@@ -800,7 +2996,7 @@ Because the tail is the *only* node whose `next` is `null`. The given node itsel
 
 ### The Solution
 
-```python run
+```python run viz=linked-list viz-root=head
 from typing import Optional
 
 
@@ -880,7 +3076,7 @@ print(Solution().boundary_node(h5, h5))                     # first
 print(Solution().boundary_node(h5, h5.next))                # last
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 public class Main {
     static class ListNode {
         int val;

@@ -136,7 +136,7 @@ print(Solution().destination_path_count([[1,2],[3,4]], 8))                 # 0  
 print(Solution().destination_path_count([[1,1],[1,1]], 3))                 # 2  — both paths cost 3
 ```
 
-```java run
+```java run viz=grid viz-root=matrix
 import java.util.*;
 
 public class Main {

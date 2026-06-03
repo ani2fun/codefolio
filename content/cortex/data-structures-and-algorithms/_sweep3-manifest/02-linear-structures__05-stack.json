@@ -9,8 +9,8 @@
       "files": [
         "02-linear-structures/05-stack/01-introduction-to-stacks.md"
       ],
-      "status": "pending",
-      "todos_filled": 0,
+      "status": "done",
+      "todos_filled": 9,
       "verify_flags": 0,
       "memorize_migrated": false
     },
@@ -20,8 +20,8 @@
       "files": [
         "02-linear-structures/05-stack/02-array-implementation-of-stacks.md"
       ],
-      "status": "pending",
-      "todos_filled": 0,
+      "status": "done",
+      "todos_filled": 12,
       "verify_flags": 0,
       "memorize_migrated": false
     },
@@ -31,8 +31,8 @@
       "files": [
         "02-linear-structures/05-stack/03-linked-list-implementation-of-stacks.md"
       ],
-      "status": "pending",
-      "todos_filled": 0,
+      "status": "done",
+      "todos_filled": 11,
       "verify_flags": 0,
       "memorize_migrated": false
     },
@@ -42,9 +42,9 @@
       "files": [
         "02-linear-structures/05-stack/04-infix-postfix-and-prefix-notations.md"
       ],
-      "status": "pending",
-      "todos_filled": 0,
-      "verify_flags": 0,
+      "status": "done",
+      "todos_filled": 11,
+      "verify_flags": 2,
       "memorize_migrated": false
     },
     {
@@ -53,9 +53,9 @@
       "files": [
         "02-linear-structures/05-stack/05-evaluating-expressions-using-stack.md"
       ],
-      "status": "pending",
-      "todos_filled": 0,
-      "verify_flags": 0,
+      "status": "done",
+      "todos_filled": 11,
+      "verify_flags": 2,
       "memorize_migrated": false
     },
     {
@@ -64,9 +64,9 @@
       "files": [
         "02-linear-structures/05-stack/06-converting-expressions-using-stack.md"
       ],
-      "status": "pending",
-      "todos_filled": 0,
-      "verify_flags": 0,
+      "status": "done",
+      "todos_filled": 12,
+      "verify_flags": 2,
       "memorize_migrated": false
     },
     {
@@ -75,7 +75,7 @@
       "files": [
         "02-linear-structures/05-stack/07-memorize.md"
       ],
-      "status": "pending",
+      "status": "done",
       "blocked_by": [
         "02-linear-structures/05-stack/lesson-01-introduction-to-stacks",
         "02-linear-structures/05-stack/lesson-02-array-implementation-of-stacks",
@@ -84,7 +84,7 @@
         "02-linear-structures/05-stack/lesson-05-evaluating-expressions-using-stack",
         "02-linear-structures/05-stack/lesson-06-converting-expressions-using-stack"
       ],
-      "todos_filled": 0,
+      "todos_filled": 7,
       "verify_flags": 0
     },
     {
@@ -98,8 +98,8 @@
         "02-linear-structures/05-stack/08-pattern-reversal/02-problems/04-reverse-word-order.md",
         "02-linear-structures/05-stack/08-pattern-reversal/03-memorize.md"
       ],
-      "status": "pending",
-      "todos_filled": 0,
+      "status": "done",
+      "todos_filled": 56,
       "verify_flags": 0,
       "memorize_migrated": false
     },
@@ -114,9 +114,9 @@
         "02-linear-structures/05-stack/09-pattern-previous-closest-occurrence/02-problems/04-preceding-inferior-element-ii.md",
         "02-linear-structures/05-stack/09-pattern-previous-closest-occurrence/03-memorize.md"
       ],
-      "status": "pending",
-      "todos_filled": 0,
-      "verify_flags": 0,
+      "status": "done",
+      "todos_filled": 56,
+      "verify_flags": 1,
       "memorize_migrated": false
     },
     {
@@ -133,9 +133,9 @@
         "02-linear-structures/05-stack/10-pattern-next-closest-occurrence/02-problems/07-largest-rectangle-area.md",
         "02-linear-structures/05-stack/10-pattern-next-closest-occurrence/03-memorize.md"
       ],
-      "status": "pending",
-      "todos_filled": 0,
-      "verify_flags": 0,
+      "status": "done",
+      "todos_filled": 83,
+      "verify_flags": 1,
       "memorize_migrated": false
     },
     {
@@ -149,8 +149,8 @@
         "02-linear-structures/05-stack/11-pattern-sequence-validation/02-problems/04-balanced-span.md",
         "02-linear-structures/05-stack/11-pattern-sequence-validation/03-memorize.md"
       ],
-      "status": "pending",
-      "todos_filled": 0,
+      "status": "done",
+      "todos_filled": 58,
       "verify_flags": 0,
       "memorize_migrated": false
     },
@@ -165,9 +165,9 @@
         "02-linear-structures/05-stack/12-pattern-linear-evaluation/02-problems/04-formula-parsing.md",
         "02-linear-structures/05-stack/12-pattern-linear-evaluation/03-memorize.md"
       ],
-      "status": "pending",
-      "todos_filled": 0,
-      "verify_flags": 0,
+      "status": "done",
+      "todos_filled": 57,
+      "verify_flags": 1,
       "memorize_migrated": false
     },
     {
@@ -176,8 +176,8 @@
       "files": [
         "02-linear-structures/05-stack/14-pattern-synthesis.md"
       ],
-      "status": "pending",
-      "todos_filled": 0,
+      "status": "done",
+      "todos_filled": 4,
       "verify_flags": 0,
       "memorize_migrated": false
     },
@@ -187,7 +187,7 @@
       "files": [
         "02-linear-structures/05-stack/13-design-min-stack/01-design-min-stack.md"
       ],
-      "status": "pending",
+      "status": "done",
       "todos_filled": 0,
       "verify_flags": 0,
       "memorize_migrated": false

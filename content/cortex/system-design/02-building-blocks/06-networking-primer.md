@@ -10,9 +10,9 @@ summary: TCP, UDP, HTTP/1.1/2/3, TLS, DNS, CDNs — and what each one costs in r
 
 ## 1. Motivation
 
-On **September 26, 2019**, Cloudflare flipped HTTP/3 on for every site behind their network. In the [accompanying blog post](https://blog.cloudflare.com/http3-the-past-present-and-future/) they published a number worth memorising: HTTP/3 over QUIC saved roughly **200 ms at the 90th percentile** for mobile clients on lossy links, versus the same site on HTTP/2 over TCP. Two hundred milliseconds is not a rounding error — it is *roughly the time between a feature feeling instant and feeling sluggish.* And they got it back not by writing better backend code, but by changing how the bytes travel across the network.
+In **September 2019**, during its Birthday Week, Cloudflare began rolling out HTTP/3 over QUIC across its network (opt-in at first, via a waiting list). In the [accompanying blog post](https://blog.cloudflare.com/http3-the-past-present-and-future/) they made the case that matters for system design: on lossy, high-latency links — exactly what mobile users live on — HTTP/3 removes TCP's head-of-line blocking and folds the connection handshake into one round-trip, so the *tail* latency that makes a feature feel sluggish shrinks. And that win comes not from writing better backend code, but from changing how the bytes travel across the network.
 
-The work that made HTTP/3 possible was [Google's QUIC deployment paper at SIGCOMM 2017](https://research.google/pubs/the-quic-transport-protocol-design-and-internet-scale-deployment/) (Langley et al.). They had spent four years shipping a UDP-based transport protocol inside Chrome, Android, and Google's own servers — at one point QUIC carried 35% of all Google egress traffic — and the paper reported an 8× reduction in connection-establishment latency at the 99th percentile, plus measurable wins for video rebuffering and search response time.
+The work that made HTTP/3 possible was [Google's QUIC deployment paper at SIGCOMM 2017](https://research.google/pubs/the-quic-transport-protocol-design-and-internet-scale-deployment/) (Langley et al.). They had spent years shipping a UDP-based transport protocol inside Chrome, Android, and Google's own servers — at one point QUIC carried 35% of all Google egress traffic — and the paper reported a 15–18% reduction in YouTube rebuffering and 3.5–8% lower search latency, on top of QUIC's 0-RTT handshake for repeat connections.
 
 You do not need to ship a transport protocol to benefit from what Cloudflare and Google learned. You need to understand **how many round-trips your request makes** at each step, because that is the lever every networking choice pulls. That's the lesson.
 
@@ -242,7 +242,7 @@ Open a browser, type `https://www.example.com`, hit enter. The wall-clock time b
 }
 ```
 
-Drag the **RTT slider** and watch the gap. At **20 ms** (same-region datacentre traffic), the worst case is 140 ms and the best is 20 ms — a 7× gap, but in human terms the worst case is still "fast". At **150 ms** (mobile / cross-region), the same six scenarios run from **150 ms to 1.05 s** — a one-second tax on the cold-stack user before they see anything. That second is *not* recoverable by a faster backend; it is paid entirely in handshake.
+Drag the **RTT slider** and watch the gap. At **20 ms** (same-region datacentre traffic), the worst case is 120 ms and the best is 20 ms — a 6× gap, but in human terms the worst case is still "fast". At **150 ms** (mobile / cross-region), the same six scenarios run from **150 ms to 900 ms** — nearly a one-second tax on the cold-stack user before they see anything. That second is *not* recoverable by a faster backend; it is paid entirely in handshake.
 
 This is why every part of the modern web is set up to *avoid being cold*. CDNs put an edge near the user so the RTT in every row is small (5–30 ms, not 150). Connection pooling lets the second request skip rows 2–4 entirely. HTTP/3 collapses rows 2–3 into one. TLS 1.3 cuts row 3 in half. None of these wins are individually huge — each saves 1 RTT — but they compound, and they compound *at every level of RTT*, which means the user on a slow cross-region link benefits the most.
 
@@ -359,7 +359,7 @@ A longer TTL (60 s → 3600 s) generally helps the hit ratio because each cached
 - **[Langley et al., "The QUIC Transport Protocol: Design and Internet-Scale Deployment"](https://research.google/pubs/the-quic-transport-protocol-design-and-internet-scale-deployment/)** (SIGCOMM 2017). The paper that turned QUIC from a Google experiment into an internet standard. Reports the 8× p99 connection-establishment latency reduction.
 - **[Netflix Open Connect](https://openconnect.netflix.com/en/)**. Netflix's CDN built as appliances co-located with ISPs. The clearest real-world articulation of why moving the bytes physically closer to users is the only way to scale video.
 - **[RFC 6928 — Increasing TCP's Initial Window](https://www.rfc-editor.org/rfc/rfc6928)** (2013). The unsexy little change (initcwnd 4 → 10) that gave the early-2010s web measurable speedups; representative of the kind of incremental wins networking design lives on.
-- **[RFC 9114 — HTTP/3](https://www.rfc-editor.org/rfc/rfc9114)** and **[RFC 9000 — QUIC](https://www.rfc-editor.org/rfc/rfc9000)** (2022). The current standards. Worth scanning the first few pages of each at least once.
+- **[RFC 9114 — HTTP/3](https://www.rfc-editor.org/rfc/rfc9114)** (2022) and **[RFC 9000 — QUIC](https://www.rfc-editor.org/rfc/rfc9000)** (2021). The current standards. Worth scanning the first few pages of each at least once.
 
 ---
 

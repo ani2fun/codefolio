@@ -26,6 +26,59 @@ Given an array of words, return all the words that can be typed using **only one
 > -   **Input:** `["him", "else", "bat"]` → **Output:** `[]`
 
 <details>
+<summary><strong>Examples</strong></summary>
+
+**Example 1**
+```
+Input:  ["you", "were", "some"]
+Output: ["you", "were"]
+Explanation: "you" → y,o,u all on row 1 (qwertyuiop). "were" → w,e,r,e all on row 1.
+"some" → s is row 2 but o is row 1, so it spans two rows and is dropped.
+```
+
+**Example 2**
+```
+Input:  ["sdk", "nvm", "hut"]
+Output: ["sdk", "nvm"]
+Explanation: "sdk" → s,d,k all on row 2 (asdfghjkl). "nvm" → n,v,m all on row 3 (zxcvbnm).
+"hut" → h is row 2 but u is row 1, so it is dropped.
+```
+
+**Example 3**
+```
+Input:  ["him", "else", "bat"]
+Output: []
+Explanation: "him" → h is row 2, i is row 1. "else" → e is row 1, l is row 2.
+"bat" → b is row 3, a is row 2. Every word spans more than one row.
+```
+
+**Example 4**
+```
+Input:  ["Alaska", "Dad"]
+Output: ["Alaska", "Dad"]
+Explanation: Case is ignored. "Alaska" → a,l,a,s,k,a all on row 2. "Dad" → d,a,d all on row 2.
+```
+
+</details>
+
+## Intuition
+
+The structural property that makes this a **key-generation** problem is that each character carries a single categorical label — its **keyboard row** — and a word is acceptable exactly when every character shares one label. The "row" is the key, and the question collapses to "does this word map to a single key?"
+
+The key per character is its row id (`1`, `2`, or `3`), looked up from three fixed character sets. For a whole word the test is uniformity: compute the first character's row, then confirm every other character resolves to that same row. The word survives the filter only when all its per-character keys agree, so a single mismatched character disqualifies it.
+
+The naive idea — special-casing every word shape or hand-checking pairs of letters — does more work and is fragiler than the lookup. Direct membership testing against three sets gives each character's row in `O(1)`, and one pass over the word decides it. Comparing characters against each other instead of against a fixed label gives no advantage and obscures the real signal: each character's row is an independent fact, not a relationship.
+
+## Applying the Diagnostic Questions
+
+| Check | Answer for Row Specific Words |
+|---|---|
+| **Q1.** Does the answer depend on a *canonical form* of each input? | **Yes** — each character's row id is its key; a word's acceptance depends only on those keys agreeing. |
+| **Q2.** Can you define equivalence as a function from input to bytes? | **Yes** — `row(c)` maps each character to one of `{1, 2, 3}`; "same row" is byte-equality of that id. |
+| **Q3.** Is each input keyed independently in a single pass? | **Yes** — each word is scanned once on its own; no word is compared against another. |
+| **Q4.** Is the per-item work `O(1)`? | **Yes** — each character is a single set-membership lookup, which is `O(1)` average. |
+
+<details>
 <summary><h2>Approach</h2></summary>
 
 
@@ -54,6 +107,18 @@ flowchart LR
 <p align="center"><strong>Row-specific words — the key per character is its keyboard row. A word survives the filter only if all its characters share the same key.</strong></p>
 
 </details>
+
+## Approach in Words
+
+Filter the list, keeping each word whose characters all map to one row.
+
+1. **Define the three rows.** Hold `qwertyuiop`, `asdfghjkl`, and `zxcvbnm` as three character sets, returning row id `1`, `2`, or `3`.
+2. **Resolve a character's row.** For a lowercased character, return the id of the set that contains it.
+3. **Test one word.** Take the row of the word's first character as the target, then scan the rest; if any character's row differs from the target, the word fails.
+4. **Lowercase before lookup.** Normalise each character to lowercase so uppercase input resolves to the same row.
+5. **Collect the survivors.** Walk the input list, keep each word that passes the single-row test, and append it to the result.
+6. **Return the result.** It holds the words typeable on one row, in input order.
+
 <details>
 <summary><h2>Solution</h2></summary>
 
@@ -122,7 +187,7 @@ print(Solution().row_specific_words(["type", "row"]))            # ['type']
 print(Solution().row_specific_words(["Alaska", "Dad"]))          # ['Alaska', 'Dad']
 ```
 
-```java run
+```java run viz=graph viz-root=words
 import java.util.*;
 
 public class Main {
@@ -210,35 +275,45 @@ public class Main {
 
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+## Dry Run
 
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
+Walk Example 1 — `["you", "were", "some"]`. Rows: `1 = qwertyuiop`, `2 = asdfghjkl`, `3 = zxcvbnm`.
 
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
+```
+word "you"
+  y → row 1 (target)   o → row 1 ✓   u → row 1 ✓     all match → KEEP
 
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
+word "were"
+  w → row 1 (target)   e → row 1 ✓   r → row 1 ✓   e → row 1 ✓   all match → KEEP
 
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
+word "some"
+  s → row 2 (target)   o → row 1 ✗                  mismatch → DROP
 
-<!-- TODO: Solution — missing, needs to be written -->
-<!--       Guidance: Python block then Java block -->
+result = ["you", "were"]
+```
 
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
+The result `["you", "were"]` matches the expected output.
 
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table: time / space / why -->
+## Complexity Analysis
 
-<!-- TODO: Edge Cases — missing, needs to be written -->
-<!--       Guidance: table, min 5 rows -->
+| Measure | Value | Why |
+|---|---|---|
+| Time  | **O(S)** | `S` is the total length of all words; each character is one `O(1)` set lookup. |
+| Space | **O(1)** | The three row sets are fixed-size (26 letters total); the result is output, not auxiliary. |
 
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->
+The per-character row lookup is `O(1)` on average because membership in a hash set is constant-time, so the whole filter costs one pass over every character.
+
+## Edge Cases
+
+| Case | Example | Expected | Reasoning |
+|---|---|---|---|
+| Empty list | `[]` | `[]` | No words to test, so nothing is kept. |
+| Single character | `["a"]` | `["a"]` | One character trivially shares its own row. |
+| Mixed case | `["Alaska", "Dad"]` | `["Alaska", "Dad"]` | Lowercasing maps every character to row 2 before the row test. |
+| All words single-row | `["type", "row"]` | `["type", "row"]` | `type` → t,y,p,e all row 1; `row` → r,o,w all row 1 — both kept. <!-- VERIFY: frozen code's inline comment reads `# [type]`, but r,o,w are all row 1 so `row` is kept; running the frozen code returns `['type', 'row']`. --> |
+| No words qualify | `["him", "else", "bat"]` | `[]` | Every word spans more than one row. |
+| Repeated characters | `["aaa"]` | `["aaa"]` | Repeats resolve to the same row, so the word is kept. |
+
+## Key Takeaway
+
+The key here is a **categorical label** — each character's keyboard row — and a word qualifies only when all its per-character keys agree. Unlike the first-occurrence-index problems, the key is a fixed lookup, not a derived order.

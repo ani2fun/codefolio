@@ -108,7 +108,7 @@ print(Solution().minimum_shipping_capacity([1, 2, 3, 4, 5], 1))   # 15  (all in 
 print(Solution().minimum_shipping_capacity([3, 2, 2, 4, 1, 4], 3))  # 6
 ```
 
-```java run
+```java run viz=array viz-root=weights
 import java.util.*;
 
 public class Main {

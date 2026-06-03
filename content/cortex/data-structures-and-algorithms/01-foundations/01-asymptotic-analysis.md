@@ -400,7 +400,7 @@ if __name__ == "__main__":
         print(f"{n:>8} {nested:>14.2f} {hashed:>12.3f}")
 ```
 
-```java run
+```java run viz=graph viz-root=items
 import java.util.*;
 
 public class Main {

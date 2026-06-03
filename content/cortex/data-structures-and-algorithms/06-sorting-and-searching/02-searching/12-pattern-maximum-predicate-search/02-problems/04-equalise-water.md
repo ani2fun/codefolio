@@ -108,7 +108,7 @@ print(Solution().equalise_water([0, 10], 0))           # 5.0  (no loss, perfect 
 print(Solution().equalise_water([0, 10], 100))         # 0.0  (100% loss — can't transfer)
 ```
 
-```java run
+```java run viz=array viz-root=buckets
 import java.util.*;
 
 public class Main {

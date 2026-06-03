@@ -124,7 +124,7 @@ w2 -> w3: "remove 2 (+0), add -5 (+1) → neg=2"
 
 ### Solution
 
-```python run
+```python run viz=array viz-root=result
 from typing import List
 
 class Solution:
@@ -184,7 +184,7 @@ print(Solution().negative_window([1, 2, 3, 4], 2))            # [0, 0, 0]  — a
 print(Solution().negative_window([-1, -2, -3, -4], 3))        # [3, 3]  — all negative
 ```
 
-```java run
+```java run viz=array viz-root=result
 import java.util.*;
 
 public class Main {

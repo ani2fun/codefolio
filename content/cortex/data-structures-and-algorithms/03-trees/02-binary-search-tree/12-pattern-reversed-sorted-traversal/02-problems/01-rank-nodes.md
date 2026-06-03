@@ -34,7 +34,7 @@ Walk the tree in reverse in-order. The first node visited (the largest) gets ran
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional
 
 
@@ -134,7 +134,7 @@ Solution().rank_nodes(t5)
 print(t5.val, t5.right.val)   # 2 1
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

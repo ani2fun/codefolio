@@ -220,7 +220,7 @@ print(Solution().binary_search_2d([[1, 2, 3, 4, 5]], 6))      # False — 1xN ro
 print(Solution().binary_search_2d([[1, 2, 2, 4], [5, 5, 5, 5], [9, 10, 11, 12]], 1))  # True — first element
 ```
 
-```java run
+```java run viz=array viz-root=matrix
 import java.util.*;
 
 public class Main {

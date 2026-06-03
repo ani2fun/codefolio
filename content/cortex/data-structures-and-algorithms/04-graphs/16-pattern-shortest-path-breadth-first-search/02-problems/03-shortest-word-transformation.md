@@ -126,7 +126,7 @@ print(Solution().shortest_word_transformation("hit", "cog", []))                
 print(Solution().shortest_word_transformation("a", "c", ["b","c"]))                                  # 2 — single-char chain
 ```
 
-```java run
+```java run viz=graph viz-root=queue
 import java.util.*;
 
 public class Main {

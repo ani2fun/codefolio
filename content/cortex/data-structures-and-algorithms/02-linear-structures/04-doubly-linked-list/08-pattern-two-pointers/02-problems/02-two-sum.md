@@ -23,6 +23,75 @@ Input:  head = [1, 2, 3, 4, 5], target = 9
 Output: [[4, 5]]
 ```
 
+---
+
+<details>
+<summary><strong>Examples</strong></summary>
+
+**Example 1**
+```
+Input:  head = [1, 2, 3, 4, 5], target = 6
+Output: [[1, 5], [2, 4]]
+Explanation: Two distinct pairs sum to 6 — the outer (1, 5) and the inner (2, 4). The pointers meet at 3 with no further pair to record.
+```
+
+**Example 2**
+```
+Input:  head = [1, 2, 3, 4, 5], target = 10
+Output: []
+Explanation: The maximum reachable sum is 4 + 5 = 9; no pair can reach 10.
+```
+
+**Example 3**
+```
+Input:  head = [1, 2, 3, 4, 5], target = 9
+Output: [[4, 5]]
+Explanation: Only the outermost-after-shrink pair (4, 5) sums to 9.
+```
+
+**Example 4**
+```
+Input:  head = [1, 2], target = 3
+Output: [[1, 2]]
+Explanation: The minimum-length valid case — one pair, one iteration, one match.
+```
+
+</details>
+
+---
+
+## Intuition
+
+The **structural property** that makes this a two-pointer problem is the *sorted* assumption. On a sorted DLL, the smallest unvisited value sits at `left` and the largest sits at `right`. The running sum `left.val + right.val` is a monotonic dial: advancing `left` can only raise it, retreating `right` can only lower it. That monotonicity is exactly the signal the converging-walkers pattern needs to make a single deterministic decision per iteration.
+
+The **pointer placement** is `left = head`, `right = tail`. Per iteration, compute `sum = left.val + right.val` and branch on three cases. If `sum == target`, the pair is valid — record `[left.val, right.val]`, then advance *both* pointers inward (the inputs contain no duplicates, so a value that just participated cannot appear again). If `sum < target`, `left.val` paired against the largest remaining partner still falls short, so it can never reach the target with any smaller partner; advance `left`. If `sum > target`, the symmetric argument retreats `right`. The loop ends when `left.val >= right.val` — the unexplored region has collapsed.
+
+What **breaks if you reach for the naive approach**? The brute-force `O(n²)` pass nests two walks of the list and checks every pair — correct, but quadratic for no good reason. A hash-set lookup would solve `O(n)` time but pays `O(n)` extra space and discards the sorted-order gift the input handed you. The converging two-pointer pass uses the ordering for free and lands at `O(n)` time, `O(1)` extra space, single pass.
+
+---
+
+## Applying the Diagnostic Questions
+
+| Check | Answer for Two Sum |
+|---|---|
+| **Q1.** Are two nodes inspected at the same time, one from each end? | **Yes** — every iteration reads `left.val` and `right.val` to compute the running sum. |
+| **Q2.** Does one pointer start near `head` and the other near `tail`? | **Yes** — `left = head` and `right = tail`. |
+| **Q3.** Do both pointers move strictly inward? | **Yes** — `left` advances via `.next`, `right` retreats via `.prev`; neither ever reverses. |
+| **Q4.** Is the per-step work `O(1)`? | **Yes** — one addition, one comparison, one append at most, then a single pointer step. |
+
+---
+
+## Approach
+
+Run the converging two-pointer loop, steering by the running sum.
+
+1. **Handle the trivial guards.** If `head` is `null` or `head.next` is `null` (empty or single-node list), return an empty result — no pair is possible.
+2. **Initialise the pointers and result.** Set `left = head`, `right = tail`, and `result = []`.
+3. **Loop while the search space is non-empty.** Continue while `left.val < right.val`. This condition is strict — when `left.val == right.val`, the pointers have either met on the same node or crossed past each other.
+4. **Compute the running sum.** Let `sum = left.val + right.val`.
+5. **Branch on the sum's relation to the target.** If `sum == target`, append `[left.val, right.val]` to `result`, then set `left = left.next` and `right = right.prev`. If `sum < target`, advance `left = left.next`. If `sum > target`, retreat `right = right.prev`.
+6. **Return the result.** When the loop exits, `result` holds every distinct pair summing to `target`, listed outermost-first.
+
 <details>
 <summary><h2>What Does "Decisive Direction" Mean?</h2></summary>
 
@@ -73,7 +142,7 @@ flowchart TB
 
 ### The Solution
 
-```python run
+```python run viz=linked-list viz-root=head
 from typing import Optional, List
 
 class ListNode:
@@ -180,7 +249,7 @@ h = from_list([2, 4, 6, 8])
 print(Solution().two_sum(h, get_tail(h), 10))  # [[2, 8], [4, 6]]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -334,26 +403,6 @@ The sorted, no-duplicate Two Sum is clean. But what if the list contains repeats
 
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+## Key Takeaway
 
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
-
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
-
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
-
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
-
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
-
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->
+Two Sum on a sorted DLL is the canonical pair-search variant — the *direction of motion* on every iteration is decided by `sum vs target`, not by node identity. Sorting is what makes the move-decision deterministic; without it, the running sum is no longer a monotonic dial.

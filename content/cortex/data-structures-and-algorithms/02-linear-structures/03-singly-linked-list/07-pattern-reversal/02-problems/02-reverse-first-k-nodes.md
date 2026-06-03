@@ -88,7 +88,7 @@ Run the prefix-bounded three-pointer loop, then stitch.
 ### Solution
 
 
-```python run
+```python run viz=linked-list viz-root=head
 from typing import Optional
 
 
@@ -169,7 +169,7 @@ print(to_list(Solution().reverse_first_k_nodes(from_list([1, 2, 3, 4, 5]), 3))) 
 print(to_list(Solution().reverse_first_k_nodes(from_list([1, 2, 3, 4, 5]), 7))) # [5, 4, 3, 2, 1]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {

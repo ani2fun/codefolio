@@ -59,7 +59,7 @@ flowchart LR
 The contract we'll implement everywhere in this lesson:
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 """
 Definition for a binary tree node.
 class TreeNode:
@@ -84,7 +84,7 @@ class BSTIterator:
         pass
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 /**
  * Definition for a binary tree node.
  * class TreeNode {
@@ -236,7 +236,7 @@ Given the skeleton of a `ForwardBstIterator` class, complete it by implementing 
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional, List
 
 
@@ -335,7 +335,7 @@ while it4.has_next():
 print(seq4)              # [1, 2, 3]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {
@@ -548,7 +548,7 @@ Given the skeleton of a `ReverseBstIterator` class, complete it. Same surface as
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional, List
 
 
@@ -647,7 +647,7 @@ while it4.has_next():
 print(seq4)              # [3, 2, 1]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

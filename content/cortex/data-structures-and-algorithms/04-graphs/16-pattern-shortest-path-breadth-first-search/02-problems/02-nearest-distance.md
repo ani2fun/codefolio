@@ -145,7 +145,7 @@ print(Solution().nearest_distance([[1,0],[0,0]]))       # [[0,1],[1,2]] — one 
 print(Solution().nearest_distance([[0,0],[0,1]]))       # [[2,1],[1,0]] — one source far corner
 ```
 
-```java run
+```java run viz=grid viz-root=grid
 import java.util.*;
 
 public class Main {

@@ -76,7 +76,7 @@ q=[]"]
 The "list each level's values" template — the simplest member of the family.
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from collections import deque
 from typing import List, Optional
 
@@ -100,7 +100,7 @@ def levels(root: Optional[TreeNode]) -> List[List[int]]:
     return out
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 public static List<List<Integer>> levels(TreeNode root) {
     List<List<Integer>> out = new ArrayList<>();
     if (root == null) return out;

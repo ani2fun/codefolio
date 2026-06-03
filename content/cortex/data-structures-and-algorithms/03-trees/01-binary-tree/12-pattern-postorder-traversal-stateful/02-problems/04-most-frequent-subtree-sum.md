@@ -17,7 +17,7 @@ Each call returns its subtree sum (so the parent can compute its own); along the
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional, List
 from collections import defaultdict
 
@@ -107,7 +107,7 @@ print(Solution().most_frequent_subtree_sum(from_level_order([1, 2, None, 3])))  
 print(Solution().most_frequent_subtree_sum(from_level_order([-1, -2, -3])))                    # [-6] all sums freq 1, root sum uniquely -6... actually all freq 1 so all returned
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

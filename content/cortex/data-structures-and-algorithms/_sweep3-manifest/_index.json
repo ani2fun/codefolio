@@ -3,7 +3,7 @@
   "created": "2026-05-25",
   "pilot_approved": true,
   "total_units": 261,
-  "completed_units": 34,
+  "completed_units": 84,
   "chapters": [
     {
       "path": "01-foundations",
@@ -30,36 +30,36 @@
       "path": "02-linear-structures/04-doubly-linked-list",
       "shard": "02-linear-structures__04-doubly-linked-list.json",
       "units": 11,
-      "done": 0,
-      "status": "pending"
+      "done": 11,
+      "status": "done"
     },
     {
       "path": "02-linear-structures/05-stack",
       "shard": "02-linear-structures__05-stack.json",
       "units": 14,
-      "done": 0,
-      "status": "pending"
+      "done": 14,
+      "status": "done"
     },
     {
       "path": "02-linear-structures/06-queue",
       "shard": "02-linear-structures__06-queue.json",
       "units": 5,
-      "done": 0,
-      "status": "pending"
+      "done": 5,
+      "status": "done"
     },
     {
       "path": "02-linear-structures/07-hash-table",
       "shard": "02-linear-structures__07-hash-table.json",
       "units": 13,
-      "done": 0,
-      "status": "pending"
+      "done": 13,
+      "status": "done"
     },
     {
       "path": "03-trees/01-binary-tree",
       "shard": "03-trees__01-binary-tree.json",
       "units": 20,
-      "done": 0,
-      "status": "pending"
+      "done": 7,
+      "status": "in_progress"
     },
     {
       "path": "03-trees/02-binary-search-tree",

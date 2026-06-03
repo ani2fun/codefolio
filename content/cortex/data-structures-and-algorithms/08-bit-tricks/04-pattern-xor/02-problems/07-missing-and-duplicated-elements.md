@@ -104,7 +104,7 @@ print(Solution().missing_and_duplicated_elements([1, 3, 3]))              # [2, 
 print(Solution().missing_and_duplicated_elements([3, 1, 2, 4, 4]))        # [5, 4]
 ```
 
-```java run
+```java run viz=array viz-root=arr
 import java.util.*;
 
 public class Main {

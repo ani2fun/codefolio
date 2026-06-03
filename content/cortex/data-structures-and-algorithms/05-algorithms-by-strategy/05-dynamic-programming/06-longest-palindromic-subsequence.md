@@ -283,7 +283,7 @@ print(Solution().longest_palindromic_subsequence("abcba"))      # 5
 print(Solution().longest_palindromic_subsequence("abcd"))       # 1
 ```
 
-```java run
+```java run viz=graph viz-root=dp
 public class Main {
     static class Solution {
         public int longestPalindromicSubsequence(String s) {

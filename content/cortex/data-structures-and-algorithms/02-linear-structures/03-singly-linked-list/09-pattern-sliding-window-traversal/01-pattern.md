@@ -10,36 +10,323 @@ prereqs:
 The sliding window traversal pattern keeps two pointers a fixed distance `k` apart inside a singly linked list and advances both in lockstep, one node per tick. It is the canonical answer to any problem that asks "what is the `k`-th-from-last node?", "remove the `k`-th from the end," "swap the `k`-th nodes from either side," or "rotate the list by `k`" — all in a single forward pass, with `O(1)` extra space, on a structure that exposes only forward links.
 
 > ▶ Interactive Diagram — Sliding-window traversal keeps two pointers — start and end — a fixed distance k apart. They advance together, one node at a time, until end falls off the list.
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Sliding window — start + end stay k=3 hops apart; both advance together",
-  "direction": "single",
-  "nodes": [
-    {"id": "n1", "value": "1"},
-    {"id": "n2", "value": "2"},
-    {"id": "n3", "value": "3"},
-    {"id": "n4", "value": "4"},
-    {"id": "n5", "value": "5"},
-    {"id": "n6", "value": "6"}
-  ],
-  "head": "n1",
   "steps": [
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"],["n5","n6"]],
-      "markers": [{"name": "start", "nodeId": "n1"}, {"name": "end", "nodeId": "n4"}],
-      "msg": "start at node 1, end at node 4 (3 hops ahead). Window = nodes 1..4."
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "1",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "2",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n6",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n5",
+          "label": "next"
+        },
+        {
+          "from": "n5",
+          "to": "n6",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "start",
+          "target": "n1",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "n4",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "start at node 1, end at node 4 (3 hops ahead). Window = nodes 1..4.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"],["n5","n6"]],
-      "markers": [{"name": "start", "nodeId": "n2"}, {"name": "end", "nodeId": "n5"}],
-      "msg": "Both advance one step. Window = nodes 2..5."
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "1",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "2",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n6",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n5",
+          "label": "next"
+        },
+        {
+          "from": "n5",
+          "to": "n6",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "start",
+          "target": "n2",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "n5",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Both advance one step. Window = nodes 2..5.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"],["n5","n6"]],
-      "markers": [{"name": "start", "nodeId": "n3"}, {"name": "end", "nodeId": "n6"}],
-      "msg": "Both advance. Window = nodes 3..6. end.next is null → loop ends."
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "1",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "2",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n6",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n5",
+          "label": "next"
+        },
+        {
+          "from": "n5",
+          "to": "n6",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "start",
+          "target": "n3",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "n6",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Both advance. Window = nodes 3..6. end.next is null → loop ends.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Sliding window — start + end stay k=3 hops apart; both advance together"
 }
 ```
 
@@ -80,24 +367,87 @@ Crucially, the lockstep loop's termination condition reads from `end`, never fro
 It is important to note that two nodes that are at a distance `k` from each other denote a window of size `k + 1` as both nodes are included in the window.
 
 > ▶ Interactive Diagram — A "distance of k" means k hops between start and end — which covers k + 1 nodes when both endpoints count. Getting this off-by-one right is the single most common bug in sliding-window code.
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "k = 3 hops between start and end ⇒ window size = k + 1 = 4 nodes",
-  "direction": "single",
-  "nodes": [
-    {"id": "s", "value": "start"},
-    {"id": "a", "value": "·"},
-    {"id": "b", "value": "·"},
-    {"id": "e", "value": "end"}
-  ],
-  "head": "s",
   "steps": [
     {
-      "links": [["s","a"],["a","b"],["b","e"]],
-      "markers": [{"name": "start", "nodeId": "s"}, {"name": "end", "nodeId": "e"}],
-      "msg": "3 hops between start and end, but 4 nodes in the window (both endpoints included)"
+      "nodes": [
+        {
+          "id": "s",
+          "label": "start",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a",
+          "label": "·",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b",
+          "label": "·",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "e",
+          "label": "end",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "s",
+          "to": "a",
+          "label": "next"
+        },
+        {
+          "from": "a",
+          "to": "b",
+          "label": "next"
+        },
+        {
+          "from": "b",
+          "to": "e",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "start",
+          "target": "s",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "e",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "3 hops between start and end, but 4 nodes in the window (both endpoints included)",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "k = 3 hops between start and end ⇒ window size = k + 1 = 4 nodes"
 }
 ```
 
@@ -106,42 +456,483 @@ It is important to note that two nodes that are at a distance `k` from each othe
 We perform the required operations on the nodes held in `start` and `end` and move both of them one step ahead by setting them to their respective next nodes. We repeat this process until `end` hits `null` at the end of the list. At the end of all iterations, we would have applied the given operation on all nodes that are `k` steps away from each other.
 
 > ▶ Interactive Diagram — Setup — start at head, end exactly k − 1 = 2 hops ahead. The three-node window covers nodes 1, 2, 3.
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Sliding-window tick-by-tick — pair (start, end) processed each iteration",
-  "direction": "single",
-  "nodes": [
-    {"id": "n1", "value": "1"},
-    {"id": "n2", "value": "2"},
-    {"id": "n3", "value": "3"},
-    {"id": "n4", "value": "4"},
-    {"id": "n5", "value": "5"},
-    {"id": "n6", "value": "6"},
-    {"id": "n7", "value": "7"}
-  ],
-  "head": "n1",
   "steps": [
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"],["n5","n6"],["n6","n7"]],
-      "markers": [{"name": "start", "nodeId": "n1"}, {"name": "end", "nodeId": "n3"}],
-      "msg": "Setup: start = n1, end = n3 (k−1 = 2 hops ahead). Process pair (1, 3)."
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "1",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "2",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n6",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n7",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n5",
+          "label": "next"
+        },
+        {
+          "from": "n5",
+          "to": "n6",
+          "label": "next"
+        },
+        {
+          "from": "n6",
+          "to": "n7",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "start",
+          "target": "n1",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "n3",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Setup: start = n1, end = n3 (k−1 = 2 hops ahead). Process pair (1, 3).",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"],["n5","n6"],["n6","n7"]],
-      "markers": [{"name": "start", "nodeId": "n2"}, {"name": "end", "nodeId": "n4"}],
-      "msg": "Tick 1: both advance. Process pair (2, 4)."
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "1",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "2",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n6",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n7",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n5",
+          "label": "next"
+        },
+        {
+          "from": "n5",
+          "to": "n6",
+          "label": "next"
+        },
+        {
+          "from": "n6",
+          "to": "n7",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "start",
+          "target": "n2",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "n4",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Tick 1: both advance. Process pair (2, 4).",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"],["n5","n6"],["n6","n7"]],
-      "markers": [{"name": "start", "nodeId": "n3"}, {"name": "end", "nodeId": "n5"}],
-      "msg": "Tick 2: process pair (3, 5)."
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "1",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "2",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n6",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n7",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n5",
+          "label": "next"
+        },
+        {
+          "from": "n5",
+          "to": "n6",
+          "label": "next"
+        },
+        {
+          "from": "n6",
+          "to": "n7",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "start",
+          "target": "n3",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "n5",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Tick 2: process pair (3, 5).",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"],["n5","n6"],["n6","n7"]],
-      "markers": [{"name": "start", "nodeId": "n5"}, {"name": "end", "nodeId": "n7"}],
-      "msg": "Tick 4 (skipping ahead): process pair (5, 7). end.next is null → loop ends. Final start = n − k + 1 = 5."
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "1",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "2",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n6",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n7",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n5",
+          "label": "next"
+        },
+        {
+          "from": "n5",
+          "to": "n6",
+          "label": "next"
+        },
+        {
+          "from": "n6",
+          "to": "n7",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "start",
+          "target": "n5",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "n7",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Tick 4 (skipping ahead): process pair (5, 7). end.next is null → loop ends. Final start = n − k + 1 = 5.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Sliding-window tick-by-tick — pair (start, end) processed each iteration"
 }
 ```
 
@@ -178,7 +969,7 @@ The algorithm given below outlines the sliding window traversal technique for a 
 Given below is the generic code implementation of the fixed-size sliding window traversal technique on a linked list with window size `k` using references `start` and `end` as the boundaries of the window.
 
 
-```python run
+```python run viz=linked-list viz-root=head
 """
 Definition for singly-linked list.
 class ListNode:
@@ -210,7 +1001,7 @@ def slidingWindowTraversal(head: ListNode, k: int) -> None:
     return
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 
 /**
  * Definition for singly-linked list.
@@ -317,51 +1108,296 @@ Output: [1, 2, 3, 5]
 ```
 
 > ▶ Interactive Diagram — The classic use case — reach the target in a single pass by keeping two pointers k − 1 apart. When end reaches the tail, start is parked exactly on the k-th node from the end.
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Remove the 3rd node from the end — single-pass via the k-apart window",
-  "direction": "single",
-  "nodes": [
-    {"id": "n1", "value": "1"},
-    {"id": "n2", "value": "2"},
-    {"id": "n3", "value": "3"},
-    {"id": "n4", "value": "4"},
-    {"id": "n5", "value": "5"},
-    {"id": "n6", "value": "6"}
-  ],
-  "head": "n1",
   "steps": [
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"],["n5","n6"]],
-      "markers": [{"name": "current", "nodeId": "n4"}],
-      "msg": "Before: target = n4 (3rd from end). Remove it."
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "1",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "2",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n6",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n5",
+          "label": "next"
+        },
+        {
+          "from": "n5",
+          "to": "n6",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "n4",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Before: target = n4 (3rd from end). Remove it.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n1", "value": "1"},
-        {"id": "n2", "value": "2"},
-        {"id": "n3", "value": "3"},
-        {"id": "n4", "value": "4", "style": "removed"},
-        {"id": "n5", "value": "5"},
-        {"id": "n6", "value": "6"}
+        {
+          "id": "n1",
+          "label": "1",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "2",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n6",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n2"],["n2","n3"],["n3","n5"],["n4","n5"],["n5","n6"]],
-      "markers": [{"name": "current", "nodeId": "n4"}],
-      "msg": "Splice: n3.next = n5 — n4 unreachable"
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n5",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n5",
+          "label": "next"
+        },
+        {
+          "from": "n5",
+          "to": "n6",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "n4",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [
+        "n4"
+      ],
+      "annotation": "Splice: n3.next = n5 — n4 unreachable",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n1", "value": "1"},
-        {"id": "n2", "value": "2"},
-        {"id": "n3", "value": "3"},
-        {"id": "n5", "value": "5"},
-        {"id": "n6", "value": "6"}
+        {
+          "id": "n1",
+          "label": "1",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "2",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n6",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n2"],["n2","n3"],["n3","n5"],["n5","n6"]],
-      "markers": [{"name": "head", "nodeId": "n1"}],
-      "msg": "After: 1 → 2 → 3 → 5 → 6. Sliding window finds the predecessor in a single pass."
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n5",
+          "label": "next"
+        },
+        {
+          "from": "n5",
+          "to": "n6",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n1",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "After: 1 → 2 → 3 → 5 → 6. Sliding window finds the predecessor in a single pass.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Remove the 3rd node from the end — single-pass via the k-apart window"
 }
 ```
 
@@ -388,7 +1424,7 @@ flowchart TB
 The implementation of the brute force solution is given as follows.
 
 
-```python run
+```python run viz=linked-list viz-root=head
 from typing import Optional
 
 class Solution:
@@ -416,7 +1452,7 @@ class Solution:
         return head
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 public class Main {
     static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
@@ -459,25 +1495,101 @@ The brute-force solution requires two passes through the list: the first to find
 If we consider the **last node** of the linked list to be its end, the 1st node from the end is at 0 distance from it, the 2nd node from the end is at a distance of 1 from it, and so the `kth` node from the end is the node that is at a distance of `k-1` before it.
 
 > ▶ Interactive Diagram — If a node is the k-th from the end, then there are k − 1 hops between it and the tail. That's the fixed gap we maintain between our two pointers.
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "k-th-from-end node and the tail are exactly k − 1 hops apart",
-  "direction": "single",
-  "nodes": [
-    {"id": "n1", "value": "·"},
-    {"id": "kn", "value": "k-th"},
-    {"id": "m1", "value": "·"},
-    {"id": "m2", "value": "·"},
-    {"id": "last", "value": "tail"}
-  ],
-  "head": "n1",
   "steps": [
     {
-      "links": [["n1","kn"],["kn","m1"],["m1","m2"],["m2","last"]],
-      "markers": [{"name": "current", "nodeId": "kn"}, {"name": "tail", "nodeId": "last"}],
-      "msg": "k − 1 hops between the k-th-from-end node and the tail (here k = 4)"
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "·",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "kn",
+          "label": "k-th",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m1",
+          "label": "·",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m2",
+          "label": "·",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "last",
+          "label": "tail",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "kn",
+          "label": "next"
+        },
+        {
+          "from": "kn",
+          "to": "m1",
+          "label": "next"
+        },
+        {
+          "from": "m1",
+          "to": "m2",
+          "label": "next"
+        },
+        {
+          "from": "m2",
+          "to": "last",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "kn",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "tail",
+          "target": "last",
+          "color": "#8b5cf6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "k − 1 hops between the k-th-from-end node and the tail (here k = 4)",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "k-th-from-end node and the tail are exactly k − 1 hops apart"
 }
 ```
 
@@ -536,7 +1648,7 @@ flowchart TB
 The implementation of the sliding window traversal solution is given as follows.
 
 
-```python run
+```python run viz=linked-list viz-root=head
 from typing import Optional
 
 class Solution:
@@ -576,7 +1688,7 @@ class Solution:
         return head
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 public class Main {
     static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 

@@ -19,6 +19,16 @@
 // into a visible loop. The same fallback catches any `next`-graph that is not a
 // disjoint union of simple paths (a merge / fork / re-link).
 //
+// **Reverse-in-place handling.** The union of `next` edges across every step
+// of a reverse-in-place trace contains *both* directions of each adjacent pair
+// (step 1: a→b, step 2: b→a). That breaks the linear-forest invariant — the
+// layout would fall back to the force graph. We pre-dedupe the union by
+// unordered pair, keeping the first-seen direction (which `graph-render.ts`
+// supplies in step order, so step 1's chain direction wins). The per-step
+// edge *rendering* still draws each step's actual edges over those positions,
+// so the arrows visibly flip as the algorithm reverses — only the node
+// positions stay anchored to the original chain.
+//
 // No d3, no DOM: positions are pure arithmetic, unit-tested in plain Node (see
 // linked-list-layout.test.ts). A new data structure adds a LayoutFn like this
 // one — never a new renderer.
@@ -55,7 +65,14 @@ export const linkedListLayout: LayoutFn = (nodes, edges) => {
   // `next` / `nxt` is the near-universal chain-pointer field name. If a book
   // names it something else no edge matches — fall back to "every non-`prev`
   // edge is a chain edge" so an oddly-named singly-linked list still lays out.
-  const forward = nextEdges.length > 0 ? nextEdges : real.filter((e) => !isPrev(e));
+  const forwardRaw = nextEdges.length > 0 ? nextEdges : real.filter((e) => !isPrev(e));
+
+  // Collapse reciprocal pairs (a→b AND b→a both labelled `next`) — produced by
+  // every reverse-in-place animation as the union of all steps' edges. We keep
+  // the FIRST occurrence per unordered pair; graph-render.ts feeds union edges
+  // step-by-step, so step 1's original direction wins and the layout anchors
+  // to the initial chain.
+  const forward = dedupeReciprocalPairs(forwardRaw);
 
   const chains = asLinearForest(nodes, forward);
   // Not a disjoint union of simple paths — a cycle, a merge, a fork. The
@@ -71,6 +88,23 @@ export const linkedListLayout: LayoutFn = (nodes, edges) => {
   });
   return frame(nodes, raw);
 };
+
+/**
+ * For each unordered `{from, to}` pair, keep only the first edge — drops the
+ * reverse-direction duplicate produced by reverse-in-place animations.
+ * Preserves input order otherwise.
+ */
+function dedupeReciprocalPairs(edges: VizEdge[]): VizEdge[] {
+  const seen = new Set<string>();
+  const out: VizEdge[] = [];
+  for (const e of edges) {
+    const key = e.from < e.to ? `${e.from}|${e.to}` : `${e.to}|${e.from}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(e);
+  }
+  return out;
+}
 
 /** A chain-forward edge — a `next` (or `nxt`) pointer. */
 function isNext(e: VizEdge): boolean {

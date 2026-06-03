@@ -52,7 +52,7 @@ flowchart TB
 Below is a "sum of all node values" template — illustrative; substitute the right base case and combine for your problem.
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional
 
 class TreeNode:
@@ -66,7 +66,7 @@ def stateless_postorder(node: Optional[TreeNode]) -> int:
     return left + right + node.val                 # combine
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 static int statelessPostorder(TreeNode node) {
     if (node == null) return 0;
     int left  = statelessPostorder(node.left);

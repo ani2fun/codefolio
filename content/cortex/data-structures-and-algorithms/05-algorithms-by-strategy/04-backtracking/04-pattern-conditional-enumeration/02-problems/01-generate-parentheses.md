@@ -113,7 +113,7 @@ If neither is viable (which never happens during a properly running search but i
 
 The implementation was already shown in the [Implementation](#implementation) section above (where we used Generate Parentheses as the canonical example for the conditional-enumeration template). We restate the Python here to keep this section self-contained, then provide the trace.
 
-```python run
+```python run viz=array viz-root=choices
 from typing import List
 
 class Solution:
@@ -205,7 +205,7 @@ print(len(Solution().generate_parentheses(3)))   # 5
 print(len(Solution().generate_parentheses(4)))   # 14
 ```
 
-```java run
+```java run viz=array viz-root=choices
 import java.util.*;
 
 public class Main {

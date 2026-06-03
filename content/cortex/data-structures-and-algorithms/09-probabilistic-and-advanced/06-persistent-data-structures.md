@@ -153,7 +153,7 @@ if __name__ == "__main__":
     print(f"Search 5 in version 8: {search(versions[8], 5)}")      # True
 ```
 
-```java run
+```java run viz=graph viz-root=node
 public class Main {
     static class Node {
         int key; Node left, right;

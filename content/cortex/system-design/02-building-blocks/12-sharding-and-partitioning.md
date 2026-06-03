@@ -10,7 +10,7 @@ summary: Splitting a dataset across N machines under three strategies — range,
 
 ## 1. Motivation
 
-In **late 2021**, Notion published [*Herding Elephants — Sharding Postgres at Notion*](https://www.notion.so/blog/sharding-postgres-at-notion). The headline: their primary Postgres held 20 TB of `blocks` (every paragraph, heading, image, and embedded child block of every Notion page on the planet) on one machine, and `INSERT` latency was climbing past 250 ms. They sharded that one table across **32 logical shards** distributed over **15 physical Postgres instances**, with `block_id`'s top 5 bits as the partition key. Two years of planning compressed into one weekend cutover. After: average write latency back under 30 ms, room to grow another order of magnitude.
+In **late 2021**, Notion published [*Herding Elephants — Sharding Postgres at Notion*](https://www.notion.so/blog/sharding-postgres-at-notion). The headline: their primary Postgres held 20 TB of `blocks` (every paragraph, heading, image, and embedded child block of every Notion page on the planet) on one machine, and `INSERT` latency was climbing past 250 ms. They sharded that one table across **480 logical shards** evenly distributed over **32 physical Postgres instances** (15 logical shards each), partitioned by **workspace ID**. Two years of planning compressed into one weekend cutover. After: average write latency back under 30 ms, room to grow another order of magnitude.
 
 The story is instructive less for the migration itself and more for what *didn't* happen. They did not move to NoSQL. They did not adopt a sharding proxy like Vitess or Citus mid-project. They sharded plain Postgres at the application layer — a `shard_id` column on every row, a deterministic hash from `block_id` to `shard_id`, and a service that knows which physical Postgres holds which `shard_id`. The architectural complexity stayed inside the application; each underlying Postgres remained a normal, well-understood Postgres.
 
@@ -67,7 +67,7 @@ A *shard* is a complete instance of the underlying datastore (a Postgres server,
 
 Two facts to internalise before going further:
 
-1. **Sharding is independent of replication.** A 32-shard cluster can have 0, 1, or N replicas per shard. Each shard handles replication internally; the router is unaware. In Notion's setup, each of the 15 physical Postgres instances is itself a single-leader replica set ([Lesson 11](/cortex/system-design/building-blocks-replication)).
+1. **Sharding is independent of replication.** A 32-shard cluster can have 0, 1, or N replicas per shard. Each shard handles replication internally; the router is unaware. In Notion's setup, each of the 32 physical Postgres instances is itself a single-leader replica set ([Lesson 11](/cortex/system-design/building-blocks-replication)).
 2. **Cross-shard queries are expensive.** A `JOIN` across two tables on different shards is a scatter-gather across the router; ordering and pagination are application-side. Most production sharded systems avoid cross-shard queries by *choosing the partition key to keep related rows on the same shard*.
 
 ### 3.2 Three partitioning strategies
@@ -109,7 +109,7 @@ Then the third trick: **virtual shards**. The "hash + virtual" strategy treats e
 
 Eventually you outgrow the current shard count. With **hash partitioning**, naïvely changing `N` from 8 to 16 reshuffles every key: `hash(k) % 8` is unrelated to `hash(k) % 16`. That's a full data migration. **With consistent hashing**, only roughly `1/N` of keys move when you add a shard — the same property the widget in [Lesson 7](/cortex/system-design/building-blocks-load-balancing) made visceral. Production sharded systems use consistent hashing (or a close cousin like rendezvous hashing) precisely so resharding is cheap.
 
-The Notion migration moved billions of rows across 15 → 32 shards in a single weekend with minimal downtime, because they had pre-built the consistent-hashing scheme. **Plan for resharding before you need it**; retrofitting consistent hashing onto an existing modulo-hashed system is the expensive migration story you don't want to live through.
+The Notion migration moved billions of rows from one monolithic Postgres into 480 logical shards across 32 databases in a single weekend with minimal downtime, because they had pre-designed the logical-shard scheme. **Plan for resharding before you need it**; retrofitting consistent hashing onto an existing modulo-hashed system is the expensive migration story you don't want to live through.
 
 ## 4. Worked example — partition keys for a chat application
 
@@ -168,7 +168,7 @@ If you funnel every query through a single central router, the router itself bec
 
 ### 6.5 Reshuffling under load
 
-You decide to add 4 more shards to your 8-shard cluster, doubling capacity. With plain modulo hashing, every key moves with probability `8/12` — i.e. 67% of all data must move. While the migration is in flight, *every read of a moved key is wrong*. Production migrations using consistent hashing avoid this by moving only ~33% of keys (1/3 of them move from old shards to new ones). The remaining 67% stay put; their reads continue to work uninterrupted.
+You decide to add 4 more shards to your 8-shard cluster (8 → 12, +50% capacity). With plain modulo hashing, every key moves with probability `8/12` — i.e. 67% of all data must move. While the migration is in flight, *every read of a moved key is wrong*. Production migrations using consistent hashing avoid this by moving only ~33% of keys (1/3 of them move from old shards to new ones). The remaining 67% stay put; their reads continue to work uninterrupted.
 
 ### 6.6 Secondary indexes don't shard cleanly
 
@@ -238,7 +238,7 @@ Let me redo: total ring → 32 equal slices after expansion. Old slices: 16, eac
 
 That's the catch — naïve consistent hashing without virtual nodes only beats modulo when you add *one* node at a time (~`1/N` moves). Doubling is the worst case. **The right approach for a doubling event is to plan it as 16 successive +1 expansions, or to use a rendezvous hash with stable identity** — moving only the keys whose preferred node changes.
 
-In practice, Notion's 32-shard layout pre-existed in the application (each row had a `shard_id` from day one) and the migration was about *physical* placement of the 32 logical shards across 15 → N machines, which is much cheaper to reshuffle.
+In practice, Notion chose **480 logical shards** (a number divisible by many factors) precisely so the logical-to-physical mapping can change — re-placing logical shards across 32 → 40 → 48 physical databases — without re-hashing keys. The logical shard count stays fixed; only the physical data placement moves.
 
 The lesson: **the migration's cost depends on the partitioning math AND the migration strategy**. Consistent hashing is necessary but not sufficient; doubling is hard either way; one-shard-at-a-time is the cheap path.
 

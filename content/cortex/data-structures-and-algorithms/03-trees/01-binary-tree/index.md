@@ -2,7 +2,9 @@
 
 Use this page as the chapter map for binary tree. The guides are ordered from fundamentals into common problem-solving patterns and design practice.
 
-## Chapters
+> How to read this chapter: follow **Start Here** top to bottom — that is the teaching path. Drill it in **Practice** once it clicks. Use **Reference** (recall cards, synthesis, design) for review, not first reading.
+
+## Start Here — the learning path
 
 - [Introduction To Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-introduction-to-binary-trees)
 - [Array Implementation Of Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-array-implementation-of-binary-trees)
@@ -11,28 +13,43 @@ Use this page as the chapter map for binary tree. The guides are ordered from fu
 - [Iterative Traversals In Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-iterative-traversals-in-binary-trees)
 - [Constructing A Binary Tree](/cortex/data-structures-and-algorithms/trees-binary-tree-constructing-a-binary-tree)
 - [Insertion In Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-insertion-in-binary-trees)
-- [Memorize: Binary Tree](/cortex/data-structures-and-algorithms/trees-binary-tree-memorize)
 - [Pattern: Preorder Traversal (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-pattern)
+- [Pattern: Preorder Traversal (Stateful)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateful-pattern)
+- [Pattern: Postorder Traversal (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-pattern)
+- [Pattern: Postorder Traversal (Stateful)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateful-pattern)
+- [Pattern: Root-to-Leaf Path (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateless-pattern)
+- [Pattern: Root-to-Leaf Path (Stateful)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateful-pattern)
+- [Pattern: Level-Order Traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-pattern)
+- [Pattern: Level-Order Traversal (Columns)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-columns-pattern)
+- [Pattern: Lowest Common Ancestor](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-lowest-common-ancestor-pattern)
+- [Pattern: Simultaneous Traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-simultaneous-traversal-pattern)
+- [Practice: Mix Traversals](/cortex/data-structures-and-algorithms/trees-binary-tree-practice-mix-traversals)
+
+## Practice
+
+Do these after the matching pattern in Start Here.
+
+### Preorder Traversal (Stateless)
 - [Sum of Path](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-problems-sum-of-path)
 - [Depth Assignment](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-problems-depth-assignment)
 - [Concatenated Path](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-problems-concatenated-path)
 - [Increasing Path](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-problems-increasing-path)
-- [Memorize: Preorder Traversal (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-memorize)
-- [Pattern: Preorder Traversal (Stateful)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateful-pattern)
+
+### Preorder Traversal (Stateful)
 - [Duplicates in Path](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateful-problems-duplicates-in-path)
 - [Second Minimum](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateful-problems-second-minimum)
 - [Left View](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateful-problems-left-view)
 - [Right View](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateful-problems-right-view)
-- [Memorize: Preorder Traversal (Stateful)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateful-memorize)
-- [Pattern: Postorder Traversal (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-pattern)
+
+### Postorder Traversal (Stateless)
 - [Sum of Leaves](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-problems-sum-of-leaves)
 - [Height of a Binary Tree](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-problems-height-of-a-binary-tree)
 - [Maximum Root-to-Leaf Path Sum](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-problems-maximum-root-to-leaf-path-sum)
 - [Is It a Full Binary Tree](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-problems-is-it-a-full-binary-tree)
 - [Is It a Perfect Binary Tree](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-problems-is-it-a-perfect-binary-tree)
 - [Collect Leaves by Height](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-problems-collect-leaves-by-height)
-- [Memorize: Postorder Traversal (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-memorize)
-- [Pattern: Postorder Traversal (Stateful)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateful-pattern)
+
+### Postorder Traversal (Stateful)
 - [Diameter of Tree](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateful-problems-diameter-of-tree)
 - [Descendants Sum Count](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateful-problems-descendants-sum-count)
 - [Distribute Coins](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateful-problems-distribute-coins)
@@ -40,44 +57,58 @@ Use this page as the chapter map for binary tree. The guides are ordered from fu
 - [Longest Monotonic Path](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateful-problems-longest-monotonic-path)
 - [Monotonic Subtree Count](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateful-problems-monotonic-subtree-count)
 - [Path Sum Count](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateful-problems-path-sum-count)
-- [Memorize: Postorder Traversal (Stateful)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateful-memorize)
-- [Pattern: Root-to-Leaf Path (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateless-pattern)
+
+### Root-to-Leaf Path (Stateless)
 - [Root to Leaf Path (Sum Check)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateless-problems-root-to-leaf-path-sum-check)
 - [Binary Summation of Tree](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateless-problems-binary-summation-of-tree)
 - [Even Path](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateless-problems-even-path)
 - [Odd Count](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateless-problems-odd-count)
-- [Memorize: Root-to-Leaf Path (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateless-memorize)
-- [Pattern: Root-to-Leaf Path (Stateful)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateful-pattern)
+
+### Root-to-Leaf Path (Stateful)
 - [Root-to-Leaf Paths Summing to Target](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateful-problems-root-to-leaf-paths-summing-to-target)
 - [Equal Evens-and-Odds Paths](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateful-problems-equal-evens-and-odds-paths)
 - [Duplicate Paths](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateful-problems-duplicate-paths)
 - [Prefix Paths](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateful-problems-prefix-paths)
-- [Memorize: Root-to-Leaf Path (Stateful)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateful-memorize)
-- [Pattern: Level-Order Traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-pattern)
+
+### Level-Order Traversal
 - [Level Sum](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-problems-level-sum)
 - [Deepest Leaves Sum](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-problems-deepest-leaves-sum)
 - [Complete Binary Tree Check](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-problems-complete-binary-tree-check)
 - [Zigzag Traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-problems-zigzag-traversal)
 - [Cousin Check](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-problems-cousin-check)
-- [Memorize: Level-Order Traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-memorize)
-- [Pattern: Level-Order Traversal (Columns)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-columns-pattern)
+
+### Level-Order Traversal (Columns)
 - [Top View](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-columns-problems-top-view)
 - [Bottom View](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-columns-problems-bottom-view)
 - [Vertical Traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-columns-problems-vertical-traversal)
 - [Diagonal Traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-columns-problems-diagonal-traversal)
-- [Memorize: Level-Order Traversal (Columns)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-columns-memorize)
-- [Pattern: Lowest Common Ancestor](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-lowest-common-ancestor-pattern)
+
+### Lowest Common Ancestor
 - [Lowest Common Ancestor](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-lowest-common-ancestor-problems-lowest-common-ancestor)
 - [LCA with Existence Check](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-lowest-common-ancestor-problems-lca-with-existence-check)
 - [LCA of N Random Nodes](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-lowest-common-ancestor-problems-lca-of-n-random-nodes)
 - [LCA of the Deepest Leaves](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-lowest-common-ancestor-problems-lca-of-the-deepest-leaves)
 - [Distance Between Two Nodes](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-lowest-common-ancestor-problems-distance-between-two-nodes)
-- [Memorize: Lowest Common Ancestor](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-lowest-common-ancestor-memorize)
-- [Pattern: Simultaneous Traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-simultaneous-traversal-pattern)
+
+### Simultaneous Traversal
 - [Identical Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-simultaneous-traversal-problems-identical-trees)
 - [Symmetry Detection](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-simultaneous-traversal-problems-symmetry-detection)
 - [Subtree Detection](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-simultaneous-traversal-problems-subtree-detection)
 - [Merge Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-simultaneous-traversal-problems-merge-trees)
+
+## Reference
+
+Quick-recall and design material. Skim, don't study top to bottom.
+
+- [Memorize: Binary Tree](/cortex/data-structures-and-algorithms/trees-binary-tree-memorize)
+- [Memorize: Preorder Traversal (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-memorize)
+- [Memorize: Preorder Traversal (Stateful)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateful-memorize)
+- [Memorize: Postorder Traversal (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-memorize)
+- [Memorize: Postorder Traversal (Stateful)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateful-memorize)
+- [Memorize: Root-to-Leaf Path (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateless-memorize)
+- [Memorize: Root-to-Leaf Path (Stateful)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateful-memorize)
+- [Memorize: Level-Order Traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-memorize)
+- [Memorize: Level-Order Traversal (Columns)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-columns-memorize)
+- [Memorize: Lowest Common Ancestor](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-lowest-common-ancestor-memorize)
 - [Memorize: Simultaneous Traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-simultaneous-traversal-memorize)
-- [Practice: Mix Traversals](/cortex/data-structures-and-algorithms/trees-binary-tree-practice-mix-traversals)
 - [Pattern Synthesis: Binary Tree](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-synthesis)

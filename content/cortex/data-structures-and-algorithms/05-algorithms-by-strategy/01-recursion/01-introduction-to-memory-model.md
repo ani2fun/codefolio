@@ -157,7 +157,7 @@ x = 6
 # garbage collector
 ```
 
-```java run
+```java run viz=array viz-root=arr
 class HeapExample {
     public static void main(String[] args) {
         // Dynamically allocate an array on the heap
@@ -232,7 +232,7 @@ n = 10 ** 100            # Big int — also a heap object
 del arr  # The list is unreachable now and will be collected.
 ```
 
-```java run
+```java run viz=array viz-root=arr
 public class Main {
     public static void main(String[] args) {
         int[] arr = new int[5];               // Heap allocation

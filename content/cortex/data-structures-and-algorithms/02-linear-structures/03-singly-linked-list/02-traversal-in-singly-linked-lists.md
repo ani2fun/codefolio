@@ -82,24 +82,349 @@ idx -> arr.a0: "arr[i] — O(1) direct read" {style.stroke-width: 2; style.bold:
 
 <p align="center"><strong>Array traversal uses an integer index <code>i</code> that increments from <code>0</code> to <code>n-1</code> — direct O(1) access at each step.</strong></p>
 
-```d3 widget=array-traversal
+```d3 widget=array-1d
 {
-  "title": "Array traversal — i increments 0 → n-1, arr[i] is O(1) each step",
-  "items": [5, 7, 3, 10],
   "steps": [
-    { "markers": [{ "name": "i", "index": 0 }], "msg": "i = 0 — enter the loop, condition i < 4 holds" },
-    { "markers": [{ "name": "i", "index": 0 }], "range": { "lo": 0, "hi": 0 }, "msg": "arr[0] = 5 — O(1) direct access via the index" },
-    { "markers": [{ "name": "i", "index": 1 }], "range": { "lo": 1, "hi": 1 }, "msg": "i = 1 → arr[1] = 7" },
-    { "markers": [{ "name": "i", "index": 2 }], "range": { "lo": 2, "hi": 2 }, "msg": "i = 2 → arr[2] = 3" },
-    { "markers": [{ "name": "i", "index": 3 }], "range": { "lo": 3, "hi": 3 }, "msg": "i = 3 → arr[3] = 10" },
-    { "markers": [], "msg": "i = 4 — condition i < 4 fails, loop ends. O(n) total, O(1) per access." }
-  ]
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "10",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "i",
+          "target": "0",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "i = 0 — enter the loop, condition i < 4 holds",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "10",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "i",
+          "target": "0",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [
+        "0"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "arr[0] = 5 — O(1) direct access via the index",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "10",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "i",
+          "target": "1",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [
+        "1"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "i = 1 → arr[1] = 7",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "10",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "i",
+          "target": "2",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [
+        "2"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "i = 2 → arr[2] = 3",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "10",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "i",
+          "target": "3",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [
+        "3"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "i = 3 → arr[3] = 10",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "0",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "10",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "i = 4 — condition i < 4 fails, loop ends. O(n) total, O(1) per access.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    }
+  ],
+  "title": "Array traversal — i increments 0 → n-1, arr[i] is O(1) each step"
 }
 ```
 
 <p align="center"><strong>Step through the array traversal — six frames mirror the source: enter, four O(1) reads, exit. The index <code>i</code> walks the cells; the highlighted band shows what <code>arr[i]</code> resolves to at each step.</strong></p>
 
-```python run
+```python run viz=array viz-root=arr
 arr = [5, 7, 3, 10]
 
 # For loop — index-based traversal
@@ -115,7 +440,7 @@ while i < len(arr):
     i += 1
 ```
 
-```java run
+```java run viz=array viz-root=arr
 public class Main {
     public static void main(String[] args) {
         int[] arr = {5, 7, 3, 10};
@@ -145,44 +470,371 @@ Instead of an integer loop control variable representing an item's index in an a
 
 Since linked lists are dynamic, we don't know their length in advance, and therefore, we have to keep traversing until we reach a node with a **`null`** value stored in its pointer. That is how we know we have reached the end of a linked list.
 
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Linked-list traversal — current hops node-by-node until it reaches null",
-  "direction": "single",
-  "nodes": [
-    {"id": "n1", "value": "5"},
-    {"id": "n2", "value": "7"},
-    {"id": "n3", "value": "3"},
-    {"id": "n4", "value": "10"}
-  ],
-  "head": "n1",
   "steps": [
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "current", "nodeId": "n1"}, {"name": "head", "nodeId": "n1"}],
-      "msg": "current ← head — start at node 5"
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "n1",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "head",
+          "target": "n1",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "current ← head — start at node 5",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "current", "nodeId": "n2"}],
-      "msg": "current = current.next — hop to node 7"
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "n2",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "current = current.next — hop to node 7",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "current", "nodeId": "n3"}],
-      "msg": "current = current.next — hop to node 3"
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "n3",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "current = current.next — hop to node 3",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "current", "nodeId": "n4"}],
-      "msg": "current = current.next — hop to node 10 (the tail)"
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "n4",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "current = current.next — hop to node 10 (the tail)",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "head", "nodeId": "n1"}],
-      "msg": "current.next is null — stop. Traversed all 4 nodes in O(n)."
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n1",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "current.next is null — stop. Traversed all 4 nodes in O(n).",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Linked-list traversal — current hops node-by-node until it reaches null"
 }
 ```
 
@@ -191,7 +843,7 @@ Since linked lists are dynamic, we don't know their length in advance, and there
 Given below is the code implementation of singly linked list traversal.
 
 
-```python run
+```python run viz=linked-list viz-root=head
 class ListNode:
     def __init__(self, val=0, next=None):
         self.val = val; self.next = next
@@ -210,7 +862,7 @@ n1 = ListNode(5,  n2)
 traverse(n1)  # 5 7 3 10
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 public class Main {
     static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
@@ -252,7 +904,7 @@ Given the **head** of a singly linked list, write a function to print a comma (`
 
 
 
-```python run
+```python run viz=linked-list viz-root=head
 from typing import Optional
 
 
@@ -304,7 +956,7 @@ Solution().node_expedition(from_list([1, 1, 1])); print()      # 1, 1, 1
 Solution().node_expedition(from_list([10, 20, 30, 40, 50])); print()  # 10, 20, 30, 40, 50
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 public class Main {
     static class ListNode {
         int val;
@@ -397,7 +1049,7 @@ Given the **head** of a singly linked list and a **data** value, write a functio
 
 
 
-```python run
+```python run viz=linked-list viz-root=head
 from typing import Optional
 
 
@@ -463,7 +1115,7 @@ result = Solution().node_search(from_list([1, 2, 3, 4]), 4)
 print(result.val if result else None)                        # 4 (tail match)
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 public class Main {
     static class ListNode {
         int val;
@@ -570,7 +1222,7 @@ Given the **head** of a singly linked list, write a function that returns the le
 
 
 
-```python run
+```python run viz=linked-list viz-root=head
 from typing import Optional
 
 
@@ -622,7 +1274,7 @@ print(Solution().length_of_the_list(from_list([1, 2])))          # 2
 print(Solution().length_of_the_list(from_list([1, 1, 1, 1, 1]))) # 5
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 public class Main {
     static class ListNode {
         int val;

@@ -19,7 +19,7 @@ This is a hybrid pattern, but it's traditionally taught with the postorder patte
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from collections import defaultdict
 from typing import Optional
 
@@ -123,7 +123,7 @@ print(Solution().path_sum_count(from_level_order([0, 1, -1, None, None, 1, None]
 print(Solution().path_sum_count(from_level_order([1, 1, 1]), 2))                        # 2
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

@@ -67,7 +67,7 @@ Two flavours: a min-heap (smallest `Entry` on top) and a max-heap (largest on to
 ### min-heap
 
 
-```python run
+```python run viz=array viz-root=heap
 import heapq
 
 # Definition of the custom class
@@ -96,7 +96,7 @@ heapq.heappush(max_priority_queue, Entry(1, 2))
 heapq.heappop(max_priority_queue)
 ```
 
-```java run
+```java run viz=array viz-root=heap
 import java.util.*;
 
 // Definition of the custom class

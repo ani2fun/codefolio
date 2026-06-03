@@ -39,7 +39,7 @@ By the time we visit a node, `sum` already contains the total of every strictly 
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional
 
 
@@ -140,7 +140,7 @@ Solution().enriched_sum_tree(t5)
 print(level_order_vals(t5))   # [5, 6, 3]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

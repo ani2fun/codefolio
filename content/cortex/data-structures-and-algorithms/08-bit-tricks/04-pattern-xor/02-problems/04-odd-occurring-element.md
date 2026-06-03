@@ -61,7 +61,7 @@ print(Solution().odd_occurring_element([1, 1, 2, 2, 3]))                        
 print(Solution().odd_occurring_element([0, 0, 0]))                              # 0
 ```
 
-```java run
+```java run viz=array viz-root=arr
 public class Main {
     static class Solution {
         public int oddOccurringElement(int[] arr) {

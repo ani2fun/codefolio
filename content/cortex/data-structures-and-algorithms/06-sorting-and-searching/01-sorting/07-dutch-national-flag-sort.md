@@ -287,7 +287,7 @@ if __name__ == "__main__":
     print(arr)   # [0, 0, 0, 1, 1, 2, 2]
 ```
 
-```java run
+```java run viz=array viz-root=arr
 public class Main {
     static class Solution {
         public void dutchNationalFlagSort(int[] arr) {

@@ -17,7 +17,7 @@ Generalise the algorithm: instead of "is this node `A` or `B`?", check "is this 
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional, List
 
 
@@ -132,7 +132,7 @@ lca6 = Solution().random_lowest_common_ancestor(
 print(lca6.val)   # 1 (root)
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

@@ -197,7 +197,7 @@ if __name__ == "__main__":
     print(f"Tarjan:   {[sorted(s) for s in tarjan(n, adj)]}")
 ```
 
-```java run
+```java run viz=graph viz-root=adj
 import java.util.*;
 
 public class Main {

@@ -65,44 +65,359 @@ Place `left` at index `0` and `right` at index `n − 1`. At each step, the algo
 The naive alternative wastes both time and memory. You could filter the string, lowercase it, then build a reversed copy and compare the two strings character by character — `O(n)` time but also `O(n)` extra space for the filtered and reversed copies. Two pointers do the work in one pass with `O(1)` extra space and gain an early-exit bonus: a mismatch at index `0` stops the algorithm before it touches the rest of the string.
 
 > ▶ Interactive Diagram — Checking "racecar" for palindrome — every mirror pair matches; when pointers meet at the centre, the check passes.
-```d3 widget=array-traversal
+```d3 widget=array-1d
 {
-  "items": ["r", "a", "c", "e", "c", "a", "r"],
-  "title": "Checking \"racecar\" for palindrome",
   "steps": [
     {
-      "keys":    ["r0", "a0", "c0", "e", "c1", "a1", "r1"],
-      "markers": [
-        { "name": "left",  "index": 0, "color": "#3b82f6" },
-        { "name": "right", "index": 6, "color": "#f59e0b" }
+      "nodes": [
+        {
+          "id": "r0",
+          "label": "r",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a0",
+          "label": "a",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c0",
+          "label": "c",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "e",
+          "label": "e",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c1",
+          "label": "c",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a1",
+          "label": "a",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "r1",
+          "label": "r",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "msg": "Initial — compare s[0]='r' with s[6]='r' → match, move both inward."
+      "edges": [],
+      "cursor": [
+        {
+          "name": "left",
+          "target": "r0",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "right",
+          "target": "r1",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Initial — compare s[0]='r' with s[6]='r' → match, move both inward.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "keys":    ["r0", "a0", "c0", "e", "c1", "a1", "r1"],
-      "markers": [
-        { "name": "left",  "index": 1, "color": "#3b82f6" },
-        { "name": "right", "index": 5, "color": "#f59e0b" }
+      "nodes": [
+        {
+          "id": "r0",
+          "label": "r",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a0",
+          "label": "a",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c0",
+          "label": "c",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "e",
+          "label": "e",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c1",
+          "label": "c",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a1",
+          "label": "a",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "r1",
+          "label": "r",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "msg": "Compare s[1]='a' with s[5]='a' → match, move both inward."
+      "edges": [],
+      "cursor": [
+        {
+          "name": "left",
+          "target": "a0",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "right",
+          "target": "a1",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Compare s[1]='a' with s[5]='a' → match, move both inward.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "keys":    ["r0", "a0", "c0", "e", "c1", "a1", "r1"],
-      "markers": [
-        { "name": "left",  "index": 2, "color": "#3b82f6" },
-        { "name": "right", "index": 4, "color": "#f59e0b" }
+      "nodes": [
+        {
+          "id": "r0",
+          "label": "r",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a0",
+          "label": "a",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c0",
+          "label": "c",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "e",
+          "label": "e",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c1",
+          "label": "c",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a1",
+          "label": "a",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "r1",
+          "label": "r",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "msg": "Compare s[2]='c' with s[4]='c' → match, move both inward."
+      "edges": [],
+      "cursor": [
+        {
+          "name": "left",
+          "target": "c0",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "right",
+          "target": "c1",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Compare s[2]='c' with s[4]='c' → match, move both inward.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "keys":    ["r0", "a0", "c0", "e", "c1", "a1", "r1"],
-      "markers": [
-        { "name": "left",  "index": 3, "color": "#3b82f6" },
-        { "name": "right", "index": 3, "color": "#f59e0b" }
+      "nodes": [
+        {
+          "id": "r0",
+          "label": "r",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a0",
+          "label": "a",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c0",
+          "label": "c",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "e",
+          "label": "e",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c1",
+          "label": "c",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a1",
+          "label": "a",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "r1",
+          "label": "r",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "msg": "Pointers meet at index 3 (the middle 'e'). All pairs matched — return True."
+      "edges": [],
+      "cursor": [
+        {
+          "name": "left",
+          "target": "e",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "right",
+          "target": "e",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Pointers meet at index 3 (the middle 'e'). All pairs matched — return True.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Checking \"racecar\" for palindrome"
 }
 ```
 
@@ -181,7 +496,7 @@ This early-exit property makes two-pointer palindrome checking efficient in prac
 
 ### Solution
 
-```python run
+```python run viz=array viz-root=s viz-kind=array-1d
 class Solution:
     def palindrome_checker(self, s: str) -> bool:
         if not s:
@@ -234,7 +549,7 @@ print(Solution().palindrome_checker("A man, a plan, a canal: Panama"))  # True
 print(Solution().palindrome_checker("Was it a car or a cat I saw?"))    # True
 ```
 
-```java run
+```java run viz=array viz-root=s viz-kind=array-1d
 public class Main {
     static class Solution {
         public boolean palindromeChecker(String s) {

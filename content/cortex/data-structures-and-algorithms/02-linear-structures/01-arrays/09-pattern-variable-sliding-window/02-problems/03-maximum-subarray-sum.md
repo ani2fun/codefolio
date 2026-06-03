@@ -146,7 +146,7 @@ print(Solution().max_subarray_sum([0, 0, 0]))                           # 0   â€
 print(Solution().max_subarray_sum([1, 2, 3, 4, 5]))                     # 15  â€” all positive
 ```
 
-```java run
+```java run viz=array viz-root=arr
 public class Main {
     static class Solution {
         public int maxSubarraySum(int[] arr) {

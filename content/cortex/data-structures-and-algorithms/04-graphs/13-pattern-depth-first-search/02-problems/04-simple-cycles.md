@@ -104,7 +104,7 @@ print(Solution().simple_cycles([[1,2],[2,0],[0,1]], 0, 1))             # 1
 print(Solution().simple_cycles([[1,2],[2,0],[0,1]], 0, 0))             # 0 — src==dst, must pass through dst
 ```
 
-```java run
+```java run viz=graph viz-root=graph
 import java.util.*;
 
 public class Main {

@@ -103,7 +103,7 @@ print(Solution().deepest_leaves_sum(from_level_order([1, None, 2, None, None, No
 print(Solution().deepest_leaves_sum(from_level_order([1, 2, 3])))                    # 5 balanced two children
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

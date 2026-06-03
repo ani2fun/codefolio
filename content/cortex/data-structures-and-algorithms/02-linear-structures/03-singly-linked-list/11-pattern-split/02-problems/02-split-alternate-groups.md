@@ -192,7 +192,7 @@ f, s = Solution().split_alternate_groups(from_list([1, 2, 3, 4, 5, 6]), 3)
 print(to_list(f), to_list(s))   # [1, 2, 3] [4, 5, 6]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {

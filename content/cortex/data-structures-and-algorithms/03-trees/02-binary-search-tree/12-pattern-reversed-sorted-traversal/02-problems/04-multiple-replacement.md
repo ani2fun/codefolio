@@ -42,7 +42,7 @@ The "save the original first" detail is the trap that catches careless implement
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional
 
 
@@ -159,7 +159,7 @@ Solution().multiple_replacement(t5)
 print(t5.val, t5.right.val)   # 3 5
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

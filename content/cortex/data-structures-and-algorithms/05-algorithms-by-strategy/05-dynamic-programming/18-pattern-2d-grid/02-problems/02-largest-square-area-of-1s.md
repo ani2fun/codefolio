@@ -131,7 +131,7 @@ print(Solution().largest_square_area([[1, 1], [1, 1]]))                         
 print(Solution().largest_square_area([[1, 0, 1], [0, 1, 0], [1, 0, 1]]))          # 1  — checkerboard
 ```
 
-```java run
+```java run viz=grid viz-root=matrix
 import java.util.*;
 
 public class Main {

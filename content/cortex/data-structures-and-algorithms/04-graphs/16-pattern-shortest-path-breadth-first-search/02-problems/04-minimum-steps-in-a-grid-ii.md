@@ -143,7 +143,7 @@ print(Solution().minimum_steps_in_a_grid_ii([[1,0],[0,1]], 1))                  
 print(Solution().minimum_steps_in_a_grid_ii([[1,0,0],[0,0,0],[0,0,1]], 0))         # -1 — need walls but k=0
 ```
 
-```java run
+```java run viz=grid viz-root=grid
 import java.util.*;
 
 public class Main {

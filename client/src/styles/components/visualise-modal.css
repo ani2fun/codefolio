@@ -27,12 +27,13 @@
         @apply text-[10.5px] uppercase;
         font-family: var(--font-mono, ui-monospace, monospace);
         letter-spacing: 0.16em;
-        color: rgba(239, 232, 216, 0.6);
+        /* Theme-aware (was a hardcoded cream that vanished on the light-mode header). */
+        color: hsl(var(--muted-foreground));
     }
     .viz-modal__title-name {
         @apply italic text-[17px];
         font-family: var(--font-display, "Instrument Serif", Georgia, serif);
-        color: #efe8d8;
+        color: hsl(var(--foreground));
     }
     .viz-modal__button {
         @apply inline-flex items-center gap-1.5 rounded-md p-2 text-xs font-semibold;

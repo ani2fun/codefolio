@@ -131,7 +131,7 @@ state: "Continue exploring; eventual success → 'DDRDRR'" {
 
 ### The Solution
 
-```python run
+```python run viz=grid viz-root=maze1
 from typing import List, Tuple
 
 class Solution:
@@ -247,7 +247,7 @@ maze8 = [[0, 0, 1], [1, 0, 1], [1, 0, 0]]
 print(Solution().rat_in_a_maze(maze8))                # RDRDD (or similar valid path)
 ```
 
-```java run
+```java run viz=grid viz-root=maze1
 public class Main {
     static class Solution {
 

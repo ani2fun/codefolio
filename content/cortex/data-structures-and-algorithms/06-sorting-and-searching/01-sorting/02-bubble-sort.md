@@ -238,7 +238,7 @@ if __name__ == "__main__":
     print(arr)   # [1, 3, 4, 5, 8]
 ```
 
-```java run
+```java run viz=array viz-root=arr
 public class Main {
     static class Solution {
         public void bubbleSort(int[] arr) {
@@ -453,7 +453,7 @@ a8 = [5, 2, 8, 1, 9]
 Solution().bubble_sort(a8); print(a8)              # [1, 2, 5, 8, 9]
 ```
 
-```java run
+```java run viz=array viz-root=arr
 import java.util.Arrays;
 
 public class Main {

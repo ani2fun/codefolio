@@ -340,7 +340,7 @@ print(Solution().peak_resource_requirement([[1, 2, 5], [3, 4, 5]]))             
 print(Solution().peak_resource_requirement([[1, 4, 1], [2, 5, 2], [3, 6, 3]]))   # (3, 4, 6)  — peak at last overlap
 ```
 
-```java run
+```java run viz=array viz-root=jobs
 import java.util.*;
 
 public class Main {

@@ -245,7 +245,7 @@ print(Solution().minimum_meeting_rooms([[1, 3], [3, 5], [5, 7]]))               
 print(Solution().minimum_meeting_rooms([[1, 4], [2, 3], [5, 6]]))                # 2  — partial overlap
 ```
 
-```java run
+```java run viz=array viz-root=meetings
 import java.util.*;
 
 public class Main {

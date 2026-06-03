@@ -88,7 +88,7 @@ Different starting cells should each get a clean view of the board. If we forget
 
 ### The Solution
 
-```python run
+```python run viz=grid viz-root=b1
 from typing import List, Tuple
 
 class Solution:
@@ -214,7 +214,7 @@ b8 = [['C'],['B'],['A']]
 print(Solution().word_quest(b8, "ABC"))               # True
 ```
 
-```java run
+```java run viz=grid viz-root=b1
 public class Main {
     static class Solution {
 

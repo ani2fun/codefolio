@@ -123,7 +123,7 @@ print(Solution().prefix_paths(from_level_order([1, 2, 3])))               # []
 print(Solution().prefix_paths(from_level_order([2, 2, None, None, -2])))  # [] (path 2,-2 sum=0 != prefix sums 2,0... wait prefix sum 0 occurs once at node -2)
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

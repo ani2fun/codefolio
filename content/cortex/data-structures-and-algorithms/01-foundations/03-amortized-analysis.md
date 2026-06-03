@@ -310,7 +310,7 @@ if __name__ == "__main__":
     print(f"Ratio max / avg:  {max_us / avg_us:,.0f}×  — the resizes are slow but rare")
 ```
 
-```java run
+```java run viz=array viz-root=arr
 public class Main {
     static class DynArray {
         int[] buf = new int[1];

@@ -194,7 +194,7 @@ if __name__ == "__main__":
     print(f"final count: {c.value}    (expected {4 * 10000})")
 ```
 
-```java run
+```java run viz=graph viz-root=lock
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.*;
 

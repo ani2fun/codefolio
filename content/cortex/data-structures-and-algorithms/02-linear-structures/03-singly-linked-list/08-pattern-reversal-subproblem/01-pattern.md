@@ -112,41 +112,237 @@ Let's consider an example problem and see how to break it down into smaller subp
 Consider the following example with`k = 3`for a linked list of size 7.
 
 > ▶ Interactive Diagram — Reverse-in-groups-of-K — slice the list into chunks of k, reverse each chunk in place, and leave any trailing (fewer-than-k) nodes untouched. The core reversal loop is invoked once per chunk.
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Reverse in groups of k=3 — each chunk reversed in place; trailing fragment stays put",
-  "direction": "single",
-  "nodes": [
-    {"id": "n1", "value": "1"},
-    {"id": "n2", "value": "2"},
-    {"id": "n3", "value": "3"},
-    {"id": "n4", "value": "4"},
-    {"id": "n5", "value": "5"},
-    {"id": "n6", "value": "6"},
-    {"id": "n7", "value": "7"}
-  ],
-  "head": "n1",
   "steps": [
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"],["n5","n6"],["n6","n7"]],
-      "markers": [{"name": "head", "nodeId": "n1"}],
-      "msg": "Before: 1 → 2 → 3 → 4 → 5 → 6 → 7"
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "1",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "2",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n6",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n7",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n5",
+          "label": "next"
+        },
+        {
+          "from": "n5",
+          "to": "n6",
+          "label": "next"
+        },
+        {
+          "from": "n6",
+          "to": "n7",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n1",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Before: 1 → 2 → 3 → 4 → 5 → 6 → 7",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n3", "value": "3"},
-        {"id": "n2", "value": "2"},
-        {"id": "n1", "value": "1"},
-        {"id": "n6", "value": "6"},
-        {"id": "n5", "value": "5"},
-        {"id": "n4", "value": "4"},
-        {"id": "n7", "value": "7"}
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "2",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n1",
+          "label": "1",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n6",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n7",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n3","n2"],["n2","n1"],["n1","n6"],["n6","n5"],["n5","n4"],["n4","n7"]],
-      "markers": [{"name": "head", "nodeId": "n3"}],
-      "msg": "After: each group of 3 reversed → 3 → 2 → 1 → 6 → 5 → 4 → 7 (trailing single node 7 untouched)"
+      "edges": [
+        {
+          "from": "n3",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n1",
+          "label": "next"
+        },
+        {
+          "from": "n1",
+          "to": "n6",
+          "label": "next"
+        },
+        {
+          "from": "n6",
+          "to": "n5",
+          "label": "next"
+        },
+        {
+          "from": "n5",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n7",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n3",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "After: each group of 3 reversed → 3 → 2 → 1 → 6 → 5 → 4 → 7 (trailing single node 7 untouched)",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Reverse in groups of k=3 — each chunk reversed in place; trailing fragment stays put"
 }
 ```
 
@@ -188,28 +384,148 @@ We use two reference variables `start` and `end` to denote the boundary of a k-g
 We initialize `start` and `end` with the `head` of the list and iterate `k-1` times using `end` to find the end of the first k-group. We initialize `leftBound` with null for the first k-group, as there is no node before the head of the list.
 
 > ▶ Interactive Diagram — Three boundary pointers per group — leftBound (the node before start, needed so we can re-attach the reversed group to the rest of the list), start (first node of the group), and end (last node of the group, reached by advancing start by k−1 hops).
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Boundary pointers — leftBound (before start), start (group head), end (group tail)",
-  "direction": "single",
-  "nodes": [
-    {"id": "lb", "value": "leftBound"},
-    {"id": "n1", "value": "1"},
-    {"id": "n2", "value": "2"},
-    {"id": "n3", "value": "3"},
-    {"id": "n4", "value": "4"},
-    {"id": "n5", "value": "5"},
-    {"id": "n6", "value": "6"},
-    {"id": "n7", "value": "7"}
-  ],
-  "head": "n1",
   "steps": [
     {
-      "links": [["lb","n1"],["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"],["n5","n6"],["n6","n7"]],
-      "markers": [{"name": "previous", "nodeId": "lb"}, {"name": "start", "nodeId": "n1"}, {"name": "end", "nodeId": "n3"}],
-      "msg": "First group: leftBound = null (dummy), start = n1, end = n3 (advanced k−1 = 2 hops)"
+      "nodes": [
+        {
+          "id": "lb",
+          "label": "leftBound",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n1",
+          "label": "1",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "2",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n6",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n7",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "lb",
+          "to": "n1",
+          "label": "next"
+        },
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n5",
+          "label": "next"
+        },
+        {
+          "from": "n5",
+          "to": "n6",
+          "label": "next"
+        },
+        {
+          "from": "n6",
+          "to": "n7",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "previous",
+          "target": "lb",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "start",
+          "target": "n1",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "n3",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "First group: leftBound = null (dummy), start = n1, end = n3 (advanced k−1 = 2 hops)",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Boundary pointers — leftBound (before start), start (group head), end (group tail)"
 }
 ```
 
@@ -218,37 +534,181 @@ We initialize `start` and `end` with the `head` of the list and iterate `k-1` ti
 After reversing the first k-group, we need to update the `head` of the list, as the previous `end` node will be the new head of the list.
 
 > ▶ Interactive Diagram — After the first group is reversed, its head becomes the new head of the entire list. Update head to point at end of the just-reversed group. Subsequent groups don't need this update — their previous group handles the re-attachment.
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "After the first group reversal, head updates to the new first node (the old end)",
-  "direction": "single",
-  "nodes": [
-    {"id": "n1", "value": "1"},
-    {"id": "n2", "value": "2"},
-    {"id": "n3", "value": "3"},
-    {"id": "n4", "value": "4"},
-    {"id": "n5", "value": "·"}
-  ],
-  "head": "n1",
   "steps": [
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
-      "markers": [{"name": "head", "nodeId": "n1"}],
-      "msg": "Before first reversal"
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "1",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "2",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "·",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n5",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n1",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Before first reversal",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n3", "value": "3"},
-        {"id": "n2", "value": "2"},
-        {"id": "n1", "value": "1"},
-        {"id": "n4", "value": "4"},
-        {"id": "n5", "value": "·"}
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "2",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n1",
+          "label": "1",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "·",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n3","n2"],["n2","n1"],["n1","n4"],["n4","n5"]],
-      "markers": [{"name": "head", "nodeId": "n3"}],
-      "msg": "After: head = n3 (the old end of the first group). Subsequent groups don't need to update head."
+      "edges": [
+        {
+          "from": "n3",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n1",
+          "label": "next"
+        },
+        {
+          "from": "n1",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n5",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n3",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "After: head = n3 (the old end of the first group). Subsequent groups don't need to update head.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "After the first group reversal, head updates to the new first node (the old end)"
 }
 ```
 
@@ -257,28 +717,148 @@ After reversing the first k-group, we need to update the `head` of the list, as 
 Similarly, after reversing the first k-group, the previous `start` and the node after it would be the `leftBound` and `start` for the next k-group respectively.
 
 > ▶ Interactive Diagram — After processing one group, slide the boundary forward — the old start becomes the new leftBound, and start advances to the first node of the next group. The segment-reversal loop is now primed to repeat.
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Slide boundary forward — old start becomes new leftBound; start advances to next group head",
-  "direction": "single",
-  "nodes": [
-    {"id": "g1a", "value": "3"},
-    {"id": "g1b", "value": "2"},
-    {"id": "g1c", "value": "1"},
-    {"id": "lb2", "value": "leftBound"},
-    {"id": "s2", "value": "4"},
-    {"id": "m", "value": "5"},
-    {"id": "e2", "value": "6"},
-    {"id": "r", "value": "7"}
-  ],
-  "head": "g1a",
   "steps": [
     {
-      "links": [["g1a","g1b"],["g1b","g1c"],["g1c","lb2"],["lb2","s2"],["s2","m"],["m","e2"],["e2","r"]],
-      "markers": [{"name": "previous", "nodeId": "lb2"}, {"name": "start", "nodeId": "s2"}, {"name": "end", "nodeId": "e2"}],
-      "msg": "Second group: leftBound = old start (1's position), start = n4, end = n6 (n4 advanced k−1 = 2 hops)"
+      "nodes": [
+        {
+          "id": "g1a",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "g1b",
+          "label": "2",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "g1c",
+          "label": "1",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "lb2",
+          "label": "leftBound",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s2",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "e2",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "r",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "g1a",
+          "to": "g1b",
+          "label": "next"
+        },
+        {
+          "from": "g1b",
+          "to": "g1c",
+          "label": "next"
+        },
+        {
+          "from": "g1c",
+          "to": "lb2",
+          "label": "next"
+        },
+        {
+          "from": "lb2",
+          "to": "s2",
+          "label": "next"
+        },
+        {
+          "from": "s2",
+          "to": "m",
+          "label": "next"
+        },
+        {
+          "from": "m",
+          "to": "e2",
+          "label": "next"
+        },
+        {
+          "from": "e2",
+          "to": "r",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "previous",
+          "target": "lb2",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "start",
+          "target": "s2",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "e2",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Second group: leftBound = old start (1's position), start = n4, end = n6 (n4 advanced k−1 = 2 hops)",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Slide boundary forward — old start becomes new leftBound; start advances to next group head"
 }
 ```
 
@@ -300,7 +880,7 @@ flowchart TB
 The implementation of the reversal algorithm solution is given below, where we create a reverse function to reverse segments between `start` and `end`.  We also create helper functions to find the length of the list  two helper functions to find the length of a linked list and reverse the list between `start` and `end` to keep the implementation simple and modular.
 
 
-```python run
+```python run viz=linked-list viz-root=head
 """
 Definition for singly-linked list.
 class ListNode:
@@ -393,7 +973,7 @@ class Solution:
         return head
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 /**
  * Definition for singly-linked list.
  * class ListNode {

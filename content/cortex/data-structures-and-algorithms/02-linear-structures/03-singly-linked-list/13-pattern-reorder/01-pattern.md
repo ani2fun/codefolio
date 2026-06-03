@@ -73,8 +73,7 @@ The algorithm given below summarizes the reorder technique for **two** lists. It
 Given below is the generic code implementation to split a list in **two** using the function `f1` and then merging them using the function `f2`.
 
 
-```python run
-
+```python run viz=linked-list viz-root=head
 """
 Definition for singly-linked list.
 class ListNode:
@@ -150,7 +149,7 @@ def reorder_nodes(head: ListNode) -> ListNode:
     return new_head
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 
 /**
  * Definition for singly-linked list.
@@ -285,39 +284,209 @@ Let's consider the following problem as an example to better understand how to i
 > **Problem statement:** Given a singly linked list, reorder its nodes so all nodes at even indices come after the nodes at odd indices. The indices start with 1.
 
 > ▶ Interactive Diagram — Odd-even reorder — example target shape. All nodes at odd indices ([1], [3], [5]) come before all nodes at even indices ([0], [2], [4]). A clean split-then-concatenate case.
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Odd-even index reorder — odd-indexed nodes first, then even-indexed",
-  "direction": "single",
-  "nodes": [
-    {"id": "n0", "value": "1"},
-    {"id": "n1", "value": "2"},
-    {"id": "n2", "value": "3"},
-    {"id": "n3", "value": "4"},
-    {"id": "n4", "value": "5"},
-    {"id": "n5", "value": "6"}
-  ],
-  "head": "n0",
   "steps": [
     {
-      "links": [["n0","n1"],["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
-      "markers": [{"name": "head", "nodeId": "n0"}],
-      "msg": "Before: indices 0..5 with values 1..6"
+      "nodes": [
+        {
+          "id": "n0",
+          "label": "1",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n1",
+          "label": "2",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n0",
+          "to": "n1",
+          "label": "next"
+        },
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n5",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n0",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Before: indices 0..5 with values 1..6",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n1", "value": "2"},
-        {"id": "n3", "value": "4"},
-        {"id": "n5", "value": "6"},
-        {"id": "n0", "value": "1"},
-        {"id": "n2", "value": "3"},
-        {"id": "n4", "value": "5"}
+        {
+          "id": "n1",
+          "label": "2",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n0",
+          "label": "1",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n1","n3"],["n3","n5"],["n5","n0"],["n0","n2"],["n2","n4"]],
-      "markers": [{"name": "head", "nodeId": "n1"}],
-      "msg": "After: odd-indexed (2, 4, 6) first, then even-indexed (1, 3, 5)"
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n5",
+          "label": "next"
+        },
+        {
+          "from": "n5",
+          "to": "n0",
+          "label": "next"
+        },
+        {
+          "from": "n0",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n1",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "After: odd-indexed (2, 4, 6) first, then even-indexed (1, 3, 5)",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Odd-even index reorder — odd-indexed nodes first, then even-indexed"
 }
 ```
 
@@ -366,7 +535,7 @@ flowchart LR
 The implementation of the split list solution is given as follows.
 
 
-```python run
+```python run viz=linked-list viz-root=head
 """
 Definition for singly-linked list.
 class ListNode:
@@ -466,7 +635,7 @@ class Solution:
         return self.merge_odd_and_even_lists(odd_head, even_head)
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 /**

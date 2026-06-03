@@ -35,7 +35,7 @@ This is the multi-tree generalisation of "two sum on BST". Run the **forward ite
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional, List
 
 class TreeNode:
@@ -169,7 +169,7 @@ rD = from_level_order([2, 1, 4, None, None, 3, 8])
 print(Solution().bst_pair_sum(rC, rD, 2))     # False — min possible is 1+1=2? wait: 1+1=2 True
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

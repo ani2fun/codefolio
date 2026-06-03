@@ -232,7 +232,7 @@ if __name__ == "__main__":
     print(sol.optimal_game_strategy([8, 5]))            # 8
 ```
 
-```java run
+```java run viz=grid viz-root=dp
 public class Main {
     static class Solution {
         public int optimalGameStrategy(int[] coins) {

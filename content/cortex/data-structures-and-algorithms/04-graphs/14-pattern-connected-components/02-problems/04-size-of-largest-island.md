@@ -142,7 +142,7 @@ print(Solution().size_of_largest_island([[1,0,1],[0,0,0],[1,0,1]]))             
 print(Solution().size_of_largest_island([[0,0],[0,0]]))                               # 0
 ```
 
-```java run
+```java run viz=grid viz-root=grid
 import java.util.*;
 
 public class Main {

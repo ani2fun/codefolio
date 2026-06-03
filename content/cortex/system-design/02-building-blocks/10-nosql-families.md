@@ -10,7 +10,7 @@ summary: KV, document, wide-column, graph — four very different data models wi
 
 ## 1. Motivation
 
-In **July 2017**, Discord published [*How Discord Stores Billions of Messages*](https://discord.com/blog/how-discord-stores-billions-of-messages). At the time, Discord stored over 100 billion messages — and the engineering decision they walked through was not "do we use NoSQL". It was: *given that we already know our access pattern is "fetch the most recent N messages for a channel, paginated backwards", what data model serves that query at our scale?*
+In **2017**, Discord published [*How Discord Stores Billions of Messages*](https://discord.com/blog/how-discord-stores-billions-of-messages). At the time, Discord stored **billions** of messages — and the engineering decision they walked through was not "do we use NoSQL". It was: *given that we already know our access pattern is "fetch the most recent N messages for a channel, paginated backwards", what data model serves that query at our scale?*
 
 The answer was Cassandra. Specifically, a table partitioned by `((channel_id, bucket), message_id)` — where `bucket` is a time slice of about 10 days. That choice of primary key was the entire system design. It put all messages for a given channel-and-time-slice on the same physical node (cheap to read together), broke up huge channels across many partitions (no hot partitions), and made pagination naturally efficient (the leftmost columns in Cassandra are the partition key; the right columns are the clustering key, which gives ordered access).
 
@@ -72,7 +72,7 @@ The "rapid schema iteration" point is the most common pitch — and the most com
 
 **Shape:** keyed by `(partition_key, clustering_key) → row of sparse columns`. The partition key determines which node holds the data; the clustering key orders rows within a partition. Each row can have any subset of columns.
 
-**Examples:** **Cassandra** (the canonical; Facebook 2008 paper), **ScyllaDB** (C++ rewrite of Cassandra; same data model, much faster), **HBase** (Hadoop-era; Google Bigtable-shaped), **DynamoDB** (the wide-column flavour, distinct from its KV mode).
+**Examples:** **Cassandra** (the canonical; from Facebook, 2009 paper), **ScyllaDB** (C++ rewrite of Cassandra; same data model, much faster), **HBase** (Hadoop-era; Google Bigtable-shaped), **DynamoDB** (the wide-column flavour, distinct from its KV mode).
 
 **Scaling shape:** consistent hashing on the partition key. Adding a node moves a slice of partitions. The clustering key within a partition is stored sorted, so "give me messages 1000–2000 in channel 42" is one disk seek + one sequential scan.
 

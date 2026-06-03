@@ -342,7 +342,7 @@ print(Solution().depth_first_traversal_on_a_grid([[1, 1]]))            # [(0, 0)
 print(Solution().depth_first_traversal_on_a_grid([[0, 0], [0, 0]]))   # []
 ```
 
-```java run
+```java run viz=grid viz-root=grid
 import java.util.*;
 
 public class Main {
@@ -664,7 +664,7 @@ print(Solution().breadth_first_traversal_on_a_grid([[1, 1]]))          # [(0, 0)
 print(Solution().breadth_first_traversal_on_a_grid([[0, 0], [0, 0]])) # []
 ```
 
-```java run
+```java run viz=grid viz-root=grid
 import java.util.*;
 
 public class Main {

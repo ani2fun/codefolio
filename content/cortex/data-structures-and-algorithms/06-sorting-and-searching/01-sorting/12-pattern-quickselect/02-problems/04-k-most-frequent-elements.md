@@ -40,7 +40,7 @@ Two phases:
 
 This is quickselect on a *derived* array: the elements being partitioned are the unique values, but the score driving every comparison is `frequency[value]`. The partition's `>` comparison (more frequent goes left) means the recursion converges on the k highest-frequency values rather than the k smallest.
 
-```python run
+```python run viz=array viz-root=unique
 import random
 from typing import List, Dict
 
@@ -144,7 +144,7 @@ print(sorted(Solution().k_most_frequent_elements([1, 2, 3], 3)))            # [1
 print(sorted(Solution().k_most_frequent_elements([5, 5, 3, 3, 1], 2)))     # [3, 5]
 ```
 
-```java run
+```java run viz=array viz-root=unique
 import java.util.*;
 
 public class Main {

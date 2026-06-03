@@ -122,7 +122,7 @@ print(Solution().cousin_check(from_level_order([1, 2, 3, 4, 5, 6, 7]), 4, 7))   
 print(Solution().cousin_check(from_level_order([1, 2, 3, 4, None, None, 7]), 2, 3))       # False (different depths)
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

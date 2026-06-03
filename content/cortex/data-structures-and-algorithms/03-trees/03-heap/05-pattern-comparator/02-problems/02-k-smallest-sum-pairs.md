@@ -66,7 +66,7 @@ The comparator is "compare by sum, ascending". The pair record carries `(sum, i,
 
 
 
-```python run
+```python run viz=array viz-root=heap
 from typing import List, Tuple
 import heapq
 
@@ -148,7 +148,7 @@ print(Solution().k_smallest_sum_pairs([1, 2], [3, 4], 4))             # all 4 pa
 print(Solution().k_smallest_sum_pairs([1, 7, 11], [2, 4, 6], 1))     # [[1,2]] — k=1
 ```
 
-```java run
+```java run viz=array viz-root=heap
 import java.util.*;
 
 public class Main {

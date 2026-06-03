@@ -10,22 +10,87 @@ difficulty: easy
 
 ## Problem Statement
 
-Same as above but **strictly smaller**. Maintain an *increasing* monotonic stack; resolve when current value is *smaller* than the stack's top.
+Given two arrays `arr1` and `arr2` (where `arr2` is a subset of `arr1` and all elements are unique), return for each value in `arr2` its **succeeding inferior element** in `arr1` — the first strictly-smaller element to its right. Return `-1` if none. This is the *next-smaller* mirror: maintain an *increasing* monotonic stack and resolve when the current value is smaller than the stack's top.
 
 ### Example 1
-> -   **Input:** `arr1 = [3, 5, 1, 6, 8, 2]`, `arr2 = [3, 1, 8, 2]`
-> -   **Output:** `[1, -1, 2, -1]`
+> -   **Input:** `arr1 = [3, 5, 1, 6, 8, 9]`, `arr2 = [3, 1, 8, 9]`
+> -   **Output:** `[1, -1, -1, -1]`
 
 ### Example 2
 > -   **Input:** `arr1 = [5, 9, 7, 8, 1]`, `arr2 = [5, 9, 7]`
 > -   **Output:** `[1, 7, 1]`
+
+<!-- VERIFY: the Sweep-2 problem statement listed Example 1 as arr1=[3,5,1,6,8,2], arr2=[3,1,8,2] → [1,-1,2,-1]; the frozen Solution code's first example is arr1=[3,5,1,6,8,9], arr2=[3,1,8,9] → [1,-1,-1,-1] (verified by execution). Example 1 was realigned to the frozen code so the statement, Examples, and Dry Run agree with the runnable block. -->
+
+<details>
+<summary><strong>Examples</strong></summary>
+
+**Example 1**
+```
+Input:  arr1 = [3, 5, 1, 6, 8, 9], arr2 = [3, 1, 8, 9]
+Output: [1, -1, -1, -1]
+Explanation: 3 sees 1 as its first smaller successor → 1. 1 has nothing smaller after it → -1.
+8 is followed only by 9 → -1. 9 ends the array → -1.
+```
+
+**Example 2**
+```
+Input:  arr1 = [5, 9, 7, 8, 1], arr2 = [5, 9, 7]
+Output: [1, 7, 1]
+Explanation: 5 finds 1 as its nearest smaller successor → 1. 9 sees 7 next → 7.
+7 finds 1 further along → 1.
+```
+
+**Example 3**
+```
+Input:  arr1 = [4, 3, 2, 1], arr2 = [4, 2]
+Output: [3, 1]
+Explanation: 4 sees 3 next → 3. 2 sees 1 next → 1. Each value's successor is its right neighbour.
+```
+
+**Example 4**
+```
+Input:  arr1 = [1, 2, 3, 4], arr2 = [4, 1]
+Output: [-1, -1]
+Explanation: The array is strictly increasing, so nothing has a smaller value to its right.
+```
+
+</details>
+
+## Intuition
+
+The structural property that makes this a **monotonic-stack** problem is the *next-smaller* query — each value in `arr1` wants the nearest strictly-smaller value to its right. That "nearest qualifying successor" shape is the exact signal the next-closest pattern fires on; only the comparison flips from greater to smaller.
+
+The stack holds the indices of values still *waiting* for a smaller successor, in strictly increasing order of value — bottom smallest, top largest. When a new value arrives, every stacked value that exceeds it has just found its next-smaller, so each is resolved and popped. The new value is then pushed to wait for its own successor.
+
+The naive approach re-scans for every query and breaks the time budget. For each value in `arr2` it walks `arr1` rightward until a smaller value appears — `O(N × M)` time, quadratic when `arr2` is as long as `arr1`. The stack pass computes every next-smaller in `arr1` once, so each query becomes an `O(1)` index-map lookup.
+
+## Applying the Diagnostic Questions
+
+| Check | Answer for Succeeding Inferior Element |
+|---|---|
+| **Q1.** Does each position need an answer drawn from elements *after* it? | **Yes** — the next-smaller of each `arr1` index ranges only over later indices. |
+| **Q2.** Is the answer the *closest* such element, not all of them? | **Yes** — the single nearest strictly-smaller successor per index. |
+| **Q3.** Is the comparison monotone — strictly greater or smaller? | **Yes** — a strict smaller-than test drives every resolve-and-pop (increasing stack). |
+| **Q4.** Is the per-element work `O(1)` amortised? | **Yes** — each index is pushed once, popped at most once; the index-map read is `O(1)`. |
+
+## Approach in Words
+
+Identical to the superior version with one flip: the stack is increasing, and a value resolves when the current value is *smaller* than the stack top. The scan still runs `arr1` in reverse.
+
+1. **Allocate the result holders.** Create `nextSmaller` over `arr1`, filled with `-1`, an empty `stack`, and an empty `value → index` map.
+2. **Walk `arr1` right to left.** For each value `num` at index `i`, pop while the stack is non-empty and its top `≥ num`.
+3. **Record the survivor.** If the stack is non-empty, set `nextSmaller[i]` to the top — the nearest strictly-smaller successor.
+4. **Push and index.** Push `num` onto the stack, then store `map[num] = i` for the lookup pass.
+5. **Answer the queries.** For each value in `arr2`, look up its index in the map and append `nextSmaller[index]` to the result, using `-1` when the value is absent.
+6. **Return the result.** It holds one next-smaller answer per query, in `arr2` order.
 
 <details>
 <summary><h2>Solution</h2></summary>
 
 
 
-```python run
+```python run viz=array viz-root=stack viz-kind=stack
 from typing import List
 
 class Solution:
@@ -86,7 +151,7 @@ print(Solution().succeeding_inferior_element([4, 3, 2, 1], [4, 2]))             
 print(Solution().succeeding_inferior_element([1, 2, 3, 4], [4, 1]))              # [-1, -1]
 ```
 
-```java run
+```java run viz=array viz-root=stack viz-kind=stack
 import java.util.*;
 
 public class Main {
@@ -159,35 +224,46 @@ public class Main {
 
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+## Dry Run
 
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
+Walk Example 1 — `arr1 = [3, 5, 1, 6, 8, 9]`, `arr2 = [3, 1, 8, 9]`. Scan `arr1` in reverse with a strictly increasing stack; pop while the top `≥ num`:
 
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
+```
+i=5  num=9   pop none            stack empty → nse[5] = -1   push 9   stack=[9]
+i=4  num=8   pop 9 (9≥8)         stack empty → nse[4] = -1   push 8   stack=[8]
+i=3  num=6   pop 8 (8≥6)         stack empty → nse[3] = -1   push 6   stack=[6]
+i=2  num=1   pop 6 (6≥1)         stack empty → nse[2] = -1   push 1   stack=[1]
+i=1  num=5   pop none (1<5)      top=1       → nse[1] = 1    push 5   stack=[1,5]
+i=0  num=3   pop 5 (5≥3)         top=1       → nse[0] = 1    push 3   stack=[1,3]
 
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
+nextSmaller = [1, 1, -1, -1, -1, -1]
+index_map   = {9:5, 8:4, 6:3, 1:2, 5:1, 3:0}
 
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
+queries: 3→idx0→1 | 1→idx2→-1 | 8→idx4→-1 | 9→idx5→-1
+result = [1, -1, -1, -1]
+```
 
-<!-- TODO: Solution — missing, needs to be written -->
-<!--       Guidance: Python block then Java block -->
+The result `[1, -1, -1, -1]` matches the expected output.
 
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
+## Complexity Analysis
 
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table: time / space / why -->
+| Measure | Value | Why |
+|---|---|---|
+| Time  | **O(N + M)** | One amortised `O(N)` stack pass over `arr1` plus `O(M)` lookups for `arr2`. |
+| Space | **O(N)** | `nextSmaller` array, the index map, and the stack each hold up to `N` entries. |
 
-<!-- TODO: Edge Cases — missing, needs to be written -->
-<!--       Guidance: table, min 5 rows -->
+The stack pass is `O(N)` amortised: each value is pushed once and popped at most once across the whole walk, capping stack operations at `2N`.
 
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->
+## Edge Cases
+
+| Case | Example | Expected | Reasoning |
+|---|---|---|---|
+| Single element | `arr1 = [1]`, `arr2 = [1]` | `[-1]` | No successor exists for the only value. |
+| Two ascending | `arr1 = [1, 2]`, `arr2 = [1, 2]` | `[-1, -1]` | Nothing smaller follows either value. |
+| Two descending | `arr1 = [2, 1]`, `arr2 = [2, 1]` | `[1, -1]` | `2` sees `1`; `1` ends the array. |
+| Sorted descending | `arr1 = [4, 3, 2, 1]`, `arr2 = [4, 2]` | `[3, 1]` | Each value's next-smaller is its immediate right neighbour. |
+| Sorted ascending | `arr1 = [1, 2, 3, 4]`, `arr2 = [4, 1]` | `[-1, -1]` | A strictly increasing array has no smaller successor anywhere. |
+
+## Key Takeaway
+
+What is new here versus the superior problem is a single flip: an *increasing* stack popped on `≥`, surfacing the nearest strictly-*smaller* successor instead of the greater one. The reverse scan, the index-map lookup, and the `O(N + M)` time / `O(N)` space bounds are otherwise identical.

@@ -135,7 +135,7 @@ if __name__ == "__main__":
     print(f"'pineapplepenapple' breakable: {word_break('pineapplepenapple', dictionary2)}")  # True
 ```
 
-```java run
+```java run viz=array viz-root=root
 import java.util.*;
 
 public class Main {

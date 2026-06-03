@@ -181,7 +181,7 @@ if __name__ == "__main__":
     assert tot_k == tot_p, "MST total weight should match"
 ```
 
-```java run
+```java run viz=graph viz-root=adj
 import java.util.*;
 
 public class Main {

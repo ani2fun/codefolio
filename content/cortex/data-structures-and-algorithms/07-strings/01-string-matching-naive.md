@@ -48,7 +48,7 @@ if __name__ == "__main__":
     print(f"adversarial matches: {naive_match(T, P)}")
 ```
 
-```java run
+```java run viz=array viz-root=matches
 import java.util.*;
 
 public class Main {

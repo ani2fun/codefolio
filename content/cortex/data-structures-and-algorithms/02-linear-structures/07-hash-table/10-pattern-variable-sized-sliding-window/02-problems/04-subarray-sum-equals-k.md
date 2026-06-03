@@ -22,6 +22,40 @@ Given an integer array `arr` and target `k`, return the maximum length of a suba
 > -   **Input:** `arr = [2, 3, 1, 2, 4, 3], k = 100` → **Output:** `0`
 
 <details>
+<summary><strong>Examples</strong></summary>
+
+**Example 1**
+```
+Input:  arr = [4, 4, 2, 6, 4], k = 10
+Output: 3
+Explanation: [4, 4, 2] (indices 0..2) sums to 10 → length 3. No longer subarray
+sums to exactly 10.
+```
+
+**Example 2**
+```
+Input:  arr = [2, 2, 1, 2, 4, 3], k = 7
+Output: 4
+Explanation: [2, 2, 1, 2] (indices 0..3) sums to 7 → length 4, the longest such run.
+```
+
+**Example 3**
+```
+Input:  arr = [2, 3, 1, 2, 4, 3], k = 100
+Output: 0
+Explanation: no subarray reaches a sum of 100, so the answer is 0.
+```
+
+**Example 4**
+```
+Input:  arr = [1, -1, 1], k = 1
+Output: 3
+Explanation: the whole array sums to 1 → length 3. The negative element is why a
+plain window fails and prefix sums are needed.
+```
+
+</details>
+<details>
 <summary><h2>Approach</h2></summary>
 
 
@@ -179,35 +213,68 @@ public class Main {
 
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+## Intuition
 
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
+This problem *looks* like a variable-sized sliding window — a longest contiguous subarray with a sum condition — but it hides a trap. The window trick relies on a **monotonic** rule: extending must move the sum one way, contracting the other. When `arr` can contain negative numbers, that guarantee dies. Extending the window might *decrease* the sum, and contracting from the left might *increase* it, so when the sum overshoots `k` there is no safe direction to shrink. The plain window cannot decide whether to expand or contract.
 
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
+The escape hatch is **prefix sums plus a hash map**. Let `P[i]` be the sum of `arr[0..i]`. A subarray `arr[j+1..i]` sums to `k` exactly when `P[i] − P[j] = k`, which rearranges to `P[j] = P[i] − k`. So as you sweep `i` forward, keep a map from each prefix sum to the *earliest* index where it occurred. At each `i`, look up `P[i] − k`: if it exists at some earlier index `j`, then `arr[j+1..i]` is a valid subarray of length `i − j`. Storing only the earliest index for each prefix sum maximises that length.
 
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
+This is technically a hash-table technique, not a sliding window — the original course groups it here as a bridge to the next lesson. The takeaway is diagnostic: when a "subarray sum" problem allows negatives or asks for an *exact* sum, reach for prefix sums, not a window. The full treatment is the prefix-sum pattern, one lesson away.
 
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
+## Applying the Diagnostic Questions
 
-<!-- TODO: Solution — missing, needs to be written -->
-<!--       Guidance: Python block then Java block -->
+| Check | Answer for Subarray Sum Equals K |
+|---|---|
+| **Q1.** Is the answer the longest/shortest/count of a contiguous subsequence? | **Yes** — the longest contiguous subarray summing to exactly `k`. |
+| **Q2.** Can a hash map summarise the window for an `O(1)` rule check? | **Partly** — a prefix-sum-to-index map answers the rule in `O(1)`, but it indexes *prefixes*, not the live window's contents. |
+| **Q3.** Can you add `arr[end]` and remove `arr[start]` in `O(1)`? | **No** — with negatives there is no safe way to decide *which* end to shrink, so contraction is undefined. |
+| **Q4.** Is the rule monotonic as the window grows? | **No** — a negative element lets extending lower the sum and contracting raise it. This is the disqualifier; use prefix sums instead. |
 
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
+## Approach
 
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table: time / space / why -->
+1. Initialise `sum = 0`, `maxLen = 0`, and an empty map `sum_index_map` from prefix sum to earliest index.
+2. Advance `end` across the array, adding `arr[end]` to the running prefix sum `sum`.
+3. If `sum == k`, the whole prefix `arr[0..end]` works — set `maxLen = end + 1`.
+4. Look up `sum − k` in the map. If present at index `j`, the subarray `arr[j+1..end]` sums to `k` — update `maxLen = max(maxLen, end − j)`.
+5. If `sum` is not already a key, store `sum_index_map[sum] = end`. Recording only the *first* occurrence keeps the matched subarray as long as possible.
+6. After the loop, return `maxLen`.
 
-<!-- TODO: Edge Cases — missing, needs to be written -->
-<!--       Guidance: table, min 5 rows -->
+## Dry Run
 
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->
+Walk Example 1: `arr = [4, 4, 2, 6, 4]`, `k = 10`, expected output `3`. `sum` is the running prefix sum; the map stores each prefix sum's earliest index:
+
+```
+end=0  arr=4   sum=4    ==10? no   sum−k=−6 in map? no   store {4:0}
+end=1  arr=4   sum=8    ==10? no   sum−k=−2 in map? no   store {4:0, 8:1}
+end=2  arr=2   sum=10   ==10? yes → maxLen=end+1=3       sum−k=0 in map? no   store {…, 10:2}
+end=3  arr=6   sum=16   ==10? no   sum−k=6 in map? no    store {…, 16:3}
+end=4  arr=4   sum=20   ==10? no   sum−k=10 in map? yes (index 2)
+                                    → maxLen=max(3, 4−2)=max(3, 2)=3
+                                    store {…, 20:4}
+
+return maxLen = 3
+```
+
+The result `3` matches the expected output — `[4, 4, 2]` (indices `0..2`) sums to `10`.
+
+## Complexity Analysis
+
+| | Cost | Why |
+|---|---|---|
+| **Time** | **O(N)** | One pass over the array; each step does a constant number of `O(1)` hash-map reads and one write. |
+| **Space** | **O(N)** | The map can hold one entry per distinct prefix sum — up to `N` entries when every prefix sum is unique. |
+
+## Edge Cases
+
+| Input | Output | Why |
+|---|---|---|
+| `arr = [], k = 0` | `0` | Empty array — the loop never runs. |
+| `arr = [1], k = 1` | `1` | The single-element prefix equals `k` → length `1`. |
+| `arr = [1, 2, 3], k = 6` | `3` | The whole array sums to `6` — the `sum == k` branch fires at the last index. |
+| `arr = [1, -1, 1], k = 1` | `3` | Negatives present — prefix sums recover the full-array match a window would miss. |
+| `arr = [2, 3, 1, 2, 4, 3], k = 100` | `0` | No subarray reaches the target; `maxLen` stays `0`. |
+| `arr = [1, 2, 3], k = 0` | `0` | All-positive with target `0` — no non-empty subarray sums to `0`. |
+
+## Key Takeaway
+
+When a "subarray sum" rule is non-monotonic — negatives present, or an *exact* target — the sliding window fails because there is no safe direction to contract. Prefix sums plus a hash map of earliest indices restore an `O(N)` single pass.

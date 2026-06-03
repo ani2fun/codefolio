@@ -17,7 +17,7 @@ Same shape as diameter, with one twist: the height contribution from a child onl
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional
 
 
@@ -104,7 +104,7 @@ print(Solution().longest_monotonic_path(from_level_order([1, 1, 1, 1, 1, 1, 1]))
 print(Solution().longest_monotonic_path(from_level_order([1, 2, 3])))                      # 0 (no matches)
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

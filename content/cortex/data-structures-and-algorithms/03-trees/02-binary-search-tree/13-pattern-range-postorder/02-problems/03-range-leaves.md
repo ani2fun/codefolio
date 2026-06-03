@@ -36,7 +36,7 @@ Same skeleton as range summation, but instead of returning the sum of in-range d
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional
 
 
@@ -154,7 +154,7 @@ Solution().range_leaves(t4, 7, 10)
 print(level_order_vals(t4))   # [4, 2, 5, 1, 3, 6]  (unchanged)
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

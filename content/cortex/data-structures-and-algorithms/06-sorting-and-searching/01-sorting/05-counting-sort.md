@@ -404,7 +404,7 @@ if __name__ == "__main__":
     print(Solution().counting_sort([2, 5, 3, 0, 2, 3, 0, 3], 5))   # [0, 0, 2, 2, 3, 3, 3, 5]
 ```
 
-```java run
+```java run viz=array viz-root=arr
 public class Main {
     static class Solution {
         public int[] countingSort(int[] arr, int k) {

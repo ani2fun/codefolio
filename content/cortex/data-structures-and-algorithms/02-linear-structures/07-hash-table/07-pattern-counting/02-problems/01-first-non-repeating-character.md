@@ -28,6 +28,66 @@ Given a string `s`, find and return the index of the first non-repeating charact
 > -   **Explanation:** No character appears exactly once.
 
 <details>
+<summary><strong>Examples</strong></summary>
+
+**Example 1**
+```
+Input:  s = "codeintuition"
+Output: 0
+Explanation: 'c' appears once and is the earliest such character → index 0.
+```
+
+**Example 2**
+```
+Input:  s = "aaabcd"
+Output: 3
+Explanation: 'a' repeats, so the first three indices are skipped. 'b' at index 3
+appears once → return 3.
+```
+
+**Example 3**
+```
+Input:  s = "aaabbccdd"
+Output: -1
+Explanation: every character appears exactly twice, so no index has count 1.
+```
+
+**Example 4**
+```
+Input:  s = "abcabc"
+Output: -1
+Explanation: each of a, b, c appears twice → no non-repeating character.
+```
+
+</details>
+
+## Intuition
+
+The structural property that makes this a **counting** problem is the word *non-repeating* — the answer depends only on how often each character appears, never on order or position. "Appears exactly once" is a pure frequency test, the exact signal the counting pattern fires on.
+
+The frequency map is the right structure because it records every character's count in one place. Build it in a single pass, and "is this character unique?" becomes a constant-time read of `frequency[ch]`. A second walk over the string returns the first index whose character maps to `1`. Walking left to right guarantees that index is the *earliest* one.
+
+The naive approach breaks the time budget. For each character it re-scans the whole string to check for a repeat, costing `O(N²)` time for `O(1)` space. That re-derives the same per-character count `N` times over. Counting computes every count once in `O(N)`, so each uniqueness check drops to an `O(1)` lookup.
+
+## Applying the Diagnostic Questions
+
+| Check | Answer for First Non-Repeating Character |
+|---|---|
+| **Q1.** Does the answer depend on how *often* items appear? | **Yes** — "non-repeating" means a count of exactly `1`. |
+| **Q2.** Is the input a linear sequence? | **Yes** — a string, walked character by character. |
+| **Q3.** Can the answer be read off the counts after one pass? | **Yes** — build the map first, then re-scan and read each count. |
+| **Q4.** Is the per-item work `O(1)` amortised? | **Yes** — one hash-map increment per character, then one lookup per index. |
+
+## Approach
+
+Build the counts first, then re-scan for the earliest unique character.
+
+1. **Build the frequency map.** Walk `s` once; for each character, increment its entry in `frequency`.
+2. **Re-scan in order.** Walk `s` again from index `0`, reading `frequency[ch]` for each character.
+3. **Return the first unique index.** The first character whose count is `1` is the answer — return its index.
+4. **Handle the empty case.** If the re-scan finds no count-1 character, return `-1`.
+
+<details>
 <summary><h2>Solution</h2></summary>
 
 
@@ -130,35 +190,43 @@ public class Main {
 
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+## Dry Run
 
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
+Walk Example 1 — `s = "codeintuition"`. Pass 1 builds the counts; pass 2 returns the first count-1 index:
 
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
+```
+pass 1 (build the map)
+  c→1 o→1 d→1 e→1 i→1 n→1 t→1 u→1 i→2 t→2 i→3 o→2 n→2
+  frequency = {c:1, o:2, d:1, e:1, i:3, n:2, t:2, u:1}
 
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
+pass 2 (first index with count 1)
+  i=0  s[0]='c'  freq 1 = 1  return 0
 
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
+result = 0
+```
 
-<!-- TODO: Solution — missing, needs to be written -->
-<!--       Guidance: Python block then Java block -->
+The result `0` matches the expected output — `'c'` appears once and is the earliest such character.
 
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
+## Complexity Analysis
 
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table: time / space / why -->
+| Measure | Value | Why |
+|---|---|---|
+| Time  | **O(N)** | One pass to build the map, one pass to re-scan; each step is amortised `O(1)`. |
+| Space | **O(N)** | The frequency map holds up to `N` distinct characters in the worst case. |
 
-<!-- TODO: Edge Cases — missing, needs to be written -->
-<!--       Guidance: table, min 5 rows -->
+For a fixed alphabet (e.g. 26 lowercase letters), the space is bounded by the alphabet size — `O(1)` — but the general bound is `O(N)` distinct characters.
 
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->
+## Edge Cases
+
+| Case | Example | Expected | Reasoning |
+|---|---|---|---|
+| Empty string | `s = ""` | `-1` | No characters, so nothing can be non-repeating. |
+| Single character | `s = "a"` | `0` | The only character appears once → index `0`. |
+| All repeating | `s = "aabb"` | `-1` | Every character has count `2`; no index qualifies. |
+| Unique at the end | `s = "aab"` | `2` | `'a'` repeats; `'b'` at index `2` is the first count-1 character. |
+| All distinct | `s = "abcd"` | `0` | Every count is `1`, so the first index wins. |
+| Repeats then unique | `s = "abcabc"` | `-1` | Each of `a`, `b`, `c` appears twice → no answer. |
+
+## Key Takeaway
+
+This is the base case of the counting pattern: tally every character once, then re-scan in order and return the first index with count `1`. The second pass over the original string — not the map — is what preserves "first" by position.

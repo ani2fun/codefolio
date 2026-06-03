@@ -1,6 +1,6 @@
 ---
 title: "Deletion In Doubly Linked Lists"
-summary: "<!-- TODO: summary -->"
+summary: "Seven deletion variants for a doubly linked list — first, last, by data, after a given node, before a given node, the given node itself, and at a distance. Every variant reduces to the same four-pointer un-splice; the back pointer collapses the predecessor hunt that costs a singly linked list O(n), making delete-the-given-node the headline O(1) operation LRU caches and intrusive kernel lists are built on."
 ---
 
 # 4. Deletion in Doubly Linked Lists
@@ -17,23 +17,105 @@ Master that, and you unlock the doubly linked list's headline feature: **O(1) de
 
 ## Table of contents
 
-1. [Understanding deletion of first node](#understanding-deletion-of-first-node)
-2. [Delete first node](#delete-first-node)
-3. [Understanding deletion of last node](#understanding-deletion-of-last-node)
-4. [Delete last node](#delete-last-node)
-5. [Understanding deletion by given data](#understanding-deletion-by-given-data)
-6. [Delete node with given data](#delete-node-with-given-data)
-7. [Delete nodes with given data](#delete-nodes-with-given-data)
-8. [Understanding deletion after the given node](#understanding-deletion-after-the-given-node)
-9. [Delete node after the given node](#delete-node-after-the-given-node)
-10. [Understanding deletion before a given node](#understanding-deletion-before-a-given-node)
-11. [Delete node before the given node](#delete-node-before-the-given-node)
-12. [Understanding deletion of the given node](#understanding-deletion-of-the-given-node)
-13. [Delete the given node](#delete-the-given-node)
-14. [Understanding deletion at a given distance](#understanding-deletion-at-a-given-distance)
-15. [Delete node at given distance](#delete-node-at-given-distance)
+1. [Understanding the Problem](#understanding-the-problem)
+2. [Supported Operations](#supported-operations)
+3. [Internal Mechanics](#internal-mechanics)
+4. [Understanding deletion of first node](#understanding-deletion-of-first-node)
+5. [Delete first node](#delete-first-node)
+6. [Understanding deletion of last node](#understanding-deletion-of-last-node)
+7. [Delete last node](#delete-last-node)
+8. [Understanding deletion by given data](#understanding-deletion-by-given-data)
+9. [Delete node with given data](#delete-node-with-given-data)
+10. [Delete nodes with given data](#delete-nodes-with-given-data)
+11. [Understanding deletion after the given node](#understanding-deletion-after-the-given-node)
+12. [Delete node after the given node](#delete-node-after-the-given-node)
+13. [Understanding deletion before a given node](#understanding-deletion-before-a-given-node)
+14. [Delete node before the given node](#delete-node-before-the-given-node)
+15. [Understanding deletion of the given node](#understanding-deletion-of-the-given-node)
+16. [Delete the given node](#delete-the-given-node)
+17. [Understanding deletion at a given distance](#understanding-deletion-at-a-given-distance)
+18. [Delete node at given distance](#delete-node-at-given-distance)
+19. [Working Example](#working-example)
+20. [Edge Cases and Pitfalls](#edge-cases-and-pitfalls)
+21. [Production Reality](#production-reality)
+22. [Practice Ladder](#practice-ladder)
+23. [Quiz](#quiz)
+24. [Further Reading](#further-reading)
+25. [Cross-Links](#cross-links)
+26. [Final Takeaway](#final-takeaway)
 
 ***
+
+# Understanding the Problem
+
+Deletion is the operation where the doubly linked list's extra pointer finally pays off in *both* directions. A singly linked list charges `O(n)` time for any deletion that doesn't hand it the predecessor — tail, by-value, the-given-node — because the splice (`prev.next = victim.next`) cannot fire until the predecessor is in hand, and the only way to find it is to walk from the head. A doubly linked list stores the predecessor at `victim.prev`, so the splice fires immediately on every variant that hands us a node reference.
+
+The trap is in counting pointer writes:
+
+- **Singly linked list** — one outbound pointer per node (`next`). Splicing a node out is one pointer write (`prev.next = victim.next`) plus the free.
+- **Doubly linked list** — two outbound pointers per node (`prev` and `next`). Splicing a node out is *two* pointer writes — the forward link of the predecessor *and* the backward link of the successor — plus the free.
+
+To make this concrete: deleting `7` from `5 ⇄ 7 ⇄ 3` is a two-line splice on paper and a two-line splice in code — `5.next = 3` and `3.prev = 5`. Skip the second line and forward traversal still walks `5 → 3`, but walking the list *backward* from `3` jumps back to `7` and then back to `5`, re-visiting a node that no longer exists in the forward chain. The list is corrupted in exactly one direction, and the test suite that only walks forward will never catch it.
+
+So the key idea is: a doubly linked list trades twice the per-node memory and twice the splice bookkeeping for `O(1)` deletion at *every* known reference — head, tail, any node held by reference. The walk only reappears when the input is a value or an index, because neither can be dereferenced directly.
+
+---
+
+# Supported Operations
+
+A doubly linked list supports seven deletion variants — distinguished by *what reference the caller already holds* and *what predicate selects the victim*. The splice is always two pointer writes; the variability is purely in how the victim is located.
+
+| Operation | Inputs | Time | Space | Notes |
+|---|---|---|---|---|
+| Delete first node | `head` | `O(1)` | `O(1)` | Advance `head` to `head.next`, clear the new head's `prev`. No walk. |
+| Delete last node | `head` (or `tail`) | `O(1)` with cached `tail` / `O(n)` without | `O(1)` | The back pointer makes the second-to-last node free — no head walk needed. |
+| Delete node with given data | `head`, `data` | `O(n)` worst, `O(1)` best (head match) | `O(1)` | Walk until `cur.val == data`; deletes the first match only. |
+| Delete all nodes with given data | `head`, `data` | `O(n)` | `O(1)` | Single walk; the back pointer keeps the splice symmetric on every match. |
+| Delete node after given node | `node` | `O(1)` | `O(1)` | `node` *is* the predecessor — pure splice, no walk. |
+| Delete node before given node | `head`, `node` | `O(1)` | `O(1)` | `node.prev` *is* the predecessor — the singly-list walk vanishes. |
+| Delete the given node | `head`, `node` | `O(1)` | `O(1)` | `node.prev` and `node.next` are both free — the headline DLL operation. |
+| Delete node at distance `X` | `head`, `X` | `O(X)` time | `O(1)` | Walk `X` steps to the victim, splice. Out-of-range `X` returns the list unchanged. |
+
+Two pieces are constant across the table: every variant ends in the **same two-pointer splice** (`predecessor.next = successor; successor.prev = predecessor`) and every variant frees **one** node (`O(1)` extra space). The variability is purely in how the victim is reached.
+
+To make this concrete: deleting the given node in a singly linked list is `O(n)` time because the splice needs the predecessor and singly linked nodes cannot look backward. In a doubly linked list the predecessor is `node.prev` — the same operation collapses to `O(1)` time. *Delete last* also collapses, from the `O(n)` head-to-tail walk a singly linked list pays to a single back-pointer hop. Only *delete by data* and *delete at distance* still pay the walk, because values and indices cannot be dereferenced.
+
+So the tradeoff is: the doubly linked list buys constant-time deletion at *every reference-based handle* (head, tail with cached pointer, node-by-reference, before-a-node, after-a-node) at the cost of one extra pointer per node and one extra write per splice. Random access remains `O(n)` — the back pointer fixes the predecessor problem, not the indexing problem.
+
+---
+
+# Internal Mechanics
+
+Every deletion in a doubly linked list — first, last, by value, after-a-node, before-a-node, by-reference, at-distance — compiles down to the same three operations. Lock these into muscle memory and every variant in this lesson collapses to a checklist exercise.
+
+The three operations:
+
+- **Locate the victim** — for *delete first*, the victim is `head`; for *delete after node*, the victim is `node.next`; for *delete the given node*, the victim is `node` itself; for value- and distance-based variants, walk until the predicate matches.
+- **Splice** — assign `victim.prev.next = victim.next` and `victim.next.prev = victim.prev`. Two writes. Both are required to keep the forward *and* backward chains consistent.
+- **Free** — in C / C++ call `free(victim)`. In garbage-collected languages (Python, Java) dropping the last live reference is sufficient. Always read every field you need *before* the free.
+
+The order matters in two distinct ways. **First, read the victim's neighbours before you splice** — once `victim.prev.next = victim.next` runs, you have rewired one side of the chain; the other side still needs `victim.next`, which is fine because the victim itself is untouched, but the moment you free the victim, both `victim.prev` and `victim.next` are dangling reads. **Second, splice before free.** Reverse the order and the splice writes garbage into `predecessor.next`.
+
+To make this concrete: deleting `7` from `5 ⇄ 7 ⇄ 3` with `victim = node(7)`:
+
+- `victim.prev.next = victim.next` — `5.next` now points at `3` (was `7`).
+- `victim.next.prev = victim.prev` — `3.prev` now points at `5` (was `7`).
+- `free(victim)` — node `7` is reclaimed.
+
+After the three steps, the chain reads `5 ⇄ 3` in both directions. Skip the second write and `3.prev` still says `7` — backward traversal hops back into a freed node, and the memory may have been reused by the time anyone reads it.
+
+The same three operations cover every variant — what changes is whether `victim.prev` or `victim.next` is `null`:
+
+- **Delete head**: `victim.prev` is `null`, `victim.next` is the new head. The first splice (`victim.prev.next = …`) is replaced by the caller advancing the `head` reference; the second splice clears the new head's `prev`.
+- **Delete tail**: `victim.next` is `null`, `victim.prev` is the new tail. The first splice clears `predecessor.next`; the second splice (`victim.next.prev = …`) is skipped.
+- **Delete the given node** (with both neighbours non-null): both splices fire — the canonical case, `O(1)` time at any known reference.
+- **Delete after / before given node**: identical to *delete the given node* with `victim = node.next` or `victim = node.prev`; null guards apply when the given node sits at the relevant endpoint.
+
+So the core insight is: every deletion is "locate the victim, run the two-pointer splice (skipping the side whose neighbour is `null`), free the node" — what differs across the seven variants is only how the victim is located, and that's where the cost lives.
+
+> 🖼 Diagram — TODO: three-frame splice — `victim` identified with both `prev` and `next` neighbours, `predecessor.next` and `successor.prev` redirected in one symmetric step, `victim` freed; a fourth frame contrasting head-deletion (no predecessor — advance `head` and clear new head's `prev`) against tail-deletion (no successor — clear predecessor's `next`).
+
+---
 
 # Understanding deletion of first node
 
@@ -147,7 +229,7 @@ flowchart TB
 When implementing the logic for deleting the first node, we consider all three cases and write the code for each in conditional blocks.
 
 
-```python run
+```python run viz=linked-list viz-root=head
 """
 Definition for doubly-linked list.
 class ListNode:
@@ -198,7 +280,7 @@ class Solution:
         return head
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 /**
  * Definition for doubly-linked list.
  * class ListNode {
@@ -383,7 +465,7 @@ print(to_list(Solution().delete_first_node(from_list([1, 2, 3, 4]))))   # [2, 3,
 print(to_list(Solution().delete_first_node(from_list([5, 5, 5]))))      # [5, 5]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -601,7 +683,7 @@ flowchart TB
 ## Implementation
 
 
-```python run
+```python run viz=linked-list viz-root=head
 """
 Definition for doubly-linked list.
 class ListNode:
@@ -650,7 +732,7 @@ class Solution:
         return tail
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 /**
  * Definition for doubly-linked list.
  * class ListNode {
@@ -855,7 +937,7 @@ new_tail6 = Solution().delete_last_node(to_tail(from_list([5, 5, 5])))
 print(to_list(head_of(new_tail6)))   # [5, 5]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -1123,7 +1205,7 @@ flowchart LR
 ## Implementation
 
 
-```python run
+```python run viz=linked-list viz-root=head
 """
 Definition for doubly-linked list.
 class ListNode:
@@ -1197,7 +1279,7 @@ class Solution:
         return head
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 /**
  * Definition for doubly-linked list.
  * class ListNode {
@@ -1464,7 +1546,7 @@ print(to_list(Solution().delete_node_with_given_data(from_list([42]), 42)))     
 print(to_list(Solution().delete_node_with_given_data(from_list([3, 3, 3]), 3)))        # [3, 3] (only first)
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -1712,7 +1794,7 @@ print(to_list(Solution().delete_nodes_with_given_data(from_list([1, 2, 2, 2, 3])
 print(to_list(Solution().delete_nodes_with_given_data(from_list([5, 5, 5, 5]), 5)))         # []
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -1949,7 +2031,7 @@ flowchart TB
 ## Implementation
 
 
-```python run
+```python run viz=linked-list viz-root=head
 """
 Definition for doubly-linked list.
 class ListNode:
@@ -1998,7 +2080,7 @@ class Solution:
         return head
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 /**
  * Definition for doubly-linked list.
  * class ListNode {
@@ -2205,7 +2287,7 @@ h5 = from_list([5])
 print(to_list(Solution().delete_node_after_the_given_node(h5, get_node(h5, 5))))   # [5]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -2477,7 +2559,7 @@ flowchart TB
 ## Implementation
 
 
-```python run
+```python run viz=linked-list viz-root=head
 """
 Definition for doubly-linked list.
 class ListNode:
@@ -2539,7 +2621,7 @@ class Solution:
         return head
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 /**
  * Definition for doubly-linked list.
  * class ListNode {
@@ -2774,7 +2856,7 @@ h5 = from_list([10, 20])
 print(to_list(Solution().delete_node_before_the_given_node(h5, get_node(h5, 20))))  # [20]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -3033,7 +3115,7 @@ flowchart TB
 ## Implementation
 
 
-```python run
+```python run viz=linked-list viz-root=head
 """
 Definition for doubly-linked list.
 class ListNode:
@@ -3084,7 +3166,7 @@ class Solution:
         return head
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 /**
  * Definition for doubly-linked list.
  * class ListNode {
@@ -3294,7 +3376,7 @@ print(to_list(Solution().delete_the_given_node(h5, None)))                # [1, 
 print(Solution().delete_the_given_node(None, None))                        # None
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -3564,7 +3646,7 @@ flowchart LR
 ## Implementation
 
 
-```python run
+```python run viz=linked-list viz-root=head
 """
 Definition for doubly-linked list.
 class ListNode:
@@ -3642,7 +3724,7 @@ class Solution:
         return head
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 /**
  * Definition for doubly-linked list.
  * class ListNode {
@@ -3913,7 +3995,7 @@ print(to_list(Solution().delete_node_at_given_distance(from_list([42]), 0)))    
 print(to_list(Solution().delete_node_at_given_distance(from_list([1, 2]), 1)))           # [1]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -4083,39 +4165,168 @@ Up next: **reversal**. Insertion and deletion let us add and remove nodes — re
 
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+***
 
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
+# Working Example
 
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
+Seven deletion variants, one un-splice pattern. The table below walks the same data — `head ⇄ 5 ⇄ 7 ⇄ 3 ⇄ 10` — through each variant and shows where the cost goes.
 
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
+| Variant | Walk cost | Splice cost | Total | Result |
+|---|---|---|---|---|
+| First node | 0 hops (head is given) | `O(1)` (2 pointer writes) | **`O(1)`** | `7 ⇄ 3 ⇄ 10` |
+| Last node (with cached `tail`) | 0 hops (`tail.prev` is free) | `O(1)` (2 pointer writes) | **`O(1)`** | `5 ⇄ 7 ⇄ 3` |
+| By given data `7` | 0 to `n` hops (first match) | `O(1)` (2 pointer writes) | **`O(n)` worst** | `5 ⇄ 3 ⇄ 10` |
+| After given node `node(7)` | 0 hops (`node.next` is the victim) | `O(1)` (2 pointer writes) | **`O(1)`** | `5 ⇄ 7 ⇄ 10` |
+| Before given node `node(7)` | 0 hops (`node.prev` is the victim) | `O(1)` (2 pointer writes) | **`O(1)`** | `7 ⇄ 3 ⇄ 10` |
+| The given node `node(7)` | 0 hops (`node` *is* the victim) | `O(1)` (2 pointer writes) | **`O(1)`** | `5 ⇄ 3 ⇄ 10` |
+| At distance `X = 2` | `X` hops | `O(1)` (2 pointer writes) | **`O(X)`** | `5 ⇄ 7 ⇄ 10` |
 
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
+Every row that has a non-null predecessor and a non-null successor ends in the same two-line splice — `victim.prev.next = victim.next; victim.next.prev = victim.prev` — followed by the free. Rows where one neighbour is `null` drop the corresponding mirror write and the caller refreshes the head or tail reference instead.
 
-<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
-<!--       Guidance: bulleted list of gotchas -->
+So the core insight is: **whenever a doubly linked-list problem hands you a node reference — head, tail, any node, the one before, the one after — the delete is `O(1)` time. The back pointer eliminates the predecessor walk that *delete the given node* required in a singly linked list.** Only *delete by value* and *delete at distance* still cost the walk, because values and indices cannot be dereferenced.
 
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+> **The Deletion Checklist** — every time you splice a node out of a doubly linked list, ask the same four questions. Drill them until they're automatic:
+>
+> 1. **Who is the victim's predecessor?** (`victim.prev`)
+> 2. **Who is the victim's successor?** (`victim.next`)
+> 3. **Have I read every field I need from the victim *before* freeing it?**
+> 4. **Have I redirected *both* the forward pointer of the predecessor *and* the backward pointer of the successor?**
+>
+> Skip the fourth question and the forward chain is correct while the backward chain points into freed memory. Skip the third and you're reading a dangling pointer one instruction later.
 
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+> **Transfer Challenge:** Implement an LRU cache with capacity `K` using a doubly linked list and a hash map. On `get(key)`, if the key exists, return its value and move its node to the front (most-recently-used end) in `O(1)` time; on `put(key, value)`, if the cache is full, evict the tail node in `O(1)` time. Why is *delete the given node* — not *delete by value* — the load-bearing operation? Could a singly linked list back this design?
+>
+> <details><summary><strong>Answer</strong></summary>
+>
+> Maintain a hash map `key → node` and a doubly linked list with cached `head` (MRU) and `tail` (LRU). `get(key)` runs `O(1)` hash lookup → `delete the given node` (`O(1)` because we have the node reference and `node.prev` gives the predecessor for free) → `insert at beginning` (`O(1)`). `put(key, value)` does the same move-to-front when the key exists; on a miss-with-full-cache, it runs `delete last` (`O(1)` because the back pointer makes `tail.prev` the new tail) plus the hash-map delete, then `insert at beginning` plus the hash-map insert.
+>
+> *Delete the given node* is load-bearing because the hash map hands us the node by reference — we already know "which node to delete", we just need to unlink it cheaply. With a singly linked list, this operation is `O(n)` time (walk from the head to find the predecessor), which destroys the `O(1)` guarantee on every `get`. The back pointer is what makes the entire design feasible.
+>
+> </details>
 
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
+***
 
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+# Edge Cases and Pitfalls
 
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
+The doubly-linked splice has two pointer writes plus a free, which means three places to forget. Most deletion bugs land on a forgotten mirror update, a `null` neighbour the code didn't guard, a head/tail reference the caller didn't refresh, or a victim field read after the free. Keep this list open when you write any of the seven variants.
 
-<!-- TODO: Final Takeaway — missing, needs to be written -->
-<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->
+- **Forgetting the mirror update.** Updating `predecessor.next` without updating `successor.prev` (or vice versa) leaves the forward chain correct and the backward chain pointing into the freed victim. Forward traversal looks fine; backward traversal hops into garbage. Rule: **every link is two pointers, not one** — both must be redirected.
+- **Reading a victim field after the free.** `free(victim)` (or dropping the last reference in GC languages, in some edge cases) may release the node's memory before the next instruction runs. Reading `victim.next` or `victim.prev` after the free yields undefined behaviour in C/C++ and a stale snapshot in GC languages. Rule: **save `victim.prev` and `victim.next` into locals before the splice, then free.**
+- **Empty list.** `head == null` is a separate code path for every variant. *Delete first*, *delete last*, *delete by data* return `null` unchanged; *delete after/before/the-given-node* return the head unchanged when `node` is also `null`; *delete at distance* returns `null`. Skip the empty-list check and you'll dereference `null` on the first `head.val` or `head.next`.
+- **Single-node list.** The lone node is simultaneously head and tail. *Delete first*, *delete last*, *delete by data* (when the value matches), *delete the given node* (when `node == head`), and *delete at distance 0* all collapse to "set `head = null` and free the node" — but via different code paths. Both `prev` and `next` on the victim are `null`, so neither mirror write fires. Verify every branch sets `head = null` (and the cached `tail` reference, if the list keeps one).
+- **Failure to refresh `head` after a head deletion.** *Delete first*, *delete by data* (when head matches), *delete the given node* (when `node == head`), and *delete at distance 0* all change which node is the head. Returning the old `head` reference leaves the caller pointing at a freed node — every subsequent operation reads garbage. Always return the (possibly new) head; refresh any cached tail reference too if the list emptied.
+- **Failure to refresh `tail` after a tail deletion.** A list that caches a `tail` reference must update it whenever the victim *is* the tail — *delete last*, *delete the given node* when `node == tail`, *delete by data* when the match is at the tail, *delete at distance n-1*. Forgetting this leaks the predecessor as the apparent tail's `.next == null`-but-`tail.prev`-points-into-freed-memory bug.
+- **`node` argument is `null` (after/before/the-given-node).** A `null` reference has no neighbours to splice between. The function should return the head unchanged, not crash on `node.next` or `node.prev`.
+- **Given node sits at the relevant endpoint.** *Delete after the tail* has `node.next == null` — the splice has no victim, so the function returns the head unchanged. The same applies to *delete before the head* and to *delete the given node* when `node.prev` or `node.next` is `null` (one of the mirror writes is skipped, but the other still fires and the head/tail reference must be refreshed).
+- **Pointer-write order on the splice itself.** Unlike insertion, deletion can run the two splice writes in either order — they touch disjoint pointers (`victim.prev.next` and `victim.next.prev`) — but **both must complete before `free(victim)`**. Doing the free between them, or reading `victim.prev`/`victim.next` after the free, is undefined behaviour in C/C++.
+- **Off-by-one on distance.** *Delete at distance `X = 0`* deletes the head; `X = n − 1` deletes the tail; `X ≥ n` is out of range and returns the list unchanged. The walk needs `X` steps to land at the victim itself — *not* `X − 1` as in insertion, because deletion targets the node at position `X`, while insertion places a new node *before* position `X`. Confusing the two produces the classic "delete works on every test except `X = 0`" bug.
+
+***
+
+# Production Reality
+
+Doubly linked lists are the structure of choice whenever a system needs `O(1)` removal of an arbitrary node already in hand — the operation that singly linked lists cannot offer at any price below `O(n)` time.
+
+**[Linux kernel `list_head`]** — uses **a circular doubly linked intrusive list with `list_del` doing four pointer writes** — because every subsystem holding an object reference (scheduler, VFS, network) can splice the object out in `O(1)` time without a separate container traversal or allocator interaction.
+
+The kernel's circular doubly linked list is embedded directly into each struct via a `list_head` field. `list_del` runs `prev->next = next; next->prev = prev; entry->next = LIST_POISON1; entry->prev = LIST_POISON2` — two splice writes plus two poison writes to catch use-after-delete. That's exactly what an interrupt-context path needs: no allocator, no walk, fixed cycle budget. Source: [include/linux/list.h](https://github.com/torvalds/linux/blob/master/include/linux/list.h).
+
+**[Java's `LinkedList.unlink`]** — uses **a doubly linked list with cached `first` and `last` pointers** — because the back pointer makes `unlink(Node<E>)` an `O(1)` splice once the node is held, and `ListIterator.remove()` exposes this as a public API.
+
+`java.util.LinkedList.unlink` reads `node.prev` and `node.next` into locals, then rewires the neighbours and clears the victim's fields. Combined with `removeFirst`/`removeLast` (both `O(1)`), this is what makes `Deque` operations on `LinkedList` strictly constant-time. Source: [LinkedList.java](https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/java/util/LinkedList.java).
+
+**[Python's `collections.OrderedDict` and `functools.lru_cache`]** — uses **a doubly linked list of dictionary entries** — because LRU-cache eviction must remove an arbitrary entry (the one selected by the underlying hash table) in `O(1)` time regardless of where it sits in the list.
+
+The underlying hash table gives `O(1)` lookup; the doubly linked list threaded through the entries gives `O(1)` removal at any reference. `move_to_end` and `popitem` both rely on this — singly-linked threading would force `O(n)` per call and collapse the cache's amortised guarantee. Source: [odictobject.c](https://github.com/python/cpython/blob/main/Objects/odictobject.c) <!-- VERIFY: confirm the doubly-linked threading lives in odictobject.c and not _collectionsmodule.c -->.
+
+**[Redis `listDelNode`]** — uses **a doubly linked list with cached `head`, `tail`, and `len`** — because `LREM`, pub/sub unsubscribe, and slow-log trimming all need to remove a node already held by reference without re-walking the list.
+
+Redis `LPOP`, `RPOP`, and `LREM` (after the walk) all bottom out in `listDelNode`, which is the two-pointer splice plus a `zfree`. The back pointer makes `LREM`'s tail-side removal symmetric to its head-side removal — no special-case code path. Source: [adlist.c `listDelNode`](https://github.com/redis/redis/blob/unstable/src/adlist.c).
+
+**[Browser DOM `Node.removeChild` / `Element.remove()`]** — uses **a doubly linked list of child nodes per parent** — because the DOM specifies `O(1)` removal of any node by reference, which requires the back pointer to find the previous sibling.
+
+Every DOM node carries `nextSibling` and `previousSibling` references. `parentNode.removeChild(child)` is the spec-mandated two-pointer splice (`child.previousSibling.nextSibling = child.nextSibling; child.nextSibling.previousSibling = child.previousSibling`) plus a parent's `firstChild`/`lastChild` update if the victim sat at an end. Without the back pointer, removing a child would force the engine to walk the parent's child list every time. Source: the DOM Living Standard — [§4.4 Mutation methods](https://dom.spec.whatwg.org/#mutation-method-macro).
+
+**[Database B-tree leaf chains]** — uses **a doubly linked list connecting leaf pages** — because page merges (when a leaf falls below the fill factor) must splice a page out of the leaf chain in `O(1)` time, and descending-order range scans need to walk leaves backward.
+
+Most relational engines (PostgreSQL, MySQL InnoDB, SQLite) link B-tree leaf pages with both forward and backward pointers. The back pointer is what makes "unlink this leaf during a merge" cheap — without it, every merge would force a head-to-leaf walk to find the predecessor page. Source: [PostgreSQL nbtree README](https://github.com/postgres/postgres/blob/master/src/backend/access/nbtree/README).
+
+***
+
+# Practice Ladder
+
+Five problems, easiest first. Try each unaided; hit the hint only after ten minutes stuck; don't peek at solutions until you've made the splice *do something* in code.
+
+| # | Problem | Pattern | Difficulty | Hint |
+|---|---------|---------|------------|------|
+| 1 | [Reverse a List](./06-pattern-reversal/02-problems/01-reverse-a-list.md) | [Reversal](./06-pattern-reversal/01-pattern.md) | Easy | At each step, swap `current.prev` and `current.next` and advance — every node is "deleted" from its current position and re-attached in reverse direction. The back pointer makes the swap symmetric — no save-before-clobber gymnastics. |
+| 2 | [Pairwise Swap](./07-pattern-reversal-subproblem/02-problems/01-pairwise-swap.md) | [Reversal Subproblem](./07-pattern-reversal-subproblem/01-pattern.md) | Easy | Each pair-swap is "delete this node, re-insert before its predecessor" — two splices using the operations from this lesson. The `prev` pointer is what makes "delete the given node" `O(1)`. |
+| 3 | [Two Sum](./08-pattern-two-pointers/02-problems/02-two-sum.md) | [Two Pointers](./08-pattern-two-pointers/01-pattern.md) | Easy | Initialise `left = head`, `right = tail`. When the sum is too large, `right = right.prev` — `O(1)` only because the back pointer exists. Without it, walking from `right` back one step would be `O(n)`. |
+| 4 | [Relocate Node](./09-pattern-reorder/02-problems/01-relocate-node.md) | [Reorder](./09-pattern-reorder/01-pattern.md) | Medium | Detach the source node (`O(1)` using *delete the given node*), then insert before the destination (`O(1)` using `dest.prev`). Two splices, total `O(1)` time once you've found both nodes. |
+| 5 | [Reverse the Given Segment](./06-pattern-reversal/02-problems/04-reverse-the-given-segment.md) | [Reversal](./06-pattern-reversal/01-pattern.md) | Medium | Detach the segment with two splices (using `prev` to find the predecessor of the start in `O(1)`), reverse it in place, then re-attach with two more splices. The back pointer turns the boundary fix-up from `O(n)` into `O(1)` on each side. |
+
+Once these feel automatic, you've internalised every move the reversal, two-pointer, and reorder patterns will ask of you — and the two-pointer un-splice disappears into muscle memory.
+
+***
+
+# Quiz
+
+Test your grip before moving on. One answer per question; reveal only after you have committed to one.
+
+**[Recall] Q: How many pointer writes does "delete a node with both neighbours non-null" require in a doubly linked list?**
+Two — `victim.prev.next = victim.next` and `victim.next.prev = victim.prev`. Both are required to keep the forward *and* backward chains consistent.
+
+**[Recall] Q: For *delete the given node* on a doubly linked list, what is the time complexity? Why is it different from the singly-linked version?**
+`O(1)` time. The doubly linked list stores the predecessor at `node.prev` — the splice fires immediately. The singly-linked version is `O(n)` time because the predecessor must be searched for from the head.
+
+**[Reasoning] Q: Why must the splice writes complete *before* `free(victim)` runs?**
+Because `free(victim)` releases the memory holding `victim.prev` and `victim.next`. Reading either after the free yields a dangling pointer in C/C++ and may read stale data in GC languages, so the splice writes that need `victim.prev` and `victim.next` must run first.
+
+**[Reasoning] Q: When deleting the tail of a doubly linked list, why is the splice only one pointer write instead of two?**
+Because the tail's successor is `null` — there is no node whose `prev` needs updating. The single splice that fires is `victim.prev.next = null`, and the caller refreshes the cached `tail` reference to `victim.prev`.
+
+**[Tradeoff] Q: When does the extra `prev` pointer pay for itself in deletion-heavy workloads, and when is it pure overhead?**
+It pays whenever you need `O(1)` removal of a node already held by reference — LRU caches, intrusive kernel lists, DOM trees, B-tree leaf merges. It is pure overhead — one extra pointer per node — when the workload only deletes from the head (e.g. a FIFO queue with no mid-list removal), in which case a singly linked list with cached tail is strictly cheaper.
+
+***
+
+# Further Reading
+
+Curated paths in, not a syllabus. Read in order of the annotation; come back for the rest when you need depth.
+
+- **[CLRS — Chapter 10: Elementary Data Structures](https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/)**
+  ★ Essential — the canonical reference for doubly linked-list deletion, the sentinel-node trick that removes every head/tail special case, and the symmetric splice that makes `LIST-DELETE(L, x)` an `O(1)` operation.
+- **[Sedgewick & Wayne — Algorithms, 4th ed., §1.3 Bags, Queues and Stacks](https://algs4.cs.princeton.edu/13stacks/)**
+  ★ Essential — implements doubly linked lists as the backing for deque, with diagrams that make the two-pointer un-splice visual.
+- **[The Linux Kernel Linked Lists API](https://www.kernel.org/doc/html/latest/core-api/kernel-api.html#list-management-functions)**
+  ◆ Advanced — the intrusive circular doubly linked list — `list_del`, `list_del_init`, `LIST_POISON` — how production C systems get zero-allocation `O(1)` deletion plus use-after-delete detection.
+- **[Java `LinkedList.unlink` source](https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/java/util/LinkedList.java)**
+  → Reference — the exact two-pointer-write splice as a JDK method, with cached head/tail pointers and the `Node<E>` private inner class — read alongside `unlinkFirst` and `unlinkLast` for the endpoint variants.
+- **[Python `OrderedDict` design notes](https://github.com/python/cpython/blob/main/Objects/odictobject.c)**
+  → Reference — how a doubly linked list threaded through a hash table's entries gives `O(1)` `popitem(last=False)` from either end and powers `functools.lru_cache`'s eviction path.
+
+***
+
+# Cross-Links
+
+**Prerequisites**
+
+- [Introduction to Doubly Linked Lists](./01-introduction-to-doubly-linked-lists.md) — node structure with `prev` and `next`, the `head`/`tail` reference pair, and why every link is two pointers.
+- [Traversal in Doubly Linked Lists](./02-traversal-in-doubly-linked-lists.md) — forward and backward walks, the cost model deletion piggybacks on for the by-value and at-distance variants.
+- [Insertion in Doubly Linked Lists](./03-insertion-in-doubly-linked-lists.md) — the mirror operation; same four-pointer discipline, played forward to splice in rather than out.
+- [Deletion in Singly Linked Lists](../03-singly-linked-list/04-deletion-in-singly-linked-lists.md) — the single-direction baseline; *delete the given node* is `O(n)` there and `O(1)` here, which is exactly why doubly linked lists exist.
+
+**What comes next**
+
+- [Pattern: Reversal](./06-pattern-reversal/01-pattern.md) — the first major doubly-linked pattern; the back pointer makes reversal symmetric, treating each link-flip as a tiny delete-and-reinsert.
+- [Pattern: Two Pointers](./08-pattern-two-pointers/01-pattern.md) — uses both ends of the list as starting positions; only possible because the back pointer makes `right = right.prev` `O(1)`.
+- [Pattern: Reorder](./09-pattern-reorder/01-pattern.md) — the pattern that *uses* deletion as a primitive: every reorder is "delete from one spot, insert at another", and the back pointer makes both halves `O(1)` time.
+- [Design a Doubly Linked List](./10-design-a-doubly-linked-list/01-design-a-doubly-linked-list.md) — wraps all the insertion and deletion variants into a single API with cached head, tail, and length.
+
+***
+
+## Final Takeaway
+
+1. **Core mechanic:** every deletion in a doubly linked list is "locate the victim, run the two-pointer splice (`victim.prev.next = victim.next; victim.next.prev = victim.prev`) — skipping the side whose neighbour is `null` — then free the node" — two pointer writes plus a free, regardless of which variant.
+2. **Dominant tradeoff:** deletion at any known node reference — head, cached tail, before-a-node, after-a-node, the-given-node — is `O(1)` time regardless of list size; the price is one extra pointer per node and one extra write per splice compared to the singly-linked version.
+3. **One thing to remember:** read the victim's `prev` and `next` *before* you free it — once `free(victim)` runs, every field on that node turns into a landmine, and the bug will hide until someone walks the chain backward.

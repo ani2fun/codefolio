@@ -73,7 +73,7 @@ flowchart LR
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional, List
 
 
@@ -199,7 +199,7 @@ head5 = Solution().bst_to_sorted_dll(
 print(dll_to_list(head5))   # [1, 2, 3]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 public class Main {
     static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
 

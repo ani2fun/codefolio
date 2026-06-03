@@ -21,31 +21,209 @@ flowchart LR
 <p align="center"><strong>The split pattern — every node is routed to one of <code>k</code> output lists by a classifier function <code>f</code>. Nothing is copied; the original nodes are re-linked into their destination list.</strong></p>
 
 > ▶ Interactive Diagram — Round-robin split — node i goes to list i mod k. Every original node ends up in exactly one sublist; no allocations, just re-linking.
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Round-robin split into k=3 sub-lists — node i goes to list (i mod k)",
-  "direction": "single",
-  "nodes": [
-    {"id": "n1", "value": "1"},
-    {"id": "n2", "value": "2"},
-    {"id": "n3", "value": "3"},
-    {"id": "n4", "value": "4"},
-    {"id": "n5", "value": "5"},
-    {"id": "n6", "value": "6"}
-  ],
-  "head": "n1",
   "steps": [
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"],["n5","n6"]],
-      "markers": [{"name": "head", "nodeId": "n1"}],
-      "msg": "Before: original list 1 → 2 → 3 → 4 → 5 → 6"
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "1",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "2",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n6",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n5",
+          "label": "next"
+        },
+        {
+          "from": "n5",
+          "to": "n6",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n1",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Before: original list 1 → 2 → 3 → 4 → 5 → 6",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["n1","n4"],["n2","n5"],["n3","n6"]],
-      "markers": [{"name": "headA", "nodeId": "n1"}, {"name": "headB", "nodeId": "n2"}, {"name": "headC", "nodeId": "n3"}],
-      "msg": "After: list 0 = (1,4); list 1 = (2,5); list 2 = (3,6). Same nodes — re-linked into 3 chains."
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "1",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "2",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n5",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n6",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n4",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n5",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n6",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "headA",
+          "target": "n1",
+          "color": "#6b7280"
+        },
+        {
+          "name": "headB",
+          "target": "n2",
+          "color": "#6b7280"
+        },
+        {
+          "name": "headC",
+          "target": "n3",
+          "color": "#6b7280"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "After: list 0 = (1,4); list 1 = (2,5); list 2 = (3,6). Same nodes — re-linked into 3 chains.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Round-robin split into k=3 sub-lists — node i goes to list (i mod k)"
 }
 ```
 
@@ -122,8 +300,7 @@ The algorithm given below summarizes the linked list split technique to split a 
 Given below is the generic code implementation to split a given linked list into `k` lists based on the outcome of a function `f`. 
 
 
-```python run
-
+```python run viz=linked-list viz-root=head
 """
 Definition for singly-linked list.
 class ListNode:
@@ -163,7 +340,7 @@ def splitLists(head: ListNode, k: int) -> List[ListNode]:
     return dummy
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 
 /**
  * Definition for singly-linked list.
@@ -356,8 +533,7 @@ flowchart TB
 The implementation of the split list solution is given as follows.
 
 
-```python run
-
+```python run viz=linked-list viz-root=head
 """
 Definition for singly-linked list.
 class ListNode:
@@ -423,7 +599,7 @@ def kWayListSplit(head: Optional[ListNode], k: int) -> List[Optional[ListNode]]:
     return dummy
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 
 /**
  * Definition for singly-linked list.

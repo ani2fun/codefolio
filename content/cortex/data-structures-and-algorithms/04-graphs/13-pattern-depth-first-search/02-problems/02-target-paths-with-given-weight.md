@@ -137,7 +137,7 @@ print(Solution().target_paths([[[1,3]],[]], 0, 1, 5))                 # [] — w
 print(Solution().target_paths([[[1,2],[2,3]],[[2,1]],[]], 0, 2, 3))   # [[0,2],[0,1,2]]
 ```
 
-```java run
+```java run viz=graph viz-root=graph
 import java.util.*;
 
 public class Main {

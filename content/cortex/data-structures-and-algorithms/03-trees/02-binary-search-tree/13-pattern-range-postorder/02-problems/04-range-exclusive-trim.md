@@ -40,7 +40,7 @@ The `return` value is the new root of *this* subtree after trimming, which the c
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional
 from collections import deque
 
@@ -136,7 +136,7 @@ t6 = from_level_order([4, 2, 6, 1, 3, 5, 7])
 print(to_level_order(Solution().range_exclusive_trim(t6, 1, 7))) # [4, 2, 6, 1, 3, 5, 7]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

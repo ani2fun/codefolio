@@ -262,7 +262,7 @@ flowchart LR
 
 ### Implementation
 
-```python run
+```python run viz=array viz-root=heap
 from typing import List
 
 class MaxHeap:
@@ -288,7 +288,7 @@ class MaxHeap:
         self.up_heapify(index)
 ```
 
-```java run
+```java run viz=array viz-root=heap
 import java.util.*;
 
 class MaxHeap {
@@ -473,7 +473,7 @@ flowchart LR
 
 ### Implementation
 
-```python run
+```python run viz=array viz-root=heap
 from typing import List
 
 class MaxHeap:
@@ -529,7 +529,7 @@ class MaxHeap:
         self.down_heapify(index)
 ```
 
-```java run
+```java run viz=array viz-root=heap
 import java.util.*;
 
 class MaxHeap {
@@ -659,7 +659,7 @@ flowchart LR
 
 ### Implementation
 
-```python run
+```python run viz=array viz-root=heap
 from typing import List
 
 class MaxHeap:
@@ -722,7 +722,7 @@ class MaxHeap:
         return self.heap[0]
 ```
 
-```java run
+```java run viz=array viz-root=heap
 import java.util.*;
 
 class MaxHeap {
@@ -916,7 +916,7 @@ flowchart TB
 
 ### Implementation
 
-```python run
+```python run viz=array viz-root=heap
 from typing import List
 
 class MaxHeap:
@@ -992,7 +992,7 @@ class MaxHeap:
         return root
 ```
 
-```java run
+```java run viz=array viz-root=heap
 import java.util.*;
 
 class MaxHeap {
@@ -1207,7 +1207,7 @@ flowchart TB
 
 ### Implementation
 
-```python run
+```python run viz=array viz-root=heap
 from typing import List
 
 class MaxHeap:
@@ -1238,7 +1238,7 @@ class MaxHeap:
             self.down_heapify(arr, n, i)
 ```
 
-```java run
+```java run viz=array viz-root=heap
 import java.util.*;
 
 class MaxHeap {
@@ -1424,7 +1424,7 @@ a7 = [1, 3, 2, 7, 5, 4, 6]
 Solution().min_heap_to_max_heap(a7); print(a7)  # valid max heap rooted at 7
 ```
 
-```java run
+```java run viz=array viz-root=arr
 import java.util.Arrays;
 
 public class Main {
@@ -1598,7 +1598,7 @@ a7 = [7, 5, 6, 3, 4, 1, 2]
 Solution().max_heap_to_min_heap(a7); print(a7)  # valid min heap rooted at 1
 ```
 
-```java run
+```java run viz=array viz-root=arr
 import java.util.Arrays;
 
 public class Main {

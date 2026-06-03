@@ -22,6 +22,41 @@ Given `arr`, return an array `product` where `product[i]` equals the product of 
 > -   **Input:** `[3, 4]` → **Output:** `[4, 3]`
 
 <details>
+<summary><strong>Examples</strong></summary>
+
+**Example 1**
+```
+Input:  [1, 2, 3, 4]
+Output: [24, 12, 8, 6]
+Explanation: product[0] = 2·3·4 = 24, product[1] = 1·3·4 = 12, product[2] = 1·2·4 = 8,
+product[3] = 1·2·3 = 6. Each slot holds the product of every element except its own.
+```
+
+**Example 2**
+```
+Input:  [2, 3, 0]
+Output: [0, 0, 6]
+Explanation: product[0] = 3·0 = 0, product[1] = 2·0 = 0, product[2] = 2·3 = 6.
+A single zero zeroes every slot except the zero's own position.
+```
+
+**Example 3**
+```
+Input:  [3, 4]
+Output: [4, 3]
+Explanation: product[0] = 4 and product[1] = 3 — each slot holds the other element.
+```
+
+**Example 4**
+```
+Input:  [5, 1, 1, 1]
+Output: [1, 5, 5, 5]
+Explanation: the three 1s leave the product of the others unchanged, so every slot
+except index 0 picks up the 5.
+```
+
+</details>
+<details>
 <summary><h2>Approach</h2></summary>
 
 
@@ -81,7 +116,7 @@ product: "product = prefix * suffix" {
 
 
 
-```python run
+```python run viz=array viz-root=prefix_product
 from typing import List
 
 class Solution:
@@ -123,7 +158,7 @@ print(Solution().self_excluded_array_product([0, 0]))        # [0, 0]
 print(Solution().self_excluded_array_product([5, 1, 1, 1]))  # [1, 5, 5, 5]
 ```
 
-```java run
+```java run viz=array viz-root=prefix_product
 import java.util.Arrays;
 
 public class Main {
@@ -175,35 +210,68 @@ public class Main {
 
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+## Intuition
 
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
+Each output slot needs the product of every element *except* the one at that index. The brute-force read is a double loop: for each index, multiply all the others. That is `O(N²)` time. The tempting shortcut — multiply everything once, then divide out `arr[i]` per slot — is `O(N)` but illegal here (division is banned) and broken anyway, because a single `0` makes the total product `0` and division by the other zeros is undefined.
 
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
+The prefix-sum idea generalises from addition to multiplication. Split the answer at each index into two halves: everything *before* it and everything *after* it. Build `prefix_product[i]` as the product of all elements left of `i`, and `suffix_product[i]` as the product of all elements right of `i`. Then `result[i] = prefix_product[i] · suffix_product[i]` — the index's own value is in neither half, so it is automatically excluded.
 
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
+This is the multiplicative cousin of prefix sums, and it needs no hash map — two precomputed arrays carry the running products. What breaks if you reach for the division trick is correctness on zeros: with one zero the answer is defined (every other slot is `0`, the zero's slot is the product of the rest), and with two zeros every slot is `0`. The diagnostic signal is "combine a left-running aggregate with a right-running aggregate", which the prefix/suffix pass handles in `O(N)` regardless of zeros or negatives.
 
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
+## Applying the Diagnostic Questions
 
-<!-- TODO: Solution — missing, needs to be written -->
-<!--       Guidance: Python block then Java block -->
+| Check | Answer for Self Excluded Array Product |
+|---|---|
+| **Q1.** Does the answer reduce to a subarray aggregate? | **Yes** — each slot is a product over a prefix and a suffix, the multiplicative analogue of a range sum. |
+| **Q2.** Is the input a linear sequence walked once? | **Yes** — one left-to-right pass for prefixes, one right-to-left pass for suffixes. |
+| **Q3.** Is the matching slice found by a hash-map lookup? | **No** — the query is positional, so two prefix/suffix arrays suffice; no hash map of values is needed. |
+| **Q4.** Does the rule survive negatives and zeros? | **Yes** — products of signed values and zeros are correct, which is exactly why the division shortcut is banned. |
 
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
+## Approach
 
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table: time / space / why -->
+1. Allocate `prefix_product`, `suffix_product`, and `result`, each of length `n`.
+2. Fill `prefix_product` left to right: `prefix_product[0] = arr[0]`, then `prefix_product[i] = prefix_product[i - 1] · arr[i]` — the product of `arr[0..i]`.
+3. Fill `suffix_product` right to left: `suffix_product[n - 1] = arr[n - 1]`, then `suffix_product[i] = suffix_product[i + 1] · arr[i]` — the product of `arr[i..n-1]`.
+4. Handle the two endpoints, which have only one neighbouring half: `result[0] = suffix_product[1]` and `result[n - 1] = prefix_product[n - 2]`.
+5. For each interior index `i`, set `result[i] = prefix_product[i - 1] · suffix_product[i + 1]` — everything strictly before times everything strictly after.
+6. Return `result`.
 
-<!-- TODO: Edge Cases — missing, needs to be written -->
-<!--       Guidance: table, min 5 rows -->
+## Dry Run
 
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->
+Walk Example 1: `arr = [1, 2, 3, 4]`, expected output `[24, 12, 8, 6]`. Build both running-product arrays, then combine:
+
+```
+prefix_product (product of arr[0..i]):   [1, 2, 6, 24]
+suffix_product (product of arr[i..n-1]): [24, 24, 12, 4]
+
+result[0]     = suffix_product[1]                   = 24
+result[1]     = prefix_product[0] · suffix_product[2] = 1 · 12 = 12
+result[2]     = prefix_product[1] · suffix_product[3] = 2 · 4  = 8
+result[3]     = prefix_product[2]                   = 6
+
+result = [24, 12, 8, 6]
+```
+
+The result `[24, 12, 8, 6]` matches the expected output — each slot is the product of every element except its own.
+
+## Complexity Analysis
+
+| | Cost | Why |
+|---|---|---|
+| **Time** | **O(N)** | Two linear passes build the product arrays, one more combines them; each step is `O(1)`. |
+| **Space** | **O(N)** | The `prefix_product` and `suffix_product` arrays hold `N` entries each. The output is `O(N)`, and the auxiliary space can be cut to `O(1)` by folding the suffix pass into the result array. |
+
+## Edge Cases
+
+| Input | Output | Why |
+|---|---|---|
+| `[3, 4]` | `[4, 3]` | Two elements — each slot is the other value. |
+| `[1, 1]` | `[1, 1]` | All ones — every excluded product is `1`. |
+| `[2, 2]` | `[2, 2]` | Each slot is the single other `2`. |
+| `[2, 3, 0]` | `[0, 0, 6]` | One zero zeroes every slot except the zero's own position. |
+| `[0, 0]` | `[0, 0]` | Two zeros — each slot's "others" product still contains a zero. |
+| `[5, 1, 1, 1]` | `[1, 5, 5, 5]` | The three `1`s leave the others' product unchanged, so every slot except index `0` picks up the `5`. |
+
+## Key Takeaway
+
+The prefix-sum idea is not limited to sums — split each answer into a prefix aggregate and a suffix aggregate, and "the product of all other elements" falls out in `O(N)` without division, correct even when the array holds zeros.

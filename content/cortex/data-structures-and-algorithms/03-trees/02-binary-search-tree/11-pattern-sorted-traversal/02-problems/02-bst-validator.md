@@ -42,7 +42,7 @@ This is dramatically simpler than the recursive `(min, max)` bounds technique yo
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional
 
 
@@ -140,7 +140,7 @@ bad.right = TreeNode(8)
 print(Solution().bst_validator(bad))               # False
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

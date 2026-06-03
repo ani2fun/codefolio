@@ -162,7 +162,7 @@ print(Solution().palindrome_checker(from_list([1, 2, 3, 2, 1])))     # True
 print(Solution().palindrome_checker(from_list([1, 2, 3, 4, 5])))     # False
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {

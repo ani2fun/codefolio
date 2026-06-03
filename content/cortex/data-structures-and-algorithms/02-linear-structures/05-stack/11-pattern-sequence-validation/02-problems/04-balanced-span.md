@@ -22,6 +22,71 @@ Given a string `s` of `(` and `)`, return the length of the **longest valid (bal
 > -   **Input:** `s = "(((("` → **Output:** `0`
 
 <details>
+<summary><strong>Examples</strong></summary>
+
+**Example 1**
+```
+Input:  s = "((()()"
+Output: 4
+Explanation: the longest valid run is "()()" — positions 2..5. The two
+leading '(' are never closed, so the run starts after them.
+```
+
+**Example 2**
+```
+Input:  s = "(()())(()"
+Output: 6
+Explanation: "(()())" spans positions 0..5 — a fully balanced block.
+The trailing "(()" is incomplete and cannot extend the answer.
+```
+
+**Example 3**
+```
+Input:  s = "(((("
+Output: 0
+Explanation: no closer ever arrives, so no valid substring exists.
+```
+
+**Example 4**
+```
+Input:  s = ")()("
+Output: 2
+Explanation: the leading ')' resets the sentinel; "()" at positions 1..2
+is the longest valid run; the trailing '(' is unmatched.
+```
+
+</details>
+
+## Intuition
+
+This is a **sequence-validation** problem, but the answer is a *length*, not a yes/no — the longest contiguous run of correctly matched brackets. Validity is still decided by matching closers to the most recent openers; the new demand is measuring how far the current valid run stretches. That needs positions, so the stack stores **indices** rather than characters.
+
+The stack holds the index of every unmatched `(`, plus a sentinel index at the bottom. The sentinel — pre-pushed as `-1` — marks "one position before the current valid run". The core trick: after popping on a `)`, the new top is the index just before the run that this closer extends, so `i − stack.top()` is the run's current length. When a `)` empties the stack, no valid run can cross that closer, so its own index becomes a fresh sentinel for everything after it.
+
+The naive approach checks every substring for balance — `O(N³)` time across all start/end pairs with an `O(N)` validity test, or `O(N²)` with running counts. Both re-examine overlapping spans repeatedly. The index stack computes the longest valid length in one pass: each closer that matches immediately measures its run against the boundary on top, with no substring re-checking.
+
+## Applying the Diagnostic Questions
+
+| Check | Answer for Balanced Span |
+|---|---|
+| **Q1.** Does the input pair up — openers matched by later closers? | **Yes** — each `)` matches the most recent unmatched `(`; only matched pairs extend a valid run. |
+| **Q2.** Must a closer match the *most recent* unmatched opener? | **Yes** — order decides which `(` a `)` closes, and therefore where the current run begins. |
+| **Q3.** Is one pass with `O(1)` work per token enough? | **Yes** — each index is pushed once and popped once; the span read is `O(1)`. |
+| **Q4.** Is the answer decided by what the stack holds — here, boundary indices? | **Yes** — the top is "one before the current run", so `i − stack.top()` yields the length. |
+
+## Approach in Words
+
+Push indices, seed a sentinel, and measure each valid run against the boundary on top.
+
+1. **Initialise the stack with a sentinel `-1`** and a `maxLength` of `0`. The sentinel marks the position before any run.
+2. **Walk the string by index `i`**, classifying each character as `(` or `)`.
+3. **`(` → push its index `i`.** It is an unmatched opener and a potential run boundary.
+4. **`)` → pop.** This closer consumes the freshest unmatched opener (or the sentinel).
+5. **If the stack is now empty, push `i` as a new sentinel.** No valid run can span this unmatched closer, so it becomes the new left boundary.
+6. **Otherwise measure the run.** Set `maxLength = max(maxLength, i − stack.top())`, where the top is one index before the current valid run.
+7. **After the pass, return `maxLength`** — the length of the longest valid substring.
+
+<details>
 <summary><h2>Approach — index stack with sentinel</h2></summary>
 
 
@@ -59,7 +124,7 @@ flowchart LR
 
 
 
-```python run
+```python run viz=array viz-root=stack viz-kind=stack
 from typing import List
 
 class Solution:
@@ -110,7 +175,7 @@ print(Solution().balanced_span("()()"))      # 4
 print(Solution().balanced_span("))))"))      # 0
 ```
 
-```java run
+```java run viz=array viz-root=stack viz-kind=stack
 import java.util.*;
 
 public class Main {
@@ -186,35 +251,46 @@ Three lessons:
 
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+## Dry Run
 
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
+Walk Example 1 — `s = "((()()"`. The stack stores indices, seeded with sentinel `-1`; the top is always "one before the current valid run":
 
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
+```
+s = "((()()"        stack=[-1]  max=0
+     012345
 
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
+i=0 '('  push 0          → stack: [-1, 0]
+i=1 '('  push 1          → stack: [-1, 0, 1]
+i=2 '('  push 2          → stack: [-1, 0, 1, 2]
+i=3 ')'  pop 2           → stack: [-1, 0, 1]   len = 3 - 1 = 2   max=2
+i=4 '('  push 4          → stack: [-1, 0, 1, 4]
+i=5 ')'  pop 4           → stack: [-1, 0, 1]   len = 5 - 1 = 4   max=4
 
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
+return max = 4 ✓
+```
 
-<!-- TODO: Solution — missing, needs to be written -->
-<!--       Guidance: Python block then Java block -->
+The two leading `(` at indices `0` and `1` are never closed, so they stay on the stack as the run boundary. The valid run `"()()"` spans indices `2..5`, measured as `5 − 1 = 4`.
 
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
+## Complexity Analysis
 
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table: time / space / why -->
+| Measure | Value | Why |
+|---|---|---|
+| Time  | **O(N)** | One pass over `N` characters; each index is pushed once and popped at most once. |
+| Space | **O(N)** | The stack holds the sentinel plus every unmatched opener index — up to `N + 1` for an all-opener string. |
 
-<!-- TODO: Edge Cases — missing, needs to be written -->
-<!--       Guidance: table, min 5 rows -->
+The runtime is `O(N)` time: a single index-walk with `O(1)` push, pop, and span arithmetic per character. The space is `O(N)`: an all-opener input (`"(((("`) pushes every index on top of the sentinel, so the stack grows to `N + 1`. There is no second pass and no substring re-checking.
 
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->
+## Edge Cases
+
+| Case | Example | Expected | Reasoning |
+|---|---|---|---|
+| Empty string | `s = ""` | `0` | No characters, so no valid run; `maxLength` stays `0`. |
+| All openers | `s = "(((("` | `0` | No closer ever arrives, so no pair is matched. |
+| All closers | `s = "))))"` | `0` | Each `)` empties the stack and re-seeds a sentinel; no run forms. |
+| Leading closer | `s = ")()"` | `2` | The first `)` resets the sentinel; `"()"` at indices `1..2` gives length `2`. |
+| Incomplete tail | `s = "(()"` | `2` | The inner `"()"` scores `2`; the outer `(` is never closed. |
+| Adjacent runs | `s = "()()"` | `4` | Both pairs share the sentinel boundary, so the run measures across both as `4`. |
+
+## Key Takeaway
+
+Storing *indices* with a sentinel `-1` turns validity into measurement: the top is always one position before the current valid run, so `i − stack.top()` reads off its length in `O(1)`. The new idea over the bracket checker is using the stack to compute a span, not just to confirm matching.

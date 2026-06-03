@@ -87,7 +87,7 @@ Maintain three pointers (`start`, `prev_to_start`, `end`). Walk the list once.
 ### Solution
 
 
-```python run
+```python run viz=linked-list viz-root=head
 from typing import Optional
 
 
@@ -171,7 +171,7 @@ print(to_list(Solution().trim_nth_node(from_list([1, 2, 3, 4, 5]), 5)))  # [2, 3
 print(to_list(Solution().trim_nth_node(from_list([1, 2, 3, 4, 5]), 1)))  # [1, 2, 3, 4]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {

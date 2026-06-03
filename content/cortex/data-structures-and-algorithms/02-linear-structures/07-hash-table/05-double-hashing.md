@@ -1,6 +1,6 @@
 ---
 title: "Double Hashing"
-summary: "<!-- TODO: summary -->"
+summary: "An open-addressing hash table whose probe step comes from a second hash function: two keys that share a starting slot still scatter because each gets its own per-key stride, killing the secondary clustering quadratic probing leaves behind — at the cost of a step that must never be zero and a capacity that should be prime so the probe visits every slot."
 ---
 
 # 5. Double Hashing
@@ -19,15 +19,37 @@ There's a sharp constraint that makes double hashing tricky: the second hash fun
 
 ## Table of contents
 
-1. [Introduction to double hashing](#introduction-to-double-hashing)
-2. [Key components of double hashing](#key-components-of-double-hashing)
-3. [Implementing the hash table class](#implementing-the-hash-table-class)
-4. [Search operation in double hashing](#search-operation-in-double-hashing)
-5. [Insert operation in double hashing](#insert-operation-in-double-hashing)
-6. [Delete operation in double hashing](#delete-operation-in-double-hashing)
-7. [Design a hash table with double hashing](#design-a-hash-table-with-double-hashing)
+1. [Understanding the problem](#understanding-the-problem)
+2. [Introduction to double hashing](#introduction-to-double-hashing)
+3. [Key components of double hashing](#key-components-of-double-hashing)
+4. [Supported operations](#supported-operations)
+5. [Internal mechanics](#internal-mechanics)
+6. [Implementing the hash table class](#implementing-the-hash-table-class)
+7. [Search operation in double hashing](#search-operation-in-double-hashing)
+8. [Insert operation in double hashing](#insert-operation-in-double-hashing)
+9. [Delete operation in double hashing](#delete-operation-in-double-hashing)
+10. [Working example](#working-example)
+11. [Design a hash table with double hashing](#design-a-hash-table-with-double-hashing)
+12. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
+13. [Production reality](#production-reality)
+14. [Quiz](#quiz)
+15. [Practice ladder](#practice-ladder)
+16. [Further reading](#further-reading)
+17. [Cross-links](#cross-links)
+18. [Final takeaway](#final-takeaway)
 
 ***
+
+# Understanding the Problem
+
+Quadratic probing tamed primary clustering but left **secondary clustering** standing, and double hashing exists to remove that last source of collision pile-up. The cause is that quadratic probing's offset `a·i² + b·i` depends only on the probe number `i`, never on the key. Two keys that hash to the same starting slot therefore generate byte-for-byte identical probe sequences. They collide at the start, then chase each other through `+1, +4, +9, +16, …` forever — same slots, same order, every time.
+
+Double hashing attacks the offset, not the storage. It keeps the single contiguous array and the three-state record, and changes only how far each probe steps:
+
+- **Same storage as the other open-addressing schemes.** One slab of records, every slot `EMPTY` / `OCCUPIED` / `DELETED`, so cache-friendly streaming and zero per-record pointer overhead survive intact.
+- **A per-key step instead of a per-`i` formula.** The i-th probe sits at `(start + i · hash2(key)) % capacity`, so the *distance* between probes is computed from the key itself by a second hash function.
+
+To make this concrete: in quadratic probing, keys `8` and `15` both hashing to slot `1` walk the identical path `1, 2, 5, 10, …`. In double hashing they get different strides — `hash2(8) = 2` and `hash2(15) = 5` — so one walks `1, 3, 5, 0, …` and the other `1, 6, 4, 2, …`, diverging after the very first slot. So the key idea is: double hashing trades a per-`i` offset for a per-key one — you keep the contiguous-array speed and gain probe sequences that are effectively independent across keys, and you give up simplicity, because the second hash function must never return zero and the capacity must be coprime with every step it can produce.
 
 # Introduction to double hashing
 
@@ -237,6 +259,32 @@ flowchart LR
 > If the step size shares a common factor with `capacity`, the probe sequence won't visit every slot — it'll cycle through a *fraction* of them. With `capacity = 8` and step `2`, the probe walks `0, 2, 4, 6, 0, 2, 4, 6, ...` and never reaches the odd slots. The fix is to choose `capacity` to be a **prime number** — then *every* possible step size in `[1, capacity − 1]` is automatically coprime with it, and the probe is guaranteed to visit every slot of the array. This is why double-hashing implementations are typically deployed with prime-sized tables.
 
 </details>
+
+***
+
+# Supported Operations
+
+The interface is identical to linear and quadratic probing — one read and two mutations, each the same shape of "hash the key, then probe." Only the probe step changes, so the operation set and its complexity profile carry straight over. A double-hashing table offers no ordered iteration and no range query; the probe order has nothing to do with key order, so those operations would be meaningless here:
+
+| Operation | Average | Worst | Space | What it does |
+|---|---|---|---|---|
+| `search(key)` | `O(1)` | `O(N)` | `O(1)` | Probes the per-key sequence from `hash1(key)`; returns the value, or `-1` if an `EMPTY` slot or full scan is hit first |
+| `insert(key, value)` | `O(1)` | `O(N)` | `O(1)` | Updates in place if the key exists, else writes at the first non-`OCCUPIED` slot in the sequence; returns `false` if no slot is reachable |
+| `remove(key)` | `O(1)` | `O(N)` | `O(1)` | Probes to the matching slot and flips it to `DELETED`; a no-op if the key is absent |
+
+The worst case is `O(N)` in `capacity`, and it has one cause: a probe forced to walk all `capacity` iterations. Double hashing reaches that case least often of the three open-addressing schemes, because a per-key step gives each key an effectively independent walk — but it does not erase the case, because the table can still fill up. To make this concrete: in a capacity-`7` table with `hashPrime = 5`, a search for an absent key with `hash2 = 5` walks slots `start, start+5, start+10 mod 7, …` for up to `7` steps before returning `-1`. So the core insight is: the operations and bounds match the other open-addressing schemes exactly — the only lever double hashing pulls is *how independent probe paths are*, which lowers the constant factor and the odds of a long chain, not the worst-case cost itself.
+
+***
+
+# Internal Mechanics
+
+A double-hashing table is one array plus one rule: when slot `start` is taken, try `(start + 1·hash2(key)) % capacity`, then `(start + 2·hash2(key)) % capacity`, and keep stepping. The primary hash picks only the *starting* index; the secondary hash fixes the *stride*. Every operation is a variation on the same walk, and three slot states decide when it stops:
+
+- **`OCCUPIED`** — holds a live key-value pair. A probe compares the stored key and either matches or steps one stride further.
+- **`EMPTY`** — never held a record. A *search* stops here immediately, because an absent key would have been placed at this slot or earlier in its probe sequence.
+- **`DELETED`** — a tombstone left by a prior removal. A *search* walks *past* it, but an *insert* may reuse it.
+
+The per-key stride is the whole difference from quadratic probing, and its correctness rests on two number-theoretic facts. The stride `hash2(key) = hashPrime − (key % hashPrime)` always lands in `[1, hashPrime]`, so it is **never zero** — a zero stride would step onto the same slot forever. The stride must also be **coprime with `capacity`**, or the walk cycles through a fraction of the slots and never reaches the rest. To make this concrete: with `capacity = 8` and stride `2`, the probe visits `start, start+2, start+4, start+6` and then loops — the four odd slots are unreachable, so an insert can report "full" with half the array empty. So the core insight is: the array is passive storage and the per-key stride plus the three-state tag are the only live machinery — correctness reduces to walking `(start + i · hash2(key)) % capacity` with a non-zero stride that is coprime with `capacity`, which a **prime capacity** guarantees for every possible stride.
 
 ***
 
@@ -1235,6 +1283,19 @@ class MyHashTable {
 
 ***
 
+# Working Example
+
+Watching three keys that share a starting slot land in *different* places is the fastest way to see what the second hash function buys. Start with `MyHashTable(7, 5)` — capacity `7` (prime, so every stride is coprime with it), `hashPrime = 5`, every slot `EMPTY`. The primary hash is `key % 7`; the stride is `hash2(key) = 5 − (key % 5)`. Keys `8`, `15`, and `22` all hash to slot `1`, so quadratic probing would march them down one identical path. Double hashing scatters them:
+
+1. **`insert(8, A)`** — `hash1(8) = 8 % 7 = 1`. Slot `1` is `EMPTY`, so the probe stops at `i = 0` and writes `(8, A)`. Stride was never needed. Table: slot `1 = (8, A)`.
+2. **`insert(15, B)`** — `hash1(15) = 1`, a collision. The stride is `hash2(15) = 5 − (15 % 5) = 5 − 0 = 5`. Probe `i = 0` hits slot `1` (`OCCUPIED`, key `8 ≠ 15`); probe `i = 1` lands at `(1 + 1·5) % 7 = 6`, which is `EMPTY`. Write `(15, B)` at slot `6`. Table: slots `1 = (8, A)`, `6 = (15, B)`.
+3. **`insert(22, C)`** — `hash1(22) = 22 % 7 = 1`, another collision at the same start. But the stride differs: `hash2(22) = 5 − (22 % 5) = 5 − 2 = 3`. Probe `i = 0` hits slot `1` (key `8 ≠ 22`); probe `i = 1` lands at `(1 + 1·3) % 7 = 4`, which is `EMPTY`. Write `(22, C)` at slot `4`. Table: slots `1 = (8, A)`, `4 = (22, C)`, `6 = (15, B)`.
+4. **`search(22)`** — `hash1(22) = 1`, `hash2(22) = 3`. Probe `i = 0` reads slot `1` (key `8 ≠ 22`, keep walking); probe `i = 1` reads slot `4` (key `22` matches). Return `C`.
+
+Three keys, one starting slot, three different destinations — `1`, `6`, and `4`. The crux is step `3`: key `22` and key `15` both collided with key `8` at slot `1`, yet they never collided with *each other*, because their strides (`3` versus `5`) sent them to different slots on the first hop. Had this been quadratic probing, key `22` would have walked `15`'s exact path and piled up behind it. So the core insight is: `hash1` decides where a key *starts*, `hash2` decides how it *moves*, and giving each key its own stride is what stops same-start keys from sharing a probe sequence.
+
+***
+
 # Design a hash table with double hashing
 
 ## Problem Statement
@@ -1453,7 +1514,7 @@ print(t2.insert(7, 20))             # True — key 7 also hashes to index 0, dou
 print(t2.search(7))                 # 20
 ```
 
-```java run
+```java run viz=graph viz-root=table
 import java.util.*;
 
 public class Main {
@@ -1663,39 +1724,106 @@ Three takeaways to carry forward:
 
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+# Edge Cases and Pitfalls
 
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
+Double hashing inherits every open-addressing trap and adds two of its own around the second hash function. Almost every bug traces back to a bad stride or the three slot states. Keep this list open the next time a double-hashing table loops forever or loses a key:
 
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
+- **A second hash function that can return zero.** A stride of `0` means every probe lands on the same slot — an instant infinite loop on the first collision. The form `hashPrime − (key % hashPrime)` is engineered to forbid it: `key % hashPrime ∈ [0, hashPrime − 1]`, so the result lands in `[1, hashPrime]`. Any homemade `hash2` must guarantee a non-zero result the same way.
+- **A capacity not coprime with the stride.** If `capacity` shares a factor with a possible stride, the probe cycles through a *fraction* of the slots and never reaches the rest. With `capacity = 8` and stride `2`, the walk visits only even slots — an insert can return `false` ("full") while four slots sit empty. The robust fix is a **prime `capacity`**: every stride in `[1, capacity − 1]` is then automatically coprime with it.
+- **Setting a deleted slot to `EMPTY` instead of `DELETED`.** Erasing a slot mid-chain makes a search stop early and orphans every record placed past it on that stride. The fix is the tombstone: flip the slot to `DELETED` so a search walks past it while inserts can still reuse it.
+- **Stopping a search on the first non-`OCCUPIED` slot.** A search must halt on `EMPTY` but keep walking on `DELETED`, because the key may have been inserted *before* the slot was tombstoned. Treating `DELETED` like `EMPTY` reintroduces the orphaning bug from the read side.
+- **Inserting without the two-pass check.** Insert probes twice on purpose: `probe_for_occupied_index` confirms the key is absent anywhere on its stride, then `probe_for_empty_index` finds a writable slot. Stopping at the first `DELETED` slot on a single pass can write a duplicate key whose original copy still sits further down the same stride.
+- **Forgetting the modulo wrap.** Every probe step is `(start_index + i · hash2(key)) % capacity`. A plain `start_index + i · hash2(key)` walks off the end of the array — an `IndexError` in Python, an `ArrayIndexOutOfBoundsException` in Java — because the stride can push the raw index well past the last slot.
+- **No bound on the probe loop.** The loop must run at most `capacity` times. Without that cap, a full table with no matching key spins forever instead of returning `-1` (search) or `false` (insert). Iterating `range(capacity)` gives the bound for free.
+- **The `-1` sentinel colliding with real data.** `search` returns `-1` for "absent," so a table that legitimately stores `-1` as a value cannot tell a miss from a hit. Reserve `-1`, or return an explicit "not found" signal instead of overloading a value.
 
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
+***
 
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
+# Production Reality
 
-<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
-<!--       Guidance: bulleted list of gotchas -->
+True double hashing — a second hash function computing the probe stride — shows up most often in textbooks and competitive-programming hash sets, where a prime capacity is cheap to arrange. Production hash tables more commonly reach for *related* ideas that defeat the same secondary-clustering enemy: data-dependent probe sequences. The systems below are worth knowing by name.
 
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+**[CPython's `dict` and `set`]** — uses **a perturbation-based probe sequence that folds in the full hash bits as it walks** — because mixing extra hash bits into each step gives colliding keys data-dependent paths, the same goal as double hashing without a second full hash evaluation.
 
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+<!-- VERIFY: characterising CPython's perturbation probe as "double-hashing-like" — it derives the per-step displacement from the remaining hash bits rather than a distinct second hash function; the family resemblance is the data-dependent stride, not an identical mechanism. -->
 
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
+**[A competitive-programming hash set (e.g. a custom `long`-keyed table)]** — uses **double hashing with a prime capacity and a `hashPrime`-based second function** — because a prime table size makes every stride coprime with capacity for free, so the textbook scheme is correct with almost no extra code.
 
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+**[Cuckoo hashing tables (some language runtimes and routers)]** — uses **two independent hash functions to give each key two candidate slots** — because two hash functions bound worst-case lookup to `O(1)` by relocating on collision, an idea that grows out of using more than one hash like double hashing does.
 
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
+**[Open-addressed symbol tables in compilers and interners]** — uses **a fixed prime-sized table with a secondary-hash stride** — because the working set is bounded and known, so a prime capacity plus a per-key stride keeps probe chains short without ever resizing.
 
-<!-- TODO: Final Takeaway — missing, needs to be written -->
-<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->
+***
+
+# Quiz
+
+Test your grip before moving on. One answer per question; reveal only after you have committed to one.
+
+**[Recall] Q: What single expression computes the `i`-th probe index in double hashing, and which part of it depends on the key?**
+`(start_index + i · hash2(key)) % capacity` — the stride `hash2(key)` depends on the key, so each key gets its own per-key spacing between probes.
+
+**[Recall] Q: Why can the second hash function `hashPrime − (key % hashPrime)` never return zero?**
+Because `key % hashPrime` lies in `[0, hashPrime − 1]`, subtracting it from `hashPrime` always yields a value in `[1, hashPrime]`, so the stride is at least `1`.
+
+**[Reasoning] Q: Why does a per-key stride defeat the secondary clustering that quadratic probing suffers?**
+Quadratic probing's offset depends only on the probe number, so same-start keys share an identical path; double hashing's offset depends on the key, so two keys colliding at one slot get different strides and diverge after the first hop.
+
+**[Reasoning] Q: Why must the capacity be coprime with the step size, and what is the simplest way to guarantee it?**
+If the step shares a factor with `capacity`, the probe cycles through only a fraction of the slots and leaves the rest unreachable; choosing a **prime `capacity`** makes every step in `[1, capacity − 1]` coprime with it, so the probe visits every slot.
+
+**[Tradeoff] Q: When would you reach for double hashing over quadratic probing, and what do you accept in return?**
+Choose double hashing when you need the closest practical approximation to uniform hashing and can afford a prime-sized table, accepting a second hash evaluation per probe step and the constraint that the stride must be non-zero and coprime with capacity.
+
+***
+
+# Practice Ladder
+
+Five problems that lean on the hash-table contract this chapter builds, easiest first. Try each unaided; hit the hint after ten minutes; do not peek at solutions until you have written something runnable.
+
+| # | Problem | Pattern | Difficulty | Hint |
+|---|---------|---------|------------|------|
+| 1 | [First Non-Repeating Character](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting-problems-first-non-repeating-character) | [Counting](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting-pattern) | Easy | One pass to count every character into a map, a second pass to return the first with count `1`. The map's `O(1)` average lookup is the whole trick. `O(n)` time, `O(k)` space for `k` distinct keys. |
+| 2 | [Duplicate Detection](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-fixed-sized-sliding-window-problems-duplicate-detection) | [Fixed Sliding Window](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-fixed-sized-sliding-window-pattern) | Easy | Slide a window of width `k` and keep its members in a set; a failed insert means a duplicate inside the window. `O(n)` time, `O(k)` space. |
+| 3 | [Anagram Checker](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting-problems-anagram-checker) | [Counting](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting-pattern) | Easy | Count letters of one string into a map, then decrement with the second; all-zero counts means they are anagrams. `O(n)` time, `O(k)` space. |
+| 4 | [Subarray Sum Equals K](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-variable-sized-sliding-window-problems-subarray-sum-equals-k) | [Variable Sliding Window](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-variable-sized-sliding-window-pattern) | Medium | Store running prefix sums in a map; for each index, look up `prefix − k` to count qualifying subarrays in `O(1)`. `O(n)` time, `O(n)` space. |
+| 5 | [Zero Sum Subarrays](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-prefix-sum-problems-zero-sum-subarrays) | [Prefix Sum](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-prefix-sum-pattern) | Medium | A repeated prefix sum means the span between the two indices sums to zero; a map from prefix value to count finds every such pair in one pass. `O(n)` time, `O(n)` space. |
+
+Once these feel automatic, the map has stopped being syntax and become a structural reflex — exactly what counting, windowing, and prefix-sum problems build on.
+
+***
+
+# Further Reading
+
+Curated paths in, not a syllabus. Read in order of the annotation; come back for the rest when you need depth.
+
+- **[CLRS — Chapter 11.4: Open Addressing](https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/)**
+  ★ Essential — the formal treatment of double hashing as the practical stand-in for uniform hashing, with the expected-probe-count analysis that shows why an independent stride per key beats linear and quadratic probing.
+- **[Knuth — *The Art of Computer Programming*, Vol. 3, §6.4](https://www-cs-faculty.stanford.edu/~knuth/taocp.html)**
+  ◆ Advanced — the original double-hashing analysis, including why the second hash function and the table size must be relatively prime for the probe sequence to be a full permutation of the slots.
+- **[Pagh & Rodler — *Cuckoo Hashing*](https://www.itu.dk/people/pagh/papers/cuckoo-jour.pdf)**
+  ◆ Advanced — where using two independent hash functions is pushed to its logical end: worst-case `O(1)` lookup, the natural sequel to double hashing's "more than one hash" idea.
+- **[CPython `dict` implementation notes (`Objects/dictobject.c`)](https://github.com/python/cpython/blob/main/Objects/dictobject.c)**
+  → Reference — the perturbation-based probe sequence CPython uses to fold extra hash bits into each step, achieving double-hashing-like dispersion without a second full hash function.
+
+***
+
+# Cross-Links
+
+**Prerequisites**
+
+- [Quadratic Probing](/cortex/data-structures-and-algorithms/linear-structures-hash-table-quadratic-probing) — the widening-step scheme whose leftover secondary clustering is exactly the problem double hashing removes.
+- [Linear Probing](/cortex/data-structures-and-algorithms/linear-structures-hash-table-linear-probing) — the simplest open-addressing table, where the three-state record and the `DELETED` tombstone this lesson reuses are first introduced.
+- [Introduction to Hash Tables](/cortex/data-structures-and-algorithms/linear-structures-hash-table-introduction-to-hash-tables) — the hash function, the load factor, and the collision problem every resolution scheme in this chapter is solving.
+
+**What comes next**
+
+- [Pattern: Counting](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting-pattern) — the first problem-solving pattern built on the hash-table contract, using a frequency map to replace `O(n²)` scans with `O(n)` passes.
+- [Memorize: Hash Table](/cortex/data-structures-and-algorithms/linear-structures-hash-table-memorize) — the chapter crib sheet that distils all four collision-resolution schemes into a single set of facts and complexities.
+
+***
+
+## Final Takeaway
+
+1. **Core mechanic:** store key-value pairs directly in one contiguous array and resolve a collision by stepping `(start + i · hash2(key)) % capacity`, where a second hash function gives every key its own per-key stride so two keys sharing a starting slot still diverge.
+2. **Dominant tradeoff:** you gain probe sequences that are effectively independent across keys — the closest practical approximation to uniform hashing — and you give up simplicity, paying a second hash evaluation per step and requiring a non-zero stride coprime with capacity.
+3. **One thing to remember:** make the capacity a prime number; then every possible stride is coprime with it, the probe visits every slot, and the second hash function's "never zero" guarantee is all that stands between you and a correct table.

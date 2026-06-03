@@ -122,7 +122,7 @@ print(Solution().duplicate_paths(from_level_order([1, 2, 3])))                  
 print(Solution().duplicate_paths(from_level_order([1, 2, 2, 3, None, None, 3])))     # [[1, 2, 3]] (left and right paths match)
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 import java.util.stream.Collectors;
 

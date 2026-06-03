@@ -122,7 +122,7 @@ if __name__ == "__main__":
         print(f"n={n:>10,d}  estimate={est:>12,.0f}  error={err:.2f}%   memory=12 KB")
 ```
 
-```java run
+```java run viz=graph viz-root=E
 import java.security.MessageDigest;
 
 public class Main {

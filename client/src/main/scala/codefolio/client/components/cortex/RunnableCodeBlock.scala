@@ -20,11 +20,16 @@ import scala.util.{Failure, Success, Try}
  * Renders a code editor + Run/Edit/Cancel controls + an output panel. State machine lives in [[CodeExecutor]]
  * (shared module — testable on the JVM); this file owns the React surface only.
  *
+ * **Editor surface.** Runnable blocks render through Monaco (`@monaco-editor/react`, see [[MonacoEditor]]) in
+ * both modes — Edit just flips `options.readOnly` on the existing instance; no remount, no visual swap.
+ * Display-only `runnable: false` tabs (pseudocode) keep the Prism-highlighted `<pre>` (Monaco doesn't
+ * tokenise pseudocode).
+ *
  * **Auth gate (ADR-0013).** Editing is gated behind a signed-in identity:
- *   - anonymous (or auth still booting) — the source renders as a read-only highlighted block; the **Edit**
- *     button wears a lock badge and opens the sign-in modal on click; **Run** still works (the canonical
- *     source executes, metered per-IP);
- *   - signed in — **Edit** is unlocked; clicking it swaps in the live editor; an identity chip shows in the
+ *   - anonymous (or auth still booting) — Monaco renders in read-only mode; the **Edit** button wears a lock
+ *     badge and opens the sign-in modal on click; **Run** still works (the canonical source executes, metered
+ *     per-IP);
+ *   - signed in — **Edit** is unlocked; clicking it flips Monaco editable; an identity chip shows in the
  *     header and an hourly-quota notice slides in under the block as the budget runs low;
  *   - auth disabled server-side (`AUTH_ENABLED=false`, dev) — editing is open to everyone, no chip.
  *
@@ -36,23 +41,21 @@ import scala.util.{Failure, Success, Try}
  */
 object RunnableCodeBlock:
 
-  @js.native @JSImport("react-simple-code-editor", JSImport.Default)
-  private object EditorRaw extends js.Object
-
-  private trait EditorProps extends js.Object:
-    var value: String
-    var onValueChange: js.Function1[String, Unit]
-    var highlight: js.Function1[String, String]
-    var padding: js.UndefOr[Int]              = js.undefined
-    var tabSize: js.UndefOr[Int]              = js.undefined
-    var insertSpaces: js.UndefOr[Boolean]     = js.undefined
-    var textareaClassName: js.UndefOr[String] = js.undefined
-    var style: js.UndefOr[js.Object]          = js.undefined
-
-  private val Editor = JsComponent[EditorProps, Children.None, Null](EditorRaw)
-
   @js.native @JSImport("@markdown/runtime", "highlightWithPrism")
   private def highlightWithPrism(code: String, lang: String): String = js.native
+
+  /** Maps our runnable-language aliases (see Languages.scala) onto Monaco's language ids. */
+  private def monacoLangFor(alias: String): String = alias.toLowerCase match
+    case "python" | "py" | "python3"  => "python"
+    case "java"                       => "java"
+    case "scala"                      => "scala"
+    case "c" | "cpp" | "c++" | "cxx"  => "cpp"
+    case "go" | "golang"              => "go"
+    case "rust" | "rs"                => "rust"
+    case "kotlin" | "kt"              => "kotlin"
+    case "typescript" | "ts"          => "typescript"
+    case "javascript" | "js" | "node" => "javascript"
+    case other                        => other
 
   final case class Props(
       language: String,
@@ -66,10 +69,15 @@ object RunnableCodeBlock:
       // When set, a "Visualise" button opens VisualiseModal and traces the live
       // editor content. `viz` is the layout hint (e.g. "binary-tree"); `vizRoot`
       // optionally names the structure's root variable; `vizCase` optionally
-      // overrides the multi-case segmentation count. Set only on Python tabs.
+      // overrides the multi-case segmentation count. Supported on Python and
+      // Java tabs (Kotlin / Scala traces remain source-only until those tracers
+      // ship — see ADR-0021's deferred section). `vizKind` is the bespoke-renderer
+      // dispatch axis (ADR-0024) — `stack` / `queue` / `heap` / `trie` / … — and
+      // wins over the segment-wide inference inside HeapToGraph.adapt.
       viz: Option[String] = None,
       vizRoot: Option[String] = None,
-      vizCase: Option[Int] = None
+      vizCase: Option[Int] = None,
+      vizKind: Option[String] = None
   )
 
   private val StatusOk = 3
@@ -149,7 +157,13 @@ object RunnableCodeBlock:
               Callback(observer.disconnect())
         }
       }
-      .render { (props, st, authS, vizOpenS, cueS, vizIdRef) =>
+      // Monaco's content-driven height. Initialised from the source's line count (the same floor used
+      // for `.rcb__editor`'s minHeight today). Auto-grown in onMount via `editor.onDidContentSizeChange`.
+      .useStateBy { (p, _, _, _, _, _) =>
+        val lines = math.max(p.source.split("\n").length, 5)
+        math.min(lines * 22 + 24, 600)
+      }
+      .render { (props, st, authS, vizOpenS, cueS, vizIdRef, heightS) =>
         val s = st.value
 
         val status  = authS.value.status
@@ -314,8 +328,8 @@ object RunnableCodeBlock:
               )
             )
 
-        // The source as a static, syntax-highlighted, read-only block. Used for
-        // pseudocode tabs AND for the anonymous / not-editing runnable view.
+        // Prism-highlighted static block, used only for pseudocode (runnable: false) tabs.
+        // Real-language runnable blocks always render through Monaco (see `monacoView`).
         val staticView: VdomNode =
           // `not-prose` opts out of Tailwind Typography's <pre> overrides so the
           // editor styling wins.
@@ -325,36 +339,110 @@ object RunnableCodeBlock:
             ^.dangerouslySetInnerHtml := s"<code>${highlightWithPrism(props.source, props.language)}</code>"
           )
 
-        val editableView: VdomNode =
-          val editorProps = (new js.Object).asInstanceOf[EditorProps]
-          editorProps.value = s.code
-          editorProps.onValueChange = (next: String) =>
-            st.modState(prev => CodeExecutor.setCode(prev, next)).runNow()
-          editorProps.highlight = (c: String) => highlightWithPrism(c, props.language)
-          editorProps.padding = 16
-          editorProps.tabSize = 4
-          editorProps.insertSpaces = true
-          editorProps.textareaClassName = "rcb__editor-textarea"
-          editorProps.style = js.Dynamic
+        // Monaco surface — same component instance in both read-only (anonymous / not-editing) and
+        // editable (signed-in + editing) modes; only `options.readOnly` flips. No remount, no visual
+        // swap. Auto-grows with content via the onMount content-size listener (clamped to [minHeight,
+        // 1200]).
+        val monacoView: VdomNode =
+          val opts: js.Object = js.Dynamic
             .literal(
+              readOnly = !editing,
+              domReadOnly = !editing,
+              padding = js.Dynamic.literal(top = 16, bottom = 16),
               fontFamily =
                 "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace",
               fontSize = 13,
-              lineHeight = 1.6,
-              minHeight = minHeight
+              lineHeight = 22,
+              tabSize = 4,
+              insertSpaces = true,
+              minimap = js.Dynamic.literal(enabled = false),
+              scrollBeyondLastLine = false,
+              wordWrap = "off",
+              automaticLayout = true,
+              renderLineHighlight = if editing then "line" else "none",
+              scrollbar = js.Dynamic.literal(alwaysConsumeMouseWheel = false),
+              fixedOverflowWidgets = true,
+              cursorStyle = "line",
+              renderValidationDecorations = "off"
             )
             .asInstanceOf[js.Object]
 
+          val mProps = (new js.Object).asInstanceOf[MonacoEditor.EditorProps]
+          mProps.value = s.code
+          mProps.language = monacoLangFor(props.language)
+          mProps.theme = "codefolio-dark"
+          // Pass an explicit pixel height (matching the wrapper) instead of "100%".
+          // `@monaco-editor/react`'s inner container has no intrinsic height — with "100%" it
+          // collapses to 0 on first layout, Monaco falls back to 5px, and the ResizeObserver
+          // never recovers because nothing forces the container to expand. Driving it from
+          // `heightS` keeps Monaco's outer + inner DOM in lock-step with the wrapper.
+          mProps.height = heightS.value
+          mProps.options = opts
+          mProps.loading = "Loading editor…"
+          mProps.onChange = (next, _) =>
+            val v = next.getOrElse("")
+            st.modState(prev => CodeExecutor.setCode(prev, v)).runNow()
+          mProps.onMount = (ed, _) =>
+            // `@monaco-editor/react` mounts its container behind `display: none` until the editor
+            // is ready — Monaco's initial measurement returns 0×0 and falls back to a 5px layout,
+            // and Monaco's internal `automaticLayout` ResizeObserver doesn't reliably recover from
+            // (a) the initial display:none → visible transition, (b) subsequent height changes
+            // driven by React state, or (c) the inactive-tab → active-tab visibility flip in
+            // RunnableCodeGroup. We sidestep the auto-measure entirely with an external
+            // ResizeObserver that reads the container's DOM rect and passes explicit dimensions
+            // to `editor.layout` on every size change.
+            val container = ed.getContainerDomNode().asInstanceOf[dom.html.Element]
+            val relayout: () => Unit = () =>
+              val rect = container.getBoundingClientRect()
+              if rect.width > 0 && rect.height > 0 then
+                val _ = ed.layout(js.Dynamic.literal(width = rect.width, height = rect.height))
+            val resizeCb: js.Function2[js.Array[dom.ResizeObserverEntry], dom.ResizeObserver, Unit] =
+              (_, _) => relayout()
+            val resizeObs = new dom.ResizeObserver(resizeCb)
+            resizeObs.observe(container)
+            val syncHeight: () => Unit = () =>
+              val ch      = ed.getContentHeight().asInstanceOf[Double].toInt + 8
+              val clamped = math.min(math.max(ch, minHeight), 1200)
+              heightS.setState(clamped).runNow()
+            // `<details>` toggle recovery — when a code block lives inside a closed `<details>`
+            // the container's box may report a 0×0 rect at mount time; when the user later opens
+            // the details, browsers don't reliably fire ResizeObserver on the size-from-zero
+            // transition (the container was never laid out while closed). Listening for `toggle`
+            // on the nearest ancestor `<details>` and re-running `relayout` + `syncHeight` on
+            // open closes that hole — Monaco re-measures against the now-visible container.
+            val ancestorDetails = container.closest("details")
+            if ancestorDetails != null then
+              val onToggle: js.Function1[dom.Event, Unit] = (_: dom.Event) =>
+                if ancestorDetails.asInstanceOf[js.Dynamic].open.asInstanceOf[Boolean] then
+                  relayout()
+                  syncHeight()
+              ancestorDetails.addEventListener("toggle", onToggle)
+            // Kick off the first measurement (the ResizeObserver also fires once on observe,
+            // but only after the next layout flush — calling explicitly avoids a one-frame flash
+            // of the 5px fallback).
+            relayout()
+            syncHeight()
+            // Re-sync the wrapper height when the user grows / shrinks the source. The actual
+            // editor.layout() call is driven by the ResizeObserver above, which fires as soon as
+            // the wrapper's new height lands in the DOM. The returned IDisposable is cleaned up
+            // when Monaco disposes itself on unmount.
+            val _ = ed.onDidContentSizeChange((_: js.Any) => syncHeight())
+
           <.div(
-            ^.className := "rsce-editor rcb__editor",
-            ^.style     := js.Dynamic.literal(minHeight = minHeight).asInstanceOf[js.Object],
+            ^.className := "rcb__editor rcb__editor--monaco not-prose",
+            ^.style := js.Dynamic
+              .literal(height = s"${heightS.value}px", minHeight = s"${minHeight}px")
+              .asInstanceOf[js.Object],
             ^.onKeyDown ==> onKeyDown,
-            Editor(editorProps)
+            MonacoEditor.Component(mProps)
           )
 
-        // Editing → the live editor; otherwise (pseudocode, or signed-out, or
-        // signed-in-but-not-editing) → the read-only highlighted block.
-        val editor: VdomNode = if editing then editableView else staticView
+        // Pseudocode (runnable: false) → Prism static block. Every real-language runnable block —
+        // signed-in and signed-out alike — renders through Monaco; the readOnly flag is the only
+        // difference between the two states.
+        val editor: VdomNode =
+          if !props.runnable then staticView
+          else monacoView
 
         // Bottom edit bar — visible only while editing.
         val editBar: VdomNode =
@@ -429,10 +517,12 @@ object RunnableCodeBlock:
                 VisualiseModal.Props(
                   isOpen = vizOpenS.value,
                   onClose = vizOpenS.setState(false),
-                  pythonSource = s.code,
+                  language = props.language,
+                  source = s.code,
                   vizHint = hint,
                   vizRoot = props.vizRoot,
                   vizCase = props.vizCase,
+                  vizKind = props.vizKind,
                   title = "Code visualisation"
                 )
               )

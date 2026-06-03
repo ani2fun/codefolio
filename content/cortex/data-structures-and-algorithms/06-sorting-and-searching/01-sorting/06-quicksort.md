@@ -364,7 +364,7 @@ if __name__ == "__main__":
     print(arr)   # [1, 2, 4, 5, 7, 8]
 ```
 
-```java run
+```java run viz=array viz-root=arr
 import java.util.*;
 
 public class Main {
@@ -624,7 +624,7 @@ a8 = [5, 2, 8, 1, 9]
 Solution().quick_sort(a8); print(a8)               # [1, 2, 5, 8, 9]
 ```
 
-```java run
+```java run viz=array viz-root=arr
 import java.util.*;
 
 public class Main {

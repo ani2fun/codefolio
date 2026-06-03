@@ -71,7 +71,7 @@ flowchart TB
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional
 
 
@@ -177,7 +177,7 @@ print(Solution().range_diameter(
     from_level_order([4, 2, 6, 1, 3, 5, 7]), 1, 7))      # 4
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

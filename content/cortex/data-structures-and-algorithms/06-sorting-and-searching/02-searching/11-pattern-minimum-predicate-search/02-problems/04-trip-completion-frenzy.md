@@ -94,7 +94,7 @@ print(Solution().trip_completion_frenzy([5, 10], 1))     # 5   (fastest plane ha
 print(Solution().trip_completion_frenzy([1, 2, 3], 10))  # 6
 ```
 
-```java run
+```java run viz=array viz-root=times
 import java.util.*;
 
 public class Main {

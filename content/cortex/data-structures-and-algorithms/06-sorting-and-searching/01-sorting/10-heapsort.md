@@ -351,7 +351,7 @@ if __name__ == "__main__":
     print(arr)   # [1, 2, 3, 4, 5, 6]
 ```
 
-```java run
+```java run viz=array viz-root=arr
 public class Main {
     static class Solution {
         private void heapify(int[] arr, int n, int index) {

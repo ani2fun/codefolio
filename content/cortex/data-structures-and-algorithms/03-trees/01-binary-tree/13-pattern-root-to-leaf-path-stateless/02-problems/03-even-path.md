@@ -93,7 +93,7 @@ print(Solution().even_path(from_level_order([2, 3, 4])))                       #
 print(Solution().even_path(from_level_order([2, 3, 5])))                       # False (both leaves via odd intermediary)
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

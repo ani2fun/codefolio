@@ -152,7 +152,7 @@ print(Solution().rotated_array_minimum([1, 2, 3, 4, 5]))     # 0 — no rotation
 print(Solution().rotated_array_minimum([2, 3, 4, 5, 1]))     # 4 — rotated by N-1
 ```
 
-```java run
+```java run viz=array viz-root=arr
 import java.util.*;
 
 public class Main {
@@ -313,7 +313,7 @@ print(Solution().rotated_array_search([2, 3, 4, 5, 1], 1))      # 4 — target a
 print(Solution().rotated_array_search([4, 5, 6, 1, 2, 3], 4))   # 0 — target at first position
 ```
 
-```java run
+```java run viz=array viz-root=arr
 import java.util.*;
 
 public class Main {

@@ -16,6 +16,10 @@ export interface GraphLayout {
   positions: Map<string, NodePos>;
   width: number;
   height: number;
+  /** Optional per-edge SVG path overrides — keyed by `"fromId->toId"`. When present,
+   *  the graph renderer uses these paths instead of computing straight lines. Used by
+   *  the union-find layout to render curved parent arcs above the node row. */
+  edgePaths?: Map<string, string>;
 }
 
 /** Places the union of every node/edge in the animation; the renderer reuses the result per step. */

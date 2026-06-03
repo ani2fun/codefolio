@@ -181,7 +181,7 @@ e, o = Solution().even_odd_split(from_list([2, 4]))
 print(to_list(e), to_list(o))   # [2, 4] []
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {

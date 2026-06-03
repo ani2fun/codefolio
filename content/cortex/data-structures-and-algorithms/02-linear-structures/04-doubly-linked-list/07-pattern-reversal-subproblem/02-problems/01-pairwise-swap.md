@@ -8,9 +8,9 @@ difficulty: easy
 
 # Pairwise swap
 
-## The Problem
+## Problem Statement
 
-Given the **head** of a doubly linked list, swap **every two adjacent nodes** and return the head of the reordered list. Solve it without modifying values — only relink pointers.
+Given the **head** of a doubly linked list, swap **every two adjacent nodes** and return the head of the reordered list. Solve it without modifying values — only relink pointers, keeping both `prev` and `next` chains consistent after every swap.
 
 ```
 Input : head = [1, 2, 3, 4]
@@ -18,6 +18,50 @@ Output:        [2, 1, 4, 3]
 Explanation: pairs (1,2) → (2,1) and (3,4) → (4,3).
 ```
 
+---
+
+<details>
+<summary><h2>Examples</h2></summary>
+
+**Example 1**
+```
+Input:  head = [1, 2, 3, 4]
+Output: [2, 1, 4, 3]
+Explanation: Swap pair (1, 2) → (2, 1) and pair (3, 4) → (4, 3); the list becomes [2, 1, 4, 3] with both prev and next chains preserved.
+```
+
+**Example 2**
+```
+Input:  head = [1, 2, 3, 4, 5]
+Output: [2, 1, 4, 3, 5]
+Explanation: Two full pairs swap; the trailing single node 5 has no partner and stays in place — both 5.prev (pointing at 3) and 5.next (None) survive.
+```
+
+**Example 3**
+```
+Input:  head = [1]
+Output: [1]
+Explanation: A single node has no pair to swap with, so the list is returned unchanged.
+```
+
+**Example 4**
+```
+Input:  head = []
+Output: []
+Explanation: An empty list trivially produces an empty list.
+```
+
+</details>
+<details>
+<summary><h2>Intuition</h2></summary>
+
+The **structural property** is that pairwise swap is reverse-k-segments with `k = 2` hard-coded. Every adjacent pair is its own subproblem: a two-node reversal that swaps `(a, b) → (b, a)` while preserving the doubly-linked invariant — `a.prev` becomes `b`, `b.next` becomes `a`, and the boundary links on either side of the pair are re-stitched in both directions. The list decomposes into `⌊n / 2⌋` independent two-node chunks plus an optional trailing singleton. That makes the problem the simplest concrete instance of the reversal-subproblem pattern.
+
+The **pointer placement** uses the same four boundaries as the general k-segment case. `start` points at the pair's first node and `end = start.next` at its second; `leftBound` is read inside the `reverse` helper as `start.prev` (initially `None` because the first pair has no predecessor); `rightBound` is `end.next` cached before the flip starts. After the inner reversal swaps `prev`/`next` on both nodes and stitches the four boundary links, the old `start` is the pair's tail and `start.next` is the next pair's head. The first-pair detection is post-hoc — `end.prev == None` only when the predecessor was `None`, which is true exactly once.
+
+What **breaks if you reach for value-swapping**? Copying `val` between adjacent nodes works for the swap-by-value reading of the problem but violates the constraint "reorder by updating links" — and on a doubly linked list the danger is sharper, because a half-finished pointer swap silently corrupts the backward chain while the forward chain still looks valid. Most importantly, value-swapping doesn't generalise: the next three problems in this section all need true link-level reversal. The segment-reversal call resolves both concerns at once — it flips the actual `prev` and `next` pointers, and the same helper transfers to reverse-k-segments without modification.
+
+</details>
 <details>
 <summary><h2>What Does "Pairwise Swap" Mean?</h2></summary>
 
@@ -59,11 +103,14 @@ flowchart TB
 <details>
 <summary><h2>Applying the Diagnostic Questions</h2></summary>
 
+Pairwise swap is the textbook instance of the reversal-subproblem pattern with `k = 2`. The diagnostic confirms the fit before the implementation lands.
 
-| Question | Answer |
+| Check | Answer for Pairwise Swap |
 |---|---|
-| **Q1.** Can the problem be broken into smaller subproblems? | **Yes** — one length-2 reversal per pair |
-| **Q2.** Can each subproblem be solved by reversing a part of the list? | **Yes** — reverse(start, start.next) |
+| **Q1.** Can the problem or solution be broken down into smaller subproblems? | **Yes** — the rewrite is a sequence of `⌊n / 2⌋` independent two-node reversals; each pair is its own subproblem and the pairs do not interact. |
+| **Q2.** Can any subproblem be solved by reversing a part of the linked list? | **Yes** — a two-node reversal is the segment-reversal primitive with `start` and `end = start.next`; one call to `reverse(start, end)` swaps `prev`/`next` on both nodes and re-stitches the boundary in both directions. |
+| **Q3.** Does the algorithm only need to walk each node a constant number of times? | **Yes** — each pair is touched exactly once: locate `end` in one hop, swap `prev`/`next` on the two nodes in `O(1)`, stitch the four boundary links in `O(1)`. Total cost is one forward walk. |
+| **Q4.** Is each chunk's boundary computable from local state? | **Yes** — `end` is always `start.next`; the seam re-attachment uses `start.prev` (read inside `reverse`) and the post-reversal `end.prev == None` check to detect the first pair. No length precomputation is needed because the per-iteration `start and start.next` guard handles the boundary directly. |
 
 ### Q1 — Why "one length-2 reversal per pair"?
 
@@ -238,7 +285,7 @@ head = from_list([1, 2, 3, 4, 5])
 print(to_list(Solution().pairwise_swap(head)))         # [2, 1, 4, 3, 5]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -390,27 +437,53 @@ Result: [2, 1, 4, 3] ✓
 | Two nodes | `[1, 2]` | `[2, 1]` | One reversal, head promoted |
 
 </details>
+<details>
+<summary><h2>Approach</h2></summary>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+Five numbered steps. No code; the solution block above is the implementation.
 
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
+1. **Guard the trivial cases.** If `head` is `None` or `head.next` is `None`, the list has zero or one node and no pair exists. Return `head` unchanged.
+2. **Initialise the boundary pointer.** Set `start = head`. There is no separate `leftBound` variable — the `reverse` helper reads `start.prev` directly, so the predecessor is always available without a separate cache.
+3. **Loop while a full pair exists.** The guard is `start is not None and start.next is not None`. As soon as either is `None`, the trailing fragment is shorter than two nodes and the loop ends, leaving the fragment untouched.
+4. **Reverse the current pair and detect the first-pair seam.** Let `end = start.next`. Call `reverse(start, end)` to swap `prev`/`next` on both nodes and re-stitch the four boundary links. After the call, the chunk's new head is the old `end`; if `end.prev` is `None`, the predecessor was `None` (this was the first pair) and the global `head` must be updated to `end`.
+5. **Slide the boundary forward.** After the reversal the old `start` is the pair's tail, so `start.next` points at the next pair's head. Set `start = start.next` and repeat. The doubly-linked invariants mean both `start.prev` and `start.next` are already consistent with the rewritten list.
 
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
+</details>
+<details>
+<summary><h2>Dry Run — Example 1</h2></summary>
 
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
+`head = [1, 2, 3, 4]`. Initial state: `start = 1`.
 
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
+**Iteration 1 — pair `(1, 2)`:**
 
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
+| step | state |
+|---|---|
+| `end = start.next` | `end = 2` |
+| `reverse(1, 2)` | inside the helper: `leftBound = 1.prev = None`, `rightBound = 2.next = 3`. Swap `prev`/`next` on nodes 1 and 2; stitch `1.next = 3`, `3.prev = 1`, `2.prev = None`, `leftBound.next` skipped because `leftBound is None`. List now `2 ↔ 1 ↔ 3 ↔ 4`. |
+| `end.prev is None` → promote head | `head = 2` |
+| `start = start.next` | `start = 3` (the old `start` node 1 is now the pair's tail; its `next` is the next pair's head) |
 
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->
+List after iteration 1: `2 ↔ 1 ↔ 3 ↔ 4`.
+
+**Iteration 2 — pair `(3, 4)`:**
+
+| step | state |
+|---|---|
+| `end = start.next` | `end = 4` |
+| `reverse(3, 4)` | `leftBound = 3.prev = 1`, `rightBound = 4.next = None`. Swap `prev`/`next` on nodes 3 and 4; stitch `3.next = None`, `4.prev = 1`, `1.next = 4`. List now `2 ↔ 1 ↔ 4 ↔ 3`. |
+| `end.prev is not None` (`4.prev = 1`) → head unchanged | `head = 2` |
+| `start = start.next` | `start = None` |
+
+List after iteration 2: `2 ↔ 1 ↔ 4 ↔ 3`.
+
+**Iteration 3 — loop guard:** `start is None` → exit.
+
+**Return:** `head = 2`, traversal yields `[2, 1, 4, 3]` ✓ — and the reverse traversal from the tail (`3.prev = 4, 4.prev = 1, 1.prev = 2, 2.prev = None`) confirms both chains are intact.
+
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
+Pairwise swap on a doubly linked list is reverse-k-segments with `k = 2` hard-coded plus a bidirectional reversal helper — the per-iteration guard `start and start.next` replaces the explicit `length / k` outer counter, and the first-pair seam is detected post-hoc via `end.prev == None` instead of an upfront `leftBound = None` sentinel.
+
+</details>

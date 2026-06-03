@@ -179,7 +179,7 @@ print(Solution().target_limited_two_sum([5, 5], 11))  # 10 — duplicate element
 print(Solution().target_limited_two_sum([1, 100], 5)) # -1 — smallest pair exceeds target
 ```
 
-```java run
+```java run viz=array viz-root=arr
 import java.util.*;
 
 public class Main {

@@ -337,7 +337,7 @@ print(Solution().largest_container([5, 4, 3, 2, 1]))               # 6 — desce
 print(Solution().largest_container([1, 2, 3, 4, 5]))               # 6 — ascending
 ```
 
-```java run
+```java run viz=array viz-root=heights
 public class Main {
     static class Solution {
         public int largestContainer(int[] heights) {

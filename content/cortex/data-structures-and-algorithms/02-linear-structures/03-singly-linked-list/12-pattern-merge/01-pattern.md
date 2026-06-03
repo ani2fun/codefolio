@@ -84,8 +84,7 @@ The algorithm given below summarizes the linked list merge technique for two lis
 Given below is the generic code implementation to merge two lists into a single list based on the outcome of a function `f`.
 
 
-```python run
-
+```python run viz=linked-list viz-root=head
 """
 Definition for singly-linked list.
 class ListNode:
@@ -130,7 +129,7 @@ def mergeLists(headA: ListNode, headB: ListNode) -> ListNode:
     return dummy.next
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 
 /**
  * Definition for singly-linked list.
@@ -223,39 +222,209 @@ Let's consider the following problem as an example to better understand how to i
 > **Problem statement:** Given two singly linked lists, merge them by splicing alternate nodes from both lists together. The merged list should start with the first node of the first list.
 
 > ▶ Interactive Diagram — Merging splices the original nodes — no new nodes allocated. The six nodes above are the same six objects before and after; only their .next pointers have been rewired into a single chain.
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Sorted merge — same six nodes; only their next pointers are rewired",
-  "direction": "single",
-  "nodes": [
-    {"id": "a1", "value": "1"},
-    {"id": "b1", "value": "2"},
-    {"id": "a2", "value": "3"},
-    {"id": "b2", "value": "4"},
-    {"id": "a3", "value": "5"},
-    {"id": "b3", "value": "6"}
-  ],
-  "head": "a1",
   "steps": [
     {
       "nodes": [
-        {"id": "a1", "value": "A:1"},
-        {"id": "a2", "value": "A:3"},
-        {"id": "a3", "value": "A:5"},
-        {"id": "b1", "value": "B:2"},
-        {"id": "b2", "value": "B:4"},
-        {"id": "b3", "value": "B:6"}
+        {
+          "id": "a1",
+          "label": "A:1",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a2",
+          "label": "A:3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a3",
+          "label": "A:5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b1",
+          "label": "B:2",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b2",
+          "label": "B:4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b3",
+          "label": "B:6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["a1","a2"],["a2","a3"],["b1","b2"],["b2","b3"]],
-      "markers": [{"name": "headA", "nodeId": "a1"}, {"name": "headB", "nodeId": "b1"}],
-      "msg": "Before: two input lists A=[1,3,5] and B=[2,4,6]"
+      "edges": [
+        {
+          "from": "a1",
+          "to": "a2",
+          "label": "next"
+        },
+        {
+          "from": "a2",
+          "to": "a3",
+          "label": "next"
+        },
+        {
+          "from": "b1",
+          "to": "b2",
+          "label": "next"
+        },
+        {
+          "from": "b2",
+          "to": "b3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "headA",
+          "target": "a1",
+          "color": "#6b7280"
+        },
+        {
+          "name": "headB",
+          "target": "b1",
+          "color": "#6b7280"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Before: two input lists A=[1,3,5] and B=[2,4,6]",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "links": [["a1","b1"],["b1","a2"],["a2","b2"],["b2","a3"],["a3","b3"]],
-      "markers": [{"name": "head", "nodeId": "a1"}],
-      "msg": "After: spliced (sorted merge) — same 6 nodes rewired into 1 → 2 → 3 → 4 → 5 → 6"
+      "nodes": [
+        {
+          "id": "a1",
+          "label": "1",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b1",
+          "label": "2",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a2",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b2",
+          "label": "4",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "a3",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b3",
+          "label": "6",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "a1",
+          "to": "b1",
+          "label": "next"
+        },
+        {
+          "from": "b1",
+          "to": "a2",
+          "label": "next"
+        },
+        {
+          "from": "a2",
+          "to": "b2",
+          "label": "next"
+        },
+        {
+          "from": "b2",
+          "to": "a3",
+          "label": "next"
+        },
+        {
+          "from": "a3",
+          "to": "b3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "a1",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "After: spliced (sorted merge) — same 6 nodes rewired into 1 → 2 → 3 → 4 → 5 → 6",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Sorted merge — same six nodes; only their next pointers are rewired"
 }
 ```
 
@@ -304,7 +473,7 @@ flowchart TB
 The implementation of the merge list solution is given as follows.
 
 
-```python run
+```python run viz=linked-list viz-root=head
 """
 Definition for singly-linked list.
 class ListNode:
@@ -378,7 +547,7 @@ class Solution:
         return dummy.next
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 /**
  * Definition for singly-linked list.
  * class ListNode {

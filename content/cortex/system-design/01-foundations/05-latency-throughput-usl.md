@@ -10,9 +10,9 @@ summary: Little''s Law in your back pocket, the M/M/1 cliff in your gut, and the
 
 ## 1. Motivation
 
-In **2009**, Neil J. Gunther — a physicist-turned-performance-engineer who had worked on the original Pyramid mainframes — published a paper titled [*A General Theory of Computational Scalability Based on Rational Functions*](https://arxiv.org/abs/0808.1431). It was the formal version of an idea he had been teaching for a decade: scalability is *not* linear, *cannot be* linear past a certain point, and the point where it breaks is *predictable* from two parameters you can measure.
+In **2008**, Neil J. Gunther — a physicist-turned-performance-engineer who had worked on the original Pyramid mainframes — published a paper titled [*A General Theory of Computational Scalability Based on Rational Functions*](https://arxiv.org/abs/0808.1431). It was the formal version of an idea he had been teaching for a decade: scalability is *not* linear, *cannot be* linear past a certain point, and the point where it breaks is *predictable* from two parameters you can measure.
 
-Two years earlier, in 2007, Cary Millsap had used the same family of math to [diagnose Oracle databases](https://method-r.com/) — turning "the database is slow" into "your service time is X, your wait time is Y, here is exactly which queue is full". This is the genealogy of every modern *queueing-aware* performance tool: NewRelic, Datadog APM, Grafana, and your laptop's `iostat`.
+Earlier, Cary Millsap had used the same family of math to [diagnose Oracle databases](https://method-r.com/) — turning "the database is slow" into "your service time is X, your wait time is Y, here is exactly which queue is full". This is the genealogy of every modern *queueing-aware* performance tool: NewRelic, Datadog APM, Grafana, and your laptop's `iostat`.
 
 The math is shockingly simple. The intuition is the part that takes a few minutes. By the end of this lesson, you will know more queueing theory than 90% of working software engineers.
 
@@ -175,7 +175,7 @@ If your service is *stateless* and the bottleneck was thread availability, you m
 - The downstream database has fixed capacity. It was already at ρ ≈ 0.6 with 3,500 req/sec; doubling to 7,000 puts it at ρ ≈ 1.2 — *unstable*. The DB is the new bottleneck.
 - Each thread now spends *more time waiting for the DB* and *less time computing*, so the per-thread throughput drops.
 
-**Real-world numbers:** measured throughput goes from 3,500 → ~4,800. The 1.4× scaling factor (not 2×) is exactly USL with non-zero `β` — the database is the contention point.
+**Real-world numbers:** measured throughput goes from 3,500 → ~4,800. The 1.4× scaling factor (not 2×) is exactly USL with non-zero `α` — the shared database is the contention point (contention is α; coherence is β).
 
 **Question 4 — what is the *right* fix?**
 

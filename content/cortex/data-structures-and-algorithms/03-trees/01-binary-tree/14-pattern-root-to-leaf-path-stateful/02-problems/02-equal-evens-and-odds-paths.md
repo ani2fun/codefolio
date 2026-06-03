@@ -122,7 +122,7 @@ print(Solution().equal_paths(from_level_order([1, 2, 3])))                      
 print(Solution().equal_paths(from_level_order([2, 1, 3, None, None, None, 4])))  # [[2, 3, 4]] (2+3+4: 2 even 1 odd; 2+1: 1 each yes; 2+3+4: 2 even 1 odd no)
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

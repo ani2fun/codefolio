@@ -117,7 +117,7 @@ print(Solution().minimum_steps_in_a_grid([[0,1,1],[1,1,1],[1,1,1]]))         # -
 print(Solution().minimum_steps_in_a_grid([[1,1,1],[1,1,1],[1,1,0]]))         # -1 — blocked end
 ```
 
-```java run
+```java run viz=grid viz-root=grid
 import java.util.*;
 
 public class Main {

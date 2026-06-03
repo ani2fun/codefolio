@@ -17,7 +17,7 @@ Each subtree returns its sum (so the parent can compute its own); along the way,
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional
 
 
@@ -92,7 +92,7 @@ print(Solution().descendants_sum_count(from_level_order([1, 2, None, 3, None, 4]
 print(Solution().descendants_sum_count(from_level_order([6, 3, 3, 1, 2, 1, 2])))        # 3 (root + both internal nodes)
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

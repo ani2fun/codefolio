@@ -125,7 +125,7 @@ print(Solution().cheapest_flights([[[1,5]],[]], 0, 1, 1))                       
 print(Solution().cheapest_flights([[[1,10],[2,3]],[[3,2]],[[1,4]],[]], 0, 3, 1))               # 9 — 0->2->1->3 needs 2 stops; within k=1: 0->1->3=12; answer -1 if only k=1
 ```
 
-```java run
+```java run viz=graph viz-root=flights
 import java.util.*;
 
 public class Main {

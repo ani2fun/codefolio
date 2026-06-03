@@ -28,7 +28,7 @@ Given the **root** of a BST and an integer **target**, return `true` if some pai
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional, List
 
 class TreeNode:
@@ -161,7 +161,7 @@ t6 = from_level_order([4, 2, 6, 1, None, None, 7])
 print(Solution().two_sum_on_bst(t6, 14))  # False — exceeds max pair sum
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

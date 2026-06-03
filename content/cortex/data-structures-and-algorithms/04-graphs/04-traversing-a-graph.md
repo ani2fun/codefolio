@@ -275,7 +275,7 @@ print(Solution().depth_first_traversal([[], [], []]))                  # [0, 1, 
 print(Solution().depth_first_traversal([[1], [], [3], []]))            # [0, 1, 2, 3] — two components
 ```
 
-```java run
+```java run viz=graph viz-root=graph
 import java.util.*;
 
 public class Main {
@@ -356,6 +356,88 @@ public class Main {
             List.of(List.of(1),new ArrayList<>(),List.of(3),new ArrayList<>())));  // [0, 1, 2, 3]
     }
 }
+```
+
+### Step through the execution
+
+Click **Trace** to step through the recursive DFS. Each call to `dfs` pushes a new frame — watch the caption change as the algorithm dives deeper into the graph. The `visited` array in the locals panel fills in as nodes are reached.
+
+```python trace
+def dfs(graph, node, visited, result):
+    visited.add(node)
+    result.append(node)
+    for neighbour in graph[node]:
+        if neighbour not in visited:
+            dfs(graph, neighbour, visited, result)
+
+
+graph = [[1, 2], [3], [], []]
+visited = set()
+result = []
+dfs(graph, 0, visited, result)
+print(result)  # [0, 1, 3, 2]
+```
+
+Same traversal in Java. The `visited` boolean array expands in the locals panel so you can see which nodes are marked at each step. Each recursive call deepens the call stack — the frame caption reflects the current depth. The **Kotlin** and **Scala** tabs show equivalent source.
+
+```java trace
+import java.util.ArrayList;
+import java.util.List;
+
+public class Main {
+    static void dfs(int[][] graph, int node, boolean[] visited, List<Integer> result) {
+        visited[node] = true;
+        result.add(node);
+        for (int neighbour : graph[node]) {
+            if (!visited[neighbour]) {
+                dfs(graph, neighbour, visited, result);
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        int[][] graph = {{1, 2}, {3}, {}, {}};
+        boolean[] visited = new boolean[graph.length];
+        List<Integer> result = new ArrayList<>();
+        dfs(graph, 0, visited, result);
+        System.out.println(result);  // [0, 1, 3, 2]
+    }
+}
+```
+
+```kotlin trace
+fun dfs(graph: Array<IntArray>, node: Int, visited: BooleanArray, result: MutableList<Int>) {
+    visited[node] = true
+    result += node
+    for (neighbour in graph[node]) {
+        if (!visited[neighbour]) dfs(graph, neighbour, visited, result)
+    }
+}
+
+fun main() {
+    val graph   = arrayOf(intArrayOf(1, 2), intArrayOf(3), intArrayOf(), intArrayOf())
+    val visited = BooleanArray(graph.size)
+    val result  = mutableListOf<Int>()
+    dfs(graph, 0, visited, result)
+    println(result)  // [0, 1, 3, 2]
+}
+```
+
+```scala trace
+import scala.collection.mutable
+
+def dfs(graph: Array[Array[Int]], node: Int, visited: Array[Boolean], result: mutable.ListBuffer[Int]): Unit =
+  visited(node) = true
+  result += node
+  for neighbour <- graph(node) do
+    if !visited(neighbour) then dfs(graph, neighbour, visited, result)
+
+@main def run(): Unit =
+  val graph   = Array(Array(1, 2), Array(3), Array[Int](), Array[Int]())
+  val visited = Array.fill(graph.length)(false)
+  val result  = mutable.ListBuffer[Int]()
+  dfs(graph, 0, visited, result)
+  println(result.toList)  // List(0, 1, 3, 2)
 ```
 
 
@@ -608,7 +690,7 @@ print(Solution().breadth_first_traversal([[], [], []]))                # [0, 1, 
 print(Solution().breadth_first_traversal([[1], [], [3], []]))          # [0, 1, 2, 3]
 ```
 
-```java run
+```java run viz=graph viz-root=graph
 import java.util.*;
 
 public class Main {
@@ -707,6 +789,124 @@ public class Main {
             List.of(List.of(1),new ArrayList<>(),List.of(3),new ArrayList<>())));  // [0, 1, 2, 3]
     }
 }
+```
+
+### Step through the execution
+
+Click **Trace** to step through the queue-based BFS. Unlike DFS, the call stack stays flat — there is only one frame throughout. Watch `queue`, `visited`, and `result` evolve as the algorithm processes nodes level by level; `front` and `back` index into the queue so you can see exactly what is enqueued at each step.
+
+```python trace
+from collections import deque
+
+
+def bfs(graph, source):
+    visited = set()
+    result = []
+    queue = deque([source])
+    visited.add(source)
+    while queue:
+        node = queue.popleft()
+        result.append(node)
+        for neighbour in graph[node]:
+            if neighbour not in visited:
+                queue.append(neighbour)
+                visited.add(neighbour)
+    return result
+
+
+graph = [[1, 2], [3], [], []]
+print(bfs(graph, 0))  # [0, 1, 2, 3]
+```
+
+Same traversal in Java with an array-backed queue. The `queue`, `visited`, and `result` arrays all expand in the locals panel; `front` and `back` index into the queue so you can see exactly what is enqueued at each step. The **Kotlin** and **Scala** tabs show equivalent source.
+
+```java trace
+import java.util.Arrays;
+
+public class Main {
+    static int[] bfs(int[][] graph, int source) {
+        int n = graph.length;
+        boolean[] visited = new boolean[n];
+        int[] queue = new int[n];
+        int[] result = new int[n];
+        int front = 0;
+        int back = 0;
+        int resLen = 0;
+        queue[back++] = source;
+        visited[source] = true;
+        while (front < back) {
+            int node = queue[front++];
+            result[resLen++] = node;
+            for (int neighbour : graph[node]) {
+                if (!visited[neighbour]) {
+                    queue[back++] = neighbour;
+                    visited[neighbour] = true;
+                }
+            }
+        }
+        return Arrays.copyOf(result, resLen);
+    }
+
+    public static void main(String[] args) {
+        int[][] graph = {{1, 2}, {3}, {}, {}};
+        System.out.println(Arrays.toString(bfs(graph, 0)));  // [0, 1, 2, 3]
+    }
+}
+```
+
+```kotlin trace
+fun bfs(graph: Array<IntArray>, source: Int): IntArray {
+    val n       = graph.size
+    val visited = BooleanArray(n)
+    val queue   = IntArray(n)
+    val result  = IntArray(n)
+    var front   = 0
+    var back    = 0
+    var resLen  = 0
+    queue[back++]   = source
+    visited[source] = true
+    while (front < back) {
+        val node = queue[front++]
+        result[resLen++] = node
+        for (neighbour in graph[node]) {
+            if (!visited[neighbour]) {
+                queue[back++]      = neighbour
+                visited[neighbour] = true
+            }
+        }
+    }
+    return result.copyOf(resLen)
+}
+
+fun main() {
+    val graph = arrayOf(intArrayOf(1, 2), intArrayOf(3), intArrayOf(), intArrayOf())
+    println(bfs(graph, 0).contentToString())  // [0, 1, 2, 3]
+}
+```
+
+```scala trace
+def bfs(graph: Array[Array[Int]], source: Int): Array[Int] =
+  val n       = graph.length
+  val visited = Array.fill(n)(false)
+  val queue   = Array.ofDim[Int](n)
+  val result  = Array.ofDim[Int](n)
+  var front   = 0
+  var back    = 0
+  var resLen  = 0
+  queue(back) = source; back += 1
+  visited(source) = true
+  while front < back do
+    val node = queue(front); front += 1
+    result(resLen) = node; resLen += 1
+    for neighbour <- graph(node) do
+      if !visited(neighbour) then
+        queue(back) = neighbour; back += 1
+        visited(neighbour) = true
+  result.take(resLen)
+
+@main def run(): Unit =
+  val graph = Array(Array(1, 2), Array(3), Array[Int](), Array[Int]())
+  println(bfs(graph, 0).mkString("[", ", ", "]"))  // [0, 1, 2, 3]
 ```
 
 

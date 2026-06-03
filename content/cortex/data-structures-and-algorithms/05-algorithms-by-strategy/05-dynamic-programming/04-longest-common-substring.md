@@ -214,7 +214,7 @@ if __name__ == "__main__":
     print(Solution().longest_common_substring("abcdefgh", "bxcdelx"))   # 3 ("cde")
 ```
 
-```java run
+```java run viz=graph viz-root=memo
 import java.util.Arrays;
 
 public class Main {
@@ -371,7 +371,7 @@ if __name__ == "__main__":
     print(Solution().longest_common_substring("abcdefgh", "bxcdelx"))   # 3
 ```
 
-```java run
+```java run viz=grid viz-root=lcs
 public class Main {
     static class Solution {
         public int longestCommonSubstring(String s1, String s2) {
@@ -526,7 +526,7 @@ print(Solution().longest_common_substring("abc", "abc"))            # abc
 print(Solution().longest_common_substring("a", "a"))                # a
 ```
 
-```java run
+```java run viz=grid viz-root=dp
 public class Main {
     static class Solution {
         public String longestCommonSubstring(String s1, String s2) {

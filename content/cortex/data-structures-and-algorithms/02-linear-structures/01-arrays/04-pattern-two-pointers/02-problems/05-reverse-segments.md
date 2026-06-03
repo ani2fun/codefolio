@@ -210,7 +210,7 @@ print(Solution().reverse_segments("abcdef", 6))       # fedcba — k >= len reve
 print(Solution().reverse_segments("abcdef", 1))       # abcdef — k=1, each group of 1 reversed = unchanged
 ```
 
-```java run
+```java run viz=array viz-root=arr
 public class Main {
     static class Solution {
         private void reverseSegment(char[] arr, int left, int right) {

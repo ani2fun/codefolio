@@ -22,6 +22,72 @@ Given a balanced expression `s` (containing operators, operands, and parentheses
 > -   **Input:** `s = "((2+3)+7)"` → **Output:** `false`
 
 <details>
+<summary><strong>Examples</strong></summary>
+
+**Example 1**
+```
+Input:  s = "((2+3))+7"
+Output: true
+Explanation: the inner "(2+3)" is a real grouping, but the outer pair
+wraps it alone — when its ')' arrives, the matching '(' sits directly
+on top with nothing between them. Redundant.
+```
+
+**Example 2**
+```
+Input:  s = "(2+3)"
+Output: false
+Explanation: a single pair around the operation "2+3". Operators sit
+between the '(' and ')', so the pair carries meaning — not redundant.
+```
+
+**Example 3**
+```
+Input:  s = "((2+3)+7)"
+Output: false
+Explanation: every pair encloses at least one operator. The outer pair
+wraps "(2+3)+7", the inner wraps "2+3" — both meaningful.
+```
+
+**Example 4**
+```
+Input:  s = "(())"
+Output: true
+Explanation: the inner "()" wraps nothing at all. When its ')' arrives,
+the top is '(' immediately → redundant empty pair.
+```
+
+</details>
+
+## Intuition
+
+This is a **sequence-validation** problem with a twist: the input is already balanced, so the question is not *whether* brackets match but *whether a pair carries meaning*. A pair of parentheses is redundant when it wraps either nothing or a single operand — no operator lives between its `(` and `)`. The stack tracks the context between each opener and its closer.
+
+The stack holds **every character not yet resolved by a closer** — operators and operands as well as openers. When a `)` arrives, the run of characters back to its matching `(` is whatever sits on top. The core observation: if the top is `(` the *instant* the `)` arrives, then nothing was pushed between them, so the pair wraps an empty or single-token group and is redundant. Otherwise you pop the inner run down to the `(` and discard it, because that grouping was meaningful.
+
+A naive approach re-parses each parenthesised span to recount its operators, re-reading nested groups repeatedly. The stack avoids that. Meaningful inner groups are popped and discarded the moment their `)` is seen. So when an outer `)` arrives, a `(` directly on top signals that this pair added nothing the inner group had not already enclosed. One pass replaces the repeated re-scanning.
+
+## Applying the Diagnostic Questions
+
+| Check | Answer for Redundant Parentheses |
+|---|---|
+| **Q1.** Does the input pair up — openers matched by later closers? | **Yes** — the expression is balanced, so every `)` has a matching `(` earlier. |
+| **Q2.** Must a closer match the *most recent* unmatched opener? | **Yes** — a `)` resolves the freshest `(`, and the characters between them are read off the top. |
+| **Q3.** Is one pass with `O(1)` work per token enough? | **Mostly** — each character is pushed once and popped once, so the work is `O(1)` amortised per token. |
+| **Q4.** Is the answer decided by what the stack holds between a pair? | **Yes** — a `(` directly on top when `)` arrives means an empty/single-token group → redundant. |
+
+## Approach in Words
+
+Push everything except `)`; on `)`, ask whether the pair wrapped anything meaningful.
+
+1. **Handle the trivial pair up front.** Return `false` for `"()"`, the single-pair case the loop cannot flag as redundant.
+2. **Initialise an empty stack** of characters.
+3. **Walk the string left to right.** Push every character that is not `)` — openers, operators, and operands all go on.
+4. **On `)`, check the top first.** If the top is `(`, nothing was pushed since that opener, so the pair is redundant — return `true`.
+5. **Otherwise discard the inner run.** Pop characters until the matching `(`, then pop the `(` itself — that grouping was meaningful, so move on.
+6. **After the pass, return `false`.** No redundant pair was ever found.
+
+<details>
 <summary><h2>Approach</h2></summary>
 
 
@@ -37,7 +103,7 @@ The simpler formulation that's used in the canonical solution: when `)` arrives,
 
 
 
-```python run
+```python run viz=array viz-root=stack viz-kind=stack
 from typing import List
 
 class Solution:
@@ -90,7 +156,7 @@ print(Solution().redundant_parentheses("((a+b))"))     # True
 print(Solution().redundant_parentheses("(a+(b+c))"))   # False
 ```
 
-```java run
+```java run viz=array viz-root=stack viz-kind=stack
 import java.util.*;
 
 public class Main {
@@ -156,35 +222,44 @@ public class Main {
 
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+## Dry Run
 
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
+Walk Example 1 — `s = "((2+3))+7"`. Push everything except `)`; on `)`, a `(` directly on top means redundant:
 
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
+```
+s = "((2+3))+7"
 
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
+'('  push                       → stack (bottom→top): (
+'('  push                       → stack: ( (
+'2'  push                       → stack: ( ( 2
+'+'  push                       → stack: ( ( 2 +
+'3'  push                       → stack: ( ( 2 + 3
+')'  top='3' ≠ '(' → pop 3,+,2  → top now '(' → pop '(' → stack: (
+')'  top='(' immediately        → REDUNDANT → return true ✓
+```
 
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
+The first `)` clears a meaningful group (`2+3` had operators between the parens). The second `)` finds `(` already on top — the outer pair wrapped only the already-grouped inner expression, so it is redundant.
 
-<!-- TODO: Solution — missing, needs to be written -->
-<!--       Guidance: Python block then Java block -->
+## Complexity Analysis
 
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
+| Measure | Value | Why |
+|---|---|---|
+| Time  | **O(N)** | Each character is pushed once and popped at most once across the whole pass — `2N` stack operations. |
+| Space | **O(N)** | The stack can hold the full expression before a `)` triggers any popping (e.g. `"(((((..."`). |
 
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table: time / space / why -->
+The runtime is `O(N)` time amortised: the inner `while` that pops to the matching `(` looks nested, but each character is pushed exactly once and popped exactly once over the entire scan, capping total stack operations at `2N`. The space is `O(N)`: a deeply nested or operator-heavy prefix pushes every character before the first closer pops anything.
 
-<!-- TODO: Edge Cases — missing, needs to be written -->
-<!--       Guidance: table, min 5 rows -->
+## Edge Cases
 
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->
+| Case | Example | Expected | Reasoning |
+|---|---|---|---|
+| Single pair | `s = "()"` | `false` | Handled up front; a lone pair around nothing is treated as non-redundant by the explicit guard. |
+| Empty inner pair | `s = "(())"` | `true` | The inner `()` wraps nothing — its `)` finds `(` directly on top. |
+| Meaningful single pair | `s = "(a+b)"` | `false` | Operators sit between the parens, so the pair groups a real expression. |
+| Double-wrapped expression | `s = "((a+b))"` | `true` | The outer pair adds nothing the inner pair had not grouped. |
+| Properly nested | `s = "(a+(b+c))"` | `false` | Each pair encloses at least one operator; none is redundant. |
+| Redundant then tail | `s = "((2+3))+7"` | `true` | The outer pair around `(2+3)` is redundant; the `+7` tail does not affect it. |
+
+## Key Takeaway
+
+A pair of parentheses is redundant when its `)` finds the matching `(` directly on top of the stack — nothing meaningful was pushed between them. The new idea over the bracket checker is reading the *content between* a matched pair, not just confirming the pair exists.

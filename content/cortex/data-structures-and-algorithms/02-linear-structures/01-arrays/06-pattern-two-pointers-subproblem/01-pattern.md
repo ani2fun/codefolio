@@ -194,89 +194,1669 @@ temp -> copy: "pass 2: copy back"
 <p align="center"><strong>Brute-force rotation using a temporary array — two passes, O(n) extra space.</strong></p>
 
 > ▶ Interactive Diagram — Brute-force left-rotate by k=4 using a temporary array — every element copies to `temp[i] = arr[(i + k) mod n]`, then `temp` copies back.
-```d3 widget=array-traversal
+```d3 widget=array-1d
 {
-  "items": ["1", "2", "3", "4", "5", "6", "7", "8"],
-  "title": "Brute-force left-rotate by k=4 using temp array",
-  "secondaryItems": ["·", "·", "·", "·", "·", "·", "·", "·"],
   "steps": [
     {
-      "items": ["1", "2", "3", "4", "5", "6", "7", "8"],
-      "secondaryItems": ["·", "·", "·", "·", "·", "·", "·", "·"],
-      "secondaryKeys": ["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7"],
-      "msg": "Init: arr above, temp (empty) below. We will fill temp[i] = arr[(i + 4) mod 8]."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p4",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p5",
+          "label": "6",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p6",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p7",
+          "label": "8",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t0",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t1",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t2",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t3",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t4",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t5",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t6",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t7",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Init: arr above, temp (empty) below. We will fill temp[i] = arr[(i + 4) mod 8].",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "items": ["1", "2", "3", "4", "5", "6", "7", "8"],
-      "markers": [{"name": "src", "index": 4, "color": "#f59e0b"}],
-      "secondaryItems": ["5", "·", "·", "·", "·", "·", "·", "·"],
-      "secondaryKeys": ["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7"],
-      "secondaryMarkers": [{"name": "i", "index": 0, "color": "#3b82f6"}],
-      "msg": "i=0 → temp[0] = arr[(0+4) mod 8] = arr[4] = 5."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p4",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p5",
+          "label": "6",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p6",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p7",
+          "label": "8",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t0",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t1",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t2",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t3",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t4",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t5",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t6",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t7",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "src",
+          "target": "p4",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "i",
+          "target": "t0",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "i=0 → temp[0] = arr[(0+4) mod 8] = arr[4] = 5.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "items": ["1", "2", "3", "4", "5", "6", "7", "8"],
-      "markers": [{"name": "src", "index": 5, "color": "#f59e0b"}],
-      "secondaryItems": ["5", "6", "·", "·", "·", "·", "·", "·"],
-      "secondaryKeys": ["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7"],
-      "secondaryMarkers": [{"name": "i", "index": 1, "color": "#3b82f6"}],
-      "msg": "i=1 → temp[1] = arr[5] = 6."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p4",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p5",
+          "label": "6",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p6",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p7",
+          "label": "8",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t0",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t1",
+          "label": "6",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t2",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t3",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t4",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t5",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t6",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t7",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "src",
+          "target": "p5",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "i",
+          "target": "t1",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "i=1 → temp[1] = arr[5] = 6.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "items": ["1", "2", "3", "4", "5", "6", "7", "8"],
-      "markers": [{"name": "src", "index": 6, "color": "#f59e0b"}],
-      "secondaryItems": ["5", "6", "7", "·", "·", "·", "·", "·"],
-      "secondaryKeys": ["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7"],
-      "secondaryMarkers": [{"name": "i", "index": 2, "color": "#3b82f6"}],
-      "msg": "i=2 → temp[2] = arr[6] = 7."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p4",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p5",
+          "label": "6",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p6",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p7",
+          "label": "8",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t0",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t1",
+          "label": "6",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t2",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t3",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t4",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t5",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t6",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t7",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "src",
+          "target": "p6",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "i",
+          "target": "t2",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "i=2 → temp[2] = arr[6] = 7.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "items": ["1", "2", "3", "4", "5", "6", "7", "8"],
-      "markers": [{"name": "src", "index": 7, "color": "#f59e0b"}],
-      "secondaryItems": ["5", "6", "7", "8", "·", "·", "·", "·"],
-      "secondaryKeys": ["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7"],
-      "secondaryMarkers": [{"name": "i", "index": 3, "color": "#3b82f6"}],
-      "msg": "i=3 → temp[3] = arr[7] = 8."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p4",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p5",
+          "label": "6",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p6",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p7",
+          "label": "8",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t0",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t1",
+          "label": "6",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t2",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t3",
+          "label": "8",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t4",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t5",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t6",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t7",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "src",
+          "target": "p7",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "i",
+          "target": "t3",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "i=3 → temp[3] = arr[7] = 8.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "items": ["1", "2", "3", "4", "5", "6", "7", "8"],
-      "markers": [{"name": "src", "index": 0, "color": "#f59e0b"}],
-      "secondaryItems": ["5", "6", "7", "8", "1", "·", "·", "·"],
-      "secondaryKeys": ["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7"],
-      "secondaryMarkers": [{"name": "i", "index": 4, "color": "#3b82f6"}],
-      "msg": "i=4 → (4+4) mod 8 wraps to index 0 → temp[4] = arr[0] = 1."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p4",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p5",
+          "label": "6",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p6",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p7",
+          "label": "8",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t0",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t1",
+          "label": "6",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t2",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t3",
+          "label": "8",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t4",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t5",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t6",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t7",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "src",
+          "target": "p0",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "i",
+          "target": "t4",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "i=4 → (4+4) mod 8 wraps to index 0 → temp[4] = arr[0] = 1.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "items": ["1", "2", "3", "4", "5", "6", "7", "8"],
-      "markers": [{"name": "src", "index": 1, "color": "#f59e0b"}],
-      "secondaryItems": ["5", "6", "7", "8", "1", "2", "·", "·"],
-      "secondaryKeys": ["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7"],
-      "secondaryMarkers": [{"name": "i", "index": 5, "color": "#3b82f6"}],
-      "msg": "i=5 → temp[5] = arr[1] = 2."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p4",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p5",
+          "label": "6",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p6",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p7",
+          "label": "8",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t0",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t1",
+          "label": "6",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t2",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t3",
+          "label": "8",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t4",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t5",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t6",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t7",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "src",
+          "target": "p1",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "i",
+          "target": "t5",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "i=5 → temp[5] = arr[1] = 2.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "items": ["1", "2", "3", "4", "5", "6", "7", "8"],
-      "markers": [{"name": "src", "index": 2, "color": "#f59e0b"}],
-      "secondaryItems": ["5", "6", "7", "8", "1", "2", "3", "·"],
-      "secondaryKeys": ["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7"],
-      "secondaryMarkers": [{"name": "i", "index": 6, "color": "#3b82f6"}],
-      "msg": "i=6 → temp[6] = arr[2] = 3."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p4",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p5",
+          "label": "6",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p6",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p7",
+          "label": "8",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t0",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t1",
+          "label": "6",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t2",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t3",
+          "label": "8",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t4",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t5",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t6",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t7",
+          "label": "·",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "src",
+          "target": "p2",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "i",
+          "target": "t6",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "i=6 → temp[6] = arr[2] = 3.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "items": ["1", "2", "3", "4", "5", "6", "7", "8"],
-      "markers": [{"name": "src", "index": 3, "color": "#f59e0b"}],
-      "secondaryItems": ["5", "6", "7", "8", "1", "2", "3", "4"],
-      "secondaryKeys": ["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7"],
-      "secondaryMarkers": [{"name": "i", "index": 7, "color": "#3b82f6"}],
-      "msg": "i=7 → temp[7] = arr[3] = 4. Pass 1 complete."
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p4",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p5",
+          "label": "6",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p6",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p7",
+          "label": "8",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t0",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t1",
+          "label": "6",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t2",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t3",
+          "label": "8",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t4",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t5",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t6",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t7",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "src",
+          "target": "p3",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "i",
+          "target": "t7",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "i=7 → temp[7] = arr[3] = 4. Pass 1 complete.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "items": ["5", "6", "7", "8", "1", "2", "3", "4"],
-      "secondaryItems": ["5", "6", "7", "8", "1", "2", "3", "4"],
-      "secondaryKeys": ["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7"],
-      "msg": "Pass 2: copy temp back into arr → arr = [5, 6, 7, 8, 1, 2, 3, 4] ✓"
+      "nodes": [
+        {
+          "id": "p0",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p1",
+          "label": "6",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p2",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p3",
+          "label": "8",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p4",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p5",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p6",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p7",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t0",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t1",
+          "label": "6",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t2",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t3",
+          "label": "8",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t4",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t5",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t6",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "t7",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Pass 2: copy temp back into arr → arr = [5, 6, 7, 8, 1, 2, 3, 4] ✓",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Brute-force left-rotate by k=4 using temp array"
 }
 ```
 
@@ -299,7 +1879,7 @@ k_rotate(arr, 4)
 print(arr)   # [5, 6, 7, 8, 1, 2, 3, 4]
 ```
 
-```java run
+```java run viz=array viz-root=arr
 import java.util.Arrays;
 
 public class Main {

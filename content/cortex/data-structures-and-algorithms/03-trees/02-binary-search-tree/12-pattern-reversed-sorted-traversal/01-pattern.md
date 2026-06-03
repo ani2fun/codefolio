@@ -61,7 +61,7 @@ Same structure as the sorted-traversal template, with the recursive calls swappe
 ## Generic template
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 """
 Definition for a binary tree node.
 class TreeNode:
@@ -107,7 +107,7 @@ class Solution:
         self.reverse_inorder(node.left)
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 /**

@@ -104,8 +104,7 @@ The algorithm below summarizes the in-place reversal of a doubly linked list seg
 The code implementation of the segment reversal — which reverses the entire list when called with `start = head` and `end = tail` — is given below.
 
 
-```python run
-
+```python run viz=linked-list viz-root=head
 """
 Definition for doubly-linked list.
 class ListNode:
@@ -149,7 +148,7 @@ def reverse(start: Optional[ListNode], end: Optional[ListNode]) -> None:
         left_bound.next = end
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 
 /**
  * Definition for doubly-linked list.
@@ -375,7 +374,7 @@ The algorithm below summarizes the doubly linked list segment reversal.
 Given below is the code implementation to reverse a doubly linked list segment between `start` and `end`.
 
 
-```python run
+```python run viz=linked-list viz-root=head
 class Solution:
     def reverse(self, start, end):
         # Single-node segment — nothing to reverse
@@ -407,7 +406,7 @@ class Solution:
             left_bound.next = end
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 public class Main {
     static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
 
@@ -531,8 +530,7 @@ The problem fits the template with `start = head` and `end = tail` — the segme
 Below is the whole-list implementation, which tracks `newHead` directly instead of taking explicit `start`/`end` boundaries.
 
 
-```python run
-
+```python run viz=linked-list viz-root=head
 """
 Definition for doubly-linked list.
 class ListNode:
@@ -570,7 +568,7 @@ def reverse_a_linked_list(head: Optional[ListNode]) -> Optional[ListNode]:
     return new_head
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 
 /**
  * Definition for doubly-linked list.
@@ -630,33 +628,153 @@ Most direct-application problems are **easy** — the algorithm is the same, onl
 
 We'll now solve each one and watch the same primitive show up in four slightly different costumes.
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+---
 
-<!-- TODO: Why Naive Isn't Enough — missing, needs to be written -->
-<!--       Guidance: motivation for why the obvious approach fails -->
+## Understanding the Pattern
 
-<!-- TODO: The Core Idea — missing, needs to be written -->
-<!--       Guidance: one paragraph: the central trick -->
+### Why Naive Isn't Enough
 
-<!-- TODO: How the Pointers/Window Move — missing, needs to be written -->
-<!--       Guidance: mechanics of the moving parts -->
+A doubly linked list already encodes both directions — every node knows its predecessor and its successor — so the obvious "reversal" is to walk the list and copy the values into an array, reverse the array, and write the values back. This is correct, but it costs `O(n)` extra space, and it has nothing useful to say about partial reversals where you need to splice the reversed segment back into the surrounding list. The bigger problem is conceptual: the array-copy approach treats reversal as a value-shuffling operation, not a structural rewiring. The moment a later problem asks you to "reverse the first `k` nodes" or "reverse between positions `left` and `right`," the array approach has no natural place to slot in the splice.
 
-<!-- TODO: The Generic Algorithm — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
+To make this concrete: reversing `5 ⇄ 7 ⇄ 3 ⇄ 10` by copying values into `[5, 7, 3, 10]`, reversing to `[10, 3, 7, 5]`, and writing them back hits `O(n)` time but `O(n)` extra space. The in-place per-node swap reaches the same `[10, 3, 7, 5]` result with `O(1)` extra space — and the same loop body extends without modification to every variant in this section.
 
-<!-- TODO: Generic Implementation — missing, needs to be written -->
-<!--       Guidance: Python block + Java block of the skeleton -->
+So the key idea is: a doubly linked list is just a chain of `prev`/`next` pointer pairs, so reversing the list means flipping each pair — that's structural rewiring, not value movement, and a single swap per node is enough.
 
-<!-- TODO: Variants / Taxonomy — missing, needs to be written -->
-<!--       Guidance: enumerate sub-shapes of this pattern -->
+### The Core Idea
 
-<!-- TODO: Recognition Checklist — missing, needs to be written -->
-<!--       Guidance: 4-question diagnostic — the source of the Problem-section Diagnostic Questions -->
+The pattern asks one question: **can the work be expressed as swapping `prev` and `next` inside a contiguous segment `[start, end]`, with the outer list left untouched?**
 
-<!-- TODO: Canonical Example — missing, needs to be written -->
-<!--       Guidance: fully worked example: brute force → optimised → template fit -->
+The single mechanism that drives every variant is the **per-node pointer swap**:
 
-<!-- TODO: Problems in This Category — missing, needs to be written -->
-<!--       Guidance: table with links to the 02-problems/ files -->
+- **`current`** — the node whose `prev` and `next` are swapped this tick. After the swap, its old `next` sits in `prev`, and its old `prev` sits in `next`.
+- **`leftBound`** — the node immediately before `start`, captured once before the loop runs. Used at the end to re-stitch the reversed segment's new head back to the outer prefix.
+- **`rightBound`** — the node immediately after `end`, captured once before the loop runs. It is both the stop sentinel for the loop and the successor that the reversed segment's new tail (the original `start`) must point to.
+
+To make this concrete: with `current = 7` in `5 ⇄ 7 ⇄ 3 ⇄ 10`, the tick swaps `7.prev` (= 5) and `7.next` (= 3) — node 7 now has `prev = 3` and `next = 5`. The next step `current = current.prev` walks to node 3 because the *old* `next` (= 3) is now sitting in `prev`. No three-pointer dance is needed; the swap-and-step-via-prev sequence is the whole inner loop.
+
+The core insight is: a singly linked list needs three pointers (`previous`, `current`, `next`) because it must reconstruct the back-link the SLL never had; a doubly linked list already has the back-link, so reversal collapses to one swap per node plus four boundary writes at the end.
+
+### How the Pointers Move
+
+A single cursor — `current` — walks the segment in the *original* forward direction, but the move uses `current.prev` because the swap has already shuffled the fields. Every tick performs exactly two operations in this order: swap `current.prev` and `current.next`, then advance `current = current.prev`. The second step looks backward but is actually forward — that field held `current.next` half a line ago, before the swap moved it.
+
+Crucially, the boundary references `leftBound` and `rightBound` are captured *before* any swap runs. The first swap (on `start`) writes `start.next = leftBound` and `start.prev = (the old next)`; if `leftBound` were read off `start.prev` after the swap, it would be wrong. The loop terminates the moment `current` reaches `rightBound`, at which point `start` is the segment's new tail (pointing into the already-swapped chain) and `end` is the segment's new head — both still attached to garbage pointers on their outward-facing side, which the four boundary writes in phase 2 fix.
+
+---
+
+## The Generic Algorithm
+
+The pattern follows the same five-step skeleton regardless of which variant it takes.
+
+1. **Locate the segment.** Identify the `start` and `end` nodes of the segment to reverse. For full-list reversal, `start = head` and `end = tail`. For positional segment reversal, the caller computes `start` and `end` by 1-indexed walks. For prefix/suffix variants, the bounds come from a counter or a length lookup.
+2. **Capture the boundary sentinels.** Read `leftBound = start.prev` and `rightBound = end.next` *before* any pointer mutation. Either may be `null` when the segment touches the head or the tail.
+3. **Run the per-node swap loop.** Initialise `current = start`. While `current` is not `rightBound`, swap `current.prev` and `current.next`, then advance via `current = current.prev` (the field that held `current.next` half a line earlier). Every tick rewires exactly one node.
+4. **Stitch the segment's new tail.** Set `start.next = rightBound`. If `rightBound` is not `null`, mirror with `rightBound.prev = start`.
+5. **Stitch the segment's new head.** Set `end.prev = leftBound`. If `leftBound` is not `null`, mirror with `leftBound.next = end`.
+
+If the segment boundaries depend on a count (reverse-first-`k`) or a length lookup (reverse-last-`k`), step 1 absorbs that work — the inner swap loop is unchanged. For prefix/suffix variants that detach the segment as a standalone list before reversing, steps 4 and 5 are replaced by a smaller two-pointer stitch on the single open boundary; the swap loop body is still the same.
+
+---
+
+## Variants / Taxonomy
+
+The pattern shows up in four recognisable variants. Each maps to a different choice of `start`, `end`, and the boundary sentinels, but every variant calls the same per-node swap loop.
+
+- **Full-list reversal** — `start = head`, `end = tail`. Both `leftBound` and `rightBound` are `null`, so the stitches collapse to clearing `start.next` and `end.prev`. Returns the original tail as the new head. The simplest instance and the building block for the others.
+- **Reverse-first-`k` (prefix reversal)** — `start = head`, end is reached when the counter has flipped `k` nodes (or when `current` runs off the end). The reversed prefix's tail (the original head) must be stitched forward to the first un-flipped node; the new head's `prev` is cleared to `null`.
+- **Reverse-last-`k` (suffix reversal)** — measure the length, walk to the `(length − k)`-th node (the splice point), detach the suffix by clearing `current.next.prev`, hand the standalone suffix to the full-list reversal helper, then re-stitch in both directions across the cut.
+- **Reverse-the-given-segment (between positions)** — given `left` and `right` (1-indexed positions), walk to find `start` (position `left`) and `end` (position `right`), invoke the segment-reversal primitive, then return `end` as the new head when `left == 1` (because the original head was inside the reversed segment) or `head` otherwise.
+
+The variants share an invariant: every flipped node has its `prev` and `next` swapped exactly once, and the segment's two open boundaries stitch to their outer neighbours in both directions exactly once.
+
+---
+
+## Recognition Checklist
+
+The pattern fits when **all four** answers are "yes". The first asks whether the problem is a reversal at all; the next three check that the reversal can be done in place with a single swap per node.
+
+- Does the problem ask for nodes to appear in reversed order across a contiguous segment — full list, prefix, suffix, or a positional range?
+- Is the segment a contiguous run of nodes with identifiable endpoints (`start` and `end` — either given, computed by position, or computed by length)?
+- Is the work strictly structural — only `prev` and `next` pointers change, no node values are read for the rewrite decision?
+- Is `O(1)` extra space required (or strongly preferred)? The iterative per-node swap never recurses or allocates auxiliary storage.
+
+Common surface signals: "reverse the linked list," "reverse the first / last `k` nodes," "reverse between positions `left` and `right`," "rotate the list by `k`," "reorder the list so it reads `a, last, b, second-last, …`," "check whether the doubly linked list is a palindrome."
+
+---
+
+## Canonical Example: Reverse a List
+
+**Problem:** Given the head of a doubly linked list, reverse it in place and return the head of the reversed list.
+
+```
+Input:  head = [5, 7, 3, 10]
+Output: [10, 3, 7, 5]
+```
+
+### Brute Force: Copy Values to an Array
+
+Walk the list, copy every value into a Python list (or Java `ArrayList`), reverse the array, and write the values back into the same nodes' `val` fields. Both directions of the pointer chain are left untouched; only the values move.
+
+```
+Pass 1: arr = [5, 7, 3, 10]
+Reverse arr in place: arr = [10, 3, 7, 5]
+Pass 2: walk the list and assign arr[i] back into node[i].val
+Result: 10 ⇄ 3 ⇄ 7 ⇄ 5
+```
+
+The brute force is correct but doubles memory: an `O(n)` array on top of the original list. It also conflates value movement with list reversal — a problem the moment the variant asks you to splice the reversed segment back into a larger list.
+
+### Key Insight: Swap `prev` and `next` on Every Node
+
+A doubly linked list is the chain of `prev`/`next` pointer pairs. Reversing it means swapping the two pointers at every node — every existing `A → B` link becomes `A ← B`, and every existing `A ← B` link becomes `A → B`. The forward and backward chains both reverse in the same sweep. The only subtle move is the walk step: after the swap, `current.next` holds the *old* `prev` and `current.prev` holds the *old* `next`, so advancing in the original forward direction means `current = current.prev`.
+
+### Optimized Solution: One Swap Per Node
+
+The per-node swap runs in `O(n)` time and `O(1)` space. The Python and Java implementations from the **Implementation** and **Linked list reversal algorithm** sections above are the same swap loop in two language syntaxes — walk every node, swap its two pointers, advance via the field that used to be `next`, and capture the new head when `current.prev` becomes `null` after a swap (that's the node that used to be the tail).
+
+### Trace
+
+```
+head = 5 ⇄ 7 ⇄ 3 ⇄ 10 ⇄ null
+
+Init: current = 5
+
+Tick 1: swap 5: prev was null, next was 7  →  prev = 7,  next = null
+        advance current = current.prev = 7
+
+Tick 2: swap 7: prev was 5,    next was 3  →  prev = 3,  next = 5
+        advance current = current.prev = 3
+
+Tick 3: swap 3: prev was 7,    next was 10 →  prev = 10, next = 7
+        advance current = current.prev = 10
+
+Tick 4: swap 10: prev was 3,   next was null →  prev = null, next = 3
+        current.prev is now null → 10 is the new head
+        advance current = current.prev = null → loop ends
+
+Reversed list: 10 ⇄ 3 ⇄ 7 ⇄ 5 ⇄ null ✓
+```
+
+### Fitting the Template
+
+| Check | Answer for Reverse a List |
+|---|---|
+| **Q1.** Does the problem ask for reversed order across a contiguous segment? | **Yes** — the entire list is a contiguous segment from `head` to the tail. |
+| **Q2.** Are the segment endpoints identifiable? | **Yes** — `start = head`, `end = tail`. No positional walk is needed. |
+| **Q3.** Is the work strictly structural (only `prev`/`next` pointers change)? | **Yes** — node values are never read or written; only the two pointer fields swap each tick. |
+| **Q4.** Is `O(1)` extra space required? | **Yes** — one cursor reference plus an optional `newHead` capture, regardless of list length. |
+
+All four answers are "yes", so the reversal pattern applies. The outer driver is trivial (no positional work — `start = head`, `end = tail`); the inner swap loop does the entire job. Total cost: `O(n)` time, `O(1)` space.
+
+---
+
+## Problems in This Category
+
+| Problem | Variant | How the per-node swap fits |
+|---|---|---|
+| **[Reverse a List](02-problems/01-reverse-a-list.md)** | Full-list reversal | `start = head`, `end = tail`; swap every node's `prev`/`next`; capture the new head when `current.prev` becomes `null` |
+| **[Reverse First K Nodes](02-problems/02-reverse-first-k-nodes.md)** | Prefix reversal | Same swap loop, bounded by a `count < k` guard; three boundary writes stitch the reversed prefix to the unreversed suffix |
+| **[Reverse Last K Nodes](02-problems/03-reverse-last-k-nodes.md)** | Suffix reversal | Measure length, walk to the `(length − k)`-th node, detach the suffix, run the full-list reversal helper, re-stitch both directions across the cut |
+| **[Reverse the Given Segment](02-problems/04-reverse-the-given-segment.md)** | Positional segment reversal | Walk to position `left` (= `start`) and position `right` (= `end`), call the segment-reversal primitive, return `end` as the new head when `left == 1` |
+
+Difficulty increases with the amount of positional bookkeeping the caller has to do before invoking the swap loop — the loop itself is unchanged across all four problems.

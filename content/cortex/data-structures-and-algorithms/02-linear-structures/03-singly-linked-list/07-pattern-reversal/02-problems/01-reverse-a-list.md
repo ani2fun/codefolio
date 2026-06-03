@@ -88,7 +88,7 @@ Run the three-pointer loop from the head until `current` becomes `null`.
 ### Solution
 
 
-```python run
+```python run viz=linked-list viz-root=head
 from typing import Optional, List, Any
 
 
@@ -154,7 +154,7 @@ print(to_list(Solution().reverse_a_list(from_list([1, 2, 3]))))        # [3, 2, 
 print(to_list(Solution().reverse_a_list(from_list([1, 1, 1]))))        # [1, 1, 1]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {

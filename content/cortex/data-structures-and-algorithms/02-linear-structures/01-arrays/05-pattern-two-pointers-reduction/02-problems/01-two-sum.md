@@ -190,7 +190,7 @@ print(Solution().two_sum([0, 0], 0))              # [0, 0] — zero sum
 print(Solution().two_sum([-3, -1, 0, 2, 4], 1))  # [-1, 2] — negative numbers
 ```
 
-```java run
+```java run viz=array viz-root=arr
 import java.util.*;
 
 public class Main {
@@ -244,6 +244,99 @@ public class Main {
 }
 ```
 
+### Step through the execution
+
+Click **Trace** to step through the two-pointer search on the sorted array. The locals panel shows `left`, `right`, and `s` updating at each iteration. Watch `s` converge toward `target` as the pointers close in from both ends of the sorted `arr`.
+
+```python trace
+def two_sum(arr, target):
+    arr.sort()
+    left = 0
+    right = len(arr) - 1
+    while left < right:
+        s = arr[left] + arr[right]
+        if s == target:
+            return [arr[left], arr[right]]
+        elif s < target:
+            left += 1
+        else:
+            right -= 1
+    return []
+
+
+result = two_sum([2, 8, 3, 6, 4], 7)
+print(result)  # [3, 4]
+```
+
+Same search in Java. After `Arrays.sort`, the two pointers `left` and `right` move inward. The sorted `arr` is visible in the locals panel so you can see exactly which elements are being summed at each step. The **Kotlin** and **Scala** tabs show equivalent source.
+
+```java trace
+import java.util.Arrays;
+
+public class Main {
+    static int[] twoSum(int[] arr, int target) {
+        Arrays.sort(arr);
+        int left = 0;
+        int right = arr.length - 1;
+        while (left < right) {
+            int s = arr[left] + arr[right];
+            if (s == target) {
+                return new int[]{arr[left], arr[right]};
+            } else if (s < target) {
+                left++;
+            } else {
+                right--;
+            }
+        }
+        return new int[]{};
+    }
+
+    public static void main(String[] args) {
+        int[] arr = {2, 8, 3, 6, 4};
+        int[] result = twoSum(arr, 7);
+        System.out.println(Arrays.toString(result));  // [3, 4]
+    }
+}
+```
+
+```kotlin trace
+fun twoSum(arr: IntArray, target: Int): IntArray {
+    arr.sort()
+    var left  = 0
+    var right = arr.size - 1
+    while (left < right) {
+        val s = arr[left] + arr[right]
+        when {
+            s == target -> return intArrayOf(arr[left], arr[right])
+            s < target  -> left++
+            else        -> right--
+        }
+    }
+    return intArrayOf()
+}
+
+fun main() {
+    val result = twoSum(intArrayOf(2, 8, 3, 6, 4), 7)
+    println(result.contentToString())  // [3, 4]
+}
+```
+
+```scala trace
+def twoSum(arr: Array[Int], target: Int): Array[Int] =
+  val a     = arr.sorted
+  var left  = 0
+  var right = a.length - 1
+  while left < right do
+    val s = a(left) + a(right)
+    if s == target then return Array(a(left), a(right))
+    else if s < target then left  += 1
+    else                    right -= 1
+  Array()
+
+@main def run(): Unit =
+  println(twoSum(Array(2, 8, 3, 6, 4), 7).mkString("[", ", ", "]"))  // [3, 4]
+```
+
 ### Dry Run — Example 1
 
 `arr = [2, 8, 3, 6, 4]`, target = 7
@@ -251,40 +344,287 @@ public class Main {
 After sort: `[2, 3, 4, 6, 8]`
 
 > ▶ Interactive Diagram — TODO: add caption
-```d3 widget=array-traversal
+```d3 widget=array-1d
 {
-  "items": ["2", "3", "4", "6", "8"],
-  "title": "Two Sum on sorted [2, 3, 4, 6, 8], target = 7",
   "steps": [
     {
-      "markers": [
-        { "name": "left",  "index": 0, "color": "#3b82f6" },
-        { "name": "right", "index": 4, "color": "#f59e0b" }
+      "nodes": [
+        {
+          "id": "0",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "6",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "8",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "msg": "sum = 2 + 8 = 10 > 7 → discard arr[right]; right--."
+      "edges": [],
+      "cursor": [
+        {
+          "name": "left",
+          "target": "0",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "right",
+          "target": "4",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "sum = 2 + 8 = 10 > 7 → discard arr[right]; right--.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "markers": [
-        { "name": "left",  "index": 0, "color": "#3b82f6" },
-        { "name": "right", "index": 3, "color": "#f59e0b" }
+      "nodes": [
+        {
+          "id": "0",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "6",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "8",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "msg": "sum = 2 + 6 = 8 > 7 → discard arr[right]; right--."
+      "edges": [],
+      "cursor": [
+        {
+          "name": "left",
+          "target": "0",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "right",
+          "target": "3",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "sum = 2 + 6 = 8 > 7 → discard arr[right]; right--.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "markers": [
-        { "name": "left",  "index": 0, "color": "#3b82f6" },
-        { "name": "right", "index": 2, "color": "#f59e0b" }
+      "nodes": [
+        {
+          "id": "0",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "6",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "8",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "msg": "sum = 2 + 4 = 6 < 7 → discard arr[left]; left++."
+      "edges": [],
+      "cursor": [
+        {
+          "name": "left",
+          "target": "0",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "right",
+          "target": "2",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "sum = 2 + 4 = 6 < 7 → discard arr[left]; left++.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "markers": [
-        { "name": "left",  "index": 1, "color": "#3b82f6" },
-        { "name": "right", "index": 2, "color": "#f59e0b" }
+      "nodes": [
+        {
+          "id": "0",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "6",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "8",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "msg": "sum = 3 + 4 = 7 = target → return [3, 4]."
+      "edges": [],
+      "cursor": [
+        {
+          "name": "left",
+          "target": "1",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "right",
+          "target": "2",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "sum = 3 + 4 = 7 = target → return [3, 4].",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Two Sum on sorted [2, 3, 4, 6, 8], target = 7"
 }
 ```
 

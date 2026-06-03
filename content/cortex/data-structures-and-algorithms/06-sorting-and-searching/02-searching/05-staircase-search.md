@@ -194,7 +194,7 @@ print(Solution().staircase_search([[1, 2, 3, 4]], 5))                        # F
 print(Solution().staircase_search([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]], 1))   # True  — first element
 ```
 
-```java run
+```java run viz=array viz-root=matrix
 import java.util.*;
 
 public class Main {

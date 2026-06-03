@@ -112,7 +112,7 @@ if __name__ == "__main__":
     print(f"adversarial: {kmp_match('a'*100 + 'b', 'a'*50 + 'b')}")
 ```
 
-```java run
+```java run viz=array viz-root=pi
 public class Main {
     static int[] buildFailure(String P) {
         int m = P.length();

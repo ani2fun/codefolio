@@ -191,7 +191,7 @@ Given a sorted array `arr`, construct a height-balanced binary search tree from 
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional, List
 from collections import deque
 
@@ -286,7 +286,7 @@ r6 = Solution().sorted_array_to_bst([1, 2, 3, 4, 5])
 print(inorder(r6))                 # [1, 2, 3, 4, 5]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {
@@ -498,7 +498,7 @@ Given an unsorted array `arr`, construct a binary search tree by inserting nodes
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional, List
 from collections import deque
 
@@ -598,7 +598,7 @@ r6 = Solution().unsorted_array_to_bst([4, 3, 2, 1])
 print(inorder(r6))                 # [1, 2, 3, 4]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {
@@ -775,7 +775,7 @@ The total work per recursion level is O(n) (the slow/fast walk over n nodes), an
 
 ### The Solution
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional, List, Any
 from collections import deque
 
@@ -911,7 +911,7 @@ r6 = Solution().sorted_linked_list_to_bst(from_list([1, 2, 3, 4, 5]))
 print(inorder(r6))                 # [1, 2, 3, 4, 5]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

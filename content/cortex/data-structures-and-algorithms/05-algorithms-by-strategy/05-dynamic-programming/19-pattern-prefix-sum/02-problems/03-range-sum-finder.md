@@ -113,7 +113,7 @@ rsf4 = RangeSumFinder([[-1,-2],[-3,-4]])
 print(rsf4.sum_region(0, 0, 1, 1)) # -10 — negative values
 ```
 
-```java run
+```java run viz=grid viz-root=matrix
 import java.util.*;
 
 public class Main {

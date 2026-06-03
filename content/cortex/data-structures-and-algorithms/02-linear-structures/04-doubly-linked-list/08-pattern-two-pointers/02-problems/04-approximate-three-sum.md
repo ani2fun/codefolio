@@ -26,6 +26,77 @@ Output: 0
 Explanation: 0 + 0 + 0 = 0.
 ```
 
+---
+
+<details>
+<summary><strong>Examples</strong></summary>
+
+**Example 1**
+```
+Input:  head = [2, 7, 11, 15], target = 3
+Output: 20
+Explanation: The minimum reachable sum is 2 + 7 + 11 = 20. Even the smallest three values overshoot the target, but 20 is the closest reachable sum.
+```
+
+**Example 2**
+```
+Input:  head = [-4, -1, 1, 2], target = 1
+Output: 2
+Explanation: The triple (-1, 1, 2) sums to 2, distance 1 from the target. No other reachable triple lands closer.
+```
+
+**Example 3**
+```
+Input:  head = [0, 0, 0], target = 1
+Output: 0
+Explanation: The only reachable triple is (0, 0, 0); 0 is closest to 1 by definition.
+```
+
+**Example 4**
+```
+Input:  head = [1, 2, 3], target = 6
+Output: 6
+Explanation: An exact match exists — the inner two-pointer pass returns the sum the moment `sum == target`, saving the rest of the scan.
+```
+
+</details>
+
+---
+
+## Intuition
+
+The **structural property** is that 3-Sum collapses to 2-Sum the moment you fix the first value. For every choice of `indexNode`, the remaining problem is "find the pair in the sublist `(indexNode.next, tail)` whose sum is closest to `target - indexNode.val`" — that is a sorted-list pair-search, exactly the previous variant. Iterate the choice of `indexNode` over every node in the list and keep the best triple seen so far. The sorted assumption survives across the outer loop: the inner range `(indexNode.next, tail)` is itself sorted, so the inner two-pointer pass works without re-sorting.
+
+The **pointer placement** uses three references — one fixed, two converging. The outer cursor `indexNode` walks `head` toward the tail; the inner walkers `left = indexNode.next` and `right = tail` converge inward on each outer iteration. A scalar `closestSum` survives across all outer iterations: it is updated whenever `|sum - target|` improves, where `sum = indexNode.val + left.val + right.val`. The same `sum < target → left.next`, `sum > target → right.prev`, `sum == target → return` decision rule from plain Two Sum drives the inner loop — only the running sum has an extra term.
+
+What **breaks if you reach for the naive approach**? The brute-force `O(n³)` triple-nested loop enumerates every ordered triple — correct, but cubic. Sorting + hashing for the inner pair lookup gets to `O(n²)` time but pays `O(n)` extra space for the hash set and discards the sorted-order gift. The fix-one-reduce approach hits the same `O(n²)` time at `O(1)` extra space, with the bonus that an exact `sum == target` triggers an early return out of the inner loop.
+
+---
+
+## Applying the Diagnostic Questions
+
+| Check | Answer for Approximate Three Sum |
+|---|---|
+| **Q1.** Are two nodes inspected at the same time, one from each end? | **Yes** — the inner two-pointer pass reads `left.val` and `right.val` together. The outer `indexNode` pins a third value but the converging-walkers shape applies to the inner pair. |
+| **Q2.** Does one pointer start near `head` and the other near `tail`? | **Yes** for the inner loop — `left = indexNode.next` (near the current outer position), `right = tail`. |
+| **Q3.** Do both pointers move strictly inward? | **Yes** — the inner `left` advances via `.next`, the inner `right` retreats via `.prev`; the outer `indexNode` also walks forward only. |
+| **Q4.** Is the per-step work `O(1)`? | **Yes** — one addition, one absolute-distance check, one comparison, one pointer step. Total cost is `O(n)` per outer iteration, `O(n²)` overall. |
+
+---
+
+## Approach
+
+Run an outer loop that fixes a node, an inner converging-walkers pass that tracks the closest pair-sum, and a global tracker that survives every outer iteration.
+
+1. **Initialise the global tracker.** Set `closestSum = +∞`. Every reachable triple-sum will beat this on its distance to the target.
+2. **Walk the outer cursor.** Set `currentNode = head` and loop while `currentNode != null` and `currentNode.next != null` — the last two nodes cannot pin a triple because the inner sublist would be empty.
+3. **Run the inner closest-two-sum.** With `indexNode = currentNode`, set `left = indexNode.next`, `right = tail`. Loop while `left != right` and `left.prev != right`.
+4. **Compute the triple sum and update the inner closest.** Let `sum = indexNode.val + left.val + right.val`. If `|sum - target| < |innerClosest - target|`, set `innerClosest = sum`.
+5. **Branch the inner pointers.** If `sum == target`, return `sum` immediately — no triple can be closer. If `sum < target`, advance `left = left.next`. If `sum > target`, retreat `right = right.prev`.
+6. **Roll the inner closest into the global tracker.** After the inner loop returns its `innerClosest`, update `closestSum` if `|innerClosest - target| < |closestSum - target|`.
+7. **Advance the outer cursor and repeat.** Set `currentNode = currentNode.next` and re-enter step 3.
+8. **Return `closestSum`.** When the outer loop ends, `closestSum` holds the reachable triple sum closest to `target`.
+
 <details>
 <summary><h2>What Does "Fix One, Two-Pointer the Rest" Mean?</h2></summary>
 
@@ -72,7 +143,7 @@ flowchart TB
 
 ### The Solution
 
-```python run
+```python run viz=linked-list viz-root=head
 from typing import List, Optional
 
 class ListNode:
@@ -187,7 +258,7 @@ h = from_list([5, 10, 15, 20])
 print(Solution().approximateThreeSum(h, get_tail(h), 40))   # 45
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -393,26 +464,6 @@ Next up — **lesson 08: Pattern — Sliding Window**, where the two pointers st
 
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+## Key Takeaway
 
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
-
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
-
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
-
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
-
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
-
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->
+What is *new* here vs Two Sum is the outer loop pinning one node — the inner pass is unchanged in shape, only the running sum gains a third term. A global tracker survives across outer iterations because the closest triple may sit in any slice; an exact match short-circuits the whole search.

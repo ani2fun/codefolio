@@ -19,18 +19,81 @@ Given the head of a singly-linked list, return an array where `result[i]` is the
 > -   **Input:** `head = [2, 7, 4, 3, 5]` → **Output:** `[7, 0, 5, 5, 0]`
 
 <details>
+<summary><strong>Examples</strong></summary>
+
+**Example 1**
+```
+Input:  head = [2, 1, 5]
+Output: [5, 5, 0]
+Explanation: 2 and 1 both find 5 as their first strictly-greater successor → 5.
+5 has no node after it → 0.
+```
+
+**Example 2**
+```
+Input:  head = [2, 7, 4, 3, 5]
+Output: [7, 0, 5, 5, 0]
+Explanation: 2 sees 7 → 7. 7 is followed by smaller values then 5 → 0.
+4 and 3 both find 5 → 5. 5 ends the list → 0.
+```
+
+**Example 3**
+```
+Input:  head = [1, 2, 3, 4]
+Output: [2, 3, 4, 0]
+Explanation: Each node's next-greater is its immediate successor; the last node has none → 0.
+```
+
+**Example 4**
+```
+Input:  head = [4, 3, 2, 1]
+Output: [0, 0, 0, 0]
+Explanation: A strictly decreasing list — no node has a greater value after it.
+```
+
+</details>
+
+## Intuition
+
+The structural property that makes this a **monotonic-stack** problem is the *next-greater* query, identical to *succeeding superior element* — only the data source is a linked list instead of an array. A list cannot be indexed in reverse cheaply, so this problem is the natural home for the left-to-right retroactive-resolution style.
+
+The stack holds `(index, value)` pairs for nodes still *waiting* for a greater successor, with values strictly decreasing from bottom to top. As the pointer walks the list, each new node resolves every stacked node it exceeds: pop the pair, write the new value into `result` at the popped index. The new node's pair is then pushed to wait its turn.
+
+The naive approach re-walks the tail for every node and breaks the time budget. For each node it scans forward until a greater value appears — `O(N²)` time, quadratic on a sorted-descending list. The single-pass stack visits each node once and resolves answers retroactively, so the work stays `O(N)`.
+
+## Applying the Diagnostic Questions
+
+| Check | Answer for Succeeding Superior Nodes |
+|---|---|
+| **Q1.** Does each node need an answer drawn from the nodes *after* it? | **Yes** — the next-greater of node `i` ranges only over nodes reached later in the walk. |
+| **Q2.** Is the answer the *closest* such node, not all of them? | **Yes** — the single nearest strictly-greater successor per node. |
+| **Q3.** Is the comparison monotone — strictly greater or smaller? | **Yes** — a strict greater-than test drives every resolve-and-pop (decreasing stack). |
+| **Q4.** Is the per-node work `O(1)` amortised? | **Yes** — each node is pushed once and popped at most once across the single pass. |
+
+<details>
 <summary><h2>Approach</h2></summary>
 
 
 Same algorithm — but the data source is a linked list, so we walk it once with a pointer, tracking each node's index. Stack stores `(index, value)` pairs; on each new value, pop and resolve as before.
 
 </details>
+
+## Approach in Words
+
+Walk the list once with a pointer, resolving stacked nodes retroactively as larger values appear.
+
+1. **Allocate the holders.** Create an empty `result` list, an empty `stack` of `(index, value)` pairs, and an `index` counter starting at `0`.
+2. **Visit each node in order.** For the current node, first append `0` to `result` as its default answer.
+3. **Resolve dominated nodes.** While the stack is non-empty and the current node's value `>` the top pair's value, pop the pair and set `result[poppedIndex]` to the current value.
+4. **Push the current node.** Push `(index, currentValue)`, increment `index`, and advance the pointer to the next node.
+5. **Return the result.** Any node still on the stack at the end of the walk keeps its `0` — no greater successor exists.
+
 <details>
 <summary><h2>Solution</h2></summary>
 
 
 
-```python run
+```python run viz=array viz-root=stack viz-kind=stack
 from typing import Optional, List
 
 
@@ -112,7 +175,7 @@ print(Solution().succeeding_superior_nodes(from_list([1, 2, 3, 4])))    # [2, 3,
 print(Solution().succeeding_superior_nodes(from_list([4, 3, 2, 1])))    # [0, 0, 0, 0]
 ```
 
-```java run
+```java run viz=array viz-root=stack viz-kind=stack
 import java.util.*;
 
 public class Main {
@@ -204,35 +267,43 @@ public class Main {
 
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+## Dry Run
 
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
+Walk Example 1 — `head = [2, 1, 5]`. The stack stores `(index, value)` pairs and stays strictly decreasing by value; resolve while the current value `>` the top's value:
 
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
+```
+idx=0 val=2   resolve none           stack=[(0,2)]          result=[0]
+idx=1 val=1   1<2 (no resolve)        stack=[(0,2),(1,1)]    result=[0,0]
+idx=2 val=5   1<5 → result[1]=5, pop (1,1)
+              2<5 → result[0]=5, pop (0,2)
+                                      stack=[(2,5)]          result=[5,5,0]
 
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
+EOF: (2,5) left on the stack → result[2] stays 0
+result = [5, 5, 0]
+```
 
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
+The result `[5, 5, 0]` matches the expected output. Node `5` is never resolved because nothing greater follows it.
 
-<!-- TODO: Solution — missing, needs to be written -->
-<!--       Guidance: Python block then Java block -->
+## Complexity Analysis
 
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
+| Measure | Value | Why |
+|---|---|---|
+| Time  | **O(N)** | One pass over the `N` nodes; each node is pushed once and popped at most once. |
+| Space | **O(N)** | The stack and the result list each hold up to `N` entries. |
 
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table: time / space / why -->
+The nested `while` is `O(N)` amortised, not `O(N²)`: total pushes plus pops across the whole walk never exceed `2N`.
 
-<!-- TODO: Edge Cases — missing, needs to be written -->
-<!--       Guidance: table, min 5 rows -->
+## Edge Cases
 
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->
+| Case | Example | Expected | Reasoning |
+|---|---|---|---|
+| Empty list | `head = []` | `[]` | No nodes, no answers. |
+| Single node | `head = [1]` | `[0]` | One node has no successor — sentinel `0`. |
+| Two ascending | `head = [1, 2]` | `[2, 0]` | `1` sees `2`; `2` ends the list → 0. |
+| Two descending | `head = [2, 1]` | `[0, 0]` | Neither node has a greater successor. |
+| Sorted ascending | `head = [1, 2, 3, 4]` | `[2, 3, 4, 0]` | Each node's next-greater is its immediate successor. |
+| Sorted descending | `head = [4, 3, 2, 1]` | `[0, 0, 0, 0]` | No node ever finds a greater successor. |
+
+## Key Takeaway
+
+What is new here is the data source — a linked list forces the left-to-right retroactive-resolution style, since you cannot scan a list backwards cheaply. Storing `(index, value)` pairs lets a later node write its value into an earlier node's slot the moment it dominates it; the sentinel is `0` rather than `-1` because the answer is 1-indexed node values.

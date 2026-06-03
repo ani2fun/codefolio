@@ -111,7 +111,7 @@ The recursion's three branches:
 
 ### The Solution
 
-```python run
+```python run viz=array viz-root=combinations
 from typing import List
 
 class Solution:
@@ -194,7 +194,7 @@ print(Solution().target_sum_combinations([5], 5))            # [[5]]
 print(Solution().target_sum_combinations([1], 3))            # [[1, 1, 1]]
 ```
 
-```java run
+```java run viz=array viz-root=combinations
 import java.util.*;
 
 public class Main {

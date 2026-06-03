@@ -374,7 +374,7 @@ print(Solution().maximum_bipartite_matching([[],[]], [0], [1]))    # 0
 print(Solution().maximum_bipartite_matching([[2],[2],[0,1]], [0,1], [2]))  # 1
 ```
 
-```java run
+```java run viz=graph viz-root=graph
 import java.util.*;
 
 public class Main {

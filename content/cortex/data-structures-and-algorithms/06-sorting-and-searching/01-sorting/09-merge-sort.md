@@ -321,7 +321,7 @@ print(Solution().merge_sort([3, 3, 3]))                   # [3, 3, 3]
 print(Solution().merge_sort([5, 2, 8, 1, 9]))             # [1, 2, 5, 8, 9]
 ```
 
-```java run
+```java run viz=array viz-root=arr
 import java.util.*;
 
 public class Main {
@@ -710,7 +710,7 @@ print(Solution().count_inversions([5, 4, 3, 2, 1]))    # 10
 print(Solution().count_inversions([1, 1, 1]))           # 0
 ```
 
-```java run
+```java run viz=array viz-root=arr
 import java.util.*;
 
 public class Main {

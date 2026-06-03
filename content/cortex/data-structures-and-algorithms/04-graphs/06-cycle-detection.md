@@ -205,7 +205,7 @@ print(Solution().detect_cycle_in_undirected_graph([[1],[0],[3],[2]]))           
 print(Solution().detect_cycle_in_undirected_graph([[0]]))                            # True — self-loop
 ```
 
-```java run
+```java run viz=graph viz-root=graph
 import java.util.*;
 
 public class Main {
@@ -490,7 +490,7 @@ print(Solution().detect_cycle_in_directed_graph([[0]]))                      # T
 print(Solution().detect_cycle_in_directed_graph([[1],[]]))                   # False — one edge, no cycle
 ```
 
-```java run
+```java run viz=graph viz-root=graph
 import java.util.*;
 
 public class Main {

@@ -323,7 +323,7 @@ if __name__ == "__main__":
         print(f"  n={n:>6}  height={t.height()}  (cf. log_T(n) ≈ {__import__('math').log(n) / __import__('math').log(T):.1f})")
 ```
 
-```java run
+```java run viz=graph viz-root=tree
 public class Main {
     static final int T = 3;
 

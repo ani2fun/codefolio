@@ -65,7 +65,7 @@ flowchart TB
 We'll show "does any root-to-leaf path sum to target?" as the canonical generic example.
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional
 
 class TreeNode:
@@ -82,7 +82,7 @@ def has_path_sum(root: Optional[TreeNode], target: int) -> bool:
     return go(root, target)
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 public static boolean hasPathSum(TreeNode root, int target) {
     if (root == null) return false;
     target -= root.val;

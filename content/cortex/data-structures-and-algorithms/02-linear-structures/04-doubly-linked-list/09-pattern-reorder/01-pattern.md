@@ -126,8 +126,7 @@ The algorithm below summarises the reorder technique for **two** lists. It gener
 Below is the generic implementation that splits a DLL into two using `f1` and merges them using `f2`. The structure is identical to the singly-list version with **one extra line per attachment** to keep `prev` correct.
 
 
-```python run
-
+```python run viz=linked-list viz-root=head
 """
 Definition for doubly-linked list.
 class ListNode:
@@ -220,7 +219,7 @@ def reorder_nodes(head: Optional[ListNode], f1, f2) -> Optional[ListNode]:
     return new_head
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 
 /**
  * Definition for doubly-linked list.
@@ -424,7 +423,7 @@ flowchart LR
 The implementation of the solution using the reorder technique is given below. Notice that this is the *same* code we'll re-use as the standalone "Value partition" problem later in the lesson.
 
 
-```python run
+```python run viz=linked-list viz-root=head
 """
 Definition for doubly-linked list.
 class ListNode:
@@ -553,7 +552,7 @@ class Solution:
         return self.merge_less_and_greater_lists(less_head, greater_head)
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 /**
@@ -725,33 +724,75 @@ Walk `k` steps to find the boundary node. Split there (sever both directions). T
 
 Next time you see *"reorder the linked list into this weird shape"*, you won't search for a clever trick — you'll mentally write the choreography: *split by what?*, *do I need to reverse a half?*, *concat or alternate-merge?* That's the difference between solving a problem and recognising one.
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+---
 
-<!-- TODO: Why Naive Isn't Enough — missing, needs to be written -->
-<!--       Guidance: motivation for why the obvious approach fails -->
+## Understanding the Pattern
 
-<!-- TODO: The Core Idea — missing, needs to be written -->
-<!--       Guidance: one paragraph: the central trick -->
+### Why Naive Isn't Enough
 
-<!-- TODO: How the Pointers/Window Move — missing, needs to be written -->
-<!--       Guidance: mechanics of the moving parts -->
+Reordering a doubly linked list by **copying every value into an array, rearranging the array under the target rule, and rebuilding a fresh list** wastes both halves of the structure. The auxiliary array costs `O(n)` extra memory, and rebuilding the output allocates `n` brand-new nodes when the input nodes were already perfectly good objects. The garbage collector inherits `n` unreachable originals to sweep up, and any caller holding a pointer into the input chain is now pointing into orphaned memory.
 
-<!-- TODO: The Generic Algorithm — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
+To make this concrete: with the input `[1, 2, 3, 4, 5, 6]` and the target reorder `[1, 6, 2, 5, 3, 4]`, the copy approach allocates 6 new nodes, fills an auxiliary array of length 6, then walks that array twice — once to wire `next`, once to wire `prev`. The original 6 nodes become garbage even though the answer only required rewriting their `next` and `prev` fields. The reorder technique instead splices nodes into temporary sub-lists and weaves them back under a selector — no allocation, no GC churn, and `prev` is honest at every step.
 
-<!-- TODO: Generic Implementation — missing, needs to be written -->
-<!--       Guidance: Python block + Java block of the skeleton -->
+So the key idea is: every reorder problem is the composition of two patterns already in your toolkit, with one mirror update per attachment. A classifier `f1` routes nodes into temporary sub-lists (the split pattern), then a selector `f2` weaves those sub-lists back into one output (the merge pattern). Both passes are `O(n)` time and `O(1)` extra space; together they form a two-pass algorithm with the same asymptotic cost as the naive copy-rebuild but none of its allocation overhead — and `prev` stays honest end-to-end if you remember the mirror.
 
-<!-- TODO: Variants / Taxonomy — missing, needs to be written -->
-<!--       Guidance: enumerate sub-shapes of this pattern -->
+### The Core Idea
 
-<!-- TODO: Recognition Checklist — missing, needs to be written -->
-<!--       Guidance: 4-question diagnostic — the source of the Problem-section Diagnostic Questions -->
+The pattern asks one question: **can the target reorder be expressed as "split the input by classifier `f1`, then merge the sub-lists by selector `f2`"?**
 
-<!-- TODO: Canonical Example — missing, needs to be written -->
-<!--       Guidance: fully worked example: brute force → optimised → template fit -->
+The single mechanism that drives every variant is the **split-then-merge pipeline with mirror updates**:
 
-<!-- TODO: Problems in This Category — missing, needs to be written -->
-<!--       Guidance: table with links to the 02-problems/ files -->
+- **`f1` — the classifier.** Reads one node (and optionally a counter like its index) and returns the id of the sub-list it belongs to. The split pass routes nodes into `k` buckets using `f1`, with every attach wiring both `tail.next = node` and `node.prev = tail`.
+- **`f2` — the selector.** Reads the current heads of the sub-lists and returns the winner that becomes the next output node. The merge pass walks the buckets and splices in lockstep, again wiring both directions. For the simplest reorders, `f2` degenerates to plain concatenation — append bucket B after bucket A with one `tail.next` write and one `head.prev` write.
+- **The two sub-lists in between.** Temporary structures with dummy heads and tail cursors. They exist only between the split and the merge — the input nodes flow through them once, and their `prev` and `next` fields are rewritten as they pass.
+
+To make this concrete: with the input `1 ⇄ 2 ⇄ 3 ⇄ 4 ⇄ 5 ⇄ 6` and a target of "all odd-indexed nodes first, then all even-indexed nodes," `f1(node, index) = index % 2` routes nodes into bucket A (odd indices) and bucket B (even indices), and each splice writes both `tail.next` and `node.prev`. `f2` is plain concatenation — append B after A. No node is copied; only `prev` and `next` fields are rewritten across two passes.
+
+The core insight is: the pipeline body is **identical across every reorder variant** — only `f1`, `f2`, and the mirror-update bookkeeping change. Parity reorder uses `f1 = index % 2` and `f2 = concatenate`. Value partition uses `f1 = (val < pivot)` and `f2 = concatenate`. Zig-zag shuffle uses `f1 = (first half / reversed second half)` and `f2 = alternate A, B, A, B`. The split-and-merge skeleton is the same; the two functions plus the doubled link writes are the whole problem.
+
+### How the Pointers Move
+
+Across the split pass, one cursor walks the input and two tail cursors grow the sub-lists. Each iteration reads `current`, evaluates `f1(current)`, then performs four pointer updates: `bucket_tail.next = current` (forward splice into the chosen bucket), `current.prev = bucket_tail` (mirror back-link), advance `current = current.next` (move forward in the input), and advance the chosen `bucket_tail` (so the next splice lands at the new bucket end). After the loop, both `bucket_tail.next` fields are set to `null` AND the new heads' `prev` fields are set to `null` to terminate the sub-lists cleanly in both directions — without these steps, the buckets would still chain into stale input suffixes through `next` and dangling back-links would point into the dummy.
+
+Across the merge pass, two cursors walk the sub-lists and one tail cursor grows the output. Each iteration reads the heads, evaluates `f2(headA, headB)`, splices the winner onto the output tail with both directions wired (`tail.next = winner` and `winner.prev = tail`), advances the chosen sub-list's cursor, and advances the output tail. When one sub-list empties first, the drain step attaches the other's remaining suffix in one mirrored splice — the suffix's internal links are already correctly chained.
+
+Crucially, every `next` rewrite is paired with its mirror `prev` rewrite, and the rewrite happens *before* the input cursor moves. Reading first and writing later preserves the forward link to the next node so we don't lose the rest of the input mid-splice. The split pass's bucket-termination step is the one extra discipline beyond the merge pattern: it severs the bucket from the residual input chain on both sides so the merge pass doesn't accidentally walk past the end of a bucket into stale memory, and so the bucket heads' `prev` fields don't outlive the throwaway dummies.
+
+---
+
+## Variants / Taxonomy
+
+The pattern shows up in four recognisable variants. Each picks a different `(f1, f2)` pair, but every variant calls the same split-then-merge pipeline with mirror updates.
+
+- **Concatenate after split (`f2` = concatenate)** — the simplest variant. `f1` routes nodes into two buckets; `f2` appends bucket B after bucket A with `lessTail.next = greaterHead` and `greaterHead.prev = lessTail`. Used by parity-order, value-partition, and relocate-node. Total work is `O(n)` time, `O(1)` extra space.
+- **Alternate-fuse after split (`f2` = boolean flip)** — the zig-zag variant. `f1` produces two sub-lists (often "first half" and "reversed second half"); `f2` flips a boolean each tick to alternate `A, B, A, B`, with both directions wired on every attach. Used by shuffle-list. The boolean is stateful but trivially `O(1)`.
+- **Reverse-then-merge (split pre-pass + alternate `f2`)** — a sub-variant of the alternate-fuse case where `f1` is not a simple classifier but a *transformation* on a sub-list: split at the middle (fast-and-slow pattern) and reverse the second half (DLL reversal — one `swap(prev, next)` per node). The merge pass then alternates between the first half and the reversed second half.
+- **Move-one-node (degenerate split)** — when the reorder only relocates a single node. `f1` walks to the boundary node and splits it off (severing both `prev` and `next` at the cut); `f2` is a trivial mirrored splice. Used by relocate-node, where the last node is moved to the front with the new head's `prev` re-zeroed. Asymptotically `O(n)` time, `O(1)` space — the same envelope as the heavier variants.
+
+The variants share an invariant: the split pass terminates each bucket's `tail.next` AND new-head's `prev` with `null`, and the merge pass restores bidirectional connectivity by splicing buckets back into one chain with both `next` and `prev` wired. Cost is `O(n)` time, `O(1)` extra space across the board; the only allocation is a handful of dummy nodes used as splice anchors.
+
+---
+
+## Recognition Checklist
+
+The pattern fits when **all four** answers are "yes". The first asks whether the problem shape is a reorder; the next three check that the split-and-merge pipeline applies cleanly.
+
+- Does the problem require **rearranging the nodes of one input DLL in place**, producing an output that contains the same nodes in a different order with both `prev` and `next` chains intact?
+- Can the target order be expressed as **"route nodes by an `O(1)` classifier `f1`, then weave them back by an `O(1)` selector `f2`"** — without sorting, without random access, without re-reading the list multiple times?
+- Are the resulting sub-lists **bounded in count** (typically two, occasionally `k`) and consumable in one forward pass during the merge?
+- Is **`O(1)` extra space** sufficient for the buckets and merge state? The only allocations should be dummy heads — one per bucket plus one for the output.
+
+Common surface signals: "reorder in place," "group by parity," "partition around a value," "zig-zag the list," "shuffle by index," "interleave first half with reversed second half" — with the extra hint of a doubly-linked input so the answer must keep `prev` honest.
+
+---
+
+## Problems in This Category
+
+| Problem | Variant | How the pipeline fits |
+|---|---|---|
+| **[Relocate Node](02-problems/01-relocate-node.md)** | Move-one-node (degenerate split) | `f1` walks to the last node and severs both directions; `f2` is a mirrored prepend that wires `current.next = head` and `head.prev = current` while zeroing the new head's `prev`. |
+| **[Parity Order](02-problems/02-parity-order.md)** | Concatenate after split | `f1 = counter % 2` routes into odd / even buckets; `f2 = concatenate` joins the buckets with `oddTail.next = evenHead` and `evenHead.prev = oddTail`. |
+| **[Value Partition](02-problems/03-value-partition.md)** | Concatenate after split | `f1 = (val < X)` routes into less / greater-or-equal buckets; `f2 = concatenate` joins them with `lessTail.next = greaterHead` and `greaterHead.prev = lessTail`. |
+| **[Shuffle List](02-problems/04-shuffle-list.md)** | Reverse-then-merge | `f1` splits at the middle (fast-and-slow) and reverses the second half (DLL `swap(prev, next)` per node); `f2` alternates `A, B, A, B` with both directions wired on every attach. |
+
+Difficulty grows with how much `f1` does. Relocate-node has a trivial split; parity-order and value-partition use a one-line classifier; shuffle-list's `f1` itself composes two earlier patterns before the merge selector ever runs.

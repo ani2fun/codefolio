@@ -36,7 +36,7 @@ The comparator is "compare list nodes by value, ascending".
 
 
 
-```python run
+```python run viz=array viz-root=heap
 from typing import List, Optional, Tuple
 import heapq
 
@@ -119,7 +119,7 @@ l5 = [from_list([1, 1, 1]), from_list([1, 1])]
 print(to_list(Solution().k_way_list_merge(l5)))   # [1, 1, 1, 1, 1] — all same
 ```
 
-```java run
+```java run viz=array viz-root=heap
 import java.util.*;
 
 public class Main {

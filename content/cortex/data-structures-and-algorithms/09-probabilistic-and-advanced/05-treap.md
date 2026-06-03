@@ -176,7 +176,7 @@ if __name__ == "__main__":
     print(f"\nAfter 1000 sorted inserts, height = {height(root2)}  (log₂ 1000 ≈ 10; treap should be O(log n))")
 ```
 
-```java run
+```java run viz=graph viz-root=root
 import java.util.*;
 
 public class Main {

@@ -2,7 +2,9 @@
 
 Use this page as the chapter map for dynamic programming. Work through the guides in order when learning the topic for the first time, or jump directly to a named pattern for revision.
 
-## Chapters
+> How to read this chapter: follow **Start Here** top to bottom — that is the teaching path. Drill it in **Practice** once it clicks. Use **Reference** (recall cards, synthesis, design) for review, not first reading.
+
+## Start Here — the learning path
 
 - [Linear DP](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-linear-dp)
 - [Longest Increasing Subsequence](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-longest-increasing-subsequence)
@@ -18,25 +20,42 @@ Use this page as the chapter map for dynamic programming. Work through the guide
 - [Optimal Stratergy](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-optimal-stratergy)
 - [Boolean Parenthesization](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-boolean-parenthesization)
 - [Matrix Chain Multiplication](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-matrix-chain-multiplication)
-- [Memorize: Dynamic Programming](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-memorize)
 - [Pattern: Edit Distance](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-edit-distance-pattern)
+- [Pattern: Subset Sum](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-subset-sum-pattern)
+- [Pattern: 2D Grid](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-2d-grid-pattern)
+- [Pattern: Prefix Sum (2D)](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-prefix-sum-pattern)
+- [Practice — Mixed DP Problems](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-practise)
+
+## Practice
+
+Do these after the matching pattern in Start Here.
+
+### Edit Distance
 - [Wildcard Pattern Matching](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-edit-distance-problems-wildcard-pattern-matching)
 - [Interleaving Check](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-edit-distance-problems-interleaving-check)
-- [Memorize: Edit Distance](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-edit-distance-memorize)
-- [Pattern: Subset Sum](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-subset-sum-pattern)
+
+### Subset Sum
 - [Partition with Equal Sum](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-subset-sum-problems-partition-with-equal-sum)
 - [Sets With Smallest Discrepancy](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-subset-sum-problems-sets-with-smallest-discrepancy)
-- [Memorize: Subset Sum](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-subset-sum-memorize)
-- [Pattern: 2D Grid](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-2d-grid-pattern)
+
+### 2D Grid
 - [Longest Ascending Route](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-2d-grid-problems-longest-ascending-route)
 - [Largest Square Area of 1s](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-2d-grid-problems-largest-square-area-of-1s)
 - [Destination Path Count](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-2d-grid-problems-destination-path-count)
 - [Largest Plus of 1s](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-2d-grid-problems-largest-plus-of-1s)
-- [Memorize: 2D Grid](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-2d-grid-memorize)
-- [Pattern: Prefix Sum (2D)](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-prefix-sum-pattern)
+
+### Prefix Sum (2D)
 - [K-Limited Submatrix Sum](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-prefix-sum-problems-k-limited-submatrix-sum)
 - [Maximum Submatrix Sum](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-prefix-sum-problems-maximum-submatrix-sum)
 - [Range Sum Finder](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-prefix-sum-problems-range-sum-finder)
+
+## Reference
+
+Quick-recall and design material. Skim, don't study top to bottom.
+
+- [Memorize: Dynamic Programming](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-memorize)
+- [Memorize: Edit Distance](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-edit-distance-memorize)
+- [Memorize: Subset Sum](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-subset-sum-memorize)
+- [Memorize: 2D Grid](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-2d-grid-memorize)
 - [Memorize: Prefix Sum (2D)](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-prefix-sum-memorize)
-- [Practice — Mixed DP Problems](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-practise)
 - [Pattern Synthesis: Dynamic Programming](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-synthesis)

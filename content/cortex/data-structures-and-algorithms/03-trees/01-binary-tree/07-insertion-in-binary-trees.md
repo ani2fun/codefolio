@@ -1,6 +1,6 @@
 ---
 title: "Insertion In Binary Trees"
-summary: "<!-- TODO: summary -->"
+summary: "Adding a node to a plain binary tree is always find-then-relink. Five variants — insert at the root (O(1)), a leaf recursively or by BFS, a child of a named node, or a parent wedged above one — differ only in where you search and which pointers you swap."
 ---
 
 # 7. Insertion in Binary Trees
@@ -24,6 +24,17 @@ Each variant in this lesson appears in real codebases: insert-at-root for top-do
 3. [Insert a leaf — iterative (level-order)](#insert-a-leaf--iterative-level-order)
 4. [Insert a child of a named node](#insert-a-child-of-a-named-node)
 5. [Insert a parent above a named node](#insert-a-parent-above-a-named-node)
+6. [Understanding the problem](#understanding-the-problem)
+7. [Supported operations](#supported-operations)
+8. [Internal mechanics](#internal-mechanics)
+9. [Working example](#working-example)
+10. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
+11. [Production reality](#production-reality)
+12. [Quiz](#quiz)
+13. [Practice ladder](#practice-ladder)
+14. [Further reading](#further-reading)
+15. [Cross-links](#cross-links)
+16. [Final takeaway](#final-takeaway)
 
 ***
 
@@ -163,7 +174,7 @@ print(to_level_order(Solution().insert_root(from_level_order([1, None, 2, None, 
 print(to_level_order(Solution().insert_root(from_level_order([5, 5, 5]), 5)))                         # [5, 5, None, 5, 5]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {
@@ -407,7 +418,7 @@ print(to_level_order(Solution().recursively_insert_a_leaf(from_level_order([1, 2
 print(to_level_order(Solution().recursively_insert_a_leaf(from_level_order([1, None, 2, None, 3]), 4)))            # [1, 4, 2, None, 3]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {
@@ -680,7 +691,7 @@ print(to_level_order(Solution().iteratively_insert_a_leaf(from_level_order([1, 2
 print(to_level_order(Solution().iteratively_insert_a_leaf(from_level_order([1, None, 2, None, 3]), 4)))            # [1, 4, 2, None, 3]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {
@@ -964,7 +975,7 @@ print(to_level_order(Solution().insert_child(from_level_order([1, 2, 3, 4, 5, 6,
 print(to_level_order(Solution().insert_child(from_level_order([1, 2, 3]), 99, 0)))                       # [1, 2, 3]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {
@@ -1255,7 +1266,7 @@ print(to_level_order(Solution().insert_parent(from_level_order([1, 2, 3]), 3, 9)
 print(to_level_order(Solution().insert_parent(from_level_order([1, 2, 3]), 99, 0)))                        # [1, 2, 3]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {
@@ -1392,39 +1403,184 @@ Four insertion variants, four characteristic shapes — knowing which one to rea
 
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+# Understanding the Problem
 
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
+A plain binary tree carries no ordering invariant, so "where does a new node go?" has no single answer. A binary search tree pins every value to one legal slot through the BST property. A plain binary tree imposes no such rule, which means the caller — not the data structure — decides placement. This lesson answers the same question five times, once per placement policy.
 
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
+The five variants above split along two axes: *what you must locate first*, and *which pointers you rewrite*. Those two axes produce the full spread:
 
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
+- **Insert at the root** — locate nothing; rewrite one pointer in a brand-new node.
+- **Insert a leaf** — locate any free child slot; rewrite that one slot.
+- **Insert a child of a named node** — locate the named node; rewrite its child pointer.
+- **Insert a parent above a named node** — locate the named node's *parent*; rewrite the parent's child pointer.
 
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
+To make this concrete: inserting `9` as a new root touches one pointer and skips the tree entirely, while inserting `9` above an interior node `5` first hunts for whichever node owns `5` as a child, then splices `9` into that link. So the key idea is: every insertion is a *find* step followed by a *relink* step, and the five variants differ only in how much finding they do and how many pointers the relink rewrites.
 
-<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
-<!--       Guidance: bulleted list of gotchas -->
+***
 
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+# Supported Operations
 
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+There is one capability here — add a node — exposed through five entry points, each a different placement policy over the same `find`-then-`relink` skeleton. The five sections above are those five policies in full; this table is their synthesis, not a new claim. Each row's complexity matches the `Solution & Analysis` block under its variant.
 
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
+| Operation | What it locates | Pointers rewritten | Time | Space |
+|---|---|---|---|---|
+| Insert at the root | nothing | `newRoot.left` | `O(1)` | `O(1)` |
+| Insert a leaf — recursive | first free slot, left-first | one child slot | `O(h)` avg / `O(N)` worst | `O(h)` |
+| Insert a leaf — iterative (BFS) | first free slot, level-order | one child slot | `O(N)` worst | `O(W)` |
+| Insert a child of a named node | the named node | the node's `left` (re-hangs old subtree) | `O(N)` worst | `O(h)` |
+| Insert a parent above a named node | the named node's parent | the parent's matching child | `O(N)` worst | `O(h)` |
 
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+Insert-at-root is the only `O(1)` operation because it touches nothing below the new node. To make this concrete: `h` is the tree's height and `W` its maximum width, so on a skew tree `h = N`, and on a perfect tree `W ≈ N/2`. So the core insight is: the cost of an insertion is the cost of its *find* step — constant when there is nothing to find, `O(h)` down one path, `O(N)` when a full search may be needed — while the *relink* step is always `O(1)`.
 
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
+***
 
-<!-- TODO: Final Takeaway — missing, needs to be written -->
-<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->
+# Internal Mechanics
+
+Insertion mutates the tree by reassigning child pointers, and the only subtlety is *not losing a subtree* while you do it. A `TreeNode` holds a value and two child references, `left` and `right`. Rewriting one of those references in place is `O(1)`, but if the slot already pointed at a subtree, overwriting it blindly orphans everything below. Three mechanics keep that from happening.
+
+- **Re-hang before you overwrite.** When inserting a child or a parent, the code saves the old pointer onto the *new* node before repointing the original link. In `insert_child`, `new_node.left = root.left` runs before `root.left = new_node`, so the displaced subtree survives as the new node's child.
+- **Return the (possibly new) node up the call chain.** Every recursive variant ends with `return root`, and the caller writes `root.left = insert(root.left, …)`. This single convention handles both cases uniformly: "I created a new node, here it is" and "I mutated in place, here's the same node".
+- **The parent variant searches one level shallower.** To re-route a parent's pointer you need the parent, not the target. So `insert_parent` matches on `root.left.val == child` and `root.right.val == child` — it looks at *children* from each node, because the node that owns the target as a child is the one whose pointer must change.
+
+To make this concrete: inserting `9` above target `5` where `5` is `2`'s left child, the recursion stops at node `2`, sets `new_node.left = 2.left` (the subtree rooted at `5`), then sets `2.left = new_node`. So the core insight is: insertion is pointer surgery, and correctness rests entirely on capturing the displaced subtree *before* the link that held it is overwritten.
+
+***
+
+# Working Example
+
+The variant diagrams show the *before* and *after* shapes. This trace shows the recursion *finding* the splice point for the hardest variant — insert a parent. The `O(N)` worst-case search and the order of pointer writes both become visible. Insert `9` above target `7` in this tree:
+
+```
+        1
+       / \
+      2   3
+     /     \
+    4       7
+```
+
+Read the call stack top-down; `→` marks the frame currently executing. Each recursive call inspects its node's *children* for the target value `7`:
+
+```
+action                                   call stack (top = current)   note
+insert_parent(1, child=7)                1                            1.left=2, 1.right=3 — no match
+  recurse left: insert_parent(2, 7)      1, 2                         2.left=4, 2.right=null — no match
+    recurse left: insert_parent(4, 7)    1, 2, 4                      4 has no children — no match
+      return 4                           1, 2                         left subtree unchanged
+    recurse right: insert_parent(null)   1, 2                         null → return null
+    return 2                             1                            left subtree of 1 done
+  recurse right: insert_parent(3, 7)     1, 3                         3.right.val == 7 — MATCH
+    new wrapper 9; 9.right = 3.right (7) 1, 3                         capture old subtree first
+    3.right = 9                          1, 3                         re-route parent's pointer
+    return 3                             1                            splice complete
+  return 1                               (empty)                      root unchanged
+```
+
+The result is `[1, 2, 3, 4, null, null, 5, 9, null, null, 7]` for the frozen `7, 5` example, and here for `7, 9` the wrapper `9` sits between `3` and `7` on the right. The search visited every node down two paths before the match on `3`'s right child — that is the `O(N)` worst case. So the core insight is: the recursion costs `O(N)` time because the target can hide anywhere, but the splice itself is three `O(1)` pointer writes — capture, re-route, return — and the trace shows both the cost and the exact moment the old subtree is rescued.
+
+> Switching from insert-a-parent to insert-a-child changes only the match condition — `root.val == parent` instead of `root.left.val == child` — and which pointer is re-hung. The find-then-relink skeleton is identical.
+
+***
+
+# Edge Cases and Pitfalls
+
+Insertion bugs almost never live in the relink — two or three assignments are hard to get wrong. They live in the *boundaries*: the empty tree, the missing target, and the moment a subtree is about to be dropped. Keep this list open the first time a tree mutation produces a wrong shape. This consolidated list spans all five variants; each variant's own `Edge cases` subsection above traces its specific frozen test inputs.
+
+- **Overwriting a child without re-hanging its subtree.** Setting `root.left = new_node` before saving the old `root.left` orphans the entire left subtree. The displaced subtree must be captured onto the new node *first* — `new_node.left = root.left`, then `root.left = new_node`. Reversing those two lines silently loses every node below the splice point.
+- **Forgetting the empty-tree case.** A `null` root is not an error; it means the result is a single new node (insert-at-root, insert-a-leaf) or an unchanged empty tree (insert-a-child returns `null`, since there is nothing to attach to). Code that dereferences `root.val` before the `null` check crashes on the first empty input.
+- **Assuming the target always exists.** Insert-a-child and insert-a-parent search for a value that may be absent. The contract is a no-op: traverse the whole tree, find nothing, return it unchanged. Throwing or inserting at a fallback location both violate the contract — `insert_child(tree, parent=99, …)` on a tree without `99` must return the original tree.
+- **Searching for the target instead of its parent when inserting a parent.** To re-route a pointer you need the node that *holds* the pointer. Matching on `root.val == child` gives you the target, which has no back-reference to its parent. The fix is to match on `root.left.val == child` / `root.right.val == child` so the node doing the relink already owns the broken link.
+- **Putting the new parent on the wrong side.** When splicing a parent above a target, the wrapper must inherit the *same side* the target occupied — a left child stays left, a right child stays right. Forcing it always-left mangles the tree's shape and, on a future BST, would break ordering.
+- **Stack overflow on a deep skew tree.** The recursive variants cost `O(h)` stack space, and a one-sided tree has `h = N`. Searching for an absent value in a million-node chain pushes a million frames and can exceed the runtime's stack. The iterative BFS leaf insert sidesteps this with a heap-allocated queue, trading `O(h)` stack for `O(W)` queue space.
+
+So the key idea is: the relink is trivial, so every insertion pitfall is a boundary question — is the empty tree handled, is an absent target a clean no-op, is the displaced subtree captured before its link is overwritten, and does the chosen variant locate the *parent* when it needs to re-route one? Answer those and the pointer surgery behaves.
+
+***
+
+# Production Reality
+
+Inserting a node into a tree is the write half of every mutable hierarchy in software. The systems below each map onto one of this lesson's variants.
+
+**[Browser DOM `Node.appendChild` / `insertBefore`]** — uses **insert-a-child of a named node** — because the caller names a parent element and the engine relinks the new child into that node's child list, exactly the locate-then-attach shape.
+
+**[Binary heaps backing a priority queue (`PriorityQueue`, `heapq`)]** — uses **iterative level-order leaf insertion** — because a heap must stay a *complete* tree, and BFS-to-first-gap is precisely the placement that keeps every level full left-to-right before opening a new one.
+
+**[Compiler and optimiser AST-rewriting passes]** — uses **insert-a-parent above a named node** — because wrapping a subexpression in a cast, coercion, or instrumentation node means splicing a new parent between a target node and whatever currently owns it.
+
+**[Incremental parsers and document builders]** — uses **insert-a-leaf** — because each new token or element attaches at the current open slot without disturbing the already-built structure, an append to the frontier of the tree.
+
+**[Top-down tree reconstruction and `clone()` routines]** — uses **insert-at-root** — because rebuilding from the root down means each new node is created as the current root with prior work hung beneath it, an `O(1)` re-link per node.
+
+***
+
+# Quiz
+
+Test your grip before moving on. Commit to an answer before revealing it.
+
+**[Recall] Q: What two steps does every insertion variant decompose into?**
+A *find* step that locates the affected node (or nothing, for insert-at-root) and a *relink* step that rewrites one to three child pointers.
+
+**[Recall] Q: Why is insert-at-root `O(1)` time and `O(1)` space while the other variants are not?**
+It performs no traversal — one allocation and one pointer assignment — whereas the other variants may search up to `O(N)` nodes and carry an `O(h)` recursion stack or `O(W)` queue.
+
+**[Reasoning] Q: When inserting a child of a named node, why must `new_node.left = root.left` run before `root.left = new_node`?**
+Because overwriting `root.left` first would orphan the parent's existing left subtree; capturing it onto the new node preserves it as the new node's child.
+
+**[Reasoning] Q: Why does insert-a-parent match on a node's *children* (`root.left.val == child`) rather than on the node's own value?**
+Re-routing a pointer requires the node that holds it, so the algorithm must find the target's *parent* — the node whose left or right child is the target — not the target itself.
+
+**[Tradeoff] Q: When would you choose iterative BFS leaf insertion over the recursive leaf insert?**
+Choose BFS when the tree must stay roughly balanced or complete — it fills the first level-order gap and avoids the `O(N)` stack of a recursive descent down a skew tree — at the cost of `O(W)` queue space.
+
+***
+
+# Practice Ladder
+
+Five problems to turn "locate the node, then relink the pointers" into a reflex. Insertion has no pattern directory of its own, so these drill its two halves — the traversal that *finds* a node and the pointer work that *rebuilds* structure — inside this chapter's pattern problems. Try each unaided; reach for the hint after ten minutes; do not peek at solutions until you have written something runnable.
+
+| # | Problem | Pattern | Difficulty | Hint |
+|---|---------|---------|------------|------|
+| 1 | [Sum of Path](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-problems-sum-of-path) | [Preorder Traversal (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-pattern) | Easy | The same top-down walk insert-a-leaf uses — carry a running value *down* into the children. `O(N)` time, `O(h)` space. |
+| 2 | [Height of a Binary Tree](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-problems-height-of-a-binary-tree) | [Postorder Traversal (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-pattern) | Easy | Return `-1` for `null`, else `1 + max(left, right)` — the `h` that bounds every insertion's space cost. `O(N)` time, `O(h)` space. |
+| 3 | [Complete Binary Tree Check](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-problems-complete-binary-tree-check) | [Level-Order Traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-pattern) | Easy | A BFS that flags any node after the first gap — the exact shape iterative leaf insertion maintains. `O(N)` time, `O(W)` space. |
+| 4 | [Identical Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-simultaneous-traversal-problems-identical-trees) | [Simultaneous Traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-simultaneous-traversal-pattern) | Medium | Recurse both trees in lockstep, comparing value and shape — how you verify a tree after an insertion. `O(N)` time, `O(h)` space. |
+| 5 | [Merge Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-simultaneous-traversal-problems-merge-trees) | [Simultaneous Traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-simultaneous-traversal-pattern) | Medium | Create nodes and relink children while walking both trees together — insertion's relink step, applied at every node. `O(N)` time, `O(h)` space. |
+
+Once these feel automatic, "find the node, then rewrite a pointer" has stopped being a trick and become a reflex — which is the entire job of the BST insertion and deletion you meet next chapter.
+
+***
+
+# Further Reading
+
+Curated paths in, not a syllabus. Read in order of the annotation; come back for the rest when you need depth.
+
+- **[Constructing a Binary Tree](/cortex/data-structures-and-algorithms/trees-binary-tree-constructing-a-binary-tree)**
+  ★ Essential — repeated insertion is how a tree is *built*; this lesson assembles a whole tree from traversal sequences and shows where the relink shape recurs.
+- **[Recursive Traversals in Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-recursive-traversals-in-binary-trees)**
+  ★ Essential — the *find* half of every insertion is a traversal; this is the recursive skeleton each variant searches with.
+- **[Iterative Traversals in Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-iterative-traversals-in-binary-trees)**
+  ◆ Advanced — the explicit-stack and BFS machinery behind iterative leaf insertion, and why it bounds the `O(h)` stack a deep skew tree would otherwise overflow.
+- **[Linked-List Implementation of Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-linked-list-implementation-of-binary-trees)**
+  → Reference — the `TreeNode` with `val`, `left`, and `right` whose pointers every insertion rewrites.
+
+***
+
+# Cross-Links
+
+**Prerequisites**
+
+- [Linked-List Implementation of Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-linked-list-implementation-of-binary-trees) — the `TreeNode` and its `left` / `right` pointers that every relink step rewrites.
+- [Recursive Traversals in Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-recursive-traversals-in-binary-trees) — the depth-first walk each variant uses to find its splice point.
+- [Iterative Traversals in Binary Trees](/cortex/data-structures-and-algorithms/trees-binary-tree-iterative-traversals-in-binary-trees) — the level-order traversal that iterative leaf insertion piggybacks on.
+
+**What comes next**
+
+- [Constructing a Binary Tree](/cortex/data-structures-and-algorithms/trees-binary-tree-constructing-a-binary-tree) — building an entire tree, which is repeated insertion driven by traversal sequences.
+- [Preorder Traversal (Stateless)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-pattern) — the first pattern chapter, where the traversal half of insertion becomes a problem-solving recipe in its own right.
+
+***
+
+## Final Takeaway
+
+1. **Core mechanic:** every insertion is *find* then *relink* — locate the affected node (or nothing, for insert-at-root), then rewrite one to three child pointers, always capturing any displaced subtree onto the new node before overwriting the link that held it.
+2. **Dominant tradeoff:** insert-at-root is `O(1)` time and `O(1)` space because it searches nothing, while the other four pay for their *find* — `O(h)` down one path, `O(N)` when the target may be anywhere — plus `O(h)` stack or `O(W)` queue; the relink itself is always `O(1)`.
+3. **One thing to remember:** `return node` from a recursive insert so the caller can write `node.left = insert(node.left, …)` — that one convention handles "created a new node" and "mutated in place" uniformly, and it is the exact shape BST insertion, deletion, and AVL rebalancing reuse next chapter.

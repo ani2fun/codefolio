@@ -25,6 +25,56 @@ Given two strings `s1` and `s2`, return `true` if `s1` can be constructed using 
 > -   **Output:** `false`
 
 <details>
+<summary><strong>Examples</strong></summary>
+
+**Example 1**
+```
+Input:  s1 = "somenote", s2 = "enetomoselse"
+Output: true
+Explanation: s2 has every letter s1 needs, with enough copies — s1 is buildable.
+```
+
+**Example 2**
+```
+Input:  s1 = "thief", s2 = "hifacqet"
+Output: true
+Explanation: t, h, i, e, f all appear in s2 at least once → buildable.
+```
+
+**Example 3**
+```
+Input:  s1 = "alpha", s2 = "beta"
+Output: false
+Explanation: s1 needs 'l' and 'p', which s2 lacks → not buildable.
+```
+
+**Example 4**
+```
+Input:  s1 = "aa", s2 = "a"
+Output: false
+Explanation: s1 needs two 'a's but s2 supplies only one → not buildable.
+```
+
+</details>
+
+## Intuition
+
+The structural property that makes this a **counting** problem is that order is irrelevant — `s1` is buildable from `s2` only if `s2` supplies *enough copies* of each needed letter. That is a per-letter count comparison, the signal the counting pattern fires on.
+
+The frequency map of `s2` models the available-letters pool. Build it once, then walk `s1` and *consume* one copy per character by decrementing its count. A count that is missing or already zero when `s1` still demands the letter means the pool is short — the build is impossible. The map is the natural structure because it answers "how many of this letter remain?" in `O(1)`.
+
+The naive approach breaks the time budget. For each character of `s1` it scans `s2` for an unused match and marks it, costing `O(|s1| × |s2|)` time. That re-derives the same availability counts repeatedly. Counting builds the pool once in `O(|s2|)`, so each consume step is an `O(1)` decrement-and-check.
+
+## Applying the Diagnostic Questions
+
+| Check | Answer for Constructibility Check |
+|---|---|
+| **Q1.** Does the answer depend on how *often* items appear? | **Yes** — `s2` must supply at least as many copies of each letter as `s1` needs. |
+| **Q2.** Is the input a linear sequence? | **Yes** — two strings, each walked character by character. |
+| **Q3.** Can the answer be read off the counts after one pass? | **Yes** — count `s2`, then decrement while walking `s1`. |
+| **Q4.** Is the per-item work `O(1)` amortised? | **Yes** — one hash-map update or lookup per character. |
+
+<details>
 <summary><h2>Approach</h2></summary>
 
 
@@ -53,6 +103,17 @@ flowchart LR
 <p align="center"><strong>Constructibility — the s2 frequency map is the "available letters" pool. Walking s1 consumes from the pool. If you ever try to consume a letter that's exhausted, the build fails.</strong></p>
 
 </details>
+
+## Approach in Words
+
+Count the supply, then spend it as you walk the demand.
+
+1. **Build the supply pool.** Count every character in `s2` into a `frequency` map — this is the multiset of available letters.
+2. **Walk `s1` and consume.** For each character of `s1`, check its remaining count in the pool.
+3. **Fail on shortage.** If the count is zero or the letter is absent, `s2` cannot supply it — return `false`.
+4. **Spend one copy.** Otherwise decrement the letter's count and continue.
+5. **Succeed if `s1` finishes.** Reaching the end of `s1` means every demand was met — return `true`.
+
 <details>
 <summary><h2>Solution</h2></summary>
 
@@ -160,35 +221,47 @@ public class Main {
 
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+## Dry Run
 
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
+Walk Example 1 — `s1 = "somenote"`, `s2 = "enetomoselse"`. Build the `s2` pool, then consume one copy per `s1` character:
 
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
+```
+build pool from s2 = "enetomoselse"
+  {e:4, n:1, t:1, o:2, m:1, s:2, l:1}
 
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
+consume s1 = "somenote"
+  's'  count 2 > 0  →  {e:4, n:1, t:1, o:2, m:1, s:1, l:1}
+  'o'  count 2 > 0  →  {e:4, n:1, t:1, o:1, m:1, s:1, l:1}
+  'm'  count 1 > 0  →  {e:4, n:1, t:1, o:1, m:0, s:1, l:1}
+  'e'  count 4 > 0  →  {e:3, n:1, t:1, o:1, m:0, s:1, l:1}
+  'n'  count 1 > 0  →  {e:3, n:0, t:1, o:1, m:0, s:1, l:1}
+  'o'  count 1 > 0  →  {e:3, n:0, t:1, o:0, m:0, s:1, l:1}
+  't'  count 1 > 0  →  {e:3, n:0, t:0, o:0, m:0, s:1, l:1}
+  'e'  count 3 > 0  →  {e:2, n:0, t:0, o:0, m:0, s:1, l:1}
 
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
+every character consumed without shortage → return true
+```
 
-<!-- TODO: Solution — missing, needs to be written -->
-<!--       Guidance: Python block then Java block -->
+The result `true` matches the expected output — `s2` supplies every letter `s1` needs.
 
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
+## Complexity Analysis
 
-<!-- TODO: Complexity Analysis — missing, needs to be written -->
-<!--       Guidance: table: time / space / why -->
+| Measure | Value | Why |
+|---|---|---|
+| Time  | **O(\|s1\| + \|s2\|)** | One pass to count `s2`, one pass to consume over `s1`; each step is amortised `O(1)`. |
+| Space | **O(k)** | The pool holds `k` distinct characters of `s2` — `O(1)` for a fixed alphabet, `O(\|s2\|)` in general. |
 
-<!-- TODO: Edge Cases — missing, needs to be written -->
-<!--       Guidance: table, min 5 rows -->
+## Edge Cases
 
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->
+| Case | Example | Expected | Reasoning |
+|---|---|---|---|
+| Empty `s1` | `s1 = "", s2 = "abc"` | `true` | Nothing to build, so any pool suffices. |
+| Empty `s2` | `s1 = "a", s2 = ""` | `false` | An empty pool can supply nothing. |
+| Not enough copies | `s1 = "aa", s2 = "a"` | `false` | `s1` needs two `'a'`s; the pool has one. |
+| Exact match | `s1 = "abc", s2 = "abc"` | `true` | Every letter present with exactly enough copies. |
+| Surplus pool | `s1 = "a", s2 = "aaa"` | `true` | Extra copies are fine — only shortage fails. |
+| Missing letter | `s1 = "alpha", s2 = "beta"` | `false` | `'l'` and `'p'` never appear in the pool. |
+
+## Key Takeaway
+
+This is the two-sequence reconcile shape: count the supply (`s2`) once, then decrement it while walking the demand (`s1`), failing the instant a needed letter is exhausted. The directionality matters — the pool is `s2`, and `s1` only spends from it.

@@ -61,7 +61,7 @@ flowchart TB
 The template — diameter of a tree, since it's the canonical example.
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional
 
 class TreeNode:
@@ -79,7 +79,7 @@ def diameter(root: Optional[TreeNode]) -> int:
     return best[0]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 static int best;
 static int height(TreeNode n) {
     if (n == null) return 0;

@@ -1,6 +1,6 @@
 ---
 title: "Array Implementation Of Stacks"
-summary: "<!-- TODO: summary -->"
+summary: "A bounded stack on a fixed buffer: treat the last index as the top, and push, pop, and peek all collapse to O(1) one-liners over contiguous, cache-friendly memory."
 ---
 
 # 2. Array Implementation of Stacks
@@ -17,15 +17,39 @@ This lesson builds the bounded version end-to-end in Python and Java, then close
 
 ## Table of contents
 
-1. [Structure of an array-based stack](#structure-of-an-array-based-stack)
-2. [Implementing the stack class](#implementing-the-stack-class)
-3. [Determining the size of the stack](#determining-the-size-of-the-stack)
-4. [Checking if the stack is empty](#checking-if-the-stack-is-empty)
-5. [Accessing the top of the stack](#accessing-the-top-of-the-stack)
-6. [Pushing an item onto the stack](#pushing-an-item-onto-the-stack)
-7. [Popping an item from the stack](#popping-an-item-from-the-stack)
-8. [Design a stack using an array](#design-a-stack-using-an-array)
-9. [Design two stacks in an array](#design-two-stacks-in-an-array)
+1. [Understanding the problem](#understanding-the-problem)
+2. [Structure of an array-based stack](#structure-of-an-array-based-stack)
+3. [Supported operations](#supported-operations)
+4. [Internal mechanics](#internal-mechanics)
+5. [Implementing the stack class](#implementing-the-stack-class)
+6. [Determining the size of the stack](#determining-the-size-of-the-stack)
+7. [Checking if the stack is empty](#checking-if-the-stack-is-empty)
+8. [Accessing the top of the stack](#accessing-the-top-of-the-stack)
+9. [Pushing an item onto the stack](#pushing-an-item-onto-the-stack)
+10. [Popping an item from the stack](#popping-an-item-from-the-stack)
+11. [Working example](#working-example)
+12. [Design a stack using an array](#design-a-stack-using-an-array)
+13. [Design two stacks in an array](#design-two-stacks-in-an-array)
+14. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
+15. [Production reality](#production-reality)
+16. [Quiz](#quiz)
+17. [Practice ladder](#practice-ladder)
+18. [Further reading](#further-reading)
+19. [Cross-links](#cross-links)
+20. [Final takeaway](#final-takeaway)
+
+***
+
+# Understanding the Problem
+
+A stack only ever touches one end, which makes an array its ideal backing store. The two operations a stack exposes — push and pop — both act on the **top**, never the middle and never the front. An array gives `O(1)` read and write at any index it already owns. So if the top always lives at a known index, every stack operation is one index computation plus one memory access.
+
+The decision that follows is whether that array can grow. Two designs split here:
+
+- **Bounded stack** — fixed capacity, set once at construction; a push that would exceed it is rejected.
+- **Growable stack** — the buffer doubles when full, paying an occasional `O(n)` copy to stay unbounded.
+
+Using the bounded design: a stack created with capacity `4` accepts four pushes, then refuses the fifth. It returns `false` rather than touching memory it does not own. That refusal is deliberate. Writing past the last owned index is the classic out-of-bounds bug — the kind that corrupts neighbouring data or crashes the program. So the key idea is: an array backs a stack perfectly because both only work at one end, and the design choice is whether to cap capacity (this lesson) or pay resize costs to grow (the next lesson).
 
 ***
 
@@ -155,6 +179,34 @@ note -> mem.m2: "" {style.stroke-dash: 3}
 
 ***
 
+# Supported Operations
+
+Five operations make up the entire interface, and every one is `O(1)`. The set is deliberately tiny. A stack offers no indexed access, no search, and no middle insertion — those would break the LIFO contract that gives the structure its value. What remains divides into two reads, two mutations, and one query:
+
+| Operation | Time | Space | What it does |
+|---|---|---|---|
+| `size()` | `O(1)` | `O(1)` | Returns `topIndex + 1` — the count of stored items |
+| `empty()` | `O(1)` | `O(1)` | Returns whether `topIndex == -1` |
+| `top()` | `O(1)` | `O(1)` | Reads `arr[topIndex]` without removing it (peek) |
+| `push(val)` | `O(1)` | `O(1)` | Writes `val` above the current top; returns `false` if full |
+| `pop()` | `O(1)` | `O(1)` | Removes and returns the top; returns `-1` if empty |
+
+The two reads differ in intent: `top()` inspects, `pop()` consumes. Using a capacity-`4` stack holding `[3, 5, 7]`, `top()` returns `7` and leaves the stack unchanged, while `pop()` returns `7` and shrinks the stack to `[3, 5]`. So the core insight is: the whole interface is read-or-write at a single tracked index, which is exactly why none of the five operations ever depends on how many items the stack holds.
+
+***
+
+# Internal Mechanics
+
+Every operation is a rule expressed in terms of `topIndex`, and the buffer is the passive storage those rules read and write. The buffer never moves and never resizes in a bounded stack — only the index slides. That single integer is the entire bookkeeping:
+
+- **Push** increments `topIndex`, then writes `arr[topIndex] = val`.
+- **Pop** reads `arr[topIndex]`, then decrements `topIndex`.
+- **Top** reads `arr[topIndex]` and leaves the index alone.
+
+A popped slot is never erased. Decrementing `topIndex` is enough, because the stack is defined as the values between index `0` and `topIndex`. Anything beyond `topIndex` is invisible to every operation, and the next push that lands there overwrites it. Using a capacity-`3` stack: push `1`, `2`, `3` leaves `topIndex = 2` over buffer `[1, 2, 3]`. One pop drops `topIndex` to `1`, so the buffer still physically reads `[1, 2, 3]` but the trailing `3` is logically gone. So the core insight is: the buffer is passive storage and `topIndex` is the only live state — correctness reduces to keeping that one index on the true top.
+
+***
+
 # Implementing the stack class
 
 We'll build the class incrementally — first the skeleton (constructor + stub methods), then fill in size, empty, top, push, pop in order. Each operation is a one-liner; the only "logic" is the boundary checks for empty and full.
@@ -187,7 +239,7 @@ cls: "Stack class" {
 ## Stack class — skeleton
 
 
-```python run viz=array viz-root=arr
+```python run viz=array viz-root=arr viz-kind=stack
 class Stack:
     def __init__(self, capacity: int):
         self.capacity = capacity
@@ -204,7 +256,7 @@ s = Stack(4)
 print("created stack with capacity 4")
 ```
 
-```java run
+```java run viz=array viz-root=arr viz-kind=stack
 public class Main {
     static class Stack {
         private int[] arr;
@@ -792,7 +844,7 @@ flowchart LR
 
 ### Implementation
 
-```python run viz=array viz-root=arr
+```python run viz=array viz-root=arr viz-kind=stack
 class Stack:
     def __init__(self, c): self.capacity, self.arr, self.top_idx = c, [0]*c, -1
     def empty(self): return self.top_idx == -1
@@ -810,7 +862,7 @@ s.push(1); s.push(2); s.push(3)
 print(s.pop(), s.pop(), s.pop(), s.pop())   # 3 2 1 -1
 ```
 
-```java run
+```java run viz=array viz-root=arr viz-kind=stack
 public class Main {
     static class Stack {
         private final int[] arr; private final int capacity; private int topIndex;
@@ -842,6 +894,22 @@ public class Main {
 
 ***
 
+# Working Example
+
+Watching `topIndex` move through a full push-then-pop cycle is the fastest way to make the five operations click. Start with `Stack(3)` — capacity `3`, buffer `[0, 0, 0]`, and `topIndex = -1` marking it empty. Each step below changes exactly one index and at most one slot:
+
+1. **`push(1)`** — not full (`topIndex -1 ≠ capacity-1`), so `topIndex` becomes `0` and `arr[0] = 1`. Buffer `[1, 0, 0]`, `size() == 1`.
+2. **`push(2)`** — `topIndex` becomes `1`, `arr[1] = 2`. Buffer `[1, 2, 0]`, `size() == 2`.
+3. **`push(3)`** — `topIndex` becomes `2`, `arr[2] = 3`. Buffer `[1, 2, 3]`, `size() == 3` — the stack is now full (`topIndex == capacity-1`).
+4. **`pop()`** — not empty, so read `arr[2] == 3`, drop `topIndex` to `1`, return `3`. Buffer still reads `[1, 2, 3]`, but the trailing `3` is logically gone.
+5. **`pop()`** — read `arr[1] == 2`, drop `topIndex` to `0`, return `2`.
+6. **`pop()`** — read `arr[0] == 1`, drop `topIndex` to `-1`, return `1` — the stack is empty again.
+7. **`pop()`** — `empty()` is now true, so return the sentinel `-1` without touching the buffer.
+
+The output sequence is `3 2 1 -1` — the three values in reverse insertion order, then the empty sentinel. That reversal is LIFO made literal. The last value pushed (`3`) is the first popped; the first value pushed (`1`) waits at the bottom until everything above it is gone. So the core insight is: a push-pop cycle is a mirrored climb and descent of `topIndex`, and the values return in exactly reverse order regardless of capacity.
+
+***
+
 # Design a stack using an array
 
 ## Problem Statement
@@ -870,7 +938,7 @@ Implement a `Stack` class with the operations from this lesson, backed by an arr
 The full implementation is exactly what we built incrementally above, in Python and Java.
 
 
-```python run viz=array viz-root=arr
+```python run viz=array viz-root=arr viz-kind=stack
 from typing import Optional, List, Any
 
 class Stack:
@@ -942,7 +1010,7 @@ print(s.push(9))   # False — stack is full
 print(s.empty())   # False
 ```
 
-```java run
+```java run viz=array viz-root=arr viz-kind=stack
 import java.util.*;
 
 public class Main {
@@ -1119,7 +1187,7 @@ Initial sentinels:
 
 
 
-```python run viz=array viz-root=arr
+```python run viz=array viz-root=arr viz-kind=stack
 from typing import List
 
 class TwoStack:
@@ -1219,7 +1287,7 @@ print(ts.push1(9))   # True
 print(ts.top1())     # 9
 ```
 
-```java run
+```java run viz=array viz-root=arr viz-kind=stack
 import java.util.*;
 
 public class Main {
@@ -1341,54 +1409,119 @@ public class Main {
 
 </details>
 <details>
-<summary><h2>Final Takeaway</h2></summary>
+<summary><h2>Wrapping Up the Two-Stack Trick</h2></summary>
 
 
-An array-backed stack is the most straightforward data-structure implementation you'll ever write — *every* operation is O(1), the entire interface fits in one screen, and the buffer's contiguity gives you cache locality the linked-list version can't match.
+The two-stack design earns its place because it packs two stacks into one buffer with zero wasted slots. Every operation stays `O(1)` time and the whole structure stays `O(n)` space in the array length — the same costs as a single stack, now shared. Three points carry the design:
 
-Three lessons:
-
-1. **Treat the last index as the top.** With `topIndex = -1` for empty, `size = topIndex + 1` is the universal identity that drives every other formula.
-2. **Boundary checks are the only logic.** Pop-on-empty and push-on-full are the only conditions that aren't trivially constant time. Everything else is one increment, one read or write.
-3. **Bidirectional growth is the trick that packs two stacks into one array.** Stack 1 rightward from 0, stack 2 leftward from N−1, both end at the meeting point. The single shared array lets either stack consume up to N−1 of the slots as long as the other stays small — far more flexible than splitting the array in halves.
-
-> *Coming up — the **linked-list implementation**. The trade-off flips: no fixed capacity (push never fails for "full"), no resize cost ever, but every node is its own allocation and the memory layout is whatever the heap gives you. The same five operations, the same complexities, but a different set of trade-offs and a different "default choice" for different use cases.*
+1. **Treat the last index as the top.** With `topIndex = -1` for empty, `size = topIndex + 1` is the identity that drives every other formula.
+2. **Boundary checks are the only logic.** Pop-on-empty and push-on-full are the only conditions that are not trivially constant time. Everything else is one increment plus one read or write.
+3. **Bidirectional growth packs two stacks into one array.** Stack 1 grows rightward from index `0`; stack 2 grows leftward from index `capacity-1`. Both end at the meeting point, so either stack can consume up to `N-1` slots while the other stays small — far more flexible than splitting the buffer in half.
 
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+***
 
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
+# Edge Cases and Pitfalls
 
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
+The array-backed stack fits on one screen, yet most of its bugs cluster around the two boundary indices: `-1` for empty and `capacity-1` for full. Keep this list open the next time a stack misbehaves at the edges:
 
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
+- **Off-by-one on the full check.** The stack is full when `topIndex == capacity - 1`, not when `topIndex == capacity`. Writing `arr[topIndex + 1]` past a full stack indexes one slot beyond the buffer. That is an `IndexError` in Python, an `ArrayIndexOutOfBoundsException` in Java, or silent memory corruption in C.
+- **The `-1` sentinel collides with real data.** Returning `-1` from `top()` or `pop()` to mean "empty" is only safe when `-1` cannot be a stored value. If the stack holds arbitrary integers, `-1` is ambiguous. Prefer an explicit `empty()` guard before every `pop()`, or raise an exception instead of returning a sentinel.
+- **Popping does not clear the slot.** A popped value stays physically in the buffer until the next push overwrites it. For plain integers this is harmless, but a stack of object references keeps those objects alive and uneligible for garbage collection. In Java, null the slot (`arr[topIndex--] = null`) when storing references.
+- **Forgetting that capacity is fixed.** A bounded stack rejects the push when full; it does not grow. Code that assumes pushes always succeed will silently drop data when `push()` returns `false` and the caller ignores the result. Always check the boolean return.
+- **Pushing before checking, popping before checking.** The full check must run before the increment-and-write, and the empty check before the read-and-decrement. Reordering them — incrementing `topIndex` first, then testing — leaves the index in a corrupt state when the boundary is hit.
+- **Two-stack collision check is mirrored, not identical.** In the shared-array design, `push1` rejects when `topIndex1 + 1 >= topIndex2` and `push2` rejects when `topIndex2 - 1 <= topIndex1`. Copying one condition into the other without flipping the comparison lets the two stacks overwrite each other at the meeting point.
 
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
+***
 
-<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
-<!--       Guidance: bulleted list of gotchas -->
+# Production Reality
 
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+The array-backed stack is the default stack everywhere a maximum depth is known or memory must stay contiguous. The systems below are worth knowing by name.
 
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+**[The CPython interpreter's value stack]** — uses **a contiguous array per frame, indexed by a stack pointer** — because bytecode evaluation pushes and pops operands millions of times per second, and a contiguous buffer keeps every push and pop a single `O(1)` pointer move with no allocation.
 
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
+**[The JVM's operand stack]** — uses **a fixed-size array sized at method-compile time** — because the maximum depth is computed by the verifier ahead of execution, so a bounded array is provably safe and needs no resize check on the hot path.
 
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+**[Java's `ArrayDeque` used as a stack]** — uses **a growable circular array behind `push` / `pop`** — because the standard library wants `O(1)` amortised stack operations with far better cache locality than the legacy `Stack` class built on `Vector`.
 
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
+**[A recursion-to-iteration rewrite]** — uses **an explicit array-backed stack of saved state** — because converting deep recursion to a manual loop avoids blowing the call stack, and a pre-sized array bounds the worst-case memory exactly.
 
-<!-- TODO: Final Takeaway — missing, needs to be written -->
-<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->
+**[An expression evaluator]** — uses **an array of operands and an array of operators** — because postfix and infix evaluation are pure LIFO workloads, and the maximum depth is bounded by the expression length known up front.
+
+**[A backtracking solver's path stack]** — uses **a fixed array sized to the search depth** — because the recursion depth is capped by the problem (board size, word length), so a bounded array never needs to grow and never wastes a heap allocation per step.
+
+***
+
+# Quiz
+
+Test your grip before moving on. One answer per question; reveal only after you have committed to one.
+
+**[Recall] Q: For a stack with `topIndex = 4`, what does `size()` return, and what is the formula?**
+`size()` returns `5`, computed as `topIndex + 1` — the indices `0` through `topIndex` all hold valid data.
+
+**[Recall] Q: What two index values are the empty and full sentinels for a stack of `capacity` slots?**
+Empty is `topIndex == -1` (no valid index); full is `topIndex == capacity - 1` (the last owned slot is occupied).
+
+**[Reasoning] Q: Why does `pop()` not need to erase the value it removes from the buffer?**
+The stack is defined as the values from index `0` to `topIndex`, so dropping `topIndex` makes the old top invisible to every operation, and the next push overwrites that slot anyway.
+
+**[Reasoning] Q: In the two-stack design, why do both stacks share a single "collision" check instead of each having its own "full" check?**
+Neither stack has a fixed boundary — they grow toward each other. "Full" therefore means the two tops are about to overlap (`topIndex1 + 1 >= topIndex2`), which lets either stack use up to `N-1` slots.
+
+**[Tradeoff] Q: When would you choose a bounded array-backed stack over a growable one, and what do you give up?**
+Choose bounded when the maximum depth is known and per-operation latency must be predictable. You give up the freedom to exceed capacity, since a full push is rejected rather than triggering an `O(n)` resize-and-copy.
+
+***
+
+# Practice Ladder
+
+Five problems that exercise the stack as a tool, easiest first. Try each unaided; hit the hint after ten minutes; do not peek at solutions until you have written something runnable.
+
+| # | Problem | Pattern | Difficulty | Hint |
+|---|---------|---------|------------|------|
+| 1 | [Stack Inversion](./08-pattern-reversal/02-problems/01-stack-inversion.md) | [Reversal](./08-pattern-reversal/01-pattern.md) | Easy | Pop every item off one stack and push it onto a second — the order flips for free. `O(n)` time, `O(n)` space. |
+| 2 | [Reverse the String](./08-pattern-reversal/02-problems/02-reverse-the-string.md) | [Reversal](./08-pattern-reversal/01-pattern.md) | Easy | Push each character, then pop them all — LIFO reverses the sequence. The stack is the whole algorithm. |
+| 3 | [Parentheses Checker](./11-pattern-sequence-validation/02-problems/01-parentheses-checker.md) | [Sequence Validation](./11-pattern-sequence-validation/01-pattern.md) | Easy | Push every opener; on a closer, pop and check it matches. A leftover or mismatched pop means unbalanced. `O(n)` time. |
+| 4 | [Preceding Superior Element](./09-pattern-previous-closest-occurrence/02-problems/01-preceding-superior-element.md) | [Previous Closest Occurrence](./09-pattern-previous-closest-occurrence/01-pattern.md) | Medium | Keep a stack of candidates; pop everything smaller than the current value before reading the answer off the top. Monotonic-stack reflex. |
+| 5 | [Largest Rectangle Area](./10-pattern-next-closest-occurrence/02-problems/07-largest-rectangle-area.md) | [Next Closest Occurrence](./10-pattern-next-closest-occurrence/01-pattern.md) | Hard | Maintain an increasing stack of bar indices; when a shorter bar arrives, pop and compute the area each popped bar bounds. `O(n)` with one pass. |
+
+Once these feel automatic, push and pop have stopped being syntax and become a structural reflex — exactly what the stack pattern chapters build on.
+
+***
+
+# Further Reading
+
+Curated paths in, not a syllabus. Read in order of the annotation; come back for the rest when you need depth.
+
+- **[CLRS — Chapter 10.1: Stacks and Queues](https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/)**
+  ★ Essential — the canonical array-backed stack with `PUSH` / `POP` and the `top` index, including the empty- and full-stack error conditions formalised.
+- **[CPython `ceval.c` — the bytecode evaluation loop](https://github.com/python/cpython/blob/main/Python/ceval.c)**
+  ◆ Advanced — the real value stack that every Python expression runs on; the `PUSH` / `POP` / `TOP` macros over a contiguous per-frame array are this lesson's design at production scale.
+- **[Java `ArrayDeque` source](https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/java/util/ArrayDeque.java)**
+  ◆ Advanced — the growable circular-array stack the JDK recommends over `Stack`; shows how the bounded design extends to amortised `O(1)` growth without losing cache locality.
+- **[JVM Specification — §2.6.2 Operand Stacks](https://docs.oracle.com/javase/specs/jvms/se21/html/jvms-2.html)**
+  → Reference — how a fixed-size operand stack is sized at compile time and verified ahead of execution; the textbook case for a bounded array-backed stack.
+
+***
+
+# Cross-Links
+
+**Prerequisites**
+
+- [Introduction to Stacks](/cortex/data-structures-and-algorithms/linear-structures-stack-introduction-to-stacks) — the LIFO contract and the push / pop / top / empty / size interface this lesson implements over an array.
+- [Introduction to Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-introduction) — contiguous layout and `O(1)` indexed access, the two array properties that make the whole implementation constant time.
+- [Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis) — what `O(1)` per operation and `O(n)` space in capacity actually mean, and how to read them off the code.
+
+**What comes next**
+
+- [Linked-List Implementation of Stacks](/cortex/data-structures-and-algorithms/linear-structures-stack-linked-list-implementation-of-stacks) — the same five operations with the tradeoff flipped: no fixed capacity and no resize, but one allocation per node and no cache locality.
+- [Design Min Stack](/cortex/data-structures-and-algorithms/linear-structures-stack-design-min-stack-design-min-stack) — extends the array-backed stack to report the minimum in `O(1)` by carrying a second stack of running minima.
+
+***
+
+## Final Takeaway
+
+1. **Core mechanic:** treat the last used index as the top, track it in one `topIndex` integer, and every operation becomes `O(1)` time and `O(1)` extra space — `size()` is `topIndex + 1`, push increments then writes, pop reads then decrements.
+2. **Dominant tradeoff:** you gain cache-friendly contiguous storage and predictable per-operation cost with no allocation; you give up the freedom to grow, since a bounded stack rejects a push once `topIndex == capacity - 1`.
+3. **One thing to remember:** the buffer is passive storage and `topIndex` is the only live state — keep that index pointing at the true top after every mutation and the entire stack is correct.

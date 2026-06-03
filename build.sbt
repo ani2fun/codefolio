@@ -65,8 +65,16 @@ lazy val shared = crossProject(JSPlatform, JVMPlatform)
     openapiJsonSerdeLib := "circe"
   )
 
-lazy val sharedJVM = shared.jvm
-lazy val sharedJS  = shared.js
+// Run the sharedJVM Test/runMain entries (e.g. genTraceFixtures) from the
+// build root so any relative paths they write to resolve under the repo,
+// not under `shared/.jvm/`.
+lazy val sharedJVM = shared.jvm.settings(
+  Test / run / baseDirectory := (LocalRootProject / baseDirectory).value,
+  // JVM-only test dep: parse viz-schema.yaml in VizSchemaConformanceSpec
+  // (asserts the hand-written VizGraph.scala fields match the yaml — ADR-0026).
+  libraryDependencies += "org.yaml" % "snakeyaml" % "2.3" % Test
+)
+lazy val sharedJS = shared.js
 
 // ---- server --------------------------------------------------------------
 
@@ -155,4 +163,14 @@ lazy val root = (project in file("."))
 addCommandAlias(
   "validateCortexPayloads",
   "server/runMain codefolio.server.cortexPipeline.LinkedListCanonValidator"
+)
+
+// `sbt genTraceFixtures` — Phase 0 (ADR-0025). Adapts each HeapTraceFixtures
+// entry through HeapToGraph and writes the resulting VizCases JSON to
+// `client/test/e2e/fixtures/<name>.json`, ready for the Playwright trace-shapes
+// tests to fetch and render. Lives in the shared test scope so it can see the
+// (test-only) fixtures.
+addCommandAlias(
+  "genTraceFixtures",
+  "sharedJVM/Test/runMain codefolio.shared.viz.GenTraceFixtures"
 )

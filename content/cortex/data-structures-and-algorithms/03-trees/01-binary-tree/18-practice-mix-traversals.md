@@ -294,7 +294,7 @@ print(Solution().boundary_traversal(from_level_order([1, None, 2, None, None, No
 print(Solution().boundary_traversal(from_level_order([1, 2, 3])))                    # [1, 2, 3, 3] root + left + leaves + right
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

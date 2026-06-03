@@ -227,7 +227,7 @@ print(sorted(Solution().unique_subsets([5, 10])))    # [[], [5], [5, 10], [10]]
 print(len(Solution().unique_subsets([1, 2, 3, 4]))) # 16
 ```
 
-```java run
+```java run viz=graph viz-root=arr
 import java.util.*;
 
 public class Main {

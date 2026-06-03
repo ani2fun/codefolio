@@ -30,7 +30,7 @@ Output: [-1, -1]
 
 
 
-```python run
+```python run viz=array viz-root=result
 from typing import List
 
 class Solution:
@@ -105,7 +105,7 @@ print(Solution().first_and_last_position([2, 2, 2, 2], 2))         # [0, 3] — 
 print(Solution().first_and_last_position([1, 2, 2, 2, 3, 4], 1))   # [0, 0] — target at first
 ```
 
-```java run
+```java run viz=array viz-root=result
 import java.util.*;
 
 public class Main {

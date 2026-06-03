@@ -142,7 +142,7 @@ print(Solution().duplicates_in_path(from_level_order([1, 2, 3, 4, 5, 6, 7])))   
 print(Solution().duplicates_in_path(from_level_order([5, 5, None, 5])))              # 2
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

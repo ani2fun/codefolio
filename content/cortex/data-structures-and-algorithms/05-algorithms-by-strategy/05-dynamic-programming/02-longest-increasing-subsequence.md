@@ -301,7 +301,7 @@ print(Solution().longest_increasing_subsequence([1, 2, 3, 4, 5]))         # 5
 print(Solution().longest_increasing_subsequence([5, 4, 3, 2, 1]))         # 1
 ```
 
-```java run
+```java run viz=array viz-root=dp
 import java.util.*;
 
 public class Main {
@@ -606,7 +606,7 @@ print(Solution().largest_sum_ascending_subsequence([1, 2, 3, 4, 5]))        # [1
 print(Solution().largest_sum_ascending_subsequence([3, 1, 4, 1, 5, 9]))     # [1, 4, 5, 9]
 ```
 
-```java run
+```java run viz=array viz-root=dp
 import java.util.*;
 
 public class Main {

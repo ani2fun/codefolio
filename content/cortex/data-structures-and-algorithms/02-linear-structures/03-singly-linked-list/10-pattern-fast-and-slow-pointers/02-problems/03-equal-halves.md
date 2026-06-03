@@ -208,7 +208,7 @@ print(Solution().equal_halves(from_list([1, 2, 3, 4, 5, 5])))   # True (1+2+3 vs
 print(Solution().equal_halves(from_list([0, 0, 0, 0])))          # True
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {

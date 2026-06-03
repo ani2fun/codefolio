@@ -280,7 +280,7 @@ grid: "Filling dp for n = 5" {
 
 ### The Solution
 
-```python run
+```python run viz=array viz-root=dp
 from typing import List
 
 class Solution:
@@ -316,7 +316,7 @@ print(Solution().calculate_factorial(4))   # 24
 print(Solution().calculate_factorial(10))  # 3628800
 ```
 
-```java run
+```java run viz=array viz-root=dp
 public class Main {
     static class Solution {
         public int calculateFactorial(int n) {
@@ -404,7 +404,7 @@ Factorial is the simplest possible DP: 1D table, each cell from one previous cel
 <details>
 <summary><strong>Answer</strong></summary>
 
-```python run
+```python run viz=array viz-root=dp
 class Solution:
     def calculate_factorial_mod(self, n: int) -> int:
         MOD = 1_000_000_007
@@ -500,7 +500,7 @@ grid: "Filling dp for n = 6" {
 
 ### The Solution
 
-```python run
+```python run viz=array viz-root=dp
 from typing import List
 
 class Solution:
@@ -538,7 +538,7 @@ print(Solution().nth_fibonnaci_number(10))  # 55
 print(Solution().nth_fibonnaci_number(20))  # 6765
 ```
 
-```java run
+```java run viz=array viz-root=dp
 public class Main {
     static class Solution {
         public int nthFibonnaciNumber(int n) {

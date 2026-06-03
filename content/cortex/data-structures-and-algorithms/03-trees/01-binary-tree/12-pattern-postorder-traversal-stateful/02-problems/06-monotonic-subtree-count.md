@@ -17,7 +17,7 @@ Each call returns whether *its* subtree is mono-valued; along the way, increment
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import Optional, List
 
 
@@ -101,7 +101,7 @@ print(Solution().monotonic_subtree_count(from_level_order([2, 2, 2])))          
 print(Solution().monotonic_subtree_count(from_level_order([1, 1, 1, 1, 1, 1, 1])))          # 7 (all subtrees monotonic)
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

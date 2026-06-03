@@ -78,7 +78,7 @@ print(Solution().sort_characters_by_frequency("aabb"))        # aabb
 print(Solution().sort_characters_by_frequency("ccbbaa"))      # aabbcc
 ```
 
-```java run
+```java run viz=array viz-root=frequency
 import java.util.*;
 
 public class Main {

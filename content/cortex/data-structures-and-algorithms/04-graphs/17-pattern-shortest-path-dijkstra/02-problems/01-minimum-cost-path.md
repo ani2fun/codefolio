@@ -126,7 +126,7 @@ print(Solution().minimum_cost_path([[1,100],[1,1]]))                            
 print(Solution().minimum_cost_path([[1,1,1],[1,1,1],[1,1,1]]))                     # 5 — all ones
 ```
 
-```java run
+```java run viz=grid viz-root=grid
 import java.util.*;
 
 public class Main {

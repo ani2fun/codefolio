@@ -124,7 +124,7 @@ print(Solution().partition_with_equal_sum([3, 1, 1, 2, 2, 1])) # True
 print(Solution().partition_with_equal_sum([1, 3, 5]))        # False — odd total
 ```
 
-```java run
+```java run viz=graph viz-root=dp
 import java.util.*;
 
 public class Main {

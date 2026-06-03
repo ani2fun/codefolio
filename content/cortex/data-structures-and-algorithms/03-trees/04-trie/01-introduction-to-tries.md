@@ -212,7 +212,7 @@ if __name__ == "__main__":
     print("words with 'xyz'   ->", t.words_with_prefix("xyz"))           # []
 ```
 
-```java run
+```java run viz=graph viz-root=root
 import java.util.*;
 
 public class Main {

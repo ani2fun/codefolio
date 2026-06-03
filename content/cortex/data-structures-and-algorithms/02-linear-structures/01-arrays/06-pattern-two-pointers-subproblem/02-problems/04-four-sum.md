@@ -297,7 +297,7 @@ print(Solution().four_sum([0, 0, 0, 0], 0))            # [[0, 0, 0, 0]]
 print(Solution().four_sum([-3, -2, -1, 0, 0, 1, 2, 3], 0))  # multiple quadruplets
 ```
 
-```java run
+```java run viz=array viz-root=arr
 import java.util.*;
 
 public class Main {

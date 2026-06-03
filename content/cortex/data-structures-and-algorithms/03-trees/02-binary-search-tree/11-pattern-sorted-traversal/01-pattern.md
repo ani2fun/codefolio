@@ -68,7 +68,7 @@ The reason this template works on every "sorted traversal" problem is that the *
 ## Generic template
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 """
 Definition for a binary tree node.
 class TreeNode:
@@ -114,7 +114,7 @@ class Solution:
         self.inorder(node.right)
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 /**

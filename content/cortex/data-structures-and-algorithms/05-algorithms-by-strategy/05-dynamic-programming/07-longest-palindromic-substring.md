@@ -209,7 +209,7 @@ if __name__ == "__main__":
     print(Solution().longest_palindromic_substring("forgeeksskeegfor"))   # "geeksskeeg"
 ```
 
-```java run
+```java run viz=graph viz-root=is_palindrome
 public class Main {
     static class Solution {
 
@@ -285,7 +285,7 @@ A palindrome has a *center* — a character (odd-length palindrome) or a gap bet
 
 This runs in `O(n²)` time and **O(1) space** — no DP table needed. Same Big-O as the DP approach but constant-factor faster and trivial memory.
 
-```python run
+```python run viz=array viz-root=s
 class Solution:
     def longest_palindromic_substring_center(self, s: str) -> str:
         if not s:

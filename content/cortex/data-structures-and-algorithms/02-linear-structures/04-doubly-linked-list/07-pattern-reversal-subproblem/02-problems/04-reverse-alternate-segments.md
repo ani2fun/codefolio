@@ -8,9 +8,9 @@ difficulty: medium
 
 # Reverse alternate segments
 
-## The Problem
+## Problem Statement
 
-Given the **head** of a doubly linked list and a positive integer **k**, reverse alternate `k`-node segments — reverse the first segment, **skip** the second, reverse the third, skip the fourth, and so on. Return the head. If the trailing fragment has fewer than `k` nodes, leave it.
+Given the **head** of a doubly linked list and a positive integer **k**, reverse alternate `k`-node segments — reverse the first segment, **skip** the second, reverse the third, skip the fourth, and so on. Return the head. If the trailing fragment has fewer than `k` nodes, leave it. Both `prev` and `next` chains must remain consistent after every reversed chunk.
 
 ```
 Input : head = [5, 7, 3, 10, 6, 8], k = 2
@@ -27,6 +27,50 @@ Output:        [5, 7, 3, 10, 6]
 Explanation: list length 5 < k=8 → no reversal happens.
 ```
 
+---
+
+<details>
+<summary><h2>Examples</h2></summary>
+
+**Example 1**
+```
+Input:  head = [5, 7, 3, 10, 6, 8], k = 2
+Output: [7, 5, 3, 10, 8, 6]
+Explanation: Three chunks of size 2 fit. Reverse chunk 1: (5, 7) → (7, 5); skip chunk 2: (3, 10) stays; reverse chunk 3: (6, 8) → (8, 6). Concatenate to [7, 5, 3, 10, 8, 6] with both chains intact.
+```
+
+**Example 2**
+```
+Input:  head = [5, 7, 3, 10, 6], k = 3
+Output: [3, 7, 5, 10, 6]
+Explanation: One full chunk of size 3 fits; reverse (5, 7, 3) → (3, 7, 5). The remaining (10, 6) is shorter than k and stays untouched.
+```
+
+**Example 3**
+```
+Input:  head = [5, 7, 3, 10, 6], k = 8
+Output: [5, 7, 3, 10, 6]
+Explanation: The full list is shorter than k, so no chunk forms and the input is returned unchanged.
+```
+
+**Example 4**
+```
+Input:  head = [1, 2, 3, 4, 5, 6, 7, 8], k = 2
+Output: [2, 1, 3, 4, 6, 5, 7, 8]
+Explanation: Four chunks of size 2. Reverse chunks 1 and 3 ((1, 2) → (2, 1) and (5, 6) → (6, 5)); skip chunks 2 and 4 ((3, 4) and (7, 8) stay).
+```
+
+</details>
+<details>
+<summary><h2>Intuition</h2></summary>
+
+The **structural property** is that the rewrite walks fixed-size chunks of `k` but flips only every other one. The list decomposes into `length / k` chunks of size `k`; chunks at even indices (counting from 0) are reversed, chunks at odd indices are skipped. A trailing fragment of `length % k` nodes never enters the loop. The difference from reverse-k-segments is one extra boolean flag in the outer driver — the inner bidirectional reversal primitive is untouched.
+
+The **pointer placement** uses the same boundaries as reverse-k-segments plus a `should_reverse` flag (initially `True`). On `True` iterations the chunk is reversed via the bidirectional helper and the post-hoc `end.prev == None` check promotes the global `head` if this is the first chunk. On `False` iterations no reversal happens — the algorithm sets `start = end` to skip past the entire untouched chunk, then `start = start.next` to land on the next chunk's head. The flag toggles after every iteration, so the pattern reverses, skips, reverses, skips. The reverse-branch advance is just `start = start.next` because `start` (the old chunk head) is now the chunk's tail after reversal; the skip branch needs the extra hop because `start` is still the chunk's head and needs to walk past `end` first.
+
+What **breaks if you reach for a single-pass value-copy**? Reading values into an array, reversing alternate windows, and writing back is `O(n)` time and `O(n)` extra space — it dodges the link-rewrite contract entirely, and on a doubly linked list it cannot enforce the `prev`/`next` consistency that the helper guarantees. Trying to handle the alternation by re-walking the list from `head` every other iteration costs `O(n²)` time. Both shortcuts miss the point: only the outer driver changes between reverse-k-segments and reverse-alternate-segments. The shared `reverse(start, end)` helper carries over without modification; the only structural delta is the conditional reversal step and the asymmetric `start` advance.
+
+</details>
 <details>
 <summary><h2>What Does "Alternate Segments" Mean?</h2></summary>
 
@@ -68,11 +112,14 @@ flowchart TB
 <details>
 <summary><h2>Applying the Diagnostic Questions</h2></summary>
 
+Reverse-alternate-segments adds a conditional branch to the chapter pattern. The diagnostic confirms the conditional does not break the pattern's prerequisites.
 
-| Question | Answer |
+| Check | Answer for Reverse Alternate Segments |
 |---|---|
-| **Q1.** Can the problem be broken into smaller subproblems? | **Yes** — `length / k` segments, each either reversed or skipped |
-| **Q2.** Can each "reverse" subproblem be solved by reversing a part? | **Yes** — same `reverse(start, end)`; "skip" is just a pointer hop |
+| **Q1.** Can the problem or solution be broken down into smaller subproblems? | **Yes** — the rewrite decomposes into `length / k` chunks of size `k`. Even-indexed chunks are reversal subproblems; odd-indexed chunks are no-op advance steps. |
+| **Q2.** Can any subproblem be solved by reversing a part of the linked list? | **Yes** — every "reverse" chunk is one call to the shared `reverse(start, end)` helper that swaps `prev`/`next` per node and re-stitches the four boundary links; "skip" chunks invoke no helper at all. |
+| **Q3.** Does the algorithm only need to walk each node a constant number of times? | **Yes** — `getNodeAtPosition` walks `k − 1` hops per chunk, and reversed chunks add one more `k`-node pass. Skipped chunks add zero extra walks. Overall the list is touched a constant number of times. |
+| **Q4.** Is each chunk's boundary computable from local state? | **Yes** — `end` is `start` plus `k`; the `should_reverse` flag toggles after every iteration; `start.prev`/`end.next` are read inside the helper. All state is local and constant-size. |
 
 ### Q1 — Why "each segment is reverse-or-skip"?
 
@@ -288,7 +335,7 @@ head = from_list([1, 2, 3, 4, 5, 6, 7, 8])
 print(to_list(Solution().reverse_alternate_segments(head, 2)))  # [2, 1, 3, 4, 6, 5, 7, 8]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -505,27 +552,68 @@ The reversal-subproblem family looks intimidating from the outside — pairwise 
 Next time you see a linked-list problem whose statement contains the words "groups", "segments", "alternate", "every other", or "in pairs" — you won't reach for a bespoke loop. You'll reach for **scan, window, reverse, advance**, and you'll know which one of these four templates fits before you've finished reading the problem.
 
 </details>
+<details>
+<summary><h2>Approach</h2></summary>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+Seven numbered steps. No code; the solution block above is the implementation.
 
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
+1. **Guard the trivial cases.** If `head` is `None`, the list has only one node, or `k == 1`, no alternation can change anything. Return `head` unchanged.
+2. **Precompute the chunk count.** Find `length` and set `total_segments = length // k`. Any trailing fragment of `length % k` nodes is implicitly skipped because the outer loop runs exactly `total_segments` times.
+3. **Initialise the boundary pointer and the toggle.** Set `start = head` and `should_reverse = True`. The first chunk is a "reverse" chunk; the flag flips after every iteration. The `reverse` helper reads `start.prev` directly, so there is no separate `leftBound` cache.
+4. **Drive the outer loop `total_segments` times.** Each iteration computes `end = getNodeAtPosition(start, k)` and then branches on `should_reverse`.
+5. **Reverse branch (`should_reverse = True`).** Call `reverse(start, end)` to swap `prev`/`next` on every node in `[start, end]` and bidirectionally stitch the four boundary links. Check `end.prev == None`; if true, the predecessor was `None` and this is the first chunk — update `head = end`.
+6. **Skip branch (`should_reverse = False`).** No reversal call. Advance `start` to `end` so the next step's `start = start.next` lands on the next chunk's head instead of the second node of the current (untouched) chunk.
+7. **Advance and toggle.** Set `start = start.next` (works for both branches: after a reverse, the old `start` is the chunk's tail; after a skip, `start = end` set in step 6 is the chunk's tail). Toggle `should_reverse = not should_reverse` for the next iteration.
 
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
+</details>
+<details>
+<summary><h2>Dry Run — Example 1</h2></summary>
 
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
+`head = [5, 7, 3, 10, 6, 8]`, `k = 2`. Precompute `length = 6`, `total_segments = 6 // 2 = 3`. Initial state: `start = 5`, `should_reverse = True`.
 
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
+**Iteration 1 — chunk `(5, 7)`, `should_reverse = True`:**
 
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
+| step | state |
+|---|---|
+| `end = getNodeAtPosition(start, 2)` | `end = 7` |
+| `reverse(5, 7)` | `leftBound = 5.prev = None`, `rightBound = 7.next = 3`. Swap `prev`/`next` on nodes 5 and 7; stitch `5.next = 3`, `3.prev = 5`, `7.prev = None`, no `leftBound.next` write. List now `7 ↔ 5 ↔ 3 ↔ 10 ↔ 6 ↔ 8`. |
+| `end.prev is None` → promote head | `head = 7` |
+| `start = start.next` | `start = 3` (old `start` node 5 is now the chunk's tail) |
+| toggle | `should_reverse = False` |
 
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->
+List after iteration 1: `7 ↔ 5 ↔ 3 ↔ 10 ↔ 6 ↔ 8`.
+
+**Iteration 2 — chunk `(3, 10)`, `should_reverse = False`:**
+
+| step | state |
+|---|---|
+| `end = getNodeAtPosition(start, 2)` | `end = 10` |
+| skip branch | no reversal; `start = end = 10` (skip past the chunk) |
+| `start = start.next` | `start = 6` |
+| toggle | `should_reverse = True` |
+
+List after iteration 2: `7 ↔ 5 ↔ 3 ↔ 10 ↔ 6 ↔ 8` (unchanged — the chunk was skipped; both chains untouched).
+
+**Iteration 3 — chunk `(6, 8)`, `should_reverse = True`:**
+
+| step | state |
+|---|---|
+| `end = getNodeAtPosition(start, 2)` | `end = 8` |
+| `reverse(6, 8)` | `leftBound = 6.prev = 10`, `rightBound = 8.next = None`. Swap `prev`/`next` on nodes 6 and 8; stitch `6.next = None`, `8.prev = 10`, `10.next = 8`. List now `7 ↔ 5 ↔ 3 ↔ 10 ↔ 8 ↔ 6`. |
+| `end.prev is not None` (`8.prev = 10`) → head unchanged | `head = 7` |
+| `start = start.next` | `start = None` |
+| toggle | `should_reverse = False` |
+
+List after iteration 3: `7 ↔ 5 ↔ 3 ↔ 10 ↔ 8 ↔ 6`.
+
+**Loop ends** (`total_segments = 3` iterations completed).
+
+**Return:** `head = 7`, forward traversal yields `[7, 5, 3, 10, 8, 6]` ✓. The reverse-direction traversal from node 6 confirms both chains are consistent.
+
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
+Reverse-alternate-segments on a doubly linked list is reverse-k-segments with a toggling `should_reverse` flag — on `True` iterations the chunk is reversed via the bidirectional helper; on `False` iterations the algorithm sets `start = end` to skip past the untouched run, then advances `start = start.next` in both branches. The asymmetric advance (one extra hop in the skip branch) is the only structural delta from the fixed-`k` driver.
+
+</details>

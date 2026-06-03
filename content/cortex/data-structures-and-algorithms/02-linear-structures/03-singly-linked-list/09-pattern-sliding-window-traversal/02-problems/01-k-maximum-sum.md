@@ -87,7 +87,7 @@ Maintain two pointers (`start` and `end`) and a running window sum (`current_sum
 ### Solution
 
 
-```python run
+```python run viz=linked-list viz-root=head
 from typing import Optional
 
 
@@ -186,7 +186,7 @@ print(Solution().k_maximum_sum(from_list([10, 1, 1, 10]), 3))    # 12
 print(Solution().k_maximum_sum(from_list([3, 3, 3, 3, 3]), 3))   # 9
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {

@@ -68,6 +68,40 @@ flowchart LR
 
 <p align="center"><strong>The fixed-window loop in one picture — the four-line dance of <em>add new, drop old, process if size matches, advance</em>. The whole structure of every problem in this lesson is a variation on these four steps.</strong></p>
 
+## Why Naive Isn't Enough
+
+The obvious move recomputes each window's answer from scratch. Enumerate every starting index, build that window's frequency map by scanning all `K` elements, then read off the answer. The result is correct, but the cost repeats work the previous window already did.
+
+This brute force pays a per-window scan it does not need. Building one window's map costs `O(K)`, and there are `N − K + 1` windows, so the total is `O(N·K)` time for `O(K)` space. Two adjacent windows of size `K` overlap in `K − 1` elements — yet the naive scan re-counts all of them on every step.
+
+To make this concrete: on `[a, b, a, c, b, d, a]` with `k = 4`, the first window `[a, b, a, c]` and the next window `[b, a, c, b]` share `b`, `a`, and `c`. The naive scan re-tallies those three shared characters even though only `a` left and `b` arrived. As `K` grows, the fraction of wasted work grows with it.
+
+So the key idea is: re-scanning each window discards the answer the last window already computed, and a running summary that updates on the two changed elements replaces every full re-scan.
+
+## The Core Idea
+
+The fix maintains one hash map across the whole sweep instead of rebuilding it per window. The map summarises the current window's contents — usually a frequency tally — and the algorithm edits it incrementally as the window moves.
+
+A hash map is the right summary because both edits cost `O(1)` amortised:
+
+- **Add** the entering element — `frequency[arr[end]] += 1` records the new right-edge character.
+- **Remove** the leaving element — `frequency[arr[start]] -= 1` undoes the old left-edge character, deleting the key when its count hits zero.
+
+To make this concrete: sliding from `[a, b, a, c]` to `[b, a, c, b]` is one decrement (drop the leftmost `a`) and one increment (add the new `b`) — two map writes, not a four-element rescan. The core insight is: the per-step cost drops from `O(K)` (rebuild the whole map) to `O(1)` (two edits), so the total drops from `O(N·K)` to `O(N)`.
+
+## How the Window Moves
+
+Two pointers fence the window, and only one of them advances unconditionally. The pointer `end` marks the right edge and moves every iteration; `start` marks the left edge and moves only when the window has grown past `K`.
+
+Each iteration runs the same four actions in a fixed order:
+
+- **Expand** — add `arr[end]`'s contribution to the map.
+- **Contract if oversized** — when `end − start + 1 > k`, remove `arr[start]`'s contribution and advance `start`.
+- **Process if full** — when `end − start + 1 == k`, read the map to answer the question for this exact window.
+- **Advance** — increment `end` to grow the window for the next step.
+
+To make this concrete: `end` sweeps from `0` to `N − 1`, so the loop runs exactly `N` times; `start` only ever moves forward and never passes `end`. Every element is added once and removed at most once. The core insight is: `end` drives the sweep while `start` trails it by a fixed gap of `K`, so the window's width is pinned at `K` for every processed step.
+
 ## Algorithm
 
 > **Algorithm**
@@ -176,53 +210,99 @@ The hash map holds at most K entries (the elements currently inside the window),
 
 # Identifying the fixed-sized sliding window pattern
 
-This pattern fits problems with a *fixed window length K* (given in the input or derivable from another input string) where the answer for each window depends on a **summarisable** property — frequencies, distinct counts, sums, products, max/min — that can be maintained incrementally.
+This pattern fits problems with a *fixed window length K* — given directly in the input or derived from a second input string — where the answer for each window depends on a **summarisable** property. Frequencies, distinct counts, sums, products, and max/min all qualify, because each can be maintained incrementally as the window moves.
 
 **Template:**
 > Given a sequence and a window size K, slide a window of size K from left to right while maintaining a hash-map summary of the window's contents in O(1) per shift. Use the summary to answer the question per window.
 
-If the question is *"for each window of size K, …"* and you can answer it from a frequency map, this pattern fits.
+If the question reads *"for each window of size K, …"* and you can answer it from a frequency map, this pattern fits.
 
-## Example — anagram finder
+## Recognition Checklist
 
-Given a string `s` and a pattern `p`, return all start indices in `s` where a *permutation* of `p` appears. The window size is fixed: `len(p)`. The summary is the frequency map of the current window's characters; an anagram exists iff that map equals the frequency map of `p`.
+Four questions confirm a problem fits the fixed-sized sliding window pattern. If every answer is "yes," the four-step skeleton drops in with only the "process the map" step to specialise.
 
-This is the canonical fixed-window problem — every other problem in this lesson is a simpler shape of it.
+1. **Is the window size fixed at exactly `K`?** The size is a hard constraint, given in the input or set to `len(pattern)` — it never grows or shrinks to satisfy a condition.
+2. **Is the input a linear sequence — an array or string?** The window slides one element at a time, so the input must be iterable end to end.
+3. **Does the answer for each window come from a hash-map summary you can update in `O(1)`?** Adding the right element and removing the left element must each be one map edit, not a full re-scan.
+4. **Is the per-step work `O(1)` amortised?** One increment on expand and one decrement on contract keep the whole sweep at `O(N)` time.
 
-## Example problems
+These four questions reappear as the **Diagnostic Questions** table in every problem write-up that follows.
 
-> -   Duplicate detection — *is there a duplicate in any window of size k?*
-> -   Subarray distinctness — *how many distinct elements per window?*
-> -   Contains variation — *does any window match a target frequency map?*
-> -   Anagram finder — *which windows are anagrams of a given pattern?*
+## Canonical Example
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+Walk a full problem end to end to see the pattern click into place.
 
-<!-- TODO: Why Naive Isn't Enough — missing, needs to be written -->
-<!--       Guidance: motivation for why the obvious approach fails -->
+### Problem Statement
 
-<!-- TODO: The Core Idea — missing, needs to be written -->
-<!--       Guidance: one paragraph: the central trick -->
+> **Problem:** Given an integer array `arr` and a positive integer `k`, return `true` if any subarray of size `k` contains a duplicate, `false` otherwise.
 
-<!-- TODO: How the Pointers/Window Move — missing, needs to be written -->
-<!--       Guidance: mechanics of the moving parts -->
+Take `arr = [2, 1, 2, 3, 2, 1, 4, 5]` and `k = 5`. The expected answer is `true` — the first window `[2, 1, 2, 3, 2]` already holds three copies of `2`.
 
-<!-- TODO: The Generic Algorithm — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
+### Brute Force
 
-<!-- TODO: Generic Implementation — missing, needs to be written -->
-<!--       Guidance: Python block + Java block of the skeleton -->
+The most direct approach fixes each starting index, then checks that window for a repeat by comparing every pair inside it. It works, but the nested comparison is the problem. Each of the `N − k + 1` windows runs a pairwise scan costing `O(k²)`, so the total is `O((N − k)·k²)` time for `O(1)` space — cubic when `k` is near `N/3`, and unusable past small inputs.
 
-<!-- TODO: Variants / Taxonomy — missing, needs to be written -->
-<!--       Guidance: enumerate sub-shapes of this pattern -->
+### Key Insight
 
-<!-- TODO: Recognition Checklist — missing, needs to be written -->
-<!--       Guidance: 4-question diagnostic — the source of the Problem-section Diagnostic Questions -->
+Two adjacent windows of size `k` share `k − 1` elements; only one element leaves and one enters per slide. A frequency map of the window lets you test for a duplicate in `O(1)` — any count above `1` means a repeat. The core insight is: maintain the map incrementally across the sweep, so each duplicate check is one lookup instead of a fresh `O(k²)` pairwise scan.
 
-<!-- TODO: Canonical Example — missing, needs to be written -->
-<!--       Guidance: fully worked example: brute force → optimised → template fit -->
+### Optimized Solution
 
-<!-- TODO: Problems in This Category — missing, needs to be written -->
-<!--       Guidance: table with links to the 02-problems/ files -->
+Apply the four-step skeleton with the map keyed on element frequency:
+
+1. Expand — add `arr[end]` to the map.
+2. Contract once the window already spans `k` elements — drop `arr[start]` and advance `start`.
+3. Process — if the just-added element's count exceeds `1`, a duplicate sits inside the current `k`-window, so return `true`.
+4. Advance — move `end` right and continue.
+
+The full Python and Java implementations live in [Duplicate Detection](02-problems/01-duplicate-detection). The contract guard there reads `if end - start >= k`, which trims the window *before* it would exceed `k`, keeping the duplicate check scoped to exactly `k` elements.
+
+> 🖼 Diagram — TODO: 3 frames — window [2,1,2] with freq{2:2} flagging the duplicate; the general slide dropping the left element and adding the right; the final true verdict.
+
+### Trace
+
+Walk Example 1 — `arr = [2, 1, 2, 3, 2, 1, 4, 5]`, `k = 5`. The duplicate surfaces before the window is even full:
+
+```
+start=0, end=0, frequency={}
+
+end=0  add 2 → freq={2:1}        size 1, < k → freq[2]=1, not > 1 → continue
+end=1  add 1 → freq={2:1, 1:1}   size 2, < k → freq[1]=1, not > 1 → continue
+end=2  add 2 → freq={2:2, 1:1}   size 3, < k → freq[2]=2 > 1 → return true
+
+result = true
+```
+
+The result `true` matches the expected output — the window `[2, 1, 2]` (still smaller than `k = 5`) already contains a duplicate `2`, so any larger window covering it does too.
+
+### Fitting the Template
+
+| Check | Answer for Duplicate Detection |
+|---|---|
+| **Q1.** Is the window size fixed at exactly `k`? | **Yes** — every subarray checked is exactly `k` wide; the size is given, never condition-driven. |
+| **Q2.** Is the input a linear sequence? | **Yes** — an integer array, walked index by index. |
+| **Q3.** Is the per-window answer read from an `O(1)`-updatable map? | **Yes** — a frequency map; a duplicate is any count `> 1`, read in `O(1)` after each insert. |
+| **Q4.** Is the per-step work `O(1)` amortised? | **Yes** — one increment on expand, one decrement on contract, one count lookup. |
+
+## Variants / Taxonomy
+
+Every fixed-window problem reuses the same skeleton and varies only in what the map summarises and what the "process" step asks of it. Three shapes appear repeatedly across the problems that follow:
+
+- **Boolean detection** — return as soon as the map satisfies a condition. The process step inspects one count and may short-circuit. *Example:* Duplicate Detection (any count `> 1` → return `true`).
+- **Per-window report** — return one value per window position, so the result has `n − k + 1` entries. The process step appends `len(map)` or a derived number. *Example:* Subarray Distinctness (distinct count per window).
+- **Pattern match** — the window size is `len(pattern)`, and the process step compares the window's map against the pattern's map. *Examples:* Contains Variation (first match → `true`), Anagram Finder (every match → append the index).
+
+So the core insight is: the mechanics never change — only the map's payload (counts, distinct keys) and the process step's shape (short-circuit, append, compare) vary across the variants.
+
+## Problems in This Category
+
+The four problems below each specialise the four-step skeleton — only the "process the map" step changes:
+
+| # | Problem | Variant | Twist on the skeleton |
+|---|---|---|---|
+| 1 | [Duplicate Detection](02-problems/01-duplicate-detection) | Boolean detection | Return `true` the instant any count climbs above `1` |
+| 2 | [Subarray Distinctness](02-problems/02-subarray-distinctness) | Per-window report | Append `len(map)` — the distinct count — for each full window |
+| 3 | [Contains Variation](02-problems/03-contains-variation) | Pattern match | Window size `len(s1)`; return `true` when the window's map equals `s1`'s |
+| 4 | [Anagram Finder](02-problems/04-anagram-finder) | Pattern match | Window size `len(p)`; append every start index whose window matches `p` |
+
+Each is a small variation on the same skeleton — only the per-window question changes.

@@ -75,39 +75,301 @@ s0 -> s1 -> s2
 
 Step through the same example interactively — use the controls below to advance `low`, `mid`, and `high` one iteration at a time. The shaded band is the live search range.
 
-```d3 widget=array-traversal
+```d3 widget=array-1d
 {
-  "items": ["1", "3", "5", "7", "9", "11", "13"],
-  "title": "Binary search for 9",
   "steps": [
     {
-      "markers": [
-        { "name": "lo",  "index": 0, "color": "#3b82f6" },
-        { "name": "mid", "index": 3, "color": "#10b981" },
-        { "name": "hi",  "index": 6, "color": "#f59e0b" }
+      "nodes": [
+        {
+          "id": "0",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "9",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "11",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "13",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "range": { "lo": 0, "hi": 6 },
-      "msg": "arr[mid]=7 < 9 → discard left half; set lo = mid + 1"
+      "edges": [],
+      "cursor": [
+        {
+          "name": "lo",
+          "target": "0",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "mid",
+          "target": "3",
+          "color": "#10b981"
+        },
+        {
+          "name": "hi",
+          "target": "6",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "arr[mid]=7 < 9 → discard left half; set lo = mid + 1",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "markers": [
-        { "name": "lo",  "index": 4, "color": "#3b82f6" },
-        { "name": "mid", "index": 5, "color": "#10b981" },
-        { "name": "hi",  "index": 6, "color": "#f59e0b" }
+      "nodes": [
+        {
+          "id": "0",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "9",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "11",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "13",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "range": { "lo": 4, "hi": 6 },
-      "msg": "arr[mid]=11 > 9 → discard right half; set hi = mid - 1"
+      "edges": [],
+      "cursor": [
+        {
+          "name": "lo",
+          "target": "4",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "mid",
+          "target": "5",
+          "color": "#10b981"
+        },
+        {
+          "name": "hi",
+          "target": "6",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "4",
+        "5",
+        "6"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "arr[mid]=11 > 9 → discard right half; set hi = mid - 1",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "markers": [
-        { "name": "lo",  "index": 4, "color": "#3b82f6" },
-        { "name": "mid", "index": 4, "color": "#10b981" },
-        { "name": "hi",  "index": 4, "color": "#f59e0b" }
+      "nodes": [
+        {
+          "id": "0",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "1",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "2",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "3",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "4",
+          "label": "9",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "5",
+          "label": "11",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "6",
+          "label": "13",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "range": { "lo": 4, "hi": 4 },
-      "msg": "arr[mid]=9 = target → return 4"
+      "edges": [],
+      "cursor": [
+        {
+          "name": "lo",
+          "target": "4",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "mid",
+          "target": "4",
+          "color": "#10b981"
+        },
+        {
+          "name": "hi",
+          "target": "4",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [
+        "4"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "arr[mid]=9 = target → return 4",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Binary search for 9"
 }
 ```
 
@@ -253,6 +515,74 @@ def binary_search(arr, target):
 
 result = binary_search([1, 3, 5, 7, 9, 11, 13], 9)
 print(result)
+```
+
+Same algorithm in Java — `main` calls a `binarySearch` helper. The tracer steps through both, pushing a new frame when the helper is called and popping it on return, so the caption flips from `main` → `binarySearch` → `main` as the call stack moves. The **Kotlin** and **Scala** tabs show equivalent source; both compile to the same JVM bytecode as the Java version.
+
+```java trace
+public class Main {
+    public static int binarySearch(int[] arr, int target) {
+        int low = 0;
+        int high = arr.length - 1;
+        while (low <= high) {
+            int mid = low + (high - low) / 2;
+            if (arr[mid] == target) {
+                return mid;
+            }
+            if (arr[mid] < target) {
+                low = mid + 1;
+            } else {
+                high = mid - 1;
+            }
+        }
+        return -1;
+    }
+
+    public static void main(String[] args) {
+        int[] arr = {1, 3, 5, 7, 9, 11, 13};
+        int target = 9;
+        int result = binarySearch(arr, target);
+        System.out.println(result);
+    }
+}
+```
+
+```kotlin trace
+fun binarySearch(arr: IntArray, target: Int): Int {
+    var low = 0
+    var high = arr.size - 1
+    while (low <= high) {
+        val mid = low + (high - low) / 2
+        when {
+            arr[mid] == target -> return mid
+            arr[mid] < target  -> low = mid + 1
+            else               -> high = mid - 1
+        }
+    }
+    return -1
+}
+
+fun main() {
+    val arr = intArrayOf(1, 3, 5, 7, 9, 11, 13)
+    println(binarySearch(arr, 9))
+}
+```
+
+```scala trace
+def binarySearch(arr: Array[Int], target: Int): Int =
+  var low  = 0
+  var high = arr.length - 1
+  var result = -1
+  while low <= high && result == -1 do
+    val mid = low + (high - low) / 2
+    if arr(mid) == target then result = mid
+    else if arr(mid) < target then low = mid + 1
+    else high = mid - 1
+  result
+
+@main def run(): Unit =
+  val arr = Array(1, 3, 5, 7, 9, 11, 13)
+  println(binarySearch(arr, 9))
 ```
 
 ***

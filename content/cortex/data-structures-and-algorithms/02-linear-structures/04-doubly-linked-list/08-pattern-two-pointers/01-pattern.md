@@ -47,6 +47,20 @@ Some problems, though, require us to traverse the linked list in *both* directio
 
 The two-pointer pattern is the family of problems solvable using this two-pointer traversal technique.
 
+## Why Naive Isn't Enough
+
+The obvious first instinct for a "compare two ends" or "find a pair" problem on a linked list is to nest two walks — for each `outer` node, walk an `inner` cursor across the rest. That works, but it costs `O(n²)` time on a structure that should support a single sweep, and it ignores the very property that makes a DLL special: every node already knows its predecessor.
+
+A second naive option is to copy values into an array, run the array two-pointer algorithm, then copy back. That clears the time bound — `O(n)` once the copy is done — but pays `O(n)` extra space and abandons the linked-list shape. It also doesn't generalise: as soon as the problem asks you to splice or relink nodes (`Pairwise Swap`, `Reverse k Segments`), the array detour cannot put pointers back the way it found them.
+
+To make this concrete: a palindrome check on `1 ⇄ 2 ⇄ 3 ⇄ 2 ⇄ 1` with the nested-walk approach compares `1` against every other value, then `2` against every other value, etc. — five outer ticks × five inner ticks = 25 comparisons for a five-node list. The two-pointer pass needs three. The core insight is: when both ends matter and the structure permits backward steps, *one pointer at each end* is provably enough.
+
+## The Core Idea
+
+Two cursors — `left` and `right` — start at opposite ends of the doubly linked list and walk inward, doing constant-time work on the pair `(left, right)` at every step. The DLL's `prev` field is what makes the backward step on `right` an `O(1)` operation; without it, the second cursor would have to re-traverse from `head` each iteration, collapsing the algorithm back to `O(n²)`.
+
+The pattern's correctness rests on a simple invariant: the unprocessed region of the list is exactly the open span `(left, right)` — every node outside that span has already been visited. Each iteration shrinks the span by one node on the left, one on the right, or both, and the loop terminates the moment the span is empty.
+
 ## The Two-Pointer Technique
 
 The technique uses two references, `left` and `right`, initialised at `head` and `tail` respectively. We traverse in both directions by following `next` from `left` and `prev` from `right`, until they meet in the middle or `left` crosses past `right`. At each iteration we inspect the nodes held by `left` and `right`, do whatever the problem demands, and decide which pointer to advance — possibly both, possibly only one — to close the gap.
@@ -75,6 +89,18 @@ flowchart LR
 
 <p align="center"><strong>Each iteration: act on <code>left</code> and <code>right</code>, then move one or both inward by one step.</strong></p>
 
+## How the Pointers Move
+
+Each iteration follows one rhythm — read, decide, step. The DLL gives both directions in `O(1)`, so the per-step choice is free:
+
+- `left` advances **forward** via `left = left.next`.
+- `right` retreats **backward** via `right = right.prev`.
+- Both may advance in the same iteration (when both pointers are "done" with their current node), or just one (when only one side needs to move to make progress).
+
+To make this concrete: on the sorted list `[1, 3, 4, 6, 9]` with `target = 10`, the pair `(left=1, right=9)` sums to `10` — both advance. The next pair `(left=3, right=6)` sums to `9` — only `left` advances, since `right.val = 6` could still pair with a larger left. The decision is local to each iteration, but the *invariant* is global: every step strictly shrinks the unprocessed span `(left, right)`.
+
+So the key idea is: the pattern is not "move both pointers" — it is "move at least one pointer inward, chosen by the loop body's verdict on the current pair."
+
 ## The Generic Algorithm
 
 > -   **Step 1:** Initialise `left = head` and `right = tail`.
@@ -92,8 +118,7 @@ flowchart LR
 The skeleton below is the template every problem in this lesson specialises. Read it once, then watch how each problem changes only the *condition* and the *what to do at each step*.
 
 
-```python run
-
+```python run viz=linked-list viz-root=head
 """
 Definition for doubly-linked list.
 class ListNode:
@@ -130,7 +155,7 @@ def two_pointer(head: Optional[ListNode], tail: Optional[ListNode]) -> None:
     return
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 
 /**
  * Definition for doubly-linked list.
@@ -192,6 +217,16 @@ Both pointers traverse the list once, from opposite ends, and meet in the middle
 
 We unlocked a structural superpower — but where exactly is it the *right* tool? That's the next question.
 
+## Variants / Taxonomy
+
+The DLL two-pointer family splits into three sub-shapes, distinguished by how the *pair* relates to the answer:
+
+- **Mirror check.** Compare `left.val` and `right.val` at every step; a single mismatch decides the result (`Palindrome Number`).
+- **Pair search.** Maintain `sum = left.val + right.val` and steer the pointers based on `sum vs target` to find one or more pairs (`Two Sum`, `Duplicate-Aware Two Sum`).
+- **Fix-one-reduce.** An outer loop pins a node, an inner two-pointer scan searches the remainder. The inner pass is unchanged; only an extra term enters the running sum (`Approximate Three Sum`).
+
+Each sub-shape uses the same loop skeleton — only the *condition* and the *what to do at each step* change. The pair-search variant is the workhorse; the mirror-check variant is the simplest; the fix-one-reduce variant scales the family to `k`-sum problems by repeated reduction.
+
 # Identifying the Two-Pointer Pattern
 
 Almost every two-pointer **array** problem can be reformulated as a doubly linked list problem and solved the same way. These tend to be **medium** or **hard** on a DLL because pointer plumbing and null-checks are more delicate than array indexing — but the underlying logic is identical.
@@ -200,7 +235,18 @@ If a problem statement (or its naive solution) fits the template below, it's a t
 
 > **Template:** Given a doubly linked list, perform an operation on two nodes `left` and `right` where `left` starts at `x` and `right` starts at `y` with `x` to the left of `y`, and on each iteration `left` and `right` move strictly closer to each other.
 
-## Worked Example — Spotting It in the Wild
+## Recognition Checklist
+
+Four questions to confirm a problem fits the DLL two-pointer pattern. If every answer is "yes," the skeleton applies as-is.
+
+1. **Are two nodes inspected at the same time, one from each end?** Each iteration must read or compare `left` and `right` together — never one without the other.
+2. **Does one pointer start near `head` and the other near `tail`?** The initial state is `left = head` (or close to it) and `right = tail` (or close to it), with `left` strictly before `right` in the chain.
+3. **Do both pointers move strictly inward?** Every iteration moves `left = left.next`, `right = right.prev`, or both. Neither pointer ever reverses direction.
+4. **Is the per-step work `O(1)`?** The loop body must be constant-time — a comparison, a sum check, an append. No inner scan of the remaining nodes.
+
+These four questions reappear as the **Diagnostic Questions** table in every problem write-up that follows.
+
+## Canonical Example — Spotting It in the Wild
 
 > **Problem:** Given the `head` and `tail` of a doubly linked list of integers sorted non-decreasing, and an integer `target`, return `true` if any two nodes have values summing to `target`.
 
@@ -289,36 +335,15 @@ public:
 
 Single pass, no extra space — exactly the speedup the pattern promises.
 
-## The Problem Roster
+## Problems in This Category
 
-We'll now cement the technique with four concrete problems of growing difficulty:
+The following four problems each apply the DLL two-pointer technique with a small twist on the same skeleton:
 
-> -   **Palindrome Number** — pure mirror check
-> -   **Two Sum** — the canonical sorted-pair search
-> -   **Duplicate-Aware Two Sum** — same idea, but skip-duplicate plumbing
-> -   **Approximate Three Sum** — fix one node, two-pointer the rest
+| # | Problem | Sub-shape | Work per step |
+|---|---|---|---|
+| 1 | [Palindrome Number](02-problems/01-palindrome-number) | Mirror check | Compare `left.val` and `right.val`; fail fast on mismatch |
+| 2 | [Two Sum](02-problems/02-two-sum) | Pair search | Compare `sum = left.val + right.val` against `target` |
+| 3 | [Duplicate-Aware Two Sum](02-problems/03-duplicate-aware-two-sum) | Pair search + skip | Pair search, then walk past every run of equal values |
+| 4 | [Approximate Three Sum](02-problems/04-approximate-three-sum) | Fix-one-reduce | Outer loop pins a node; inner two-pointer tracks the closest sum |
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
-
-<!-- TODO: Why Naive Isn't Enough — missing, needs to be written -->
-<!--       Guidance: motivation for why the obvious approach fails -->
-
-<!-- TODO: The Core Idea — missing, needs to be written -->
-<!--       Guidance: one paragraph: the central trick -->
-
-<!-- TODO: How the Pointers/Window Move — missing, needs to be written -->
-<!--       Guidance: mechanics of the moving parts -->
-
-<!-- TODO: Variants / Taxonomy — missing, needs to be written -->
-<!--       Guidance: enumerate sub-shapes of this pattern -->
-
-<!-- TODO: Recognition Checklist — missing, needs to be written -->
-<!--       Guidance: 4-question diagnostic — the source of the Problem-section Diagnostic Questions -->
-
-<!-- TODO: Canonical Example — missing, needs to be written -->
-<!--       Guidance: fully worked example: brute force → optimised → template fit -->
-
-<!-- TODO: Problems in This Category — missing, needs to be written -->
-<!--       Guidance: table with links to the 02-problems/ files -->
+Each is a small variation on the same skeleton — only the loop body and the move-decision change.

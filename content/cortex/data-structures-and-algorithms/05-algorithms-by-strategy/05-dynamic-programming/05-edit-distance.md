@@ -283,7 +283,7 @@ print(Solution().edit_distance("kitten", "sitting"))   # 3
 print(Solution().edit_distance("ab", "ba"))            # 2
 ```
 
-```java run
+```java run viz=graph viz-root=dp
 public class Main {
     static class Solution {
         public int editDistance(String s1, String s2) {

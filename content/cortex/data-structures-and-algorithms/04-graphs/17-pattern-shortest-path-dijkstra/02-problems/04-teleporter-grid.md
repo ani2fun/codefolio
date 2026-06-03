@@ -213,7 +213,7 @@ print(Solution().teleporter_grid([[1,0],[0,1]], (0,0), (1,1)))                  
 print(Solution().teleporter_grid([[2,1],[1,2]], (0,0), (1,1)))                              # 1 — teleport shortcut
 ```
 
-```java run
+```java run viz=grid viz-root=grid
 import java.util.*;
 
 public class Main {

@@ -223,7 +223,7 @@ print(to_list(Solution().reverse_increasing_groups(from_list([1, 2, 3]))))      
 print(to_list(Solution().reverse_increasing_groups(from_list([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]))))  # [1, 3, 2, 6, 5, 4, 10, 9, 8, 7]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {

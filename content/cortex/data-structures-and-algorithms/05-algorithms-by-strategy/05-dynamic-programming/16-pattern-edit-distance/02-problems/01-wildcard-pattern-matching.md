@@ -116,7 +116,7 @@ print(Solution().wildcard_pattern_matching("abc", "a*c"))         # True  — st
 print(Solution().wildcard_pattern_matching("abc", "a*d"))         # False — star can't fix tail mismatch
 ```
 
-```java run
+```java run viz=grid viz-root=dp
 import java.util.*;
 
 public class Main {

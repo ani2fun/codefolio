@@ -12,7 +12,7 @@ summary: Multiply five numbers, double the result, design for the doubled number
 
 In **2010**, Twitter's site was famously held together with bailing wire. The [Fail Whale](https://en.wikipedia.org/wiki/Twitter#Outages) had its own Wikipedia entry. Every World Cup goal generated a traffic spike that took the site down. A small infrastructure team eventually learned to estimate the next spike before it arrived — and reroute around it — by doing exactly the kind of math we are about to learn.
 
-When the Brazilian World Cup goal-scoring spike of 8,800 tweets/sec hit in 2014, Twitter did not crash. Why? Because someone, on a whiteboard, six months earlier, had multiplied: *World-Cup-finals viewers × tweet-per-viewer rate × goal-event amplification = upper bound on QPS during the moment of a goal*. They had then provisioned for **3× that estimate** and built a fast-cache shedding path for the inevitable underestimate.
+When the 2014 World Cup in Brazil peaked at **580,166 tweets per minute — about 9,700 tweets/sec — at Germany's fifth goal** in the 7–1 demolition ([the most-tweeted sporting event to that point](https://variety.com/2014/digital/news/world-cup-germany-brazil-match-scores-twitter-records-for-sports-chatter-1201259646/)), Twitter stayed up. The discipline that buys you that headroom is exactly the math we are about to learn: *viewers × tweets-per-viewer × goal-event amplification = an upper bound on QPS at the moment of a goal* — then provision a comfortable multiple of that estimate and keep a cache-shedding path for the inevitable underestimate.
 
 That is the entire skill of this lesson: **multiply five numbers, double the result, design for the doubled number**.
 
@@ -74,7 +74,7 @@ Let's estimate the QPS, storage, and bandwidth of **Twitter**, twice — once wi
 ### The setup
 
 - **MAU (monthly active users):** 400 million.
-- **DAU (daily active users):** ~50% of MAU = **200 million**.
+- **DAU (daily active users):** ~50% of MAU = **200 million** (engagement-heavy social runs high — see the DAU/MAU rule of thumb in §6).
 - **Tweets per active user per day:** 2 (rough public number).
 - **Reads per active user per day:** 50 (people read way more than they post — this is the read-to-write ratio).
 - **Average tweet size:** 280 chars + metadata ≈ **1 KB** (yes, even with avatars and timestamps).
@@ -220,7 +220,7 @@ There is no algorithmic complexity in BOTE — it is multiplication. But there *
 | Choice | Conservative (over-estimate) | Aggressive (under-estimate) | Right answer |
 |---|---|---|---|
 | **Peak-to-average ratio** | 10× | 1.2× | **3× for consumer apps; 10× for entertainment; 30× for "TV moment" services** |
-| **DAU/MAU ratio** | 50% | 5% | **15–25% for most consumer apps; up to 60% for messaging** |
+| **DAU/MAU ratio** | 50% | 5% | **15–25% for most consumer apps; ~40–50% for engagement-heavy social; up to 60% for messaging** |
 | **Replication overhead** | 5× | 1× | **3× for durable; 1× for cache-only** |
 | **Slack** ("safety margin") | 5× | 1× | **2× for compute; 1.5× for storage** (cheap to add) |
 

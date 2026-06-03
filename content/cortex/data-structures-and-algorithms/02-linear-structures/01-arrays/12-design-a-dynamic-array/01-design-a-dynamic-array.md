@@ -320,7 +320,7 @@ print(da.size())    # 3
 print(da.get(0))    # 2
 ```
 
-```java run
+```java run viz=array viz-root=arr
 public class Main {
     static class DynamicArray {
 
@@ -446,68 +446,594 @@ Resize events fire at pushes 1, 2, 3, 5, 9, 17, 33, ... — exponentially rarer 
 </details>
 
 > ▶ Interactive Diagram — Eight pushes into an empty DynamicArray — the blue band tracks how much of the capacity is actually used; the wasted (_) slots are the cost of amortised O(1).
-```d3 widget=array-traversal
+```d3 widget=array-1d
 {
-  "items": ["1"],
-  "title": "Dynamic array: 8 pushes with capacity doubling",
   "steps": [
     {
-      "items": ["1"],
-      "keys":  ["a"],
-      "markers": [{ "name": "size", "index": 0, "color": "#3b82f6" }],
-      "range":   { "lo": 0, "hi": 0 },
-      "msg": "Push 1 — resize 0→1. Capacity is now 1; size = 1; 0 slots wasted."
+      "nodes": [
+        {
+          "id": "a",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "size",
+          "target": "a",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [
+        "a"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "Push 1 — resize 0→1. Capacity is now 1; size = 1; 0 slots wasted.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "items": ["1", "2"],
-      "keys":  ["a", "b"],
-      "markers": [{ "name": "size", "index": 1, "color": "#3b82f6" }],
-      "range":   { "lo": 0, "hi": 1 },
-      "msg": "Push 2 — resize 1→2. Capacity = 2; size = 2; 0 slots wasted."
+      "nodes": [
+        {
+          "id": "a",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "size",
+          "target": "b",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [
+        "a",
+        "b"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "Push 2 — resize 1→2. Capacity = 2; size = 2; 0 slots wasted.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "items": ["1", "2", "3", "_"],
-      "keys":  ["a", "b", "c", "d"],
-      "markers": [{ "name": "size", "index": 2, "color": "#3b82f6" }],
-      "range":   { "lo": 0, "hi": 2 },
-      "msg": "Push 3 — resize 2→4 (copy 2 elements). Capacity = 4; size = 3; 1 reserved slot."
+      "nodes": [
+        {
+          "id": "a",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "d",
+          "label": "_",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "size",
+          "target": "c",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [
+        "a",
+        "b",
+        "c"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "Push 3 — resize 2→4 (copy 2 elements). Capacity = 4; size = 3; 1 reserved slot.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "items": ["1", "2", "3", "4"],
-      "keys":  ["a", "b", "c", "d"],
-      "markers": [{ "name": "size", "index": 3, "color": "#3b82f6" }],
-      "range":   { "lo": 0, "hi": 3 },
-      "msg": "Push 4 — no resize. Fast path: write + bump."
+      "nodes": [
+        {
+          "id": "a",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "d",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "size",
+          "target": "d",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [
+        "a",
+        "b",
+        "c",
+        "d"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "Push 4 — no resize. Fast path: write + bump.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "items": ["1", "2", "3", "4", "5", "_", "_", "_"],
-      "keys":  ["a", "b", "c", "d", "e", "f", "g", "h"],
-      "markers": [{ "name": "size", "index": 4, "color": "#3b82f6" }],
-      "range":   { "lo": 0, "hi": 4 },
-      "msg": "Push 5 — resize 4→8 (copy 4 elements). Capacity = 8; size = 5; 3 reserved slots."
+      "nodes": [
+        {
+          "id": "a",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "d",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "e",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "f",
+          "label": "_",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "g",
+          "label": "_",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "h",
+          "label": "_",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "size",
+          "target": "e",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "Push 5 — resize 4→8 (copy 4 elements). Capacity = 8; size = 5; 3 reserved slots.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "items": ["1", "2", "3", "4", "5", "6", "_", "_"],
-      "keys":  ["a", "b", "c", "d", "e", "f", "g", "h"],
-      "markers": [{ "name": "size", "index": 5, "color": "#3b82f6" }],
-      "range":   { "lo": 0, "hi": 5 },
-      "msg": "Push 6 — no resize. Fast path."
+      "nodes": [
+        {
+          "id": "a",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "d",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "e",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "f",
+          "label": "6",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "g",
+          "label": "_",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "h",
+          "label": "_",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "size",
+          "target": "f",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e",
+        "f"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "Push 6 — no resize. Fast path.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "items": ["1", "2", "3", "4", "5", "6", "7", "_"],
-      "keys":  ["a", "b", "c", "d", "e", "f", "g", "h"],
-      "markers": [{ "name": "size", "index": 6, "color": "#3b82f6" }],
-      "range":   { "lo": 0, "hi": 6 },
-      "msg": "Push 7 — no resize. Fast path."
+      "nodes": [
+        {
+          "id": "a",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "d",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "e",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "f",
+          "label": "6",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "g",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "h",
+          "label": "_",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "size",
+          "target": "g",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e",
+        "f",
+        "g"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "Push 7 — no resize. Fast path.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
-      "items": ["1", "2", "3", "4", "5", "6", "7", "8"],
-      "keys":  ["a", "b", "c", "d", "e", "f", "g", "h"],
-      "markers": [{ "name": "size", "index": 7, "color": "#3b82f6" }],
-      "range":   { "lo": 0, "hi": 7 },
-      "msg": "Push 8 — no resize. Capacity = 8; size = 8; all slots used. Next push would trigger 8→16."
+      "nodes": [
+        {
+          "id": "a",
+          "label": "1",
+          "kind": "cell",
+          "meta": [],
+          "slot": 0,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "b",
+          "label": "2",
+          "kind": "cell",
+          "meta": [],
+          "slot": 1,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "c",
+          "label": "3",
+          "kind": "cell",
+          "meta": [],
+          "slot": 2,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "d",
+          "label": "4",
+          "kind": "cell",
+          "meta": [],
+          "slot": 3,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "e",
+          "label": "5",
+          "kind": "cell",
+          "meta": [],
+          "slot": 4,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "f",
+          "label": "6",
+          "kind": "cell",
+          "meta": [],
+          "slot": 5,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "g",
+          "label": "7",
+          "kind": "cell",
+          "meta": [],
+          "slot": 6,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "h",
+          "label": "8",
+          "kind": "cell",
+          "meta": [],
+          "slot": 7,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [],
+      "cursor": [
+        {
+          "name": "size",
+          "target": "h",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e",
+        "f",
+        "g",
+        "h"
+      ],
+      "changed": [],
+      "removed": [],
+      "annotation": "Push 8 — no resize. Capacity = 8; size = 8; all slots used. Next push would trigger 8→16.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Dynamic array: 8 pushes with capacity doubling"
 }
 ```
 

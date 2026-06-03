@@ -182,7 +182,7 @@ if __name__ == "__main__":
     print(f"Total bits Huffman: {total}; naive (3 bits each): {naive}; savings: {(1 - total / naive) * 100:.1f}%")
 ```
 
-```java run
+```java run viz=array viz-root=root
 import java.util.*;
 
 public class Main {

@@ -98,7 +98,7 @@ print(Solution().k_ribbons([5, 5, 5], 3))    # 5   (each ribbon exactly k length
 print(Solution().k_ribbons([1, 2, 3], 10))   # 0   (not enough total length)
 ```
 
-```java run
+```java run viz=array viz-root=ribbons
 public class Main {
     static class Solution {
 

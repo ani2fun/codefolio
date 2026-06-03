@@ -70,7 +70,9 @@ object CodeRunPipeline:
   /**
    * Resource-free layer: builds the configured Piston and Code Runner adapters from `RunnerConfig`. Either
    * may be absent if its URL is unset; if both are unset, the pipeline returns `NotConfigured` per request.
-   * Piston is listed first so it wins ties when both back the same language.
+   * Code Runner is listed first so it wins when both backends are configured — the self-hosted runner is
+   * preferred because it controls the Java JDK version (needed for `jdk.compiler` tracing) and has a 1 MB
+   * stdout cap versus Piston's 64 KB. Piston remains as the fallback if Code Runner is unreachable.
    */
   val live: ZLayer[RunnerConfig, Nothing, CodeRunPipeline] =
     ZLayer.fromFunction { (cfg: RunnerConfig) =>
@@ -91,7 +93,9 @@ object CodeRunPipeline:
       cfg.codeRunnerUrl
         .filter(_.nonEmpty)
         .map(LiveCodeRunnerBackend(_, cfg.codeRunnerAuthToken.filter(_.nonEmpty)))
-    List(piston, codeRunner).flatten
+    // Code Runner first: preferred over Piston for traced runs (higher stdout cap,
+    // controlled JDK version with jdk.compiler). Piston is the fallback.
+    List(codeRunner, piston).flatten
 
   final private class LivePistonBackend(baseUrl: String) extends CodeExecutionBackend:
 

@@ -1,6 +1,6 @@
 ---
 title: "Linked List Implementation Of Queues"
-summary: "<!-- TODO: summary -->"
+summary: "A FIFO queue on a singly linked list: keep the front at the head and the back at a tail pointer, so every enqueue links a node past the tail and every dequeue unlinks the head — all O(1), unbounded by default, with no resize spike."
 ---
 
 # 3. Linked-List Implementation of Queues
@@ -21,15 +21,40 @@ This lesson builds the linked-list queue end-to-end in Python and Java — same 
 
 ## Table of contents
 
-1. [Structure of a linked-list-based queue](#structure-of-a-linked-list-based-queue)
-2. [Implementing the queue class using a linked list](#implementing-the-queue-class-using-a-linked-list)
-3. [Determining the size of the queue](#determining-the-size-of-the-queue)
-4. [Checking if the queue is empty](#checking-if-the-queue-is-empty)
-5. [Accessing the front of the queue](#accessing-the-front-of-the-queue)
-6. [Accessing the back of the queue](#accessing-the-back-of-the-queue)
-7. [Enqueuing an item into the queue](#enqueuing-an-item-into-the-queue)
-8. [Dequeuing an item from the queue](#dequeuing-an-item-from-the-queue)
-9. [Design a queue using a linked list](#design-a-queue-using-a-linked-list)
+1. [Understanding the problem](#understanding-the-problem)
+2. [Structure of a linked-list-based queue](#structure-of-a-linked-list-based-queue)
+3. [Supported operations](#supported-operations)
+4. [Internal mechanics](#internal-mechanics)
+5. [Implementing the queue class using a linked list](#implementing-the-queue-class-using-a-linked-list)
+6. [Determining the size of the queue](#determining-the-size-of-the-queue)
+7. [Checking if the queue is empty](#checking-if-the-queue-is-empty)
+8. [Accessing the front of the queue](#accessing-the-front-of-the-queue)
+9. [Accessing the back of the queue](#accessing-the-back-of-the-queue)
+10. [Enqueuing an item into the queue](#enqueuing-an-item-into-the-queue)
+11. [Dequeuing an item from the queue](#dequeuing-an-item-from-the-queue)
+12. [Working example](#working-example)
+13. [Design a queue using a linked list](#design-a-queue-using-a-linked-list)
+14. [Boss-fight demo](#boss-fight-demo)
+15. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
+16. [Production reality](#production-reality)
+17. [Quiz](#quiz)
+18. [Practice ladder](#practice-ladder)
+19. [Further reading](#further-reading)
+20. [Cross-links](#cross-links)
+21. [Final takeaway](#final-takeaway)
+
+***
+
+# Understanding the Problem
+
+An array backs a queue well, but it pins one decision at construction: how big can the queue ever get? A bounded array reserves every slot up front and refuses the enqueue that would overflow. A growable array resizes by copying into a larger buffer, paying an occasional `O(n)` cost. A linked list sidesteps both — it grows one node at a time, with no buffer to size and no copy to amortise.
+
+The difference comes from what "the front" and "the back" refer to in each implementation:
+
+- **Array queue** — the front and back are `index` values into one contiguous buffer; capacity is the buffer's length, and the indices wrap around it.
+- **Linked-list queue** — the front is a `head` **pointer** and the back is a `tail` **pointer**; capacity is whatever the machine's memory allows.
+
+A queue is harder to back with a linked list than a stack is. A stack touches only one end, so a single `head` pointer suffices. A queue touches **both** ends — it removes from the front and inserts at the back — and the back of a singly linked list is `O(n)` to reach without help, since each node knows only its `next`. To make this concrete: with only a `head`, an enqueue would walk every node to find where to attach, turning a constant-time operation into a linear one. The fix is a second pointer, `tail`, kept aimed at the last node so the back is reachable in one hop. So the key idea is: a linked list backs a queue when you want unbounded growth with no resize spike — and a `tail` pointer is the one addition that keeps insertion at the back `O(1)`.
 
 ***
 
@@ -118,6 +143,35 @@ flowchart LR
 
 ***
 
+# Supported Operations
+
+Six operations make up the whole interface, and every one is `O(1)` time and `O(1)` extra space. The set matches the array implementation exactly — same contract, different storage — because a queue is defined by its FIFO behaviour, not by how the nodes are laid out. What changes underneath is the mechanism: an `index` slide over a wrap-around buffer becomes a pointer swing over a chain of nodes.
+
+| Operation | Time | Space | What it does |
+|---|---|---|---|
+| `size()` | `O(1)` | `O(1)` | Returns `currentSize` — the counter bumped on enqueue, dropped on dequeue |
+| `empty()` | `O(1)` | `O(1)` | Returns whether `currentSize == 0` (equivalently `head == null`) |
+| `front()` | `O(1)` | `O(1)` | Reads `head.val` without unlinking it (peek at the oldest item) |
+| `back()` | `O(1)` | `O(1)` | Reads `tail.val` without unlinking it (peek at the newest item) |
+| `enqueue(val)` | `O(1)` | `O(1)` | Links a new node past the `tail`; returns `false` if full |
+| `dequeue()` | `O(1)` | `O(1)` | Unlinks and returns the `head` node; returns `-1` if empty |
+
+The two writes operate at opposite ends. `enqueue` only ever touches `tail`, and `dequeue` only ever touches `head` — they never walk the chain between them. Using a queue holding `head → 3 → 5 → 7 ← tail`, `enqueue(9)` links a node after `7` and advances `tail`, while `dequeue()` returns `3` and advances `head` to the node holding `5`. So the core insight is: every operation reads or writes only `head` or `tail`, which is exactly why none of the six depends on how many nodes the chain holds.
+
+***
+
+# Internal Mechanics
+
+Every operation is a rule expressed in terms of the `head` and `tail` pointers, and the list nodes are the passive storage those rules read and re-link. Unlike the array version, where two `index` values slide over a fixed buffer and wrap at its edge, the linked-list version allocates or frees a node on each write and rewires one or two pointers:
+
+- **Enqueue** allocates a node, attaches it after the current `tail`, then moves `tail` to the new node.
+- **Dequeue** reads `head.val`, advances `head` to `head.next`, then frees the old head.
+- **Front** reads `head.val`; **back** reads `tail.val`; neither moves a pointer.
+
+The delicate part is the empty boundary, where `head` and `tail` move together. An empty queue has both pointers `null`. The *first* enqueue must set **both** — the lone node is simultaneously the front and the back. The *last* dequeue must reset **both** — once `head` advances to `null`, a `tail` still aimed at the freed node is a stale reference. To make this concrete: enqueue into `head → 5 ← tail` attaches a node after `5` and swings only `tail`. But enqueue into an empty queue must point `head` at the new node too, or the next dequeue reads through a `null` front. So the core insight is: the nodes are passive storage and the two pointers are the only live state. Correctness reduces to keeping `head` and `tail` consistent across the empty ⇄ non-empty boundary, where one forgotten assignment strands a node or dangles a pointer.
+
+***
+
 # Implementing the queue class using a linked list
 
 Two pieces: a tiny `ListNode` type for the chain, and the `Queue` class that wraps it.
@@ -202,7 +256,7 @@ public class Main {
 ```
 
 
-The Rust skeleton is unusual — see the comment in the code. The mainstream Rust answer is "use `std::collections::VecDeque`", which is itself a circular array under the hood. We're showing the linked version for parity with the other languages.
+Each method is a stub for now — `size()` returns `0`, `enqueue` returns `false`, and so on. The lessons that follow fill them in one at a time, and the final design problem assembles the complete class. The skeleton's job is to fix the four fields every method reads: `head`, `tail`, `currentSize`, and `capacity`.
 
 ***
 
@@ -1205,6 +1259,22 @@ A predicate, a value read, two pointer assignments, a free, a decrement. Indepen
 
 ***
 
+# Working Example
+
+Watching `head` and `tail` move through a full enqueue-then-dequeue cycle is the fastest way to make the six operations click — and it shows both pointer-syncing traps in one trace. Start with `Queue(3)` — capacity `3`, `head = null`, `tail = null`, `currentSize = 0` marking it empty. Each step allocates or frees exactly one node and rewires one or both pointers:
+
+1. **`enqueue(1)`** — not full, and the queue is empty, so allocate node `1` and set **both** `head` and `tail` to it. Chain `head → 1 ← tail`, `currentSize == 1`. This is the empty → non-empty transition: both pointers move.
+2. **`enqueue(2)`** — not empty, so allocate node `2`, set `tail.next` to it, advance `tail`. `head` is untouched. Chain `head → 1 → 2 ← tail`, `currentSize == 2`.
+3. **`enqueue(3)`** — allocate node `3`, link it after `2`, advance `tail`. Chain `head → 1 → 2 → 3 ← tail`, `currentSize == 3` — the queue is now full (`currentSize == capacity`).
+4. **`enqueue(4)`** — `currentSize == capacity`, so reject and return `false` without touching any node. The chain is unchanged.
+5. **`dequeue()`** — not empty, so read `head.val == 1`, advance `head` to the `2` node, free the old head. The queue still has nodes, so `tail` stays put. Return `1`. Chain `head → 2 → 3 ← tail`, `currentSize == 2`.
+6. **`dequeue()`** — read `head.val == 2`, advance `head` to the `3` node, free the old head. Return `2`. Chain `head → 3 ← tail`.
+7. **`dequeue()`** — read `head.val == 3`, advance `head` to `null`. Now `head == null`, so **also reset `tail` to `null`** — this is the non-empty → empty transition. Return `3`. The queue is empty again.
+
+The dequeue sequence is `1 2 3` — the three values in insertion order. That ordering is FIFO made literal. The first value enqueued (`1`) is the first dequeued; the last value enqueued (`3`) waits at the back until everything ahead of it has left. So the core insight is: an enqueue-dequeue cycle grows the chain at the `tail` and drains it at the `head`, and the values return in arrival order. The two pointers move together only at the empty boundaries — the first enqueue and the last dequeue.
+
+***
+
 # Design a queue using a linked list
 
 ## Problem Statement
@@ -1326,7 +1396,7 @@ print(q.enqueue(8), q.enqueue(9))    # True False
 print(q.empty())                     # False
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 public class Main {
     static class ListNode {
         int      val;
@@ -1387,39 +1457,107 @@ The linked-list queue is the natural counterpart to the array queue: same FIFO c
 
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+***
 
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
+# Edge Cases and Pitfalls
 
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
+The linked-list queue has no buffer to overrun, so its bugs move from index arithmetic to **pointer order** and **bookkeeping**. Almost every one clusters around the two pointers and the empty boundary where they move together. Keep this list open the next time a linked-list queue misbehaves:
 
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
+- **Forgetting to set `head` on the first enqueue.** Enqueueing into an empty queue must set **both** `head` and `tail` to the new node. Set only `tail` and `head` stays `null`, so the queue looks empty even though it holds a node — and the next `dequeue()` reads through a `null` front and crashes. The empty → non-empty transition is the one case where enqueue touches `head` at all.
+- **Forgetting to null `tail` on the last dequeue.** After dequeueing the final item, `head` becomes `null` automatically because `head.next` was `null` — but `tail` still points at the freed node. The next enqueue then writes `tail.next` through a dangling pointer and either resurrects a ghost node or corrupts the chain. Always check `if head == null` after advancing and reset `tail` to match.
+- **Letting `enqueue` walk to find the back.** Without a `tail` pointer, attaching at the back means traversing from `head` to the last node, which is `O(n)` time. Maintain `tail` so `enqueue` is `O(1)`. A `tail` that drifts out of sync with the true last node is the same bug in slow motion — every enqueue after the drift links to the wrong place.
+- **Letting `size()` walk the list.** Computing size by traversing every node is `O(n)` time. Maintain `currentSize` as an integer bumped on enqueue and dropped on dequeue so `size()` and `empty()` stay `O(1)`. Miss one increment or decrement and the counter desyncs from the chain, so the capacity check on the next enqueue reads a stale count.
+- **The `-1` sentinel collides with real data.** Returning `-1` from `front()`, `back()`, or `dequeue()` to mean "empty" is only unambiguous when `-1` cannot be a stored value. A queue of arbitrary integers makes `-1` indistinguishable from a dequeued `-1`. Guard with `empty()` before every read, or raise an exception instead of returning a sentinel.
+- **Assuming "linked list" means "unbounded".** The version built here is bounded — it rejects the enqueue when `currentSize == capacity` and returns `false`. Code that assumes a linked-list queue always accepts an enqueue silently drops data when the return value is ignored. Either honour the boolean return or drop the capacity check to build the genuinely unbounded variant.
 
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
+***
 
-<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
-<!--       Guidance: bulleted list of gotchas -->
+# Production Reality
 
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+The linked-list queue is the default wherever arrival rate is unbounded or bursty and a resize spike is unacceptable. The systems below are worth knowing by name.
 
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+**[A language runtime's task / message queue]** — uses **a singly linked queue of work items with `head` and `tail` pointers** — because the backlog has no fixed bound and producers append at the tail while one consumer drains the head, so both ends stay `O(1)` with no buffer to pre-size.
 
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
+**[An OS scheduler's run queue]** — uses **linked lists of runnable task structs per priority level** — because the number of ready tasks is unknown at boot, and each task already embeds list pointers, so enqueueing a task costs one pointer write with zero extra allocation.
 
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+**[A network stack's packet buffer (`sk_buff` / `mbuf` chain)]** — uses **a linked FIFO of packet descriptors** — because packets arrive in unpredictable bursts and must be processed in order, and a linked chain grows one descriptor per packet without ever pausing to copy a full ring.
 
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
+**[A producer–consumer pipeline with backpressure]** — uses **a bounded linked queue that rejects on `currentSize == capacity`** — because the bound is the backpressure signal, and a linked chain gives predictable per-enqueue latency right up to the cap with no amortised resize cost.
 
-<!-- TODO: Final Takeaway — missing, needs to be written -->
-<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->
+**[A breadth-first traversal frontier]** — uses **a linked queue of nodes to visit next** — because the frontier's size swings wildly with the graph's branching factor, and a linked queue absorbs the swing one node at a time instead of doubling a buffer mid-search.
+
+***
+
+# Quiz
+
+Test your grip before moving on. One answer per question; reveal only after you have committed to one.
+
+**[Recall] Q: In the linked-list queue, which pointer marks the front and which marks the back, and what value marks an empty queue?**
+`head` points at the front (oldest) node and `tail` points at the back (newest) node; `head == null` and `tail == null` mark an empty queue (equivalently `currentSize == 0`).
+
+**[Reasoning] Q: Why does a linked-list queue need a `tail` pointer when a linked-list stack needs only `head`?**
+A stack touches one end, so `head` covers both push and pop, but a queue inserts at the back and removes at the front; without `tail`, reaching the back means walking the whole chain at `O(n)` time, so `tail` is what keeps `enqueue` at `O(1)`.
+
+**[Reasoning] Q: Why must the last `dequeue` reset `tail` to `null` and not just advance `head`?**
+When the final node leaves, `head` becomes `null` on its own, but `tail` still points at the freed node — leaving it dangling means the next `enqueue` writes `tail.next` through a stale pointer and corrupts the chain.
+
+**[Tradeoff] Q: Both the array and linked-list queues are `O(1)` per operation — so when do you reach for the linked-list version, and what do you give up?**
+Reach for it when growth is unbounded or bursty and you need worst-case `O(1)` enqueue with no resize spike; you give up cache locality, since every node is a separate heap allocation the CPU cannot prefetch on the way to the next dequeue.
+
+**[Recall] Q: What two pieces of state does the queue keep besides the chain of nodes, and why?**
+It keeps `currentSize` so `size()` and `empty()` are `O(1)` instead of an `O(n)` walk, and `capacity` so a bounded queue can reject an enqueue once `currentSize == capacity`.
+
+***
+
+# Practice Ladder
+
+The queue chapter ships no pattern-problem directory, so this ladder points into the chapter's design challenges and the introductory lessons that exercise the FIFO contract directly. Try each unaided; hit the hint after ten minutes; do not peek at solutions until you have written something runnable.
+
+<!-- VERIFY: confirm Practice Ladder targets resolve — queue chapter has no 02-problems/ dir; links point at design-challenge anchors in 05-design-a-queue/01-design-a-queue.md and at the array-impl design section -->
+
+| # | Problem | Pattern | Difficulty | Hint |
+|---|---------|---------|------------|------|
+| 1 | [Design a Queue (linked list)](#design-a-queue-using-a-linked-list) | Linked-list backing | Easy | Maintain `head`, `tail`, and `currentSize`; set both pointers on the first enqueue, reset both on the last dequeue. `O(1)` per op. |
+| 2 | [Design a Queue (circular array)](./02-array-implementation-of-queues.md#design-a-queue-using-a-circular-array) | Circular buffer | Easy | Track `frontIndex`, `currentSize`, and wrap with modulo; compare the contiguous-buffer tradeoff against this lesson's chain. |
+| 3 | [Design a Queue using Stacks](./05-design-a-queue/01-design-a-queue.md#design-a-queue-using-stacks) | LIFO→FIFO inversion | Medium | Two stacks: push onto an inbox; when the outbox empties, pour the inbox into it so the order flips back to FIFO. Amortised `O(1)`. |
+| 4 | [Design a Stack using Queues](./05-design-a-queue/01-design-a-queue.md#design-a-stack-using-queues) | FIFO→LIFO inversion | Medium | Rotate the queue after each push so the newest item sits at the front, making `pop` read it first. `O(n)` push, `O(1)` pop. |
+| 5 | [Design a Stack using a Single Queue](./05-design-a-queue/01-design-a-queue.md#design-a-stack-using-a-single-queue) | FIFO→LIFO inversion | Hard | One queue: after enqueueing, rotate the `size - 1` older items to the back so the newest reaches the front in one pass. |
+
+Once these feel automatic, enqueue and dequeue have stopped being syntax and become a structural reflex. The backing store — array or linked list — then stops mattering to the algorithm on top.
+
+***
+
+# Further Reading
+
+Curated paths in, not a syllabus. Read in order of the annotation; come back for the rest when you need depth.
+
+- **[CLRS — Chapter 10.1 (Queues) and 10.2 (Linked Lists)](https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/)**
+  ★ Essential — the canonical queue interface alongside the singly linked list with its `head` pointer and `O(1)` head deletion, the two primitives this lesson combines with a `tail` pointer.
+- **[Introduction to Singly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-introduction-to-singly-linked-lists)**
+  ★ Essential — the node-with-`next` layout and the head/tail mechanics this whole lesson rests on; read it first if pointer rewiring feels shaky.
+- **[The Linux Kernel — linked list and queue primitives (`list_head`)](https://www.kernel.org/doc/html/latest/core-api/kernel-api.html#list-management-functions)**
+  ◆ Advanced — how the kernel threads tasks and buffers onto intrusive linked lists, the production form of the `head`/`tail` design carrying live system state.
+- **[Michael & Scott — "Simple, Fast, and Practical Non-Blocking and Blocking Concurrent Queue Algorithms"](https://www.cs.rochester.edu/~scott/papers/1996_PODC_queues.pdf)**
+  → Reference — the lock-free linked queue that swings `head` and `tail` with atomic compare-and-swap; shows why two pointers are exactly the right shared state for a concurrent FIFO.
+
+***
+
+# Cross-Links
+
+**Prerequisites**
+
+- [Introduction to Queues](/cortex/data-structures-and-algorithms/linear-structures-queue-introduction-to-queues) — the FIFO contract and the enqueue / dequeue / front / back / empty / size interface this lesson implements over a singly linked list.
+- [Introduction to Singly Linked Lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-introduction-to-singly-linked-lists) — the `head` pointer, the node-with-`next` layout, and the `O(1)` head deletion that makes `dequeue` constant time.
+- [Array Implementation of Queues](/cortex/data-structures-and-algorithms/linear-structures-queue-array-implementation-of-queues) — the same six operations over a wrap-around buffer; read it first to feel the tradeoff this lesson flips.
+
+**What comes next**
+
+- [Design a Queue](/cortex/data-structures-and-algorithms/linear-structures-queue-design-a-queue-design-a-queue) — the cross-structure challenges: build a queue from two stacks and a stack from queues, stress-testing whether the FIFO and LIFO contracts have become reflex.
+
+***
+
+## Final Takeaway
+
+1. **Core mechanic:** keep the front at the `head` of a singly linked list and the back at a `tail` pointer, enqueue by linking a node past the `tail` and advancing it, dequeue by reading `head.val` and advancing `head` — every operation is `O(1)` time and `O(1)` extra space, with a `currentSize` counter so `size()` stays `O(1)` too.
+2. **Dominant tradeoff:** you gain unbounded growth and worst-case `O(1)` enqueue with no resize spike; you give up cache locality, since each node is a separate heap allocation the CPU cannot prefetch on the way to the next dequeue.
+3. **One thing to remember:** `head` and `tail` move together only at the empty boundaries — set both on the first enqueue, reset both on the last dequeue — so the entire queue is correct exactly when neither pointer is ever left stranded or dangling.

@@ -107,7 +107,7 @@ print(Solution().binary_summation_of_tree(from_level_order([1, 0, 0])))         
 print(Solution().binary_summation_of_tree(from_level_order([1, 1, 1, 0, 1, 0, 1])))          # 22 (110+111+101+111... = 6+7+5+7...)
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

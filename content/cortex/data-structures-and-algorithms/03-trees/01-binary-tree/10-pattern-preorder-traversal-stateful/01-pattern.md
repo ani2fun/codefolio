@@ -68,7 +68,7 @@ The same pattern label applies to all three because they share the structural fe
 We'll show the **push-pop** flavour as the canonical generic — it's the strictest and the one most likely to bite you. The other two flavours are simpler restrictions of this template.
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import List, Optional
 
 class TreeNode:
@@ -87,7 +87,7 @@ def stateful_preorder(root: Optional[TreeNode]):
     go(root)
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 static List<Integer> state;
 static void statefulPreorderHelper(TreeNode node) {
     if (node == null) return;

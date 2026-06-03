@@ -19,7 +19,7 @@ So sum `|leftExcess|` and `|rightExcess|` at every node — that's the total mov
 
 
 
-```python run
+```python run viz=binary-tree viz-root=root
 from typing import List, Optional
 
 
@@ -97,7 +97,7 @@ print(Solution().distribute_coins(from_level_order([1, 0, 2, None, None, 0, 0]))
 print(Solution().distribute_coins(from_level_order([1, 1, 1, 1, 1, 1, 1])))       # 0 (all balanced)
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

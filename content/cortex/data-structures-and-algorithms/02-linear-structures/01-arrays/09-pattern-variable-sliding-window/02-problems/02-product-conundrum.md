@@ -149,7 +149,7 @@ print(Solution().product_conundrum([5, 5, 5], 5))          # 0  — all equal to
 print(Solution().product_conundrum([1, 2, 3], 0))          # 0  — k=0 no valid subarray
 ```
 
-```java run
+```java run viz=array viz-root=arr
 public class Main {
     static class Solution {
         public int productConundrum(int[] arr, int k) {

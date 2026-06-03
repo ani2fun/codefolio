@@ -593,7 +593,7 @@ print(s2.pop())     # 5
 print(s2.empty())   # True
 ```
 
-```java run
+```java run viz=array viz-root=top_element
 import java.util.*;
 
 public class Main {
@@ -880,7 +880,7 @@ print(s2.pop())     # 5
 print(s2.empty())   # True
 ```
 
-```java run
+```java run viz=array viz-root=queue
 import java.util.*;
 
 public class Main {

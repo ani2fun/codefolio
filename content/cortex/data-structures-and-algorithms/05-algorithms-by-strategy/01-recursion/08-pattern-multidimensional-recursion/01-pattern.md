@@ -154,7 +154,7 @@ The crucial difference from multiple recursion is step 1's *boundary* check (mul
 A clean, language-agnostic implementation of the generic 2D template.
 
 
-```python run
+```python run viz=array viz-root=shifts
 from typing import List
 
 class Solution:
@@ -203,7 +203,7 @@ class Solution:
         return 0
 ```
 
-```java run
+```java run viz=array viz-root=shifts
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

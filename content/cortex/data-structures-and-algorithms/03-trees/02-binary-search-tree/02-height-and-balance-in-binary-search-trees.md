@@ -625,7 +625,7 @@ t7 = from_level_order([4, 2, 6, 1, 3, 5, 7])    # perfect balanced BST
 print(Solution().balance_factor(t7))              # 0
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {
@@ -873,7 +873,7 @@ t7 = from_level_order([4, 2, 6, 1, None, None, 7])
 print(Solution().balance_of_subtree(t7, 6))       # -1 — right child of 6 only
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {
@@ -1494,7 +1494,7 @@ t7 = from_level_order([5, 3, 7, 2, 4, 6, 8])     # balanced 7-node BST
 print(Solution().height_balanced_tree(t7))         # True
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

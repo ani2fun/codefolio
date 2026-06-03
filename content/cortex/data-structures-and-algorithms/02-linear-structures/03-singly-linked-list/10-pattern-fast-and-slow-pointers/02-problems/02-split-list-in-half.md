@@ -192,7 +192,7 @@ h1, h2 = Solution().split_list_in_half(from_list([1, 2, 3, 4]))
 print(to_list(h1), to_list(h2))   # [1, 2] [3, 4]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {

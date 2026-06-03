@@ -170,7 +170,7 @@ print(to_list(Solution().relocate_node(from_list([9, 9, 9, 9]))))          # [9,
 print(to_list(Solution().relocate_node(from_list([1, 2, 3, 4, 5]))))       # [5, 1, 2, 3, 4]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {

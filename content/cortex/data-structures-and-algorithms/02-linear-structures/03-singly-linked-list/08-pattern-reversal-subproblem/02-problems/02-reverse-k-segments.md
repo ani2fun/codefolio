@@ -213,7 +213,7 @@ print(to_list(Solution().reverse_k_segments(from_list([1, 2, 3, 4, 5, 6]), 2))) 
 print(to_list(Solution().reverse_k_segments(from_list([1, 2, 3, 4, 5, 6]), 6)))   # [6, 5, 4, 3, 2, 1]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {

@@ -26,6 +26,76 @@ Output: []
 Explanation: Need two values to sum.
 ```
 
+---
+
+<details>
+<summary><strong>Examples</strong></summary>
+
+**Example 1**
+```
+Input:  head = [1, 2, 2, 3, 4, 5], target = 6
+Output: [[1, 5], [2, 4]]
+Explanation: 1+5=6 and 2+4=6. The duplicate 2 is not paired with itself or recorded twice — the skip-duplicates helper walks past the second 2 on the left side after the (2, 4) pair is recorded.
+```
+
+**Example 2**
+```
+Input:  head = [1, 2, 2, 2, 2], target = 3
+Output: [[1, 2]]
+Explanation: Only one value pair (1, 2) reaches the target, even though four 2s exist. After the first match, the left helper skips past the run of 2s to land on a fresh value.
+```
+
+**Example 3**
+```
+Input:  head = [2], target = 2
+Output: []
+Explanation: A single node cannot form a pair; the guard returns the empty result immediately.
+```
+
+**Example 4**
+```
+Input:  head = [1, 1, 1, 1], target = 2
+Output: [[1, 1]]
+Explanation: Every value is the same; the first (1, 1) pair is recorded, and the duplicate-skip helpers collapse the rest of the run to a single recorded pair.
+```
+
+</details>
+
+---
+
+## Intuition
+
+The **structural property** is the same as plain Two Sum — sorted DLL, monotonic running sum, converging walkers — plus a new constraint: the result set must contain no duplicate pairs even when the input does. The duplicate-skip step is the only addition. The list is still sorted, so all copies of any given value sit in a contiguous run; advancing past every node in that run lands the pointer on the next distinct value in `O(k)` for a run of length `k`, and across all runs the total skip work amortises to `O(n)`.
+
+The **pointer placement** keeps `left = head` and `right = tail` exactly as before. After a `sum == target` match, both pointers need to step past every node sharing their current value before the next iteration. Two helpers do exactly this: `skip_duplicates_left` walks `left` forward through equal values, then returns `left.next` (the first node with a *different* value); `skip_duplicates_right` does the mirror. The helpers must be called in the right order — the right-side helper uses the already-advanced `left` for its `left != right` guard, so calling them in reverse can underrun the cursor on tight inputs like `[2, 2, 2, 2]`.
+
+What **breaks if you reach for the naive approach**? Running plain Two Sum and de-duplicating the result afterwards (e.g. `set(map(tuple, result))`) works but pays `O(p)` extra space for the seen-set plus an extra pass over the result. Worse, it produces duplicate pair *values* in transit — on `[2, 2, 2, 2], target = 4` the loop records `(2, 2)` once, then advances both pointers to the next 2s and records `(2, 2)` again, etc. — until the de-dup pass collapses them. The skip helpers prevent the duplicate work from happening in the first place, keeping the space at `O(1)` auxiliary and the time at `O(n)`.
+
+---
+
+## Applying the Diagnostic Questions
+
+| Check | Answer for Duplicate-Aware Two Sum |
+|---|---|
+| **Q1.** Are two nodes inspected at the same time, one from each end? | **Yes** — `left.val` and `right.val` are compared together every iteration. |
+| **Q2.** Does one pointer start near `head` and the other near `tail`? | **Yes** — `left = head` and `right = tail`. |
+| **Q3.** Do both pointers move strictly inward? | **Yes** — the main loop and the skip helpers both move pointers inward only; no backward step ever happens after a match. |
+| **Q4.** Is the per-step work `O(1)`? | **Amortised yes** — each iteration is `O(1)` plus the skip-helper cost, and the skip work across the whole run amortises to `O(n)` total. |
+
+---
+
+## Approach
+
+Run the converging two-pointer loop, with duplicate-skipping after each match.
+
+1. **Handle the trivial guards.** If `head` is `null` or `head.next` is `null`, return an empty result.
+2. **Initialise the pointers and result.** Set `left = head`, `right = tail`, and `result = []`.
+3. **Loop while the search space is non-empty.** Continue while `left != right` and `left.val <= right.val`. The `<=` admits the equal-value case so a pair like `(1, 1)` with `target = 2` is still considered.
+4. **Compute the running sum and branch.** Let `total = left.val + right.val`. If `total == target`, append the pair to `result`, then *both* pointers jump to their next distinct value via the skip helpers (left first, then right — so the right helper sees the already-advanced left). If `total < target`, advance `left = left.next`. If `total > target`, retreat `right = right.prev`.
+5. **Skip-left helper.** Walk `left` forward while `left.val == left.next.val` and `left != right`; return `left.next` (the first different value).
+6. **Skip-right helper.** Walk `right` backward while `right.val == right.prev.val` and `left != right`; return `right.prev` (the first different value).
+7. **Return the result.** When the loop exits, `result` holds every distinct value pair summing to `target`, outermost-first.
+
 <details>
 <summary><h2>What Does "Skipping Duplicates Safely" Mean?</h2></summary>
 
@@ -69,7 +139,7 @@ flowchart TB
 
 ### The Solution
 
-```python run
+```python run viz=linked-list viz-root=head
 from typing import Optional, List
 
 class ListNode:
@@ -202,7 +272,7 @@ h = from_list([2, 2, 2, 2])
 print(Solution().duplicate_aware_two_sum(h, get_tail(h), 5))   # []
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 import java.util.*;
 
 public class Main {
@@ -389,26 +459,6 @@ The pattern stays the same — we just bolted on a way to dodge repeats. Now the
 
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+## Key Takeaway
 
-<!-- TODO: Examples — missing, needs to be written -->
-<!--       Guidance: min 3 examples: basic / variant / edge -->
-
-<!-- TODO: Intuition — missing, needs to be written -->
-<!--       Guidance: 3 paragraphs: brute force / observation / pattern fit -->
-
-<!-- TODO: Applying the Diagnostic Questions — missing, needs to be written -->
-<!--       Guidance: REQUIRED, never optional -->
-<!--       Guidance: 4-row table. Columns: 'Check' | 'Answer for [Problem Name]' -->
-<!--       Guidance: Rows: two positions simultaneously / one near start one near end / both move inward / simple O(1) work at each step -->
-
-<!-- TODO: Approach — missing, needs to be written -->
-<!--       Guidance: numbered steps, no code -->
-
-<!-- TODO: Dry Run — missing, needs to be written -->
-<!--       Guidance: walk through a small example step by step -->
-
-<!-- TODO: Key Takeaway — missing, needs to be written -->
-<!--       Guidance: 1–2 sentences -->
+What is *new* here vs plain Two Sum is the skip-duplicates plumbing — two helpers that walk past every run of equal values after a match. The skeleton is unchanged; the duplicate work is amortised to `O(n)` because each node is visited at most twice (once by the main loop, once by a helper).

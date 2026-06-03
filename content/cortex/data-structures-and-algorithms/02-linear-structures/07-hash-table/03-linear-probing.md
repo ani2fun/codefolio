@@ -1,6 +1,6 @@
 ---
 title: "Linear Probing"
-summary: "<!-- TODO: summary -->"
+summary: "An open-addressing hash table on one contiguous array: when a slot collides, walk forward one index at a time to the next free slot, use a DELETED tombstone so deletions never break a probe chain, and pay for the cache-friendly density with primary clustering as the table fills."
 ---
 
 # 3. Linear Probing
@@ -19,13 +19,37 @@ That's the upside. The *downside* is something we'll discover with horror in thi
 
 ## Table of contents
 
-1. [Introduction to linear probing](#introduction-to-linear-probing)
-2. [Key components of linear probing](#key-components-of-linear-probing)
-3. [Implementing the hash table class](#implementing-the-hash-table-class)
-4. [Search operation in linear probing](#search-operation-in-linear-probing)
-5. [Insert operation in linear probing](#insert-operation-in-linear-probing)
-6. [Delete operation in linear probing](#delete-operation-in-linear-probing)
-7. [Design a hash table with linear probing](#design-a-hash-table-with-linear-probing)
+1. [Understanding the problem](#understanding-the-problem)
+2. [Introduction to linear probing](#introduction-to-linear-probing)
+3. [Key components of linear probing](#key-components-of-linear-probing)
+4. [Supported operations](#supported-operations)
+5. [Internal mechanics](#internal-mechanics)
+6. [Implementing the hash table class](#implementing-the-hash-table-class)
+7. [Search operation in linear probing](#search-operation-in-linear-probing)
+8. [Insert operation in linear probing](#insert-operation-in-linear-probing)
+9. [Delete operation in linear probing](#delete-operation-in-linear-probing)
+10. [Working example](#working-example)
+11. [Design a hash table with linear probing](#design-a-hash-table-with-linear-probing)
+12. [Edge cases and pitfalls](#edge-cases-and-pitfalls)
+13. [Production reality](#production-reality)
+14. [Quiz](#quiz)
+15. [Practice ladder](#practice-ladder)
+16. [Further reading](#further-reading)
+17. [Cross-links](#cross-links)
+18. [Final takeaway](#final-takeaway)
+
+***
+
+# Understanding the Problem
+
+Separate chaining solved collisions by hanging a linked list off each bucket, and it cost two things every lookup paid for. A chain has **unbounded growth** — a bad hash, or mere bad luck, can pile every key into one bucket and turn a lookup into a linear list walk. A chain is also **scattered through memory** — each node is a separate heap allocation, so walking a chain of `k` nodes is `k` cache misses, not one cache line read. Linear probing exists to kill both costs at once by refusing to allocate anything outside the table.
+
+The idea is to store the key-value pairs *directly in the array* and resolve a collision by moving to a different slot in that same array. Two structural consequences follow, and they pull in opposite directions:
+
+- **One slab of memory.** The whole table is a single contiguous array the CPU can stream through with prefetching, so a probe of `k` slots reads roughly one or two cache lines instead of chasing `k` pointers.
+- **A hard capacity ceiling.** Each slot holds exactly one record, so an array of length `8` holds at most `8` keys. There is no overflow chain to spill into; when the array is full, an insert fails.
+
+To make this concrete: separate chaining could swallow a thousand keys in an eight-bucket table by growing eight long chains, while a linear-probing table of capacity `8` rejects the ninth key outright. So the key idea is: linear probing trades a chain's unbounded, cache-hostile spill for a dense contiguous array — you gain cache locality and zero per-record pointer overhead, and you give up the ability to exceed `capacity` without rehashing into a larger array.
 
 ***
 
@@ -238,6 +262,32 @@ flowchart LR
 <p align="center"><strong>The hash function picks the <em>starting</em> probe index. The probe sequence does the rest of the work, walking forward until an empty (for insert) or matching (for search) slot is found.</strong></p>
 
 </details>
+
+***
+
+# Supported Operations
+
+Three operations make up the entire interface, and each one is the same shape — hash the key, then probe forward. The set is deliberately small. A linear-probing table offers no ordered iteration and no range query; the probe order has nothing to do with key order, so those operations would be meaningless here. What remains is one read and two mutations, every one of them `O(1)` on average and `O(N)` in the worst case:
+
+| Operation | Average | Worst | Space | What it does |
+|---|---|---|---|---|
+| `search(key)` | `O(1)` | `O(N)` | `O(1)` | Probes from `hash(key)`; returns the value, or `-1` if an `EMPTY` slot or full scan is hit first |
+| `insert(key, value)` | `O(1)` | `O(N)` | `O(1)` | Updates in place if the key exists, else writes at the first non-`OCCUPIED` slot; returns `false` if full |
+| `remove(key)` | `O(1)` | `O(N)` | `O(1)` | Probes to the matching slot and flips it to `DELETED`; a no-op if the key is absent |
+
+The worst case is shared and has a single cause: a probe that has to walk the whole array. That happens when many keys cluster into one long run, so the bound is `O(N)` in the table's `capacity`, not in the number of distinct hash values. To make this concrete: in a capacity-`8` table where keys `5`, `13`, and `21` all hash to index `5`, a search for `21` compares slots `5`, `6`, and `7` before it matches. So the core insight is: every operation is "hash, then probe forward," which is why all three share the same `O(1)`-average / `O(N)`-worst profile and why shortening probe chains is the only lever that improves any of them.
+
+***
+
+# Internal Mechanics
+
+A linear-probing table is one array plus one rule: when slot `i` is taken, try `(i + 1) % capacity`, then `(i + 2) % capacity`, and keep walking. The hash function only picks the *starting* index; the probe sequence does the rest. Every operation is a variation on the same forward walk, and three slot states decide when the walk stops:
+
+- **`OCCUPIED`** — holds a live key-value pair. A probe compares the stored key and either matches or keeps going.
+- **`EMPTY`** — never held a record. A *search* stops here immediately, because an absent key would have been placed at this slot or earlier in its chain.
+- **`DELETED`** — a tombstone left by a prior removal. A *search* must walk *past* it, but an *insert* may reuse it.
+
+The wrap-around is what makes the probe a closed loop rather than a walk off the end of the array. The expression `(start_index + i) % capacity` advances by `i` steps and folds back to `0` once it would step past the last index, so after exactly `capacity` steps the probe has visited every slot and stops. To make this concrete: in a capacity-`8` table a probe that starts at index `6` visits `6`, `7`, `0`, `1`, … — the modulo turns the tail of the array into a ring. So the core insight is: the array is passive storage and the probe sequence plus the three-state tag are the only live machinery — correctness reduces to walking `(start + i) % capacity` and reading each slot's state to decide stop, match, or continue.
 
 ***
 
@@ -1297,6 +1347,20 @@ class MyHashTable {
 
 ***
 
+# Working Example
+
+Watching one slot pass through all three states is the fastest way to see why the `DELETED` tombstone earns its keep. Start with `MyHashTable(5)` — capacity `5`, every slot `EMPTY`, hash function `key % 5`. This run inserts a key, deletes it, then inserts a *different* key that collides with the deleted one, forcing the new key to reuse the tombstone. Each step changes one slot:
+
+1. **`insert(0, 99)`** — `hash(0) = 0`. Slot `0` is `EMPTY`, so write `(0, 99)` and mark it `OCCUPIED`. Returns `true`. Table: `[(0,99), —, —, —, —]`.
+2. **`remove(0)`** — `hash(0) = 0`. Slot `0` is `OCCUPIED` with key `0`, so flip it to `DELETED`. The pair stays physically in the slot; only the tag changes. Table: `[DELETED, —, —, —, —]`.
+3. **`search(0)`** — `hash(0) = 0`. The probe checks slot `0`, but it is `DELETED`, not an `OCCUPIED` match. It keeps walking through the four `EMPTY` slots, finds no `OCCUPIED` key `0`, and returns `-1`. The delete is visible to search.
+4. **`insert(5, 7)`** — `hash(5) = 5 % 5 = 0`, the same start index as key `0`. The first pass (`probe_for_occupied_index`) finds no live key `5` anywhere, so the second pass (`probe_for_empty_index`) runs. It stops at slot `0` because `DELETED` counts as writable, overwriting the tombstone with `(5, 7)`. Returns `true`. Table: `[(5,7), —, —, —, —]`.
+5. **`search(5)`** — `hash(5) = 0`. Slot `0` is now `OCCUPIED` with key `5`, an immediate match. Returns `7`.
+
+The sequence returns `true`, then `-1` (key `0` is gone), then `true`, then `7`. Step `3` is the crux: had `remove` set slot `0` to `EMPTY` instead of `DELETED`, the result would still read correctly *here* because nothing sits past slot `0` in this chain — but a longer chain would orphan everything beyond the erased slot, the bug the next section catalogues. Step `4` shows the payoff for the tombstone: the freed slot is reclaimed on the very next colliding insert, so deletions do not leak capacity. So the core insight is: `OCCUPIED` matches, `EMPTY` halts a search, and `DELETED` is the in-between state that keeps a chain searchable while still letting inserts recycle the slot.
+
+***
+
 # Design a hash table with linear probing
 
 ## Problem Statement
@@ -1496,7 +1560,7 @@ print(t2.insert(5, 7))              # True — key 5 also hashes to index 0, pro
 print(t2.search(5))                 # 7
 ```
 
-```java run
+```java run viz=graph viz-root=table
 import java.util.*;
 
 public class Main {
@@ -1687,39 +1751,108 @@ Two takeaways to carry forward:
 
 </details>
 
-<!-- ============================================== -->
-<!-- SWEEP 2 — missing sections (placeholders only) -->
-<!-- ============================================== -->
+***
 
-<!-- TODO: Understanding the Problem — missing, needs to be written -->
-<!--       Guidance: frame the gap the structure/algorithm fills -->
+# Edge Cases and Pitfalls
 
-<!-- TODO: Supported Operations — missing, needs to be written -->
-<!--       Guidance: table: operation / time / notes -->
+Linear probing is short to write and easy to break, and almost every bug traces back to the probe chain or the three slot states. Keep this list open the next time a probing table loses a key or grinds to a halt:
 
-<!-- TODO: Internal Mechanics — missing, needs to be written -->
-<!--       Guidance: how it actually works under the hood -->
+- **Setting a deleted slot to `EMPTY` instead of `DELETED`.** This is the canonical corruption. Erasing a slot in the middle of a chain makes a search stop early and orphans every record placed past it during a long probe. The fix is the tombstone: flip the slot to `DELETED` so a search walks past it while inserts can still reuse it.
+- **Stopping a search on the first non-`OCCUPIED` slot.** A search must halt on `EMPTY` but keep walking on `DELETED`, because the key may have been inserted *before* the slot was tombstoned. Treating `DELETED` like `EMPTY` reintroduces the orphaning bug from the read side.
+- **Inserting without the two-pass check.** Insert probes twice on purpose: once with `probe_for_occupied_index` to confirm the key is absent anywhere in the chain, then with `probe_for_empty_index` to find a writable slot. Stopping at the first `DELETED` slot on a single pass can write a duplicate key whose original copy still sits further down the chain.
+- **Forgetting the modulo wrap.** Every probe step is `(start_index + i) % capacity`. A plain `start_index + i` walks off the end of the array the moment a chain starts near the last index — an `IndexError` in Python, an `ArrayIndexOutOfBoundsException` in Java.
+- **No bound on the probe loop.** The loop must run at most `capacity` times. Without that cap, a full table with no matching key spins forever instead of returning `-1` (search) or `false` (insert). Iterating `range(capacity)` gives the bound for free.
+- **Letting the load factor climb toward `1.0`.** As occupancy passes ~0.7, primary clustering inflates probe lengths and every operation slows toward `O(N)`. A fixed-capacity table cannot escape this; a production table rehashes into a larger array before the load factor gets dangerous.
+- **The `-1` sentinel colliding with real data.** `search` returns `-1` for "absent," so a table that legitimately stores `-1` as a value cannot tell a miss from a hit. Reserve `-1`, or return an explicit "not found" signal instead of overloading a value.
 
-<!-- TODO: Working Example — missing, needs to be written -->
-<!--       Guidance: one fully worked end-to-end example -->
+***
 
-<!-- TODO: Edge Cases & Pitfalls — missing, needs to be written -->
-<!--       Guidance: bulleted list of gotchas -->
+# Production Reality
 
-<!-- TODO: Production Reality — missing, needs to be written -->
-<!--       Guidance: 4–6 entries: System — uses X — because Y -->
+Open addressing is the default layout for the fastest hash tables in wide use, precisely because one contiguous array beats pointer-chained buckets on modern cache hierarchies. The systems below are worth knowing by name.
 
-<!-- TODO: Quiz — missing, needs to be written -->
-<!--       Guidance: 3–5 questions, each labeled [Recall]/[Reasoning]/[Tradeoff] -->
+**[Python's `dict` and `set`]** — uses **open addressing with perturbation-based probing over a contiguous array** — because chaining would cost a pointer-chase per lookup, and a dense array keeps the language's most-used container cache-friendly and compact.
 
-<!-- TODO: Practice Ladder — missing, needs to be written -->
-<!--       Guidance: table: 5 links into pattern problems + hints -->
+<!-- VERIFY: Go's map bucket holds 8 entries (bmap) in the classic hashmap; the count is an internal implementation detail that may differ in the Swiss-table-based map shipped in newer Go releases. -->
+**[Go's built-in `map`]** — uses **open addressing in bucketed contiguous arrays (eight slots per bucket)** — because packing entries into flat buckets gives cache locality on lookup while still bounding probe length within a bucket.
 
-<!-- TODO: Further Reading — missing, needs to be written -->
-<!--       Guidance: annotated: ★ Essential / ◆ Advanced / → Reference -->
+**[Google's `absl::flat_hash_map`]** — uses **open addressing with SIMD-scanned control bytes (Swiss Tables)** — because storing entries inline in one array and scanning metadata with vector instructions makes probing dramatically faster than chasing chain pointers.
 
-<!-- TODO: Cross-Links — missing, needs to be written -->
-<!--       Guidance: Prerequisites | What comes next -->
+**[Java's `IdentityHashMap`]** — uses **linear probing over a single `Object[]` of alternating keys and values** — because identity comparison is cheap and a flat probed array avoids the per-entry node objects that `HashMap`'s chaining allocates.
 
-<!-- TODO: Final Takeaway — missing, needs to be written -->
-<!--       Guidance: exactly 3 typed bullets: Core mechanic / Dominant tradeoff / One thing to remember -->
+**[An in-memory CPU-cache or interning table]** — uses **a fixed-capacity linear-probing array sized for the working set** — because a known maximum lets the table skip resizing entirely and serve every hit from one or two cache lines.
+
+***
+
+# Quiz
+
+Test your grip before moving on. One answer per question; reveal only after you have committed to one.
+
+**[Recall] Q: What single expression computes the `i`-th probe index, and what does it do when the walk reaches the end of the array?**
+`(start_index + i) % capacity` — the modulo wraps the index back to `0` once it would step past the last slot, turning the array into a ring.
+
+**[Recall] Q: What are the three slot states, and which one makes a search stop immediately?**
+The states are `OCCUPIED`, `EMPTY`, and `DELETED`; a search stops the instant it hits `EMPTY`, because an absent key would have been placed at that slot or earlier.
+
+**[Reasoning] Q: Why must a deleted slot become `DELETED` rather than `EMPTY`?**
+Setting it to `EMPTY` would make a search stop at that slot and orphan every record inserted past it during a long probe chain, whereas `DELETED` keeps the chain walkable while still letting inserts reuse the slot.
+
+**[Reasoning] Q: Why does `insert` probe the table twice for a new key instead of stopping at the first writable slot?**
+The first pass confirms the key is not already present anywhere in the chain (which can extend past `DELETED` slots), and only then does the second pass place it at the first writable slot, so the table never stores a duplicate key.
+
+**[Tradeoff] Q: When would you reach for linear probing over separate chaining, and what do you accept in return?**
+Choose linear probing when cache locality and zero per-record pointer overhead matter and the load factor stays well below `1.0`, accepting a hard capacity ceiling and primary clustering that degrades every operation toward `O(N)` as the table fills.
+
+***
+
+# Practice Ladder
+
+Five problems that lean on the hash-table contract this chapter builds, easiest first. Try each unaided; hit the hint after ten minutes; do not peek at solutions until you have written something runnable.
+
+| # | Problem | Pattern | Difficulty | Hint |
+|---|---------|---------|------------|------|
+| 1 | [First Non-Repeating Character](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting-problems-first-non-repeating-character) | [Counting](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting-pattern) | Easy | One pass to count every character into a map, a second pass to return the first with count `1`. The map's `O(1)` average lookup is the whole trick. `O(n)` time, `O(k)` space for `k` distinct keys. |
+| 2 | [Duplicate Detection](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-fixed-sized-sliding-window-problems-duplicate-detection) | [Fixed Sliding Window](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-fixed-sized-sliding-window-pattern) | Easy | Slide a window of width `k` and keep its members in a set; a failed insert means a duplicate inside the window. `O(n)` time, `O(k)` space. |
+| 3 | [Cluster Anagrams](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting-problems-cluster-anagrams) | [Counting](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting-pattern) | Medium | Build a canonical key per word (sorted letters or a 26-count signature) and bucket words under it in a map. Anagrams collapse to the same key. `O(n·L)` time. |
+| 4 | [Subarray Sum Equals K](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-variable-sized-sliding-window-problems-subarray-sum-equals-k) | [Variable Sliding Window](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-variable-sized-sliding-window-pattern) | Medium | Store running prefix sums in a map; for each index, look up `prefix − k` to count qualifying subarrays in `O(1)`. `O(n)` time, `O(n)` space. |
+| 5 | [Zero Sum Subarrays](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-prefix-sum-problems-zero-sum-subarrays) | [Prefix Sum](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-prefix-sum-pattern) | Medium | A repeated prefix sum means the span between the two indices sums to zero; a map from prefix value to count finds every such pair in one pass. `O(n)` time, `O(n)` space. |
+
+Once these feel automatic, the map has stopped being syntax and become a structural reflex — exactly what counting, windowing, and prefix-sum problems build on.
+
+***
+
+# Further Reading
+
+Curated paths in, not a syllabus. Read in order of the annotation; come back for the rest when you need depth.
+
+- **[CLRS — Chapter 11.4: Open Addressing](https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/)**
+  ★ Essential — the formal treatment of linear, quadratic, and double-hashing probe sequences, plus the expected-probe-count analysis that explains why performance collapses as the load factor approaches `1`.
+- **[Knuth — *The Art of Computer Programming*, Vol. 3, §6.4](https://www-cs-faculty.stanford.edu/~knuth/taocp.html)**
+  ◆ Advanced — the original primary-clustering analysis, where the expected probe count for linear probing is derived in closed form against the load factor.
+- **[Google Swiss Tables design notes (`absl::flat_hash_map`)](https://abseil.io/about/design/swisstables)**
+  ◆ Advanced — how a production open-addressing table uses SIMD-scanned control bytes and inline storage to beat chaining, the modern descendant of this lesson's idea.
+- **[Python `dict` implementation notes (`Objects/dictobject.c`)](https://github.com/python/cpython/blob/main/Objects/dictobject.c)**
+  → Reference — the perturbation-based probe sequence CPython uses so its open-addressed `dict` spreads collisions better than plain linear probing while keeping the contiguous-array layout.
+
+***
+
+# Cross-Links
+
+**Prerequisites**
+
+- [Introduction to Hash Tables](/cortex/data-structures-and-algorithms/linear-structures-hash-table-introduction-to-hash-tables) — the hash function, the load factor, and the collision problem every resolution scheme in this chapter is solving.
+- [Separate Chaining](/cortex/data-structures-and-algorithms/linear-structures-hash-table-separate-chaining) — the chained alternative whose unbounded growth and cache-hostile pointer chasing motivate open addressing.
+- [Introduction to Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-introduction) — contiguous layout and `O(1)` indexed access, the two array properties that make probing cache-friendly and constant time per step.
+
+**What comes next**
+
+- [Quadratic Probing](/cortex/data-structures-and-algorithms/linear-structures-hash-table-quadratic-probing) — the same open-addressing table with a probe sequence of `1, 4, 9, 16, …` that breaks up the primary clusters linear probing suffers from.
+- [Double Hashing](/cortex/data-structures-and-algorithms/linear-structures-hash-table-double-hashing) — a second hash function gives each key its own probe stride, scattering collisions even further than quadratic probing.
+
+***
+
+## Final Takeaway
+
+1. **Core mechanic:** store key-value pairs directly in one contiguous array and resolve a collision by walking forward `(start + i) % capacity` to the next non-`OCCUPIED` slot, with a three-state tag (`EMPTY` / `OCCUPIED` / `DELETED`) deciding whether a probe stops, matches, or continues.
+2. **Dominant tradeoff:** you gain unbeatable cache locality and zero per-record pointer overhead; you give up the ability to exceed `capacity` without rehashing, and you accept primary clustering that drags every operation toward `O(N)` as the load factor rises.
+3. **One thing to remember:** the `DELETED` tombstone is not optional — it is the contract that keeps a probe chain searchable after a removal while still letting inserts reclaim the slot.

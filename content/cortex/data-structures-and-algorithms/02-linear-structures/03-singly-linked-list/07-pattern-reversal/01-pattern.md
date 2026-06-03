@@ -10,37 +10,189 @@ prereqs:
 The reversal pattern flips the direction of every `next` pointer inside a contiguous segment of a singly linked list — in place, in one pass, with `O(1)` extra space. It is the canonical answer to any problem that asks for a list (or a part of one) to be walked backwards: full-list reversal, reverse-first-K, reverse-last-K, reverse-between-positions, palindrome checks, and reorder-style problems that compose a reversal with another walk.
 
 > ▶ Interactive Diagram — The reversal pattern flips a contiguous segment [start, end] in place — the nodes before start and after end remain untouched. Stitch the reversed segment back to its neighbours and you're done.
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Reversal pattern — flip the segment [start, end] in place; nodes outside untouched",
-  "direction": "single",
-  "nodes": [
-    {"id": "a", "value": "a"},
-    {"id": "s", "value": "start"},
-    {"id": "m", "value": "..."},
-    {"id": "e", "value": "end"},
-    {"id": "z", "value": "z"}
-  ],
-  "head": "a",
   "steps": [
     {
-      "links": [["a","s"],["s","m"],["m","e"],["e","z"]],
-      "markers": [{"name": "start", "nodeId": "s"}, {"name": "end", "nodeId": "e"}],
-      "msg": "Before: segment from start to end (the …) flows left → right"
+      "nodes": [
+        {
+          "id": "a",
+          "label": "a",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s",
+          "label": "start",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m",
+          "label": "...",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "e",
+          "label": "end",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "z",
+          "label": "z",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "a",
+          "to": "s",
+          "label": "next"
+        },
+        {
+          "from": "s",
+          "to": "m",
+          "label": "next"
+        },
+        {
+          "from": "m",
+          "to": "e",
+          "label": "next"
+        },
+        {
+          "from": "e",
+          "to": "z",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "start",
+          "target": "s",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "e",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Before: segment from start to end (the …) flows left → right",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "a", "value": "a"},
-        {"id": "e", "value": "end", "style": "new"},
-        {"id": "m", "value": "..."},
-        {"id": "s", "value": "start", "style": "new"},
-        {"id": "z", "value": "z"}
+        {
+          "id": "a",
+          "label": "a",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "e",
+          "label": "end",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m",
+          "label": "...",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s",
+          "label": "start",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "z",
+          "label": "z",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["a","e"],["e","m"],["m","s"],["s","z"]],
-      "markers": [{"name": "current", "nodeId": "e"}],
-      "msg": "After: segment reversed in place. a → end → … → start → z. Outside nodes untouched."
+      "edges": [
+        {
+          "from": "a",
+          "to": "e",
+          "label": "next"
+        },
+        {
+          "from": "e",
+          "to": "m",
+          "label": "next"
+        },
+        {
+          "from": "m",
+          "to": "s",
+          "label": "next"
+        },
+        {
+          "from": "s",
+          "to": "z",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "current",
+          "target": "e",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [
+        "e",
+        "s"
+      ],
+      "removed": [],
+      "annotation": "After: segment reversed in place. a → end → … → start → z. Outside nodes untouched.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Reversal pattern — flip the segment [start, end] in place; nodes outside untouched"
 }
 ```
 
@@ -98,50 +250,386 @@ If the segment boundaries depend on a count (reverse-first-K) or a length lookup
 The whole-list reversal is the simplest instance of the pattern. The segment runs from `head` to the tail; the stop sentinel is `null`; the initial `previous` is `null`.
 
 > ▶ Interactive Diagram — Full-list reversal — the old tail becomes the new head, every node's next points to its former predecessor.
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Reverse the entire list — three-pointer walk; every next flips",
-  "direction": "single",
-  "nodes": [
-    {"id": "n1", "value": "5"},
-    {"id": "n2", "value": "7"},
-    {"id": "n3", "value": "3"},
-    {"id": "n4", "value": "10"}
-  ],
-  "head": "n1",
   "steps": [
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "previous", "nodeId": "n1"}, {"name": "current", "nodeId": "n1"}],
-      "msg": "Init: previous = null, current = head"
-    },
-    {
-      "links": [["n2","n1"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "previous", "nodeId": "n1"}, {"name": "current", "nodeId": "n2"}],
-      "msg": "Tick 1: next = current.next (n2). current.next = previous (n1 → null). previous = current (n1). current = next (n2)."
-    },
-    {
-      "links": [["n2","n1"],["n3","n2"],["n3","n4"]],
-      "markers": [{"name": "previous", "nodeId": "n2"}, {"name": "current", "nodeId": "n3"}],
-      "msg": "Tick 2: n2.next now points to n1 (former predecessor). Advance."
-    },
-    {
-      "links": [["n2","n1"],["n3","n2"],["n4","n3"]],
-      "markers": [{"name": "previous", "nodeId": "n3"}, {"name": "current", "nodeId": "n4"}],
-      "msg": "Tick 3: n3.next now points to n2. Advance."
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "previous",
+          "target": "n1",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "current",
+          "target": "n1",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Init: previous = null, current = head",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n4", "value": "10"},
-        {"id": "n3", "value": "3"},
-        {"id": "n2", "value": "7"},
-        {"id": "n1", "value": "5"}
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n4","n3"],["n3","n2"],["n2","n1"]],
-      "markers": [{"name": "head", "nodeId": "n4"}],
-      "msg": "Tick 4: n4.next = n3. current = null → loop ends. Return previous (n4) as new head: 10 → 3 → 7 → 5 → null."
+      "edges": [
+        {
+          "from": "n2",
+          "to": "n1",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "previous",
+          "target": "n1",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "current",
+          "target": "n2",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Tick 1: next = current.next (n2). current.next = previous (n1 → null). previous = current (n1). current = next (n2).",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n2",
+          "to": "n1",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "previous",
+          "target": "n2",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "current",
+          "target": "n3",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Tick 2: n2.next now points to n1 (former predecessor). Advance.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n2",
+          "to": "n1",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n4",
+          "to": "n3",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "previous",
+          "target": "n3",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "current",
+          "target": "n4",
+          "color": "#3b82f6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Tick 3: n3.next now points to n2. Advance.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
+    },
+    {
+      "nodes": [
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n4",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n1",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n4",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Tick 4: n4.next = n3. current = null → loop ends. Return previous (n4) as new head: 10 → 3 → 7 → 5 → null.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Reverse the entire list — three-pointer walk; every next flips"
 }
 ```
 
@@ -177,7 +665,7 @@ The algorithm below summarizes the reversal of the entire linked list in-place.
 The full-list reversal in Python and Java. Each version is the same three-pointer loop — `previous`, `current`, `next` — differing only in language syntax.
 
 
-```python run
+```python run viz=linked-list viz-root=head
 from typing import Optional
 
 class ListNode:
@@ -201,7 +689,7 @@ def reverse(head: Optional[ListNode]) -> Optional[ListNode]:
     return previous
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 public class Main {
     static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
@@ -247,39 +735,217 @@ public class Main {
 The generic case reverses the segment between two given nodes `start` and `end` (both inclusive). The outer list — the nodes before `start` and after `end` — is left untouched. The caller passes references to `start` and `end` such that `start` precedes `end` when walking forward from `head`.
 
 > ▶ Interactive Diagram — Both endpoints are included. After reversal, the outer list structure is preserved — only the order of nodes inside [start, end] is flipped.
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Reverse a segment [start, end] inclusive — outer nodes stay intact",
-  "direction": "single",
-  "nodes": [
-    {"id": "h", "value": "head"},
-    {"id": "p", "value": "·"},
-    {"id": "s", "value": "start"},
-    {"id": "m", "value": "·"},
-    {"id": "e", "value": "end"},
-    {"id": "q", "value": "·"}
-  ],
-  "head": "h",
   "steps": [
     {
-      "links": [["h","p"],["p","s"],["s","m"],["m","e"],["e","q"]],
-      "markers": [{"name": "start", "nodeId": "s"}, {"name": "end", "nodeId": "e"}],
-      "msg": "Before: outer prefix h → · → ; segment start → · → end; outer suffix ·"
+      "nodes": [
+        {
+          "id": "h",
+          "label": "head",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p",
+          "label": "·",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s",
+          "label": "start",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m",
+          "label": "·",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "e",
+          "label": "end",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "q",
+          "label": "·",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "h",
+          "to": "p",
+          "label": "next"
+        },
+        {
+          "from": "p",
+          "to": "s",
+          "label": "next"
+        },
+        {
+          "from": "s",
+          "to": "m",
+          "label": "next"
+        },
+        {
+          "from": "m",
+          "to": "e",
+          "label": "next"
+        },
+        {
+          "from": "e",
+          "to": "q",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "start",
+          "target": "s",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "e",
+          "color": "#f59e0b"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Before: outer prefix h → · → ; segment start → · → end; outer suffix ·",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "h", "value": "head"},
-        {"id": "p", "value": "·"},
-        {"id": "e", "value": "end", "style": "new"},
-        {"id": "m", "value": "·"},
-        {"id": "s", "value": "start", "style": "new"},
-        {"id": "q", "value": "·"}
+        {
+          "id": "h",
+          "label": "head",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p",
+          "label": "·",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "e",
+          "label": "end",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m",
+          "label": "·",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s",
+          "label": "start",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "q",
+          "label": "·",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["h","p"],["p","e"],["e","m"],["m","s"],["s","q"]],
-      "markers": [{"name": "head", "nodeId": "e"}],
-      "msg": "After: segment flipped — outer prefix/suffix untouched"
+      "edges": [
+        {
+          "from": "h",
+          "to": "p",
+          "label": "next"
+        },
+        {
+          "from": "p",
+          "to": "e",
+          "label": "next"
+        },
+        {
+          "from": "e",
+          "to": "m",
+          "label": "next"
+        },
+        {
+          "from": "m",
+          "to": "s",
+          "label": "next"
+        },
+        {
+          "from": "s",
+          "to": "q",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "e",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [
+        "e",
+        "s"
+      ],
+      "removed": [],
+      "annotation": "After: segment flipped — outer prefix/suffix untouched",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Reverse a segment [start, end] inclusive — outer nodes stay intact"
 }
 ```
 
@@ -288,27 +954,134 @@ The generic case reverses the segment between two given nodes `start` and `end` 
 The segment reversal needs one extra sentinel — the node *after* `end`, captured *before* the loop runs. Call it `rightBound = end.next`. Two roles fall on this one reference: it is the stop condition for the loop (`current == rightBound` means the segment is exhausted), and it is the initial value of `previous` so the reversed segment's tail (the original `start`) automatically points to the correct successor without a separate stitching step.
 
 > ▶ Interactive Diagram — Cache rightBound = end.next before reversing. During reversal we walk from start and stop the moment current == rightBound — the sentinel that tells us we've exhausted the segment.
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Cache rightBound = end.next before reversing — sentinel for the segment boundary",
-  "direction": "single",
-  "nodes": [
-    {"id": "h", "value": "head"},
-    {"id": "p", "value": "·"},
-    {"id": "s", "value": "start"},
-    {"id": "m", "value": "·"},
-    {"id": "e", "value": "end"},
-    {"id": "rb", "value": "rightBound"},
-    {"id": "q", "value": "·"}
-  ],
-  "head": "h",
   "steps": [
     {
-      "links": [["h","p"],["p","s"],["s","m"],["m","e"],["e","rb"],["rb","q"]],
-      "markers": [{"name": "start", "nodeId": "s"}, {"name": "end", "nodeId": "e"}, {"name": "next", "nodeId": "rb"}],
-      "msg": "rightBound = end.next captured upfront. The reversal walks current from start and stops when current == rightBound."
+      "nodes": [
+        {
+          "id": "h",
+          "label": "head",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p",
+          "label": "·",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s",
+          "label": "start",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m",
+          "label": "·",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "e",
+          "label": "end",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "rb",
+          "label": "rightBound",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "q",
+          "label": "·",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "h",
+          "to": "p",
+          "label": "next"
+        },
+        {
+          "from": "p",
+          "to": "s",
+          "label": "next"
+        },
+        {
+          "from": "s",
+          "to": "m",
+          "label": "next"
+        },
+        {
+          "from": "m",
+          "to": "e",
+          "label": "next"
+        },
+        {
+          "from": "e",
+          "to": "rb",
+          "label": "next"
+        },
+        {
+          "from": "rb",
+          "to": "q",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "start",
+          "target": "s",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "end",
+          "target": "e",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "next",
+          "target": "rb",
+          "color": "#8b5cf6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "rightBound = end.next captured upfront. The reversal walks current from start and stops when current == rightBound.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Cache rightBound = end.next before reversing — sentinel for the segment boundary"
 }
 ```
 
@@ -328,27 +1101,129 @@ flowchart TB
 <p align="center"><strong>Same three-pointer loop as full-list reversal — with two tweaks: initialise <code>previous</code> to <code>rightBound</code> (so the reversed segment's tail points to the correct successor), and stop when <code>current == rightBound</code> instead of <code>null</code>.</strong></p>
 
 > ▶ Interactive Diagram — Final stitch — the predecessor of the original start now points at the reversed segment's new head (end). The reversed segment's tail (start) already points at rightBound thanks to our previous = rightBound initialisation.
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "Final stitch — predecessor of start now points at the reversed segment's new head",
-  "direction": "single",
-  "nodes": [
-    {"id": "h", "value": "head"},
-    {"id": "p", "value": "predecessor"},
-    {"id": "e", "value": "end"},
-    {"id": "m", "value": "·"},
-    {"id": "s", "value": "start"},
-    {"id": "rb", "value": "rightBound"},
-    {"id": "q", "value": "·"}
-  ],
-  "head": "h",
   "steps": [
     {
-      "links": [["h","p"],["p","e"],["e","m"],["m","s"],["s","rb"],["rb","q"]],
-      "markers": [{"name": "head", "nodeId": "e"}, {"name": "tail", "nodeId": "s"}],
-      "msg": "predecessor.next = end (new segment head); start.next already = rightBound thanks to previous = rightBound init"
+      "nodes": [
+        {
+          "id": "h",
+          "label": "head",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "p",
+          "label": "predecessor",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "e",
+          "label": "end",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "m",
+          "label": "·",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "s",
+          "label": "start",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "rb",
+          "label": "rightBound",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "q",
+          "label": "·",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "h",
+          "to": "p",
+          "label": "next"
+        },
+        {
+          "from": "p",
+          "to": "e",
+          "label": "next"
+        },
+        {
+          "from": "e",
+          "to": "m",
+          "label": "next"
+        },
+        {
+          "from": "m",
+          "to": "s",
+          "label": "next"
+        },
+        {
+          "from": "s",
+          "to": "rb",
+          "label": "next"
+        },
+        {
+          "from": "rb",
+          "to": "q",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "e",
+          "color": "#10b981"
+        },
+        {
+          "name": "tail",
+          "target": "s",
+          "color": "#8b5cf6"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "predecessor.next = end (new segment head); start.next already = rightBound thanks to previous = rightBound init",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "Final stitch — predecessor of start now points at the reversed segment's new head"
 }
 ```
 
@@ -373,7 +1248,7 @@ The algorithm given below summarizes the linked list reversal between start and 
 Segment reversal in Python and Java. The skeleton is the same three-pointer loop as full-list reversal — with two tweaks: initialise `previous` to `rightBound` (so the reversed tail points to the correct successor automatically) and stop when `current == rightBound` instead of `null`.
 
 
-```python run
+```python run viz=linked-list viz-root=head
 from typing import Optional
 
 class ListNode:
@@ -398,7 +1273,7 @@ def reverse(start: ListNode, end: ListNode) -> ListNode:
     return previous
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 public class Main {
     static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
@@ -497,35 +1372,153 @@ The brute force is correct but doubles memory: an `O(n)` array on top of the ori
 A singly linked list is the chain of `next` pointers. Reversing it means flipping every `next` so each node points to its former predecessor. Three local references suffice — `previous` (the new successor for the next flip), `current` (the node being flipped this tick), and a snapshot `next` (the original successor, captured *before* `current.next` is clobbered). The first flip writes `head.next = null`, turning the old head into the new tail. The last flip writes `tail.next = (old next-to-tail)`, and the loop terminates with `previous` pointing at the old tail — the new head.
 
 > ▶ Interactive Diagram — "In place" means no auxiliary list is built — the same nodes are rewired, not copied. O(1) extra space.
-```d3 widget=linked-list
+```d3 widget=list-single
 {
-  "title": "In-place reversal — input [5, 7, 3, 10] → output [10, 3, 7, 5]",
-  "direction": "single",
-  "nodes": [
-    {"id": "n1", "value": "5"},
-    {"id": "n2", "value": "7"},
-    {"id": "n3", "value": "3"},
-    {"id": "n4", "value": "10"}
-  ],
-  "head": "n1",
   "steps": [
     {
-      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "head", "nodeId": "n1"}],
-      "msg": "Input: 5 → 7 → 3 → 10 → null"
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n1",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Input: 5 → 7 → 3 → 10 → null",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     },
     {
       "nodes": [
-        {"id": "n4", "value": "10"},
-        {"id": "n3", "value": "3"},
-        {"id": "n2", "value": "7"},
-        {"id": "n1", "value": "5"}
+        {
+          "id": "n4",
+          "label": "10",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n3",
+          "label": "3",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n2",
+          "label": "7",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        },
+        {
+          "id": "n1",
+          "label": "5",
+          "kind": "node",
+          "meta": [],
+          "slot": null,
+          "cardId": "",
+          "layoutKind": ""
+        }
       ],
-      "links": [["n4","n3"],["n3","n2"],["n2","n1"]],
-      "markers": [{"name": "head", "nodeId": "n4"}],
-      "msg": "Output: same 4 nodes, rewired — 10 → 3 → 7 → 5 → null. No new allocations, O(1) extra space."
+      "edges": [
+        {
+          "from": "n4",
+          "to": "n3",
+          "label": "next"
+        },
+        {
+          "from": "n3",
+          "to": "n2",
+          "label": "next"
+        },
+        {
+          "from": "n2",
+          "to": "n1",
+          "label": "next"
+        }
+      ],
+      "cursor": [
+        {
+          "name": "head",
+          "target": "n4",
+          "color": "#10b981"
+        }
+      ],
+      "highlight": [],
+      "changed": [],
+      "removed": [],
+      "annotation": "Output: same 4 nodes, rewired — 10 → 3 → 7 → 5 → null. No new allocations, O(1) extra space.",
+      "line": 0,
+      "frames": [],
+      "cardCursor": []
     }
-  ]
+  ],
+  "title": "In-place reversal — input [5, 7, 3, 10] → output [10, 3, 7, 5]"
 }
 ```
 
@@ -548,7 +1541,7 @@ flowchart TB
 
 
 
-```python run
+```python run viz=linked-list viz-root=head
 """
 Definition for singly-linked list.
 class ListNode:
@@ -585,7 +1578,7 @@ class Solution:
         return previous
 ```
 
-```java run
+```java run viz=linked-list viz-root=head
 /**
  * Definition for singly-linked list.
  * class ListNode {

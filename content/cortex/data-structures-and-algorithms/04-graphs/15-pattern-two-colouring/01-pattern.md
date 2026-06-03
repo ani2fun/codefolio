@@ -180,7 +180,7 @@ print(Solution().is_two_colourable([[],[]]))                    # True — disco
 print(Solution().is_two_colourable([[1],[0],[3],[2]]))          # True — two separate edges
 ```
 
-```java run
+```java run viz=graph viz-root=graph
 import java.util.*;
 
 public class Main {
