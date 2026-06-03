@@ -176,11 +176,36 @@ Max-flow / min-cut is a master key that unlocks problems that don't look like fl
 | Stop condition | no augmenting path ⇔ flow is maximum |
 | Edmonds-Karp | BFS augmenting paths ⇒ `O(VE²)` |
 
-- **Q:** What does the max-flow / min-cut theorem state? **A:** The maximum `s→t` flow equals the minimum capacity of any cut separating `s` from `t`.
-- **Q:** What is an augmenting path and how much do you push along it? **A:** An `s→t` path in the residual graph with positive capacity everywhere; you push its bottleneck (minimum residual edge).
-- **Q:** Why does Ford-Fulkerson need reverse edges? **A:** They let later augmenting paths cancel/reroute earlier flow, so picking *any* path each round still converges to the optimum.
-- **Q:** When does Ford-Fulkerson stop, and why is that correct? **A:** When no augmenting path remains; by the theorem, that flow equals the min cut, hence is maximum.
-- **Q:** What is Edmonds-Karp? **A:** Ford-Fulkerson that always picks the *shortest* augmenting path (BFS), giving an `O(VE²)` bound independent of capacities.
+<details>
+<summary><strong>Q:</strong> What does the max-flow / min-cut theorem state?</summary>
+
+**A:** The maximum `s→t` flow equals the minimum capacity of any cut separating `s` from `t`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What is an augmenting path and how much do you push along it?</summary>
+
+**A:** An `s→t` path in the residual graph with positive capacity everywhere; you push its bottleneck (minimum residual edge).
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why does Ford-Fulkerson need reverse edges?</summary>
+
+**A:** They let later augmenting paths cancel/reroute earlier flow, so picking *any* path each round still converges to the optimum.
+
+</details>
+<details>
+<summary><strong>Q:</strong> When does Ford-Fulkerson stop, and why is that correct?</summary>
+
+**A:** When no augmenting path remains; by the theorem, that flow equals the min cut, hence is maximum.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What is Edmonds-Karp?</summary>
+
+**A:** Ford-Fulkerson that always picks the *shortest* augmenting path (BFS), giving an `O(VE²)` bound independent of capacities.
+
+</details>
 
 ## Sources & Verify
 

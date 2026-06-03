@@ -135,10 +135,30 @@ These two identities are *primitives* you'll use without re-deriving:
 | Popcount (Kernighan) | loop `n &= n-1`, count — `O(set bits)` |
 | Engine | `-n == ~n + 1` (two's complement) |
 
-- **Q:** What do `n & (n-1)` and `n & -n` each do? **A:** Clear the lowest set bit, and isolate it (as a power of 2), respectively.
-- **Q:** How does the power-of-2 test work? **A:** A power of 2 has exactly one set bit, so clearing it with `n & (n-1)` yields `0` (for `n > 0`).
-- **Q:** Why is Kernighan's popcount `O(set bits)`? **A:** Each iteration clears exactly one set bit, so the loop runs once per set bit, not once per position.
-- **Q:** Why does `n & -n` isolate the lowest set bit? **A:** `-n = ~n + 1` (two's complement) matches `n` only at the lowest set bit, so the AND keeps just that bit.
+<details>
+<summary><strong>Q:</strong> What do `n & (n-1)` and `n & -n` each do?</summary>
+
+**A:** Clear the lowest set bit, and isolate it (as a power of 2), respectively.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does the power-of-2 test work?</summary>
+
+**A:** A power of 2 has exactly one set bit, so clearing it with `n & (n-1)` yields `0` (for `n > 0`).
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is Kernighan's popcount `O(set bits)`?</summary>
+
+**A:** Each iteration clears exactly one set bit, so the loop runs once per set bit, not once per position.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why does `n & -n` isolate the lowest set bit?</summary>
+
+**A:** `-n = ~n + 1` (two's complement) matches `n` only at the lowest set bit, so the AND keeps just that bit.
+
+</details>
 
 ## Sources & Verify
 

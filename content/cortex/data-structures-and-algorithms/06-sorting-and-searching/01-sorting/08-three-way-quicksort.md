@@ -157,10 +157,30 @@ Three-way quicksort is quicksort made duplicate-aware:
 | All-distinct | `O(n log n)` (same as plain quicksort) |
 | Space / stability | `O(log n)` stack, in-place; **not** stable |
 
-- **Q:** How does three-way quicksort differ from plain quicksort? **A:** It partitions into `<`/`==`/`>` and recurses only on the outer two regions, finalizing all pivot-equal elements per pass.
-- **Q:** Why is it faster on duplicate-heavy input? **A:** Equal keys are grouped and finished in one partition instead of being redistributed and re-partitioned at every level.
-- **Q:** What's its complexity for `k` distinct keys, and for all-equal input? **A:** `O(n log k)`; `O(n)` when all elements are equal.
-- **Q:** Does it still need a good pivot? **A:** Yes — on adversarial *distinct* input it can hit `O(n²)`, so random/median-of-three pivots still apply.
+<details>
+<summary><strong>Q:</strong> How does three-way quicksort differ from plain quicksort?</summary>
+
+**A:** It partitions into `<`/`==`/`>` and recurses only on the outer two regions, finalizing all pivot-equal elements per pass.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is it faster on duplicate-heavy input?</summary>
+
+**A:** Equal keys are grouped and finished in one partition instead of being redistributed and re-partitioned at every level.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What's its complexity for `k` distinct keys, and for all-equal input?</summary>
+
+**A:** `O(n log k)`; `O(n)` when all elements are equal.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Does it still need a good pivot?</summary>
+
+**A:** Yes — on adversarial *distinct* input it can hit `O(n²)`, so random/median-of-three pivots still apply.
+
+</details>
 
 ## Sources & Verify
 

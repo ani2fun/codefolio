@@ -10,3 +10,4 @@ This appendix is the **authoring reference** for the interactive diagrams used t
 - [Widget Payload Reference](/cortex/data-structures-and-algorithms/appendix-widget-catalog-widget-payload-reference)
 - [decision-tree](/cortex/data-structures-and-algorithms/appendix-widget-catalog-decision-tree)
 - [dp-table](/cortex/data-structures-and-algorithms/appendix-widget-catalog-dp-table)
+- [Pseudocode Reference](/cortex/data-structures-and-algorithms/appendix-widget-catalog-pseudocode-guide)

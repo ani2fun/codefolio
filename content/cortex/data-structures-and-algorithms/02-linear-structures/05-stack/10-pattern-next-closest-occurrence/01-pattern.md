@@ -138,10 +138,30 @@ This pattern completes the monotonic-stack matrix and unlocks its famous applica
 | Matrix | previous/next (direction) × greater/smaller (comparison) |
 | Cost | `O(n)` time, `O(n)` space |
 
-- **Q:** What single change turns previous-greater into next-greater? **A:** Reverse the scan direction — go right-to-left so the stack holds elements to the right.
-- **Q:** Why can one tall value answer the query for several elements to its left? **A:** It stays on the stack until something larger replaces it, so every shorter element to its left finds it on top.
-- **Q:** What's the left-to-right alternative for "next"? **A:** Retroactive resolution — when a new element pops smaller ones, it is their next-greater, so fill their answers as you pop.
-- **Q:** Which famous problems reduce to this pattern? **A:** Largest rectangle in a histogram, trapping rain water, and stock span.
+<details>
+<summary><strong>Q:</strong> What single change turns previous-greater into next-greater?</summary>
+
+**A:** Reverse the scan direction — go right-to-left so the stack holds elements to the right.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why can one tall value answer the query for several elements to its left?</summary>
+
+**A:** It stays on the stack until something larger replaces it, so every shorter element to its left finds it on top.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What's the left-to-right alternative for "next"?</summary>
+
+**A:** Retroactive resolution — when a new element pops smaller ones, it is their next-greater, so fill their answers as you pop.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Which famous problems reduce to this pattern?</summary>
+
+**A:** Largest rectangle in a histogram, trapping rain water, and stock span.
+
+</details>
 
 ## Sources & Verify
 

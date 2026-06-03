@@ -166,10 +166,30 @@ Reorder is where the linked-list toolkit comes together:
 | Capstone | the fold reorder = split (fast/slow) + reverse + merge |
 | Cost | `O(n)` time, `O(1)` space (pointers re-threaded, values untouched) |
 
-- **Q:** Why re-thread pointers instead of moving values into an array? **A:** `O(1)` space, and it preserves node identity — values that mustn't move (ids, back-references) stay put.
-- **Q:** Why must `even_head` be saved before the loop? **A:** The loop overwrites `head.next`, so the even chain's start becomes unreachable except through the saved pointer.
-- **Q:** What's the unifying skeleton across reorder variants? **A:** Classify each node into a chain by some rule, then concatenate the chains; only the rule differs.
-- **Q:** How is the classic fold reorder built? **A:** Split at the middle (fast/slow), reverse the second half, then merge the two halves alternately — composing three earlier patterns.
+<details>
+<summary><strong>Q:</strong> Why re-thread pointers instead of moving values into an array?</summary>
+
+**A:** `O(1)` space, and it preserves node identity — values that mustn't move (ids, back-references) stay put.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why must `even_head` be saved before the loop?</summary>
+
+**A:** The loop overwrites `head.next`, so the even chain's start becomes unreachable except through the saved pointer.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What's the unifying skeleton across reorder variants?</summary>
+
+**A:** Classify each node into a chain by some rule, then concatenate the chains; only the rule differs.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How is the classic fold reorder built?</summary>
+
+**A:** Split at the middle (fast/slow), reverse the second half, then merge the two halves alternately — composing three earlier patterns.
+
+</details>
 
 ## Sources & Verify
 

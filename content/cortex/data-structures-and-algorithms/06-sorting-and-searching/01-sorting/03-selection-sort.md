@@ -134,10 +134,30 @@ Selection sort is the "minimize writes" elementary sort, and it sets up somethin
 | Space / stability | `O(1)`, **not** stable |
 | Best use | when writes/swaps are far costlier than reads |
 
-- **Q:** How many swaps does selection sort do, and why does that matter? **A:** Exactly `n−1` — the fewest of any simple sort; ideal when writes are expensive.
-- **Q:** Why is selection sort not adaptive? **A:** It must scan the whole unsorted region each pass to find the minimum, so comparison work is fixed regardless of input order.
-- **Q:** Why is selection sort not stable? **A:** Swapping a distant minimum into place can move it past an equal element, changing their relative order.
-- **Q:** How does selection sort relate to heapsort? **A:** Heapsort is selection sort with a heap replacing the linear min-scan, dropping each extraction from `O(n)` to `O(log n)`.
+<details>
+<summary><strong>Q:</strong> How many swaps does selection sort do, and why does that matter?</summary>
+
+**A:** Exactly `n−1` — the fewest of any simple sort; ideal when writes are expensive.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is selection sort not adaptive?</summary>
+
+**A:** It must scan the whole unsorted region each pass to find the minimum, so comparison work is fixed regardless of input order.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is selection sort not stable?</summary>
+
+**A:** Swapping a distant minimum into place can move it past an equal element, changing their relative order.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does selection sort relate to heapsort?</summary>
+
+**A:** Heapsort is selection sort with a heap replacing the linear min-scan, dropping each extraction from `O(n)` to `O(log n)`.
+
+</details>
 
 ## Sources & Verify
 

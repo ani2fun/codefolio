@@ -114,10 +114,30 @@ Hold onto this picture, because the whole book builds on it:
 | word | the chunk the CPU moves at once (often 8 bytes) |
 | `O(1)` access | reaching any address costs the same, regardless of memory size |
 
-- **Q:** What is the smallest piece of memory that has its own address? **A:** A byte (8 bits).
-- **Q:** Why is reaching address `1000` just as fast as address `5`? **A:** The CPU computes the location and jumps directly — it never scans.
-- **Q:** What is a pointer, really? **A:** A value that stores an address.
-- **Q:** Reading by *address* vs. searching by *contents* — which is one step? **A:** By address; searching by contents is a walk.
+<details>
+<summary><strong>Q:</strong> What is the smallest piece of memory that has its own address?</summary>
+
+**A:** A byte (8 bits).
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is reaching address `1000` just as fast as address `5`?</summary>
+
+**A:** The CPU computes the location and jumps directly — it never scans.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What is a pointer, really?</summary>
+
+**A:** A value that stores an address.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Reading by *address* vs. searching by *contents* — which is one step?</summary>
+
+**A:** By address; searching by contents is a walk.
+
+</details>
 
 ## Sources & Verify
 

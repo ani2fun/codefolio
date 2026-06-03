@@ -200,10 +200,30 @@ This completes the collision-resolution track: separate chaining plus the three 
 | Cost | two hashes per probe; poor cache locality (jumps around) |
 | Sizing | prime capacity (every non-zero step then coprime) |
 
-- **Q:** How does double hashing differ from quadratic probing? **A:** The step size comes from a second hash of the *key*, not from the iteration number, so same-home keys get different strides.
-- **Q:** Why must `h2` never return `0`? **A:** A zero step revisits the home slot forever — an infinite probe loop.
-- **Q:** Why a prime capacity? **A:** It makes every non-zero step coprime with the capacity, so the probe visits all slots and inserts can't fail prematurely.
-- **Q:** What's the trade-off against linear probing? **A:** Double hashing avoids clustering (near-uniform) but costs a second hash per probe and has poor cache locality; linear is faster per probe and cache-friendly.
+<details>
+<summary><strong>Q:</strong> How does double hashing differ from quadratic probing?</summary>
+
+**A:** The step size comes from a second hash of the *key*, not from the iteration number, so same-home keys get different strides.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why must `h2` never return `0`?</summary>
+
+**A:** A zero step revisits the home slot forever — an infinite probe loop.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why a prime capacity?</summary>
+
+**A:** It makes every non-zero step coprime with the capacity, so the probe visits all slots and inserts can't fail prematurely.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What's the trade-off against linear probing?</summary>
+
+**A:** Double hashing avoids clustering (near-uniform) but costs a second hash per probe and has poor cache locality; linear is faster per probe and cache-friendly.
+
+</details>
 
 ## Sources & Verify
 

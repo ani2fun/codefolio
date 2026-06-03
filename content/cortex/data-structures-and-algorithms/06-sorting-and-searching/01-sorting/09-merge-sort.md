@@ -156,10 +156,30 @@ Merge sort is the guaranteed, stable `O(n log n)` sort, and its niches are exact
 | Stability | stable |
 | Best for | linked lists, external sorting, stable + guaranteed needs |
 
-- **Q:** Why is merge sort's `O(n log n)` guaranteed where quicksort's isn't? **A:** It splits at the midpoint (always balanced, data-independent), so the recursion is always `log n` deep — no pivot can unbalance it.
-- **Q:** Why isn't merge sort in-place? **A:** Merging two sorted halves needs an `O(n)` scratch array to hold the combined result.
-- **Q:** Why is it stable? **A:** On ties the merge takes from the left half first, preserving the original relative order.
-- **Q:** Where does merge sort beat quicksort? **A:** Linked lists (`O(1)` extra, no random access), external/too-big-for-RAM sorting (sequential I/O), and any stable + worst-case-guaranteed requirement.
+<details>
+<summary><strong>Q:</strong> Why is merge sort's `O(n log n)` guaranteed where quicksort's isn't?</summary>
+
+**A:** It splits at the midpoint (always balanced, data-independent), so the recursion is always `log n` deep — no pivot can unbalance it.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why isn't merge sort in-place?</summary>
+
+**A:** Merging two sorted halves needs an `O(n)` scratch array to hold the combined result.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is it stable?</summary>
+
+**A:** On ties the merge takes from the left half first, preserving the original relative order.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Where does merge sort beat quicksort?</summary>
+
+**A:** Linked lists (`O(1)` extra, no random access), external/too-big-for-RAM sorting (sequential I/O), and any stable + worst-case-guaranteed requirement.
+
+</details>
 
 ## Sources & Verify
 

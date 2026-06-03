@@ -124,17 +124,24 @@
         list-style: none;
     }
     .chapter-content details > summary::-webkit-details-marker { display: none; }
+    /* CSS-drawn triangle instead of a Unicode glyph: the "▸"/"▾" geometric-triangle
+       codepoints fall back to a broken-image / tofu box on some systems and fonts.
+       A border triangle is pure geometry (no glyph), so it renders identically
+       everywhere — and rotating it animates the open/closed transition. */
     .chapter-content details > summary::before {
-        content: "▸";
+        content: "";
         display: inline-block;
         flex-shrink: 0;
-        color: hsl(var(--foreground));
-        font-size: 3em;     /* keeps the chevron visible next to large heading text */
-        line-height: 1;
+        width: 0;
+        height: 0;
+        border-top: 0.42em solid transparent;
+        border-bottom: 0.42em solid transparent;
+        border-left: 0.6em solid hsl(var(--foreground));
+        font-size: 1.7em;   /* keeps the chevron visible next to large heading text */
         transition: transform 0.15s ease;
     }
     .chapter-content details[open] > summary::before {
-        content: "▾";
+        transform: rotate(90deg);
     }
     .chapter-content details > summary p {
         display: inline;

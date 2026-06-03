@@ -152,10 +152,30 @@ The staircase is the matrix search for when you *can't* flatten:
 | `< target` | `row += 1` (eliminate the row) |
 | Cost | `O(m + n)` time, `O(1)` space |
 
-- **Q:** When do you use staircase search instead of 2D binary search? **A:** When the matrix is only row- and column-sorted (rows don't chain), so it can't be flattened into one sorted array.
-- **Q:** Why start at the top-right corner? **A:** It's the max of its row and min of its column, so one comparison decisively eliminates either a whole row or a whole column.
-- **Q:** Why does top-left fail? **A:** It's the global minimum — both directions increase, so a comparison can't rule out a single direction, breaking the linear bound.
-- **Q:** What's the cost and why? **A:** `O(m + n)` — each step removes one of the `m` rows or `n` columns, so at most `m + n` steps.
+<details>
+<summary><strong>Q:</strong> When do you use staircase search instead of 2D binary search?</summary>
+
+**A:** When the matrix is only row- and column-sorted (rows don't chain), so it can't be flattened into one sorted array.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why start at the top-right corner?</summary>
+
+**A:** It's the max of its row and min of its column, so one comparison decisively eliminates either a whole row or a whole column.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why does top-left fail?</summary>
+
+**A:** It's the global minimum — both directions increase, so a comparison can't rule out a single direction, breaking the linear bound.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What's the cost and why?</summary>
+
+**A:** `O(m + n)` — each step removes one of the `m` rows or `n` columns, so at most `m + n` steps.
+
+</details>
 
 ## Sources & Verify
 

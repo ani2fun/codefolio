@@ -127,10 +127,30 @@ You'll meet queues all over real systems, always where work must be handled in a
 | search / access by position | `O(n)` | no random access; the contract only exposes the front |
 | space | `O(n)` | one slot or node per waiting item |
 
-- **Q:** What rule does a queue enforce? **A:** FIFO — first in, first out; the oldest item leaves next.
-- **Q:** Why does a naive array queue report "full" while half-empty, and what fixes it? **A:** Both ends drift toward the high index, stranding freed front slots; a circular array wraps the rear to index `0` (modular arithmetic) to reuse them.
-- **Q:** What two markers does a queue track, and why two (vs a stack's one)? **A:** A wrapping `front` index (or `head` + `tail`) — because *both* ends move, unlike a stack's single top.
-- **Q:** Swap a BFS's queue for a stack — what happens? **A:** It becomes a DFS; the container chooses the traversal order.
+<details>
+<summary><strong>Q:</strong> What rule does a queue enforce?</summary>
+
+**A:** FIFO — first in, first out; the oldest item leaves next.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why does a naive array queue report "full" while half-empty, and what fixes it?</summary>
+
+**A:** Both ends drift toward the high index, stranding freed front slots; a circular array wraps the rear to index `0` (modular arithmetic) to reuse them.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What two markers does a queue track, and why two (vs a stack's one)?</summary>
+
+**A:** A wrapping `front` index (or `head` + `tail`) — because *both* ends move, unlike a stack's single top.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Swap a BFS's queue for a stack — what happens?</summary>
+
+**A:** It becomes a DFS; the container chooses the traversal order.
+
+</details>
 
 ## Sources & Verify
 

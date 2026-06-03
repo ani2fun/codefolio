@@ -164,11 +164,36 @@ Shortest path is a family selected by edge weights:
 | Negative cycle | a `V`-th round still relaxes ⇒ cycle (distance `−∞`) |
 | Bellman-Ford cost | `O(VE)` |
 
-- **Q:** Why doesn't BFS solve weighted shortest path? **A:** BFS orders by hop count; a many-hop cheap path can beat a one-hop expensive edge, so you must order by accumulated weight (a min-heap), not depth.
-- **Q:** What does Dijkstra assume, and what breaks without it? **A:** Non-negative weights; the "distance is final when popped" invariant fails when a negative edge lets a later, longer path arrive cheaper.
-- **Q:** Why does Bellman-Ford run `V−1` rounds? **A:** A shortest path has at most `V−1` edges; each round settles one more hop of distance, so `V−1` rounds settle all shortest paths.
-- **Q:** How does Bellman-Ford detect a negative cycle? **A:** Run one extra (`V`-th) round; if any edge still relaxes, distances can decrease forever — a negative cycle exists.
-- **Q:** Dijkstra vs Bellman-Ford — when each? **A:** Non-negative weights → Dijkstra (`O((V+E)log V)`); any negative weight → Bellman-Ford (`O(VE)`, plus cycle detection).
+<details>
+<summary><strong>Q:</strong> Why doesn't BFS solve weighted shortest path?</summary>
+
+**A:** BFS orders by hop count; a many-hop cheap path can beat a one-hop expensive edge, so you must order by accumulated weight (a min-heap), not depth.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What does Dijkstra assume, and what breaks without it?</summary>
+
+**A:** Non-negative weights; the "distance is final when popped" invariant fails when a negative edge lets a later, longer path arrive cheaper.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why does Bellman-Ford run `V−1` rounds?</summary>
+
+**A:** A shortest path has at most `V−1` edges; each round settles one more hop of distance, so `V−1` rounds settle all shortest paths.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does Bellman-Ford detect a negative cycle?</summary>
+
+**A:** Run one extra (`V`-th) round; if any edge still relaxes, distances can decrease forever — a negative cycle exists.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Dijkstra vs Bellman-Ford — when each?</summary>
+
+**A:** Non-negative weights → Dijkstra (`O((V+E)log V)`); any negative weight → Bellman-Ford (`O(VE)`, plus cycle detection).
+
+</details>
 
 ## Sources & Verify
 

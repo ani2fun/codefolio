@@ -170,10 +170,30 @@ Separate chaining is the most forgiving collision strategy:
 | Load factor | `α = n / capacity` = expected chain length |
 | Cost | `O(1 + α)` average; `O(n)` worst (one chain) |
 
-- **Q:** How does separate chaining resolve a collision? **A:** It stores both keys in the same slot's chain (a list), found by walking that short list.
-- **Q:** What is the load factor and why does it matter? **A:** `α = n/capacity`, the expected chain length; keeping it low (via resizing) keeps operations `O(1)` average.
-- **Q:** When does separate chaining degrade to `O(n)`? **A:** When many keys hash to the same slot, making one chain hold most entries.
-- **Q:** Why is deletion simpler than in open addressing? **A:** You just unlink the entry from its chain — no tombstones needed to preserve other keys' lookups.
+<details>
+<summary><strong>Q:</strong> How does separate chaining resolve a collision?</summary>
+
+**A:** It stores both keys in the same slot's chain (a list), found by walking that short list.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What is the load factor and why does it matter?</summary>
+
+**A:** `α = n/capacity`, the expected chain length; keeping it low (via resizing) keeps operations `O(1)` average.
+
+</details>
+<details>
+<summary><strong>Q:</strong> When does separate chaining degrade to `O(n)`?</summary>
+
+**A:** When many keys hash to the same slot, making one chain hold most entries.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is deletion simpler than in open addressing?</summary>
+
+**A:** You just unlink the entry from its chain — no tombstones needed to preserve other keys' lookups.
+
+</details>
 
 ## Sources & Verify
 

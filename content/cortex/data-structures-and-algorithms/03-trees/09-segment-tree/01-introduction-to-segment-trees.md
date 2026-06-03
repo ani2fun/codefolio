@@ -290,11 +290,36 @@ The segment tree is the general-purpose range-query workhorse:
 | Needs | an associative combine + identity (a monoid) |
 | vs Fenwick / sparse table | more general / loses to them on prefix-only or static |
 
-- **Q:** Why are query and update `O(log n)`? **A:** Any range decomposes into `O(log n)` canonical (fully-covered) nodes — at most two "boundary" nodes per level partially overlap and recurse; the rest are answered or pruned.
-- **Q:** What does each node store, and how is the tree laid out? **A:** The aggregate of its range; in a flat `4n` array with children at `2k` and `2k+1`.
-- **Q:** What problem does lazy propagation solve, and how? **A:** `O(log n)` *range* updates — tag a fully-covered node as pending and stop; `_push` applies and forwards the tag only when a later op descends through it.
-- **Q:** What must the aggregate satisfy? **A:** It must be a monoid — an associative combine with an identity (sum/0, min/∞, gcd/0, xor/0).
-- **Q:** Segment tree vs Fenwick vs sparse table? **A:** Fenwick: simpler, prefix-sum-only; sparse table: `O(1)` static idempotent queries, no updates; segment tree: general, supports updates and arbitrary monoids.
+<details>
+<summary><strong>Q:</strong> Why are query and update `O(log n)`?</summary>
+
+**A:** Any range decomposes into `O(log n)` canonical (fully-covered) nodes — at most two "boundary" nodes per level partially overlap and recurse; the rest are answered or pruned.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What does each node store, and how is the tree laid out?</summary>
+
+**A:** The aggregate of its range; in a flat `4n` array with children at `2k` and `2k+1`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What problem does lazy propagation solve, and how?</summary>
+
+**A:** `O(log n)` *range* updates — tag a fully-covered node as pending and stop; `_push` applies and forwards the tag only when a later op descends through it.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What must the aggregate satisfy?</summary>
+
+**A:** It must be a monoid — an associative combine with an identity (sum/0, min/∞, gcd/0, xor/0).
+
+</details>
+<details>
+<summary><strong>Q:</strong> Segment tree vs Fenwick vs sparse table?</summary>
+
+**A:** Fenwick: simpler, prefix-sum-only; sparse table: `O(1)` static idempotent queries, no updates; segment tree: general, supports updates and arbitrary monoids.
+
+</details>
 
 ## Sources & Verify
 

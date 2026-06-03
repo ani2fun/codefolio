@@ -144,10 +144,30 @@ This closes the bit-manipulation toolkit: six patterns — kth-bit, set-bit-find
 | Bit-parity | popcount mod 2 (Kernighan loop) |
 | Modular variant | same schedule mod `m` → RSA / Diffie–Hellman |
 
-- **Q:** Why is fast exponentiation `O(log exp)`? **A:** It runs once per *bit* of `exp` (squaring the base, conditionally multiplying), not once per unit of `exp`.
-- **Q:** Why multiply the base in only at the set bits of `exp`? **A:** `exp` is a sum of powers of two; `base^exp` is the product of `base^(2^i)` over `exp`'s set bits.
-- **Q:** What are the one-line parity and power-of-two tests? **A:** `n & 1` (odd?), and `n > 0 and (n & (n-1)) == 0` (single set bit).
-- **Q:** What real-world use rests on this? **A:** Modular exponentiation (`base^exp mod m`) — the core operation of RSA, Diffie–Hellman, and Miller–Rabin.
+<details>
+<summary><strong>Q:</strong> Why is fast exponentiation `O(log exp)`?</summary>
+
+**A:** It runs once per *bit* of `exp` (squaring the base, conditionally multiplying), not once per unit of `exp`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why multiply the base in only at the set bits of `exp`?</summary>
+
+**A:** `exp` is a sum of powers of two; `base^exp` is the product of `base^(2^i)` over `exp`'s set bits.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What are the one-line parity and power-of-two tests?</summary>
+
+**A:** `n & 1` (odd?), and `n > 0 and (n & (n-1)) == 0` (single set bit).
+
+</details>
+<details>
+<summary><strong>Q:</strong> What real-world use rests on this?</summary>
+
+**A:** Modular exponentiation (`base^exp mod m`) — the core operation of RSA, Diffie–Hellman, and Miller–Rabin.
+
+</details>
 
 ## Sources & Verify
 

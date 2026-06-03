@@ -143,10 +143,30 @@ This is also the skeleton that, if you mislabel it, gets confused with the conve
 | Longest vs shortest | longest: shrink while *invalid*, measure after · shortest: shrink while *valid*, measure inside |
 | Cost | `O(n)` time, `O(1)` state — `start` never resets |
 
-- **Q:** How does a variable window differ from a fixed one? **A:** Its size isn't given — it grows and shrinks based on whether the window satisfies a condition.
-- **Q:** Why isn't the inner shrink loop `O(n²)`? **A:** `start` only moves forward, crossing the array once total; amortized `O(1)` per step.
-- **Q:** Longest-valid vs shortest-valid — what changes? **A:** Longest: shrink only while invalid and measure after. Shortest: shrink while still valid and measure inside the loop.
-- **Q:** What's the key design decision? **A:** The window state — the smallest thing (counter, sum, or count-map) that tells you whether the window is valid.
+<details>
+<summary><strong>Q:</strong> How does a variable window differ from a fixed one?</summary>
+
+**A:** Its size isn't given — it grows and shrinks based on whether the window satisfies a condition.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why isn't the inner shrink loop `O(n²)`?</summary>
+
+**A:** `start` only moves forward, crossing the array once total; amortized `O(1)` per step.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Longest-valid vs shortest-valid — what changes?</summary>
+
+**A:** Longest: shrink only while invalid and measure after. Shortest: shrink while still valid and measure inside the loop.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What's the key design decision?</summary>
+
+**A:** The window state — the smallest thing (counter, sum, or count-map) that tells you whether the window is valid.
+
+</details>
 
 ## Sources & Verify
 

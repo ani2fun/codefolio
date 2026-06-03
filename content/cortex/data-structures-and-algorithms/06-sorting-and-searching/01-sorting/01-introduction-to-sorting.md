@@ -118,10 +118,30 @@ A practical note: real-world libraries don't pick one — they *combine*. Python
 | Key properties | stable · in-place · adaptive |
 | Lower bound | decision tree with `n!` leaves → height `≈ n log n` |
 
-- **Q:** Why is sorting worth an `O(n log n)` upfront cost? **A:** It makes search `O(log n)` and unlocks dedup, range queries, and median — paid once, cheap forever.
-- **Q:** What does it mean for a sort to be stable, and why care? **A:** Equal elements keep their input order — essential when sorting by a secondary key.
-- **Q:** Why can't any comparison sort beat `O(n log n)`? **A:** It must distinguish `n!` orderings via yes/no comparisons; a decision tree with `n!` leaves has height `≈ n log n`.
-- **Q:** How does counting sort achieve `O(n)`? **A:** It uses key values as indices instead of comparing, sidestepping the decision-tree bound — but needs bounded keys.
+<details>
+<summary><strong>Q:</strong> Why is sorting worth an `O(n log n)` upfront cost?</summary>
+
+**A:** It makes search `O(log n)` and unlocks dedup, range queries, and median — paid once, cheap forever.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What does it mean for a sort to be stable, and why care?</summary>
+
+**A:** Equal elements keep their input order — essential when sorting by a secondary key.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why can't any comparison sort beat `O(n log n)`?</summary>
+
+**A:** It must distinguish `n!` orderings via yes/no comparisons; a decision tree with `n!` leaves has height `≈ n log n`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does counting sort achieve `O(n)`?</summary>
+
+**A:** It uses key values as indices instead of comparing, sidestepping the decision-tree bound — but needs bounded keys.
+
+</details>
 
 ## Sources & Verify
 

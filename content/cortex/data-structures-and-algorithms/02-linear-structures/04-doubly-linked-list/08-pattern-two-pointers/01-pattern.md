@@ -177,10 +177,30 @@ The converging scan transfers directly once you have `O(1)` backward movement:
 | Stop | values match, or pointers meet |
 | Cost | `O(n)` time, `O(1)` space |
 
-- **Q:** Why can't a singly list run the converging two-pointer scan efficiently? **A:** Moving `right` leftward needs its predecessor, which costs `O(n)` per step without a `prev` pointer — the scan degrades to `O(n²)`.
-- **Q:** On a sorted list, why is moving one pointer always the right call? **A:** Advancing `left` only raises the sum and retreating `right` only lowers it, so each move discards a value that can't be in any solution.
-- **Q:** What two things does the pattern require from the list? **A:** Access to the tail (the right pointer's start) and `O(1)` backward movement (`prev`).
-- **Q:** How does three-sum build on this? **A:** Fix one node, then converge two pointers over the remaining sorted values.
+<details>
+<summary><strong>Q:</strong> Why can't a singly list run the converging two-pointer scan efficiently?</summary>
+
+**A:** Moving `right` leftward needs its predecessor, which costs `O(n)` per step without a `prev` pointer — the scan degrades to `O(n²)`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> On a sorted list, why is moving one pointer always the right call?</summary>
+
+**A:** Advancing `left` only raises the sum and retreating `right` only lowers it, so each move discards a value that can't be in any solution.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What two things does the pattern require from the list?</summary>
+
+**A:** Access to the tail (the right pointer's start) and `O(1)` backward movement (`prev`).
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does three-sum build on this?</summary>
+
+**A:** Fix one node, then converge two pointers over the remaining sorted values.
+
+</details>
 
 ## Sources & Verify
 

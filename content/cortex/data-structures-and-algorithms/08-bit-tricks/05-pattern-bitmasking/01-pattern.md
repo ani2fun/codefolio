@@ -154,10 +154,30 @@ Bitmasking is where bit tricks meet combinatorics:
 | Cost | `O(2^n · n)` — feasible only for small `n` (`≤ ~20`–`30`) |
 | Other flavour | constant masks (`0x55…`, `0xAA…`) for parallel bit-group ops |
 
-- **Q:** How does an integer represent a subset? **A:** Bit `j` set means item `j` is in; the `n`-bit integer is the subset's membership vector.
-- **Q:** How do you enumerate every subset? **A:** Loop `mask` from `0` to `2^n − 1`; each value is a distinct subset (the power set).
-- **Q:** What are the set operations in this encoding? **A:** Membership `mask & (1<<j)`, add `mask | (1<<j)`, remove `mask & ~(1<<j)` — the kth-bit ops.
-- **Q:** Why is bitmasking a small-`n` technique? **A:** There are `2^n` subsets, which is infeasible beyond `n ≈ 20`–`30`; it makes exponential search *tractable for small n*, not fast for large `n`.
+<details>
+<summary><strong>Q:</strong> How does an integer represent a subset?</summary>
+
+**A:** Bit `j` set means item `j` is in; the `n`-bit integer is the subset's membership vector.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How do you enumerate every subset?</summary>
+
+**A:** Loop `mask` from `0` to `2^n − 1`; each value is a distinct subset (the power set).
+
+</details>
+<details>
+<summary><strong>Q:</strong> What are the set operations in this encoding?</summary>
+
+**A:** Membership `mask & (1<<j)`, add `mask | (1<<j)`, remove `mask & ~(1<<j)` — the kth-bit ops.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is bitmasking a small-`n` technique?</summary>
+
+**A:** There are `2^n` subsets, which is infeasible beyond `n ≈ 20`–`30`; it makes exponential search *tractable for small n*, not fast for large `n`.
+
+</details>
 
 ## Sources & Verify
 

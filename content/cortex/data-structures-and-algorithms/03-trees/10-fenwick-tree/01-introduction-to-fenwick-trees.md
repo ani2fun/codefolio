@@ -217,11 +217,36 @@ The Fenwick tree is the specialist where the segment tree is the generalist:
 | range_sum(l,r) | `prefix(r) − prefix(l−1)` — needs an **invertible** op |
 | vs segment tree | half the code/memory; prefix-only, no min/max |
 
-- **Q:** What does `i & -i` compute, and why does it matter? **A:** The lowest set bit of `i`; it defines each cell's slice size and drives both the query and update walks.
-- **Q:** Why do update and prefix_sum walk in opposite directions? **A:** prefix_sum needs the disjoint slices that *tile* `[1..i]` (go down); update needs every cell whose slice *contains* `i` (go up) — complementary cell sets.
-- **Q:** What aggregates can a Fenwick tree handle? **A:** Invertible ones (sum, xor) — range = `prefix(r) − prefix(l−1)` requires subtraction; min/max need a segment tree.
-- **Q:** Fenwick vs segment tree — when each? **A:** Fenwick for prefix-sum + point-update (shorter, smaller constant); segment tree for arbitrary monoids, range-min/max, or range updates.
-- **Q:** Name two classic Fenwick applications. **A:** Counting inversions and rank/order-statistic queries (BIT over value ranks).
+<details>
+<summary><strong>Q:</strong> What does `i & -i` compute, and why does it matter?</summary>
+
+**A:** The lowest set bit of `i`; it defines each cell's slice size and drives both the query and update walks.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why do update and prefix_sum walk in opposite directions?</summary>
+
+**A:** prefix_sum needs the disjoint slices that *tile* `[1..i]` (go down); update needs every cell whose slice *contains* `i` (go up) — complementary cell sets.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What aggregates can a Fenwick tree handle?</summary>
+
+**A:** Invertible ones (sum, xor) — range = `prefix(r) − prefix(l−1)` requires subtraction; min/max need a segment tree.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Fenwick vs segment tree — when each?</summary>
+
+**A:** Fenwick for prefix-sum + point-update (shorter, smaller constant); segment tree for arbitrary monoids, range-min/max, or range updates.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Name two classic Fenwick applications.</summary>
+
+**A:** Counting inversions and rank/order-statistic queries (BIT over value ranks).
+
+</details>
 
 ## Sources & Verify
 

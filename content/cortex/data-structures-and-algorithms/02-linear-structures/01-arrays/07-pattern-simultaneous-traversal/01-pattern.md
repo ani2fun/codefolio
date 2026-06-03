@@ -142,10 +142,30 @@ The one precondition to remember: the inputs must be **sorted** (or share a comp
 | Cost | `O(n+m)` time, `O(1)` extra (plus output) |
 | Precondition | both inputs sorted (or comparably ordered) |
 
-- **Q:** Why does simultaneous traversal beat the `O(n·m)` nested loop? **A:** Each pointer moves forward only and never restarts, so total work is `n + m` steps.
-- **Q:** What's the per-step decision for a merge vs an intersection? **A:** Merge takes the smaller front; intersection advances both on a match, else advances the smaller.
-- **Q:** What must be true of the inputs, and why? **A:** They must be sorted — that's what makes "advance the smaller" a safe never-look-back choice.
-- **Q:** Where does this pattern show up in a sort you'll learn later? **A:** It's the merge step of merge sort (and the k-way merge with a heap).
+<details>
+<summary><strong>Q:</strong> Why does simultaneous traversal beat the `O(n·m)` nested loop?</summary>
+
+**A:** Each pointer moves forward only and never restarts, so total work is `n + m` steps.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What's the per-step decision for a merge vs an intersection?</summary>
+
+**A:** Merge takes the smaller front; intersection advances both on a match, else advances the smaller.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What must be true of the inputs, and why?</summary>
+
+**A:** They must be sorted — that's what makes "advance the smaller" a safe never-look-back choice.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Where does this pattern show up in a sort you'll learn later?</summary>
+
+**A:** It's the merge step of merge sort (and the k-way merge with a heap).
+
+</details>
 
 ## Sources & Verify
 

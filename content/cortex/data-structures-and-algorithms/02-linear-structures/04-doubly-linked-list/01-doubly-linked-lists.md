@@ -165,10 +165,30 @@ When does the *singly* list still win? When memory is tight (one pointer per nod
 | access / find the k-th node | `O(n)` | still no random access — walk `next` (or `prev`) |
 | space | `O(n)` + **two** pointers per node | the `prev` pointer is the extra cost over a singly list |
 
-- **Q:** What three fields does a doubly node hold? **A:** value, `prev` (preceding node), and `next` (following node).
-- **Q:** Why is deleting a held node `O(1)` here but `O(n)` in a singly list? **A:** `target.prev` is in hand; the singly list must walk from the head to find the predecessor.
-- **Q:** How many pointers change per structural edit, and what invariant must hold? **A:** Four; `a.next.prev == a` must hold after every edit.
-- **Q:** What does a sentinel + circular layout buy you? **A:** It removes the `null` head/tail special cases — there are no ends to check.
+<details>
+<summary><strong>Q:</strong> What three fields does a doubly node hold?</summary>
+
+**A:** value, `prev` (preceding node), and `next` (following node).
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is deleting a held node `O(1)` here but `O(n)` in a singly list?</summary>
+
+**A:** `target.prev` is in hand; the singly list must walk from the head to find the predecessor.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How many pointers change per structural edit, and what invariant must hold?</summary>
+
+**A:** Four; `a.next.prev == a` must hold after every edit.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What does a sentinel + circular layout buy you?</summary>
+
+**A:** It removes the `null` head/tail special cases — there are no ends to check.
+
+</details>
 
 ## Sources & Verify
 

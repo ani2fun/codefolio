@@ -146,10 +146,30 @@ Binary search is one idea — *halve a monotonic search space* — with a huge r
 | Stop | `lo > hi` → not present |
 | Cost | `O(log n)` time, `O(1)` space |
 
-- **Q:** Why is binary search `O(log n)`? **A:** Each comparison discards half the remaining range, so the number of steps is how many times `n` halves to 1 — `log₂ n`.
-- **Q:** Why write `lo + (hi - lo) // 2` instead of `(lo + hi) // 2`? **A:** They're equal, but the latter can overflow fixed-width integers for large `lo + hi`; the former can't.
-- **Q:** What invariant must the loop maintain? **A:** If the target exists, it's within `[lo, hi]` — and the bounds (`lo <= hi`, `mid ± 1`) must stay consistent with inclusive vs half-open ranges.
-- **Q:** What does binary search require of its input? **A:** Monotonicity — a sorted array, or a predicate that's false-then-true — so one comparison rules out an entire half.
+<details>
+<summary><strong>Q:</strong> Why is binary search `O(log n)`?</summary>
+
+**A:** Each comparison discards half the remaining range, so the number of steps is how many times `n` halves to 1 — `log₂ n`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why write `lo + (hi - lo) // 2` instead of `(lo + hi) // 2`?</summary>
+
+**A:** They're equal, but the latter can overflow fixed-width integers for large `lo + hi`; the former can't.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What invariant must the loop maintain?</summary>
+
+**A:** If the target exists, it's within `[lo, hi]` — and the bounds (`lo <= hi`, `mid ± 1`) must stay consistent with inclusive vs half-open ranges.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What does binary search require of its input?</summary>
+
+**A:** Monotonicity — a sorted array, or a predicate that's false-then-true — so one comparison rules out an entire half.
+
+</details>
 
 ## Sources & Verify
 

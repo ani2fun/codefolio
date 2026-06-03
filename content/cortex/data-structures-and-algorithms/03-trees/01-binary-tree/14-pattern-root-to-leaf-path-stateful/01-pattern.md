@@ -177,10 +177,30 @@ Stateful root-to-leaf is the materialize-the-paths sibling of the stateless summ
 | Two load-bearing lines | the copy (no aliasing) + the pop (correct prefix per branch) |
 | Use when | you need the *actual paths*, not a summary number |
 
-- **Q:** Why snapshot `list(path)` instead of `path` at a leaf? **A:** `path` keeps mutating; storing the reference makes every saved path alias the same (eventually wrong) list.
-- **Q:** Why must the pop be unconditional? **A:** It must undo the enter on *every* exit so the parent's other branch starts from the correct prefix; skip it and prefixes bleed across siblings.
-- **Q:** When stateful vs stateless root-to-leaf? **A:** Stateful to collect the *paths themselves*; stateless for a *summary* (sum / exists / count).
-- **Q:** What general technique is this? **A:** Backtracking — the append-enter / record / pop-exit skeleton shared with subsets, permutations, and combinations.
+<details>
+<summary><strong>Q:</strong> Why snapshot `list(path)` instead of `path` at a leaf?</summary>
+
+**A:** `path` keeps mutating; storing the reference makes every saved path alias the same (eventually wrong) list.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why must the pop be unconditional?</summary>
+
+**A:** It must undo the enter on *every* exit so the parent's other branch starts from the correct prefix; skip it and prefixes bleed across siblings.
+
+</details>
+<details>
+<summary><strong>Q:</strong> When stateful vs stateless root-to-leaf?</summary>
+
+**A:** Stateful to collect the *paths themselves*; stateless for a *summary* (sum / exists / count).
+
+</details>
+<details>
+<summary><strong>Q:</strong> What general technique is this?</summary>
+
+**A:** Backtracking — the append-enter / record / pop-exit skeleton shared with subsets, permutations, and combinations.
+
+</details>
 
 ## Sources & Verify
 

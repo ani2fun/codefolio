@@ -1277,6 +1277,12 @@
         width: 14px;
         height: 14px;
     }
+    /* Headings inside a collapsible <summary> (e.g. the Quick Reference's foldable
+       sections, the Memorize <details>) are the fold's toggle control — they must
+       not get the hover deep-link pill, which would otherwise pop up in terracotta
+       right next to the disclosure chevron. The heading keeps its id, so the
+       right-rail outline and #-anchor URLs still resolve. */
+    .chapter-content summary .cortex-prose-anchor { display: none; }
     .chapter-content .cortex-prose-anchor[data-copied="true"]::after {
         content: "Copied";
         position: absolute;

@@ -168,10 +168,30 @@ Quicksort is the workhorse comparison sort, and its partition step seeds a whole
 | Pivot fix | random or median-of-three |
 | Space / stability | `O(log n)` stack, in-place; **not** stable |
 
-- **Q:** What does one partition pass accomplish? **A:** It places the pivot in its final position and splits the rest into `≤`-pivot (left) and `>`-pivot (right) regions.
-- **Q:** Why is quicksort `O(n log n)` average but `O(n²)` worst? **A:** Balanced pivots give `log n` levels; a pivot that's always the min/max gives `n` levels of `O(n)` work.
-- **Q:** How do you avoid the worst case? **A:** Choose the pivot randomly or as the median of three, so consistently bad splits become astronomically unlikely.
-- **Q:** Quicksort vs merge sort — when each? **A:** Quicksort for in-memory arrays (in-place, fast, but `O(n²)` worst and unstable); merge sort for stability or guaranteed `O(n log n)` (needs `O(n)` space).
+<details>
+<summary><strong>Q:</strong> What does one partition pass accomplish?</summary>
+
+**A:** It places the pivot in its final position and splits the rest into `≤`-pivot (left) and `>`-pivot (right) regions.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is quicksort `O(n log n)` average but `O(n²)` worst?</summary>
+
+**A:** Balanced pivots give `log n` levels; a pivot that's always the min/max gives `n` levels of `O(n)` work.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How do you avoid the worst case?</summary>
+
+**A:** Choose the pivot randomly or as the median of three, so consistently bad splits become astronomically unlikely.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Quicksort vs merge sort — when each?</summary>
+
+**A:** Quicksort for in-memory arrays (in-place, fast, but `O(n²)` worst and unstable); merge sort for stability or guaranteed `O(n log n)` (needs `O(n)` space).
+
+</details>
 
 ## Sources & Verify
 

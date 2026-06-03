@@ -161,10 +161,30 @@ Stateful postorder is bottom-up recursion where the answer and the return value 
 | Why split | a path is linear — the parent can extend only one branch |
 | Family | diameter, max path sum, longest univalue path, distribute coins |
 
-- **Q:** Why does stateful postorder return a different value than it records? **A:** The through-node answer uses both subtrees (a bent path) and can't be extended by the parent; the parent can only extend a single-branch value, so that's what's returned.
-- **Q:** What goes in the accumulator vs the return? **A:** Accumulator: the both-branches "through this node" answer; return: the one-branch extendable contribution.
-- **Q:** What's the classic bug? **A:** Returning the through-node (two-branch) value upward, which lets a parent build an impossible path that revisits a subtree.
-- **Q:** Why is this "tree DP"? **A:** Each node's value is computed once from its children's, while a global optimum is tracked across all nodes — dynamic programming on the tree.
+<details>
+<summary><strong>Q:</strong> Why does stateful postorder return a different value than it records?</summary>
+
+**A:** The through-node answer uses both subtrees (a bent path) and can't be extended by the parent; the parent can only extend a single-branch value, so that's what's returned.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What goes in the accumulator vs the return?</summary>
+
+**A:** Accumulator: the both-branches "through this node" answer; return: the one-branch extendable contribution.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What's the classic bug?</summary>
+
+**A:** Returning the through-node (two-branch) value upward, which lets a parent build an impossible path that revisits a subtree.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is this "tree DP"?</summary>
+
+**A:** Each node's value is computed once from its children's, while a global optimum is tracked across all nodes — dynamic programming on the tree.
+
+</details>
 
 ## Sources & Verify
 

@@ -151,10 +151,30 @@ The stack-as-matching-register shows up wherever structure must nest correctly:
 | Counter vs stack | counter works for one type; mixed types need the stack |
 | Cost | `O(n)` time, `O(n)` space |
 
-- **Q:** Why does nested validation need a stack instead of a counter? **A:** A counter tracks *how many* are open; nesting needs *which* opener is innermost, and LIFO gives that.
-- **Q:** What two conditions make a sequence valid? **A:** Every closer matches the current top, and the stack is empty at the end.
-- **Q:** Where does `"([)]"` fail? **A:** At `)`, whose top is `[` — wrong match — so it's rejected immediately, though the open/close *count* is balanced.
-- **Q:** When is a counter actually sufficient? **A:** With a single bracket type — count up/down, never negative, end at zero.
+<details>
+<summary><strong>Q:</strong> Why does nested validation need a stack instead of a counter?</summary>
+
+**A:** A counter tracks *how many* are open; nesting needs *which* opener is innermost, and LIFO gives that.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What two conditions make a sequence valid?</summary>
+
+**A:** Every closer matches the current top, and the stack is empty at the end.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Where does `"([)]"` fail?</summary>
+
+**A:** At `)`, whose top is `[` — wrong match — so it's rejected immediately, though the open/close *count* is balanced.
+
+</details>
+<details>
+<summary><strong>Q:</strong> When is a counter actually sufficient?</summary>
+
+**A:** With a single bracket type — count up/down, never negative, end at zero.
+
+</details>
 
 ## Sources & Verify
 

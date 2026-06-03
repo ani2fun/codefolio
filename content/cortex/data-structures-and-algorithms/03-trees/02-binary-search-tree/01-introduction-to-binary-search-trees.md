@@ -180,10 +180,30 @@ The BST is the canonical *ordered, dynamic* container:
 | Height | `O(log n)` balanced; `O(n)` degenerate (e.g. sorted insertion) |
 | Use when | you need ordered *and* dynamic: range, min/max, successor, sorted iteration |
 
-- **Q:** What invariant defines a BST? **A:** For every node, all left-subtree values are smaller and all right-subtree values are larger.
-- **Q:** Why are search/insert/delete `O(h)`? **A:** Each comparison eliminates one subtree, so an operation follows a single root-to-leaf path of length `h`.
-- **Q:** What does an in-order traversal of a BST produce, and why? **A:** The values in sorted order — it visits left (smaller), then node, then right (larger).
-- **Q:** When does a BST degrade to `O(n)`, and what fixes it? **A:** When it becomes an unbalanced chain (e.g. sorted insertion); self-balancing trees use rotations to keep `h = O(log n)`.
+<details>
+<summary><strong>Q:</strong> What invariant defines a BST?</summary>
+
+**A:** For every node, all left-subtree values are smaller and all right-subtree values are larger.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why are search/insert/delete `O(h)`?</summary>
+
+**A:** Each comparison eliminates one subtree, so an operation follows a single root-to-leaf path of length `h`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What does an in-order traversal of a BST produce, and why?</summary>
+
+**A:** The values in sorted order — it visits left (smaller), then node, then right (larger).
+
+</details>
+<details>
+<summary><strong>Q:</strong> When does a BST degrade to `O(n)`, and what fixes it?</summary>
+
+**A:** When it becomes an unbalanced chain (e.g. sorted insertion); self-balancing trees use rotations to keep `h = O(log n)`.
+
+</details>
 
 ## Sources & Verify
 

@@ -145,10 +145,30 @@ This is among the most common interview patterns — "longest/shortest substring
 | Validity test | `count[ch] > 1` (no repeats), `len(count) > k` (≤ `k` distinct), covers-target (min window) |
 | Cost | `O(n)` time, `O(σ)` space — `start` never resets |
 
-- **Q:** How does this differ from the fixed-size map window? **A:** The window size isn't fixed — it grows and shrinks based on whether the count-based constraint holds.
-- **Q:** Why is the inner shrink loop not `O(n²)`? **A:** `start` only moves forward, crossing the input once total, so total shrink work is `≤ n` — amortized `O(1)` per step.
-- **Q:** What single change switches problems (no-repeat vs ≤ `k` distinct)? **A:** The validity test — `count[ch] > 1` versus `len(count) > k`.
-- **Q:** Longest-valid vs shortest-valid — what flips? **A:** Longest: shrink only while invalid, measure after; shortest: shrink while still valid, measure inside.
+<details>
+<summary><strong>Q:</strong> How does this differ from the fixed-size map window?</summary>
+
+**A:** The window size isn't fixed — it grows and shrinks based on whether the count-based constraint holds.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is the inner shrink loop not `O(n²)`?</summary>
+
+**A:** `start` only moves forward, crossing the input once total, so total shrink work is `≤ n` — amortized `O(1)` per step.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What single change switches problems (no-repeat vs ≤ `k` distinct)?</summary>
+
+**A:** The validity test — `count[ch] > 1` versus `len(count) > k`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Longest-valid vs shortest-valid — what flips?</summary>
+
+**A:** Longest: shrink only while invalid, measure after; shortest: shrink while still valid, measure inside.
+
+</details>
 
 ## Sources & Verify
 

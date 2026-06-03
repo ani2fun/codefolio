@@ -186,10 +186,30 @@ Once reversal is a callable subroutine, a whole family opens up — they differ 
 | Guard | `while n ≥ k` → reverse full groups, leave the short tail |
 | Cost | `O(n)` time, `O(1)` space |
 
-- **Q:** Why a dummy node before the head? **A:** It gives the first group a real predecessor to relink, so the head needs no special case.
-- **Q:** What are the two seams stitched after reversing a chunk? **A:** The before-node points at the chunk's new head; the chunk's new tail (old first node) points at the next chunk's start.
-- **Q:** Why count `n` and gate on `n ≥ k`? **A:** So only full groups reverse and a short remainder is left untouched — `n > 0` would walk past the end and crash.
-- **Q:** How is pairwise swap related to this pattern? **A:** It's the `k = 2` case of reverse-in-groups-of-`k`.
+<details>
+<summary><strong>Q:</strong> Why a dummy node before the head?</summary>
+
+**A:** It gives the first group a real predecessor to relink, so the head needs no special case.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What are the two seams stitched after reversing a chunk?</summary>
+
+**A:** The before-node points at the chunk's new head; the chunk's new tail (old first node) points at the next chunk's start.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why count `n` and gate on `n ≥ k`?</summary>
+
+**A:** So only full groups reverse and a short remainder is left untouched — `n > 0` would walk past the end and crash.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How is pairwise swap related to this pattern?</summary>
+
+**A:** It's the `k = 2` case of reverse-in-groups-of-`k`.
+
+</details>
 
 ## Sources & Verify
 

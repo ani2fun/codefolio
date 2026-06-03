@@ -129,10 +129,30 @@ This routine is the backbone of every problem ahead. Patterns like two pointers 
 | Find the waste | what work is repeated or thrown away? |
 | Improve + test | fix the waste; check vs brute force on small inputs |
 
-- **Q:** What's the first code you write for any problem? **A:** The brute force — correct, even if slow.
-- **Q:** Where does the speed-up always hide? **A:** In the work the brute force repeats or wastes.
-- **Q:** How do you trust a faster solution? **A:** Stress-test it against the brute force on many random inputs.
-- **Q:** Why work an example by hand first? **A:** You can't code a process you can't perform yourself.
+<details>
+<summary><strong>Q:</strong> What's the first code you write for any problem?</summary>
+
+**A:** The brute force — correct, even if slow.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Where does the speed-up always hide?</summary>
+
+**A:** In the work the brute force repeats or wastes.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How do you trust a faster solution?</summary>
+
+**A:** Stress-test it against the brute force on many random inputs.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why work an example by hand first?</summary>
+
+**A:** You can't code a process you can't perform yourself.
+
+</details>
 
 ## Sources & Verify
 

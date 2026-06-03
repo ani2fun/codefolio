@@ -136,10 +136,30 @@ Two cautions to carry forward. First, `O(1)` is an *average* — a poor hash fun
 | same, worst case | `O(n)` | a bad hash piles every key into one bucket |
 | space | `O(n)` | buckets plus the entries they hold |
 
-- **Q:** How does a hash table turn a key into a position? **A:** `index = hash(key) % capacity` — it *computes* the slot instead of searching.
-- **Q:** What is a collision, and why is it unavoidable? **A:** Two keys hashing to the same bucket; with more keys than buckets the pigeonhole principle guarantees it.
-- **Q:** Name the two collision-resolution families. **A:** Separate chaining (a list per bucket) and open addressing (probe to the next free slot).
-- **Q:** What is the load factor, and why rehash? **A:** `entries / capacity`; when it climbs, buckets crowd and lookups slow, so you grow the array and re-place entries to restore `O(1)`.
+<details>
+<summary><strong>Q:</strong> How does a hash table turn a key into a position?</summary>
+
+**A:** `index = hash(key) % capacity` — it *computes* the slot instead of searching.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What is a collision, and why is it unavoidable?</summary>
+
+**A:** Two keys hashing to the same bucket; with more keys than buckets the pigeonhole principle guarantees it.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Name the two collision-resolution families.</summary>
+
+**A:** Separate chaining (a list per bucket) and open addressing (probe to the next free slot).
+
+</details>
+<details>
+<summary><strong>Q:</strong> What is the load factor, and why rehash?</summary>
+
+**A:** `entries / capacity`; when it climbs, buckets crowd and lookups slow, so you grow the array and re-place entries to restore `O(1)`.
+
+</details>
 
 ## Sources & Verify
 

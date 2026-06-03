@@ -231,11 +231,36 @@ flowchart LR
 | Radix / PATRICIA | collapse single-child chains into substring edges |
 | Wins when | prefixes shared **and** prefix queries needed |
 
-- **Q:** Time to insert/search/prefix-check a string of length `L`? **A:** `O(L)`, independent of how many strings are stored.
-- **Q:** Why is the end-of-word marker essential? **A:** It distinguishes a *stored word* from a mere *prefix* of one; without it `search` collapses into `starts_with` and `app` can't be told from `apple`.
-- **Q:** Why a trie over a hash set for autocomplete? **A:** A hash set has no order and can't enumerate "everything starting with X"; a trie answers prefix queries in `O(L + matches)` regardless of dictionary size.
-- **Q:** When does a trie *not* save space? **A:** When prefixes aren't shared (random keys/UUIDs) — it becomes one node per character with no compression.
-- **Q:** What does a compressed (radix) trie change? **A:** It collapses each single-child chain into one edge labelled with the full substring, saving memory on deep sparse trees while keeping `O(L)`.
+<details>
+<summary><strong>Q:</strong> Time to insert/search/prefix-check a string of length `L`?</summary>
+
+**A:** `O(L)`, independent of how many strings are stored.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is the end-of-word marker essential?</summary>
+
+**A:** It distinguishes a *stored word* from a mere *prefix* of one; without it `search` collapses into `starts_with` and `app` can't be told from `apple`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why a trie over a hash set for autocomplete?</summary>
+
+**A:** A hash set has no order and can't enumerate "everything starting with X"; a trie answers prefix queries in `O(L + matches)` regardless of dictionary size.
+
+</details>
+<details>
+<summary><strong>Q:</strong> When does a trie *not* save space?</summary>
+
+**A:** When prefixes aren't shared (random keys/UUIDs) — it becomes one node per character with no compression.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What does a compressed (radix) trie change?</summary>
+
+**A:** It collapses each single-child chain into one edge labelled with the full substring, saving memory on deep sparse trees while keeping `O(L)`.
+
+</details>
 
 ## Sources & Verify
 

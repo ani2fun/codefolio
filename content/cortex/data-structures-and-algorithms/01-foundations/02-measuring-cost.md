@@ -128,10 +128,30 @@ Big-O is the yardstick for the rest of the book. Every data structure is sold on
 | `O(n)` | grows with the input | one scan |
 | `O(n²)` | grows with the square | every pair |
 
-- **Q:** Why count operations instead of timing with a stopwatch? **A:** Time depends on the machine and input; operation growth describes the method itself.
-- **Q:** What is `3n + 5` in Big-O, and why? **A:** `O(n)` — keep the dominant term and drop constants.
-- **Q:** `n` doubles and the work quadruples — what shape is that? **A:** `O(n²)`.
-- **Q:** What two costs must every algorithm report? **A:** Time and space.
+<details>
+<summary><strong>Q:</strong> Why count operations instead of timing with a stopwatch?</summary>
+
+**A:** Time depends on the machine and input; operation growth describes the method itself.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What is `3n + 5` in Big-O, and why?</summary>
+
+**A:** `O(n)` — keep the dominant term and drop constants.
+
+</details>
+<details>
+<summary><strong>Q:</strong> `n` doubles and the work quadruples — what shape is that?</summary>
+
+**A:** `O(n²)`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What two costs must every algorithm report?</summary>
+
+**A:** Time and space.
+
+</details>
 
 ## Sources & Verify
 

@@ -196,11 +196,36 @@ AVL is the strict end of the balance spectrum:
 | Height bound | `1.44 log₂ n` (Fibonacci / golden ratio) |
 | Rotations | insert ≤1; delete up to `O(log n)`; each rotation `O(1)` |
 
-- **Q:** The AVL invariant and balance factor? **A:** Every node's left/right subtree heights differ by ≤1; balance factor `h(left) − h(right)` ∈ {−1, 0, +1}.
-- **Q:** The four rebalance cases? **A:** LL → right-rotate P; RR → left-rotate P; LR → left-rotate P.left then right-rotate P; RL → right-rotate P.right then left-rotate P.
-- **Q:** Why do LR/RL need *two* rotations? **A:** The heavy grandchild is the *inner* one; a single rotation keeps it inner (just mirrors the imbalance), so you rotate the child first to convert into LL/RR.
-- **Q:** Why is the height bound `1.44 log n`, not `log n`? **A:** The minimum-node AVL tree of height `h` follows the Fibonacci recurrence `N(h)=N(h−1)+N(h−2)+1`, giving `N(h) ≈ φ^h/√5`, so `h ≈ 1.44 log₂ n`.
-- **Q:** Rotations per insert vs delete? **A:** Insert ≤1 (single or double); delete up to `O(log n)` because rebalancing can cascade toward the root.
+<details>
+<summary><strong>Q:</strong> The AVL invariant and balance factor?</summary>
+
+**A:** Every node's left/right subtree heights differ by ≤1; balance factor `h(left) − h(right)` ∈ {−1, 0, +1}.
+
+</details>
+<details>
+<summary><strong>Q:</strong> The four rebalance cases?</summary>
+
+**A:** LL → right-rotate P; RR → left-rotate P; LR → left-rotate P.left then right-rotate P; RL → right-rotate P.right then left-rotate P.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why do LR/RL need *two* rotations?</summary>
+
+**A:** The heavy grandchild is the *inner* one; a single rotation keeps it inner (just mirrors the imbalance), so you rotate the child first to convert into LL/RR.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is the height bound `1.44 log n`, not `log n`?</summary>
+
+**A:** The minimum-node AVL tree of height `h` follows the Fibonacci recurrence `N(h)=N(h−1)+N(h−2)+1`, giving `N(h) ≈ φ^h/√5`, so `h ≈ 1.44 log₂ n`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Rotations per insert vs delete?</summary>
+
+**A:** Insert ≤1 (single or double); delete up to `O(log n)` because rebalancing can cascade toward the root.
+
+</details>
 
 ## Sources & Verify
 

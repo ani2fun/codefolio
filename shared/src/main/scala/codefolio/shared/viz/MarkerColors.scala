@@ -12,9 +12,9 @@ package codefolio.shared.viz
  * the Claude Design handoff's `window.POINTER_COLORS` in `ui_kits/visualise/steps.js`. Same shape as the
  * previous Tailwind-default palette; only the hexes change.
  *
- * The trace-driven Visualise reads *real* Python variable names which it cannot rename, so this canon adds
- * an `aliases` layer mapping common real-code names (`cur`, `nxt`, `prev`, `lo`, …) onto canonical roles, and
- * a `fallback` palette of distinct hues for names with no role at all. Was previously paired with a strict
+ * The trace-driven Visualise reads *real* Python variable names which it cannot rename, so this canon adds an
+ * `aliases` layer mapping common real-code names (`cur`, `nxt`, `prev`, `lo`, …) onto canonical roles, and a
+ * `fallback` palette of distinct hues for names with no role at all. Was previously paired with a strict
  * `MarkerCanon` table for hand-authored widgets that hard-rejected unknown names; that table was retired
  * along with its callers (ArrayTraversal / BinaryTree / LinkedList / GraphExplorer / StackQueue / HeapTree)
  * in slices 11b–15, leaving this module as the single source of truth.

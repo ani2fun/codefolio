@@ -136,10 +136,30 @@ This closes the array pattern family — scans, two-pointer variants, sliding wi
 | Sweep | `concurrent += delta`; track the max |
 | Cost | `O(n log n)` (sort) + `O(n)` sweep, `O(n)` space |
 
-- **Q:** How does max-overlap avoid the `O(n²)` all-pairs check? **A:** It counts a running total over sorted `+1`/`−1` events in one `O(n)` sweep instead of comparing every pair.
-- **Q:** What does the running `concurrent` count represent mid-sweep? **A:** How many intervals are active at the sweep line's current position.
-- **Q:** Why must an end sort before a start at the same coordinate? **A:** For half-open intervals, a slot freed at `t` is reusable at `t` — processing the `−1` first stops touching intervals from double-counting.
-- **Q:** Max-overlap vs interval-merging? **A:** Merging joins overlaps into larger intervals (keeps the last); max-overlap discards identity and just counts how many stack up.
+<details>
+<summary><strong>Q:</strong> How does max-overlap avoid the `O(n²)` all-pairs check?</summary>
+
+**A:** It counts a running total over sorted `+1`/`−1` events in one `O(n)` sweep instead of comparing every pair.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What does the running `concurrent` count represent mid-sweep?</summary>
+
+**A:** How many intervals are active at the sweep line's current position.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why must an end sort before a start at the same coordinate?</summary>
+
+**A:** For half-open intervals, a slot freed at `t` is reusable at `t` — processing the `−1` first stops touching intervals from double-counting.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Max-overlap vs interval-merging?</summary>
+
+**A:** Merging joins overlaps into larger intervals (keeps the last); max-overlap discards identity and just counts how many stack up.
+
+</details>
 
 ## Sources & Verify
 

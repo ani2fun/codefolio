@@ -171,10 +171,30 @@ LCA is a clean example of the BST ordering paying off:
 | Straddle / one `== node` | return this node (the LCA) |
 | Cost | `O(h)` time, `O(1)` space (iterative) |
 
-- **Q:** What is the LCA, and where is it in a BST? **A:** The deepest node with both keys as descendants — the split point where the two keys' search paths diverge.
-- **Q:** How do you find it? **A:** Descend from the root: both smaller → left, both larger → right; the first node they straddle (or that equals one) is the LCA.
-- **Q:** Why is the BST LCA `O(h)`/`O(1)` while the general-tree LCA is `O(n)`? **A:** In a BST a comparison reveals each key's subtree, so one descent suffices; a general tree has no such positional info, forcing a two-subtree search.
-- **Q:** How does LCA give node distance? **A:** `distance(p, q) = depth(p) + depth(q) − 2·depth(LCA)`.
+<details>
+<summary><strong>Q:</strong> What is the LCA, and where is it in a BST?</summary>
+
+**A:** The deepest node with both keys as descendants — the split point where the two keys' search paths diverge.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How do you find it?</summary>
+
+**A:** Descend from the root: both smaller → left, both larger → right; the first node they straddle (or that equals one) is the LCA.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is the BST LCA `O(h)`/`O(1)` while the general-tree LCA is `O(n)`?</summary>
+
+**A:** In a BST a comparison reveals each key's subtree, so one descent suffices; a general tree has no such positional info, forcing a two-subtree search.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does LCA give node distance?</summary>
+
+**A:** `distance(p, q) = depth(p) + depth(q) − 2·depth(LCA)`.
+
+</details>
 
 ## Sources & Verify
 

@@ -164,10 +164,30 @@ Iterative search is a small lesson with a transferable habit:
 | Matters when | deep/degenerate trees (`h ≈ n`) — avoids stack overflow |
 | Also iterative | insertion; deletion usually stays recursive |
 
-- **Q:** What does iterative search change versus recursive? **A:** Same `O(h)` time, but `O(1)` space — a loop over one pointer replaces the `O(h)` call stack.
-- **Q:** Why can BST search be converted to a loop so mechanically? **A:** It's tail-recursive — the recursive call is the last action, so no stack frame needs to persist.
-- **Q:** When does the space difference actually matter? **A:** On deep/degenerate trees (`h ≈ n`), where recursion risks stack overflow; for balanced trees (`h ≈ log n`) it's negligible.
-- **Q:** Which BST operations convert cleanly to iteration, and which doesn't? **A:** Search and insertion do; deletion usually stays recursive (it needs successor and parent context).
+<details>
+<summary><strong>Q:</strong> What does iterative search change versus recursive?</summary>
+
+**A:** Same `O(h)` time, but `O(1)` space — a loop over one pointer replaces the `O(h)` call stack.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why can BST search be converted to a loop so mechanically?</summary>
+
+**A:** It's tail-recursive — the recursive call is the last action, so no stack frame needs to persist.
+
+</details>
+<details>
+<summary><strong>Q:</strong> When does the space difference actually matter?</summary>
+
+**A:** On deep/degenerate trees (`h ≈ n`), where recursion risks stack overflow; for balanced trees (`h ≈ log n`) it's negligible.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Which BST operations convert cleanly to iteration, and which doesn't?</summary>
+
+**A:** Search and insertion do; deletion usually stays recursive (it needs successor and parent context).
+
+</details>
 
 ## Sources & Verify
 

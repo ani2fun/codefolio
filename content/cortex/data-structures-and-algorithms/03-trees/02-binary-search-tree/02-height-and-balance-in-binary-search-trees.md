@@ -68,11 +68,13 @@ Two recursive definitions:
 ```mermaid
 flowchart TB
   subgraph Balanced["balanced: height 2"]
+    direction TB
     R["5"] --> A["3"]
     R --> B["8"]
     A --> C["1"]; A --> D["4"]; B --> E["7"]; B --> F["9"]
   end
   subgraph Degenerate["degenerate: height 3"]
+    direction TB
     X1["1"] --> X2["2"] --> X3["3"] --> X4["4"]
   end
 ```
@@ -192,10 +194,30 @@ Height and balance are the lens for everything tree-shaped:
 | Bound | `h ≤ log_φ(n) ≈ 1.44 log₂ n` (sparsest balanced tree is Fibonacci-sized) |
 | Why it matters | every BST operation is `O(h)`; balanced vs degenerate = `O(log n)` vs `O(n)` |
 
-- **Q:** Why does a BST's performance reduce to its height? **A:** Search, insert, and delete each follow one root-to-leaf path, whose length is the height.
-- **Q:** What is a height-balanced tree? **A:** One where every node's left and right subtree heights differ by at most 1.
-- **Q:** Why does height-balance guarantee `O(log n)`? **A:** The sparsest such tree of height `h` has Fibonacci-many nodes (`≥ φ^h`), so `h ≤ ~1.44 log₂ n`.
-- **Q:** Why can't a plain BST be trusted for `O(log n)`? **A:** Its height depends on insertion order; sorted/adversarial input makes a height-`n` chain — only self-balancing trees force the bound.
+<details>
+<summary><strong>Q:</strong> Why does a BST's performance reduce to its height?</summary>
+
+**A:** Search, insert, and delete each follow one root-to-leaf path, whose length is the height.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What is a height-balanced tree?</summary>
+
+**A:** One where every node's left and right subtree heights differ by at most 1.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why does height-balance guarantee `O(log n)`?</summary>
+
+**A:** The sparsest such tree of height `h` has Fibonacci-many nodes (`≥ φ^h`), so `h ≤ ~1.44 log₂ n`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why can't a plain BST be trusted for `O(log n)`?</summary>
+
+**A:** Its height depends on insertion order; sorted/adversarial input makes a height-`n` chain — only self-balancing trees force the bound.
+
+</details>
 
 ## Sources & Verify
 

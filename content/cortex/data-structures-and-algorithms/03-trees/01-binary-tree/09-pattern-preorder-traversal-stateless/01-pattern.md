@@ -148,10 +148,30 @@ Preorder-stateless is the "what do my ancestors tell me?" template:
 | Why stateless | context in the argument → call stack restores parent state, no cleanup |
 | Family | path sum, depth, path string, running max ("good nodes") |
 
-- **Q:** What does "stateless" mean here, and how is context carried? **A:** No shared mutable accumulator — context flows down as a function argument, so each call is determined by its inputs.
-- **Q:** When do you reach for top-down preorder? **A:** When a node's answer depends on its ancestors (depth, path sum, running max along the path).
-- **Q:** Why does argument-passing avoid the backtracking-cleanup bug? **A:** Each call gets its own copy; on return it goes out of scope automatically — there's no manual "undo on exit" to forget.
-- **Q:** Preorder vs postorder? **A:** Preorder pushes context *down* (ancestor info); postorder combines results *up* (child info).
+<details>
+<summary><strong>Q:</strong> What does "stateless" mean here, and how is context carried?</summary>
+
+**A:** No shared mutable accumulator — context flows down as a function argument, so each call is determined by its inputs.
+
+</details>
+<details>
+<summary><strong>Q:</strong> When do you reach for top-down preorder?</summary>
+
+**A:** When a node's answer depends on its ancestors (depth, path sum, running max along the path).
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why does argument-passing avoid the backtracking-cleanup bug?</summary>
+
+**A:** Each call gets its own copy; on return it goes out of scope automatically — there's no manual "undo on exit" to forget.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Preorder vs postorder?</summary>
+
+**A:** Preorder pushes context *down* (ancestor info); postorder combines results *up* (child info).
+
+</details>
 
 ## Sources & Verify
 

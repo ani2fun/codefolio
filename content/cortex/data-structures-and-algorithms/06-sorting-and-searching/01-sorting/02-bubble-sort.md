@@ -150,10 +150,30 @@ Bubble sort is a teaching tool, but the properties it introduces are the vocabul
 | Cost | `O(n²)` avg/worst, `O(n)` best (adaptive), `O(1)` space |
 | Properties | stable, in-place, adaptive |
 
-- **Q:** What does one full pass of bubble sort guarantee? **A:** The largest element of the unsorted region reaches its final position at that region's end.
-- **Q:** Why does the inner loop shrink by `i` each pass? **A:** After `i` passes the last `i` elements are already sorted, so re-scanning them is wasted work.
-- **Q:** What makes bubble sort `O(n)` on already-sorted input? **A:** The early-exit flag — a pass with no swaps proves the array is sorted, so it stops after one pass.
-- **Q:** Which three properties does bubble sort have? **A:** Stable, in-place, and adaptive.
+<details>
+<summary><strong>Q:</strong> What does one full pass of bubble sort guarantee?</summary>
+
+**A:** The largest element of the unsorted region reaches its final position at that region's end.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why does the inner loop shrink by `i` each pass?</summary>
+
+**A:** After `i` passes the last `i` elements are already sorted, so re-scanning them is wasted work.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What makes bubble sort `O(n)` on already-sorted input?</summary>
+
+**A:** The early-exit flag — a pass with no swaps proves the array is sorted, so it stops after one pass.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Which three properties does bubble sort have?</summary>
+
+**A:** Stable, in-place, and adaptive.
+
+</details>
 
 ## Sources & Verify
 

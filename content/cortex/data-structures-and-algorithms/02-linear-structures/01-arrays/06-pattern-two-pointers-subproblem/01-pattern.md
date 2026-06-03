@@ -141,10 +141,30 @@ The tradeoff echoes the reduction lesson: 3Sum has a hash-based variant too, but
 | Sequence form | fixed list of two-pointer sub-ops (rotation = 3 reversals) → `O(n)` |
 | Gotcha | dedupe by skipping equal adjacent values after the sort |
 
-- **Q:** How does fixing one element turn 3Sum into something solvable? **A:** It drops the dimension to two — "find `b + c = −a`" — which is the Two Sum reduction, an `O(n)` sweep.
-- **Q:** What's the cost rule? **A:** `O(n^(d+1))` for `d` fixed elements (3Sum `O(n²)`, 4Sum `O(n³)`); a fixed *sequence* of sub-ops stays `O(n)`.
-- **Q:** How is "rotate left by k" three reversals? **A:** Reverse the whole array, then the first `k`, then the rest — each a two-pointer flip; total `O(n)`, `O(1)` space.
-- **Q:** The classic 3Sum bug? **A:** Emitting duplicate triples — fix it by skipping equal adjacent values after sorting.
+<details>
+<summary><strong>Q:</strong> How does fixing one element turn 3Sum into something solvable?</summary>
+
+**A:** It drops the dimension to two — "find `b + c = −a`" — which is the Two Sum reduction, an `O(n)` sweep.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What's the cost rule?</summary>
+
+**A:** `O(n^(d+1))` for `d` fixed elements (3Sum `O(n²)`, 4Sum `O(n³)`); a fixed *sequence* of sub-ops stays `O(n)`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How is "rotate left by k" three reversals?</summary>
+
+**A:** Reverse the whole array, then the first `k`, then the rest — each a two-pointer flip; total `O(n)`, `O(1)` space.
+
+</details>
+<details>
+<summary><strong>Q:</strong> The classic 3Sum bug?</summary>
+
+**A:** Emitting duplicate triples — fix it by skipping equal adjacent values after sorting.
+
+</details>
 
 ## Sources & Verify
 

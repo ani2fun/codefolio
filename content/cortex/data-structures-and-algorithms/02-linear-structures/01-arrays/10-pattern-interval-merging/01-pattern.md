@@ -133,10 +133,30 @@ Sort-then-sweep is the master move for almost every interval problem:
 | Overlap | `next.start ≤ last.end` → `last.end = max(last.end, next.end)` |
 | Cost | `O(n log n)` time (sort dominates), `O(n)` output |
 
-- **Q:** What are the two steps of interval merging? **A:** Sort by start, then a single left-to-right sweep merging or appending.
-- **Q:** Why compare each interval only with the *last* merged one? **A:** Sorting by start means everything later begins later, so nothing can reach back to an already-closed interval.
-- **Q:** What's the total cost and what dominates it? **A:** `O(n log n)` — the sort; the sweep itself is `O(n)`.
-- **Q:** Where do off-by-one bugs hide? **A:** The touching-endpoint convention — whether `[1,3]` and `[3,5]` merge (`≤`) or not (`<`).
+<details>
+<summary><strong>Q:</strong> What are the two steps of interval merging?</summary>
+
+**A:** Sort by start, then a single left-to-right sweep merging or appending.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why compare each interval only with the *last* merged one?</summary>
+
+**A:** Sorting by start means everything later begins later, so nothing can reach back to an already-closed interval.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What's the total cost and what dominates it?</summary>
+
+**A:** `O(n log n)` — the sort; the sweep itself is `O(n)`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Where do off-by-one bugs hide?</summary>
+
+**A:** The touching-endpoint convention — whether `[1,3]` and `[3,5]` merge (`≤`) or not (`<`).
+
+</details>
 
 ## Sources & Verify
 

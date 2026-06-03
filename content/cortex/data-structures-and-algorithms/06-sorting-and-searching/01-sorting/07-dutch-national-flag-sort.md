@@ -154,10 +154,30 @@ The three-way partition is a small algorithm with outsized reach:
 | `== pivot` | `mid++` |
 | Cost | `O(n)` time, `O(1)` space, one pass |
 
-- **Q:** What three regions does the algorithm build, and in how many passes? **A:** `< pivot`, `== pivot`, `> pivot` — in a single `O(n)` pass.
-- **Q:** Why advance `mid` on a `< pivot` swap but not on a `> pivot` swap? **A:** The `< ` swap pulls in an already-examined `==`-region element; the `> ` swap pulls in an unexamined element from `high`, which must still be classified.
-- **Q:** When does the loop stop? **A:** When `mid > high` — the unexamined middle region is empty.
-- **Q:** What larger algorithm does it enable? **A:** Three-way quicksort, which finalizes all pivot-equal elements per partition, sorting duplicate-heavy arrays much faster.
+<details>
+<summary><strong>Q:</strong> What three regions does the algorithm build, and in how many passes?</summary>
+
+**A:** `< pivot`, `== pivot`, `> pivot` — in a single `O(n)` pass.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why advance `mid` on a `< pivot` swap but not on a `> pivot` swap?</summary>
+
+**A:** The `< ` swap pulls in an already-examined `==`-region element; the `> ` swap pulls in an unexamined element from `high`, which must still be classified.
+
+</details>
+<details>
+<summary><strong>Q:</strong> When does the loop stop?</summary>
+
+**A:** When `mid > high` — the unexamined middle region is empty.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What larger algorithm does it enable?</summary>
+
+**A:** Three-way quicksort, which finalizes all pivot-equal elements per partition, sorting duplicate-heavy arrays much faster.
+
+</details>
 
 ## Sources & Verify
 

@@ -144,10 +144,30 @@ The tradeoff to remember: you buy `O(1)` amortized append *and* `O(1)` random ac
 | read / write `arr[i]` | `O(1)` | still a contiguous block — address arithmetic, unchanged |
 | extra memory | up to `2×` size | half the block can be empty right after a resize |
 
-- **Q:** Why grow by doubling instead of by a fixed number of slots? **A:** Doubling gives `O(n)` total copy work (`O(1)` amortized); fixed growth gives `O(n²)`.
-- **Q:** What does "amortized `O(1)`" guarantee? **A:** Any sequence of `n` pushes costs `O(n)` total — a worst-case bound over the sequence, not a lucky average.
-- **Q:** What's the price of amortized `O(1)` append? **A:** Up to `2×` memory — half the block sits empty right after a resize.
-- **Q:** How do you skip the resizes entirely? **A:** Pre-size the block when you know the final count.
+<details>
+<summary><strong>Q:</strong> Why grow by doubling instead of by a fixed number of slots?</summary>
+
+**A:** Doubling gives `O(n)` total copy work (`O(1)` amortized); fixed growth gives `O(n²)`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What does "amortized `O(1)`" guarantee?</summary>
+
+**A:** Any sequence of `n` pushes costs `O(n)` total — a worst-case bound over the sequence, not a lucky average.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What's the price of amortized `O(1)` append?</summary>
+
+**A:** Up to `2×` memory — half the block sits empty right after a resize.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How do you skip the resizes entirely?</summary>
+
+**A:** Pre-size the block when you know the final count.
+
+</details>
 
 ## Sources & Verify
 

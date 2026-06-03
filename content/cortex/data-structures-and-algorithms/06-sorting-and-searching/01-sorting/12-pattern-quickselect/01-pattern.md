@@ -163,10 +163,30 @@ Quickselect is the "I need one order statistic, not the whole order" tool:
 | Worst case | `O(n²)` — random pivot; median-of-medians for guaranteed `O(n)` |
 | Space | `O(1)` iterative |
 
-- **Q:** How does quickselect avoid sorting the whole array? **A:** After partitioning, the pivot's rank `p` tells which side holds rank `k`; it recurses into only that side and discards the other.
-- **Q:** Why is it `O(n)` average while quicksort is `O(n log n)`? **A:** Recursing into one side gives the geometric recurrence `T(n)=T(n/2)+O(n)=O(n)`, not quicksort's `T(n)=2T(n/2)+O(n)=O(n log n)`.
-- **Q:** What's the worst case and the fix? **A:** `O(n²)` with consistently bad pivots; a random pivot (or median-of-medians for a guarantee) fixes it.
-- **Q:** Quickselect vs a size-k heap for the k-th element? **A:** Quickselect is `O(n)` average in memory; a heap is `O(n log k)` and works on streams.
+<details>
+<summary><strong>Q:</strong> How does quickselect avoid sorting the whole array?</summary>
+
+**A:** After partitioning, the pivot's rank `p` tells which side holds rank `k`; it recurses into only that side and discards the other.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is it `O(n)` average while quicksort is `O(n log n)`?</summary>
+
+**A:** Recursing into one side gives the geometric recurrence `T(n)=T(n/2)+O(n)=O(n)`, not quicksort's `T(n)=2T(n/2)+O(n)=O(n log n)`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What's the worst case and the fix?</summary>
+
+**A:** `O(n²)` with consistently bad pivots; a random pivot (or median-of-medians for a guarantee) fixes it.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Quickselect vs a size-k heap for the k-th element?</summary>
+
+**A:** Quickselect is `O(n)` average in memory; a heap is `O(n log k)` and works on streams.
+
+</details>
 
 ## Sources & Verify
 

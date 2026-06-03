@@ -142,10 +142,30 @@ This pattern is the umbrella; the rest of the section is its variants:
 | Cost | `O(log n)` (or `O(log(range) × test)`) |
 | Habit | fix the invariant (inclusive vs half-open) and stay consistent |
 
-- **Q:** When should you reach for binary search? **A:** When the search space is ordered/monotone and a cheap midpoint test can discard half of it.
-- **Q:** What's common to every variant? **A:** The probe/test/shrink template — only the midpoint test changes (exact, boundary, rotated, predicate).
-- **Q:** Why is "two sorted arrays, find a common element" still binary search? **A:** Binary search needs an ordered search space, not one literal array — search one array for each element of the other.
-- **Q:** What prevents the classic off-by-one bugs? **A:** Picking one invariant (inclusive `[lo,hi]` or half-open `[lo,hi)`) and keeping `mid`, the loop test, and updates consistent with it.
+<details>
+<summary><strong>Q:</strong> When should you reach for binary search?</summary>
+
+**A:** When the search space is ordered/monotone and a cheap midpoint test can discard half of it.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What's common to every variant?</summary>
+
+**A:** The probe/test/shrink template — only the midpoint test changes (exact, boundary, rotated, predicate).
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is "two sorted arrays, find a common element" still binary search?</summary>
+
+**A:** Binary search needs an ordered search space, not one literal array — search one array for each element of the other.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What prevents the classic off-by-one bugs?</summary>
+
+**A:** Picking one invariant (inclusive `[lo,hi]` or half-open `[lo,hi)`) and keeping `mid`, the loop test, and updates consistent with it.
+
+</details>
 
 ## Sources & Verify
 

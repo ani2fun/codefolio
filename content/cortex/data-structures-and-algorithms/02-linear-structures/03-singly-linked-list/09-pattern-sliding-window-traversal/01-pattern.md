@@ -166,10 +166,30 @@ This is one specialization of the two-pointer idea; the **next** pattern uses tw
 | Result | `lag` is the predecessor of the `k`-th-from-end → unlink |
 | Cost | `O(n)` one pass, `O(1)` space |
 
-- **Q:** How does this beat the two-pass (count, then walk) approach? **A:** A fixed `k`-gap between two pointers locates the target in a single pass — the length is never needed.
-- **Q:** Why does `lag` stop on the *predecessor* of the target, not the target? **A:** Unlinking a node needs its predecessor (you rewrite `predecessor.next`); the `k`-gap is tuned so `lag` lands there.
-- **Q:** What does the dummy node buy you? **A:** Removing the head becomes a non-special case — `lag` rests on the dummy and `dummy.next = dummy.next.next` drops the old head.
-- **Q:** How is this window different from an array sliding window? **A:** A list can't index backward, so the *gap between two forward pointers* is the window — distance, not position.
+<details>
+<summary><strong>Q:</strong> How does this beat the two-pass (count, then walk) approach?</summary>
+
+**A:** A fixed `k`-gap between two pointers locates the target in a single pass — the length is never needed.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why does `lag` stop on the *predecessor* of the target, not the target?</summary>
+
+**A:** Unlinking a node needs its predecessor (you rewrite `predecessor.next`); the `k`-gap is tuned so `lag` lands there.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What does the dummy node buy you?</summary>
+
+**A:** Removing the head becomes a non-special case — `lag` rests on the dummy and `dummy.next = dummy.next.next` drops the old head.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How is this window different from an array sliding window?</summary>
+
+**A:** A list can't index backward, so the *gap between two forward pointers* is the window — distance, not position.
+
+</details>
 
 ## Sources & Verify
 

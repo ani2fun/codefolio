@@ -193,10 +193,30 @@ Column-order is level-order with a *second* coordinate threaded through the queu
 | Read order | columns from `min(col)` to `max(col)` |
 | Reducers | all = vertical · first = top view · last = bottom view |
 
-- **Q:** What coordinate makes columns work, and how does it update? **A:** A column index — root `0`, left child `c−1`, right child `c+1` — carried through the BFS queue.
-- **Q:** Why does BFS (not DFS) give correct top/bottom views? **A:** BFS visits by increasing depth, so each column bucket fills top-down; the first node is the shallowest (top), the last is the deepest (bottom).
-- **Q:** How do vertical / top / bottom differ in code? **A:** Same BFS; the reducer per column differs — keep all (vertical), keep first (top), keep last (bottom).
-- **Q:** Why read from `min(col)` to `max(col)`? **A:** Left children produce negative columns, so the leftmost column is negative, not `0`.
+<details>
+<summary><strong>Q:</strong> What coordinate makes columns work, and how does it update?</summary>
+
+**A:** A column index — root `0`, left child `c−1`, right child `c+1` — carried through the BFS queue.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why does BFS (not DFS) give correct top/bottom views?</summary>
+
+**A:** BFS visits by increasing depth, so each column bucket fills top-down; the first node is the shallowest (top), the last is the deepest (bottom).
+
+</details>
+<details>
+<summary><strong>Q:</strong> How do vertical / top / bottom differ in code?</summary>
+
+**A:** Same BFS; the reducer per column differs — keep all (vertical), keep first (top), keep last (bottom).
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why read from `min(col)` to `max(col)`?</summary>
+
+**A:** Left children produce negative columns, so the leftmost column is negative, not `0`.
+
+</details>
 
 ## Sources & Verify
 

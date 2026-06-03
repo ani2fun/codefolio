@@ -144,10 +144,30 @@ Counting sort is the gateway to the non-comparison sorts:
 | Pitfall | sparse/huge range → `O(k)` blowup |
 | Stable variant | prefix sums + right-to-left placement → enables radix sort |
 
-- **Q:** How does counting sort beat the `Ω(n log n)` comparison bound? **A:** It never compares elements — it uses values as array indices to tally, so the lower bound (which assumes comparisons) doesn't apply.
-- **Q:** What governs counting sort's cost? **A:** The value range `k`: it's `O(n + k)`, so it's only efficient when `k` is comparable to `n`.
-- **Q:** When is counting sort the wrong choice? **A:** When keys are sparse or unbounded — a huge range allocates mostly-empty buckets and blows up time and space.
-- **Q:** How does counting sort lead to radix sort? **A:** Radix sort applies *stable* counting sort digit-by-digit (LSD first), extending linear-time sorting to large integers; it relies on counting sort's stability.
+<details>
+<summary><strong>Q:</strong> How does counting sort beat the `Ω(n log n)` comparison bound?</summary>
+
+**A:** It never compares elements — it uses values as array indices to tally, so the lower bound (which assumes comparisons) doesn't apply.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What governs counting sort's cost?</summary>
+
+**A:** The value range `k`: it's `O(n + k)`, so it's only efficient when `k` is comparable to `n`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> When is counting sort the wrong choice?</summary>
+
+**A:** When keys are sparse or unbounded — a huge range allocates mostly-empty buckets and blows up time and space.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does counting sort lead to radix sort?</summary>
+
+**A:** Radix sort applies *stable* counting sort digit-by-digit (LSD first), extending linear-time sorting to large integers; it relies on counting sort's stability.
+
+</details>
 
 ## Sources & Verify
 

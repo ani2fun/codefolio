@@ -157,10 +157,30 @@ But know when *not* to reach for one. Here is the catch the costs above hide: me
 | delete or find a node by position | `O(n)` | no look-back, no indexing — walk from `head` |
 | space | `O(n)` + one pointer per node | the `next` reference is the overhead |
 
-- **Q:** What two things does a node hold? **A:** A value and a `next` pointer to the following node (or `null` at the tail).
-- **Q:** Why is a head insert `O(1)` for a list but `O(n)` for an array? **A:** The list rewires two pointers; the array shifts every element right.
-- **Q:** Why is reaching the k-th node `O(n)`? **A:** No address arithmetic — you follow k `next` pointers from the head.
-- **Q:** When does a linked list beat a dynamic array? **A:** When the work is mostly `O(1)` edits at the ends; the array wins on indexed access, cache, and memory.
+<details>
+<summary><strong>Q:</strong> What two things does a node hold?</summary>
+
+**A:** A value and a `next` pointer to the following node (or `null` at the tail).
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is a head insert `O(1)` for a list but `O(n)` for an array?</summary>
+
+**A:** The list rewires two pointers; the array shifts every element right.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is reaching the k-th node `O(n)`?</summary>
+
+**A:** No address arithmetic — you follow k `next` pointers from the head.
+
+</details>
+<details>
+<summary><strong>Q:</strong> When does a linked list beat a dynamic array?</summary>
+
+**A:** When the work is mostly `O(1)` edits at the ends; the array wins on indexed access, cache, and memory.
+
+</details>
 
 ## Sources & Verify
 

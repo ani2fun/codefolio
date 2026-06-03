@@ -9,9 +9,8 @@ The goal is not breadth-as-a-checklist. The goal is for you to be able to **reac
 ## Reading conventions
 
 - Every chapter opens with a hook, a real-world analogy, and a visual before the formalism.
-- Code appears in five tabs: **Pseudocode**, **Python** (canonical), **Java**, **Scala**, **C**. Click between them; the pseudocode is the algorithm, the Python tab is the spec, the others are ports for muscle memory.
-- Every chapter closes with **Edge cases & pitfalls**, **Production reality** (where this lives in real systems), and a **Practice ladder** of 3–5 problems with hints (not solutions).
-- See the [Pseudocode Reference](/cortex/data-structures-and-algorithms/pseudocode-guide) for the symbols used in the 🧠 tab.
+- Code appears in two runnable tabs: **🐍 Python** (the canonical spec) and **☕ Java** (the port for muscle memory). Click between them; both run inline and their output is what the prose describes.
+- Every chapter closes with the takeaways, real-world connections, and a recall set.
 
 ---
 

@@ -155,10 +155,30 @@ And it isn't only textbook structures. The same contiguous block is the workhors
 | insert / remove (middle or front) | `O(n)` | everything after the gap must shift to stay packed |
 | append to a *growable* array | `O(1)` *amortized* | usually free; occasionally copies into a bigger block — "amortized" is defined in the next lesson |
 
-- **Q:** Why is `arr[i]` `O(1)` no matter how large the array is? **A:** The address is computed (`base + i × size`) and jumped to — no scanning.
-- **Q:** What makes inserting at the front `O(n)`? **A:** Every existing item must shift to keep the slots consecutive.
-- **Q:** What single property gives arrays their speed? **A:** Elements are stored in consecutive memory.
-- **Q:** Name three structures built on arrays. **A:** Strings, heaps, and hash tables (stacks and queues too, commonly).
+<details>
+<summary><strong>Q:</strong> Why is `arr[i]` `O(1)` no matter how large the array is?</summary>
+
+**A:** The address is computed (`base + i × size`) and jumped to — no scanning.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What makes inserting at the front `O(n)`?</summary>
+
+**A:** Every existing item must shift to keep the slots consecutive.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What single property gives arrays their speed?</summary>
+
+**A:** Elements are stored in consecutive memory.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Name three structures built on arrays.</summary>
+
+**A:** Strings, heaps, and hash tables (stacks and queues too, commonly).
+
+</details>
 
 ## Sources & Verify
 

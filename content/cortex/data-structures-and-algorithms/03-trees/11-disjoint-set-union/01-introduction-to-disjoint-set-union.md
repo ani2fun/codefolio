@@ -71,16 +71,17 @@ Each element stores **one parent pointer**; a group is a tree, and its **root** 
 ```mermaid
 flowchart TB
   subgraph Before["before find(g) — a chain"]
+    direction TB
     R1((root)) --> A1((a)) --> B1((b)) --> C1((c)) --> D1((d)) --> G1((g))
   end
   subgraph After["after find(g) — flattened"]
+    direction TB
     R2((root)) --> A2((a))
     R2 --> B2((b))
     R2 --> C2((c))
     R2 --> D2((d))
     R2 --> G2((g))
   end
-  Before --> After
   style R1 fill:#fef9c3,stroke:#f59e0b
   style R2 fill:#fef9c3,stroke:#f59e0b
 ```
@@ -243,11 +244,36 @@ DSU is the canonical "self-improving" amortized structure:
 | Cost | amortized `O(α(n))` ≈ constant; single find ≤ `O(log n)` |
 | Limitation | merge only — no efficient split / un-union |
 
-- **Q:** What do the two optimizations do, and what do they give together? **A:** Path compression flattens the find path; union by rank keeps trees short — together, amortized `O(α(n))` (inverse Ackermann, ≤ 4 in practice).
-- **Q:** Why is it correct for `find` (a read) to mutate parent pointers? **A:** A node's root only changes on `union`; compression just shortens the path to the same root, so all answers are unchanged while future finds get faster.
-- **Q:** Why amortized, not worst-case, `O(α(n))`? **A:** A single `find` up a fresh chain can be `O(log n)`, but it flattens the path, so it can only be slow once — the *total* over `m` ops is `O(m·α(n))`.
-- **Q:** What's DSU's key limitation? **A:** It merges but can't efficiently split; edge-deletion problems need reverse-offline processing or link-cut trees.
-- **Q:** Name the killer application. **A:** Kruskal's MST — DSU makes the "would this edge form a cycle?" check near-constant.
+<details>
+<summary><strong>Q:</strong> What do the two optimizations do, and what do they give together?</summary>
+
+**A:** Path compression flattens the find path; union by rank keeps trees short — together, amortized `O(α(n))` (inverse Ackermann, ≤ 4 in practice).
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is it correct for `find` (a read) to mutate parent pointers?</summary>
+
+**A:** A node's root only changes on `union`; compression just shortens the path to the same root, so all answers are unchanged while future finds get faster.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why amortized, not worst-case, `O(α(n))`?</summary>
+
+**A:** A single `find` up a fresh chain can be `O(log n)`, but it flattens the path, so it can only be slow once — the *total* over `m` ops is `O(m·α(n))`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What's DSU's key limitation?</summary>
+
+**A:** It merges but can't efficiently split; edge-deletion problems need reverse-offline processing or link-cut trees.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Name the killer application.</summary>
+
+**A:** Kruskal's MST — DSU makes the "would this edge form a cycle?" check near-constant.
+
+</details>
 
 ## Sources & Verify
 

@@ -137,10 +137,30 @@ Prefix sums plus a map answer a whole class of subarray questions in one pass:
 | How many vs longest | prefix → frequency (count) · prefix → first index (longest) |
 | Cost | `O(n)` time, `O(n)` space |
 
-- **Q:** What identity makes prefix-sum work? **A:** A subarray's sum is the difference of two prefix sums, so "sum = `k`" becomes "two prefixes differ by `k`."
-- **Q:** Why seed the map with `{0: 1}`? **A:** It records the empty prefix so subarrays starting at index 0 (whose prefix itself equals `k`) are counted.
-- **Q:** Why does this work with negatives when a sliding window doesn't? **A:** It never assumes the sum grows monotonically with window size; it just matches prefix differences.
-- **Q:** How do you switch from "how many" to "longest"? **A:** Store prefix → *first index* instead of prefix → *frequency*, and track the largest `j − i`.
+<details>
+<summary><strong>Q:</strong> What identity makes prefix-sum work?</summary>
+
+**A:** A subarray's sum is the difference of two prefix sums, so "sum = `k`" becomes "two prefixes differ by `k`."
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why seed the map with `{0: 1}`?</summary>
+
+**A:** It records the empty prefix so subarrays starting at index 0 (whose prefix itself equals `k`) are counted.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why does this work with negatives when a sliding window doesn't?</summary>
+
+**A:** It never assumes the sum grows monotonically with window size; it just matches prefix differences.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How do you switch from "how many" to "longest"?</summary>
+
+**A:** Store prefix → *first index* instead of prefix → *frequency*, and track the largest `j − i`.
+
+</details>
 
 ## Sources & Verify
 

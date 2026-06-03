@@ -166,10 +166,30 @@ The doubly-list reversal is a clean lesson in how a richer structure simplifies 
 | vs singly | no three-pointer save — `prev` is the preserved forward link |
 | Cost | `O(n)` time, `O(1)` space |
 
-- **Q:** Why does a doubly list need no three-pointer save to reverse? **A:** Swapping puts the old `next` into `prev` in the same step, so the forward link is preserved automatically.
-- **Q:** After swapping a node's pointers, why does `current.prev` advance you forward? **A:** The swap moved the old `next` into `prev`, so `prev` now holds what used to be the forward link.
-- **Q:** What's the new head after reversal? **A:** The old tail — the last node visited in the walk.
-- **Q:** What extra work does segment reversal need versus the singly case? **A:** Both seams must be re-stitched and every node's two pointers reconnected — twice the boundary links.
+<details>
+<summary><strong>Q:</strong> Why does a doubly list need no three-pointer save to reverse?</summary>
+
+**A:** Swapping puts the old `next` into `prev` in the same step, so the forward link is preserved automatically.
+
+</details>
+<details>
+<summary><strong>Q:</strong> After swapping a node's pointers, why does `current.prev` advance you forward?</summary>
+
+**A:** The swap moved the old `next` into `prev`, so `prev` now holds what used to be the forward link.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What's the new head after reversal?</summary>
+
+**A:** The old tail — the last node visited in the walk.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What extra work does segment reversal need versus the singly case?</summary>
+
+**A:** Both seams must be re-stitched and every node's two pointers reconnected — twice the boundary links.
+
+</details>
 
 ## Sources & Verify
 

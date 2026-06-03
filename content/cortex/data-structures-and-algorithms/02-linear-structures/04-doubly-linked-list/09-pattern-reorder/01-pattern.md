@@ -184,10 +184,30 @@ Reorder on a doubly list is the singly technique plus one disciplined repair pas
 | Doubly bonus | the fold reorder needs no reverse — weave front (`next`) + back (`prev`) |
 | Cost | `O(n)` time, `O(1)` space |
 
-- **Q:** Why manipulate only `next` during the reorder and rebuild `prev` afterward? **A:** `prev` is determined by `next`; deferring it gives a single write-site and avoids "forward works, backward corrupt" bugs.
-- **Q:** Why is it safe to leave `prev` stale mid-reorder? **A:** The reorder phase never reads `prev`, so stale backward links can't affect it; they're rebuilt once the forward order is final.
-- **Q:** What's the unifying skeleton across reorder variants? **A:** Classify each node into a chain by a rule, concatenate the chains — identical to the singly case.
-- **Q:** How does a doubly list simplify the fold reorder? **A:** With a tail and `prev` you weave from both ends directly (front via `next`, back via `prev`) — no split + reverse + merge needed.
+<details>
+<summary><strong>Q:</strong> Why manipulate only `next` during the reorder and rebuild `prev` afterward?</summary>
+
+**A:** `prev` is determined by `next`; deferring it gives a single write-site and avoids "forward works, backward corrupt" bugs.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is it safe to leave `prev` stale mid-reorder?</summary>
+
+**A:** The reorder phase never reads `prev`, so stale backward links can't affect it; they're rebuilt once the forward order is final.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What's the unifying skeleton across reorder variants?</summary>
+
+**A:** Classify each node into a chain by a rule, concatenate the chains — identical to the singly case.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does a doubly list simplify the fold reorder?</summary>
+
+**A:** With a tail and `prev` you weave from both ends directly (front via `next`, back via `prev`) — no split + reverse + merge needed.
+
+</details>
 
 ## Sources & Verify
 

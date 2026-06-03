@@ -204,11 +204,36 @@ Bipartite matching is the textbook "reduce your problem to a solved one" lesson:
 | Sink-side caps | enforce ≤1 applicant per job |
 | Complexity | `O(V·E)` (Ford-Fulkerson) · `O(E√V)` (Hopcroft-Karp) |
 
-- **Q:** What is a matching, and what's a *maximum* matching? **A:** A set of edges with no shared endpoint; the maximum has the most such edges.
-- **Q:** How do you reduce bipartite matching to max-flow? **A:** Super-source → every left node, every right node → super-sink, all original `L→R` edges directed; every capacity 1. Max flow = max matching.
-- **Q:** Which capacities enforce which rule? **A:** Source-side (cap 1) ⇒ each applicant ≤1 job; sink-side (cap 1) ⇒ each job ≤1 applicant.
-- **Q:** Why does greedy fail where the reduction succeeds? **A:** Greedy can't un-commit an early pairing; the reduction's augmenting path uses a reverse edge to unmatch and rematch (an alternating path), escaping the trap.
-- **Q:** What theorem characterises a maximum matching? **A:** Berge's theorem — a matching is maximum iff it has no augmenting (alternating) path, exactly the max-flow stopping condition.
+<details>
+<summary><strong>Q:</strong> What is a matching, and what's a *maximum* matching?</summary>
+
+**A:** A set of edges with no shared endpoint; the maximum has the most such edges.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How do you reduce bipartite matching to max-flow?</summary>
+
+**A:** Super-source → every left node, every right node → super-sink, all original `L→R` edges directed; every capacity 1. Max flow = max matching.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Which capacities enforce which rule?</summary>
+
+**A:** Source-side (cap 1) ⇒ each applicant ≤1 job; sink-side (cap 1) ⇒ each job ≤1 applicant.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why does greedy fail where the reduction succeeds?</summary>
+
+**A:** Greedy can't un-commit an early pairing; the reduction's augmenting path uses a reverse edge to unmatch and rematch (an alternating path), escaping the trap.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What theorem characterises a maximum matching?</summary>
+
+**A:** Berge's theorem — a matching is maximum iff it has no augmenting (alternating) path, exactly the max-flow stopping condition.
+
+</details>
 
 ## Sources & Verify
 

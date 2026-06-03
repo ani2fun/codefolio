@@ -166,10 +166,30 @@ LCA is the canonical "answer lives at the split point" postorder:
 | Cost | `O(n)` time, `O(h)` stack — searches, doesn't navigate |
 | Precondition | both `p` and `q` exist; else use the existence-check variant |
 
-- **Q:** What makes a node the LCA in this recursion? **A:** It receives a non-`None` (a found target) from *both* its left and right subtrees — the targets split there.
-- **Q:** Why does it work on any binary tree, unlike the BST version? **A:** It *searches* every node rather than *navigating* by value order, so it needs no ordering — at the cost of `O(n)` instead of `O(h)`.
-- **Q:** Why is the early return at `node is p` correct even if `q` is below it? **A:** Both targets are assumed to exist; if `p` is an ancestor of `q`, then `q` is inside `p`'s subtree and no other subtree can claim them, so `p` is the answer.
-- **Q:** When does this code break, and what's the fix? **A:** When a target might be absent — the early return can pick a non-ancestor; fix with the existence-check variant that confirms both targets were actually seen.
+<details>
+<summary><strong>Q:</strong> What makes a node the LCA in this recursion?</summary>
+
+**A:** It receives a non-`None` (a found target) from *both* its left and right subtrees — the targets split there.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why does it work on any binary tree, unlike the BST version?</summary>
+
+**A:** It *searches* every node rather than *navigating* by value order, so it needs no ordering — at the cost of `O(n)` instead of `O(h)`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is the early return at `node is p` correct even if `q` is below it?</summary>
+
+**A:** Both targets are assumed to exist; if `p` is an ancestor of `q`, then `q` is inside `p`'s subtree and no other subtree can claim them, so `p` is the answer.
+
+</details>
+<details>
+<summary><strong>Q:</strong> When does this code break, and what's the fix?</summary>
+
+**A:** When a target might be absent — the early return can pick a non-ancestor; fix with the existence-check variant that confirms both targets were actually seen.
+
+</details>
 
 ## Sources & Verify
 

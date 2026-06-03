@@ -161,11 +161,36 @@ Then: swap DFS for **BFS** (a queue) to get the **shortest path** through a maze
 | Traversal | visited grid + two-level outer loop; DFS or BFS |
 | Complexity | `O(rows × cols)` |
 
-- **Q:** In what sense is a grid a graph? **A:** Each cell is a node and its cardinally adjacent cells are neighbours; the edges are implicit (computed), not stored.
-- **Q:** Where do a cell's neighbours come from? **A:** Add each direction delta `(dr,dc)` to `(r,c)`, then keep the in-bounds, walkable, unvisited ones.
-- **Q:** What check does grid traversal need that adjacency-list traversal doesn't, and why? **A:** A bounds check — generated neighbours can fall off the grid (and a negative index silently wraps in Python); an adjacency list only ever holds real neighbours.
-- **Q:** DFS or BFS for a maze's shortest path? **A:** BFS — the ripple reaches each cell by its fewest-steps distance; DFS doesn't give shortest paths.
-- **Q:** How do you count islands? **A:** Run the two-level traversal; the number of times the outer loop *launches* a search equals the number of connected walkable regions.
+<details>
+<summary><strong>Q:</strong> In what sense is a grid a graph?</summary>
+
+**A:** Each cell is a node and its cardinally adjacent cells are neighbours; the edges are implicit (computed), not stored.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Where do a cell's neighbours come from?</summary>
+
+**A:** Add each direction delta `(dr,dc)` to `(r,c)`, then keep the in-bounds, walkable, unvisited ones.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What check does grid traversal need that adjacency-list traversal doesn't, and why?</summary>
+
+**A:** A bounds check — generated neighbours can fall off the grid (and a negative index silently wraps in Python); an adjacency list only ever holds real neighbours.
+
+</details>
+<details>
+<summary><strong>Q:</strong> DFS or BFS for a maze's shortest path?</summary>
+
+**A:** BFS — the ripple reaches each cell by its fewest-steps distance; DFS doesn't give shortest paths.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How do you count islands?</summary>
+
+**A:** Run the two-level traversal; the number of times the outer loop *launches* a search equals the number of connected walkable regions.
+
+</details>
 
 ## Sources & Verify
 

@@ -150,10 +150,30 @@ Drill the family in **Practice** — [Canonicalise Path](/cortex/data-structures
 | End | a single value on the stack = the result |
 | Cost | `O(n)` time, `O(n)` space |
 
-- **Q:** Why is postfix easier to evaluate than infix? **A:** Postfix encodes precedence in the token order, so a single left-to-right pass with a stack needs no precedence rules.
-- **Q:** What does the stack hold during evaluation? **A:** Operands and intermediate results — pending work waiting for an operator to combine them.
-- **Q:** Which popped value is the left operand, and why care? **A:** The *second* popped is the left operand; mixing up the order breaks non-commutative `−` and `/`.
-- **Q:** How does a full calculator use this? **A:** Convert infix → postfix (shunting-yard, an operator stack), then evaluate the postfix with this pattern.
+<details>
+<summary><strong>Q:</strong> Why is postfix easier to evaluate than infix?</summary>
+
+**A:** Postfix encodes precedence in the token order, so a single left-to-right pass with a stack needs no precedence rules.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What does the stack hold during evaluation?</summary>
+
+**A:** Operands and intermediate results — pending work waiting for an operator to combine them.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Which popped value is the left operand, and why care?</summary>
+
+**A:** The *second* popped is the left operand; mixing up the order breaks non-commutative `−` and `/`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does a full calculator use this?</summary>
+
+**A:** Convert infix → postfix (shunting-yard, an operator stack), then evaluate the postfix with this pattern.
+
+</details>
 
 ## Sources & Verify
 

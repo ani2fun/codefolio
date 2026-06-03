@@ -186,10 +186,30 @@ Sorted traversal is the BST's defining superpower made into a pattern:
 | Min adjacent diff | min gap between consecutive keys |
 | Cost | `O(n)` (or `O(k+h)` early-exit), `O(h)` space — no full list |
 
-- **Q:** What order does a BST's in-order traversal produce, and why does it matter? **A:** Ascending sorted order — so sorted-order problems become one in-order walk.
-- **Q:** How do you find the k-th smallest? **A:** In-order traversal counting visits; return the key when the count reaches `k` (stop early).
-- **Q:** Why is a single `prev` variable enough to validate a BST or find the min difference? **A:** In-order is already sorted, so the only needed comparisons are between consecutive keys — current vs previous.
-- **Q:** How do you get descending order? **A:** Reverse the in-order walk (right, node, left) — the next pattern.
+<details>
+<summary><strong>Q:</strong> What order does a BST's in-order traversal produce, and why does it matter?</summary>
+
+**A:** Ascending sorted order — so sorted-order problems become one in-order walk.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How do you find the k-th smallest?</summary>
+
+**A:** In-order traversal counting visits; return the key when the count reaches `k` (stop early).
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is a single `prev` variable enough to validate a BST or find the min difference?</summary>
+
+**A:** In-order is already sorted, so the only needed comparisons are between consecutive keys — current vs previous.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How do you get descending order?</summary>
+
+**A:** Reverse the in-order walk (right, node, left) — the next pattern.
+
+</details>
 
 ## Sources & Verify
 

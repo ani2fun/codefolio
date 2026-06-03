@@ -185,11 +185,36 @@ A graph is the most general relational structure — almost everything connects 
 | BFS | queue, level-by-level ripple → fewest hops / shortest unweighted |
 | DFS | stack/recursion, backtrack → reachability, cycles, "explore all" |
 
-- **Q:** What does a graph model that a tree or list can't? **A:** Arbitrary many-to-many relationships — multiple edges per node, cycles, multiple components, no root.
-- **Q:** When you store an undirected edge in an adjacency list, how many entries does it create? **A:** Two — one in each endpoint's neighbour list (so `sum of degrees = 2·|E|`).
-- **Q:** BFS vs DFS — which for fewest hops, which for explore-everything? **A:** BFS (queue, ripples outward) for fewest hops / shortest unweighted path; DFS (backtracking) for reachability, cycles, exhaustive search.
-- **Q:** Adjacency list vs matrix? **A:** List: `O(V+E)` space, good for sparse graphs; matrix: `O(V²)` space, `O(1)` edge lookup, good for dense graphs.
-- **Q:** Why run code instead of hand-tracing graph queries? **A:** Path fan-out defeats eyeballing — the "max flights for $600" hand-trace says 2 but the real answer is 3; DFS must exhaust *every* branch.
+<details>
+<summary><strong>Q:</strong> What does a graph model that a tree or list can't?</summary>
+
+**A:** Arbitrary many-to-many relationships — multiple edges per node, cycles, multiple components, no root.
+
+</details>
+<details>
+<summary><strong>Q:</strong> When you store an undirected edge in an adjacency list, how many entries does it create?</summary>
+
+**A:** Two — one in each endpoint's neighbour list (so `sum of degrees = 2·|E|`).
+
+</details>
+<details>
+<summary><strong>Q:</strong> BFS vs DFS — which for fewest hops, which for explore-everything?</summary>
+
+**A:** BFS (queue, ripples outward) for fewest hops / shortest unweighted path; DFS (backtracking) for reachability, cycles, exhaustive search.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Adjacency list vs matrix?</summary>
+
+**A:** List: `O(V+E)` space, good for sparse graphs; matrix: `O(V²)` space, `O(1)` edge lookup, good for dense graphs.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why run code instead of hand-tracing graph queries?</summary>
+
+**A:** Path fan-out defeats eyeballing — the "max flights for $600" hand-trace says 2 but the real answer is 3; DFS must exhaust *every* branch.
+
+</details>
 
 ## Sources & Verify
 

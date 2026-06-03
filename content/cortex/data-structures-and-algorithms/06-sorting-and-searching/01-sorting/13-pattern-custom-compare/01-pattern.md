@@ -133,10 +133,30 @@ Custom-compare is "the sort stays, the order changes":
 | Cost | `O(n log n)` comparisons × comparator cost |
 | Travels | same idea orders heaps / priority queues |
 
-- **Q:** Key function vs comparator — when each? **A:** Key when each element has a self-contained sort value (simpler, evaluated once); comparator when the order is a pairwise relationship with no per-element key.
-- **Q:** Why does descending-by-value fail for the largest-number problem? **A:** The goal is largest *concatenation*, a pairwise property (`a+b` vs `b+a`), not a per-element value — value order can't express it.
-- **Q:** What must a comparator satisfy, and what happens otherwise? **A:** A consistent, transitive total order; otherwise the sort is nondeterministic and Java throws "comparison contract violated."
-- **Q:** How do you sort by primary key with a tiebreak? **A:** Use a tuple key, e.g. `(-height, name)` — sorts by the first field, ties broken by the second.
+<details>
+<summary><strong>Q:</strong> Key function vs comparator — when each?</summary>
+
+**A:** Key when each element has a self-contained sort value (simpler, evaluated once); comparator when the order is a pairwise relationship with no per-element key.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why does descending-by-value fail for the largest-number problem?</summary>
+
+**A:** The goal is largest *concatenation*, a pairwise property (`a+b` vs `b+a`), not a per-element value — value order can't express it.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What must a comparator satisfy, and what happens otherwise?</summary>
+
+**A:** A consistent, transitive total order; otherwise the sort is nondeterministic and Java throws "comparison contract violated."
+
+</details>
+<details>
+<summary><strong>Q:</strong> How do you sort by primary key with a tiebreak?</summary>
+
+**A:** Use a tuple key, e.g. `(-height, name)` — sorts by the first field, ties broken by the second.
+
+</details>
 
 ## Sources & Verify
 

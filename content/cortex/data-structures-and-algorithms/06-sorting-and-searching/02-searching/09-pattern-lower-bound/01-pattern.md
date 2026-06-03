@@ -133,10 +133,30 @@ Lower bound is the "first true" half of boundary search:
 | Template | half-open `[lo, hi)`, `lo=mid+1` if false, else `hi=mid` |
 | Generalizes to | minimum-predicate search (swap in any monotone `feasible`) |
 
-- **Q:** What phrasings signal a lower-bound problem? **A:** "first / leftmost occurrence," "insert position," "count of elements `< x`," or "smallest element `≥ x`."
-- **Q:** Why does one call give insert point, first occurrence, and count? **A:** The boundary partitions the array into `< target` and `≥ target`; its index counts the left part and is exactly where the target belongs.
-- **Q:** How does lower bound become predicate search? **A:** Replace the fixed `arr[mid] ≥ target` test with any monotone `feasible(mid)` — then you're binary-searching the answer.
-- **Q:** What's the template in one line? **A:** Half-open `[lo, hi)`; `false` → `lo = mid+1`, else `hi = mid`; return `lo`.
+<details>
+<summary><strong>Q:</strong> What phrasings signal a lower-bound problem?</summary>
+
+**A:** "first / leftmost occurrence," "insert position," "count of elements `< x`," or "smallest element `≥ x`."
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why does one call give insert point, first occurrence, and count?</summary>
+
+**A:** The boundary partitions the array into `< target` and `≥ target`; its index counts the left part and is exactly where the target belongs.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does lower bound become predicate search?</summary>
+
+**A:** Replace the fixed `arr[mid] ≥ target` test with any monotone `feasible(mid)` — then you're binary-searching the answer.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What's the template in one line?</summary>
+
+**A:** Half-open `[lo, hi)`; `false` → `lo = mid+1`, else `hi = mid`; return `lo`.
+
+</details>
 
 ## Sources & Verify
 

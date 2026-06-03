@@ -174,10 +174,30 @@ Recursive search is the template every other BST operation extends:
 | Min / max | recurse left-only / right-only to the end |
 | Builds | insertion, deletion, successor/predecessor, range |
 
-- **Q:** What are the base cases of recursive BST search? **A:** Empty node (miss) and a node whose value equals the target (hit).
-- **Q:** Why is search `O(h)` while traversal is `O(n)`? **A:** Search recurses into one child (the comparison prunes the other subtree); traversal recurses into both, visiting every node.
-- **Q:** How do you find the min and max? **A:** Recurse left-only to the end (min) or right-only to the end (max).
-- **Q:** Recursive vs iterative search trade-off? **A:** Same `O(h)` time; recursion is cleaner but uses `O(h)` stack, iterative uses `O(1)` space.
+<details>
+<summary><strong>Q:</strong> What are the base cases of recursive BST search?</summary>
+
+**A:** Empty node (miss) and a node whose value equals the target (hit).
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is search `O(h)` while traversal is `O(n)`?</summary>
+
+**A:** Search recurses into one child (the comparison prunes the other subtree); traversal recurses into both, visiting every node.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How do you find the min and max?</summary>
+
+**A:** Recurse left-only to the end (min) or right-only to the end (max).
+
+</details>
+<details>
+<summary><strong>Q:</strong> Recursive vs iterative search trade-off?</summary>
+
+**A:** Same `O(h)` time; recursion is cleaner but uses `O(h)` stack, iterative uses `O(1)` space.
+
+</details>
 
 ## Sources & Verify
 

@@ -214,10 +214,30 @@ Deletion is the BST operation that exposes the real subtlety:
 | Why successor | only value that's > all left and < all right — preserves the invariant |
 | Cost | `O(h)` (search + successor descent + `O(1)` rewiring) |
 
-- **Q:** What are the three deletion cases? **A:** Leaf (remove), one child (splice in the child), two children (replace with in-order successor and delete it below).
-- **Q:** Why use the in-order successor for a two-child node? **A:** It's the only value larger than the whole left subtree and smaller than the rest of the right subtree, so it preserves the invariant — and as the right subtree's leftmost node it has ≤1 child, making its own removal easy.
-- **Q:** Why does the two-child case always reduce to an easy case? **A:** The successor is a leftmost node, so it has no left child — its deletion is the 0-or-1-child case.
-- **Q:** What's the Hibbard-deletion wart? **A:** Always taking the successor biases the tree over many deletes, raising height toward `√n`; balanced trees (or alternating successor/predecessor) avoid it.
+<details>
+<summary><strong>Q:</strong> What are the three deletion cases?</summary>
+
+**A:** Leaf (remove), one child (splice in the child), two children (replace with in-order successor and delete it below).
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why use the in-order successor for a two-child node?</summary>
+
+**A:** It's the only value larger than the whole left subtree and smaller than the rest of the right subtree, so it preserves the invariant — and as the right subtree's leftmost node it has ≤1 child, making its own removal easy.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why does the two-child case always reduce to an easy case?</summary>
+
+**A:** The successor is a leftmost node, so it has no left child — its deletion is the 0-or-1-child case.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What's the Hibbard-deletion wart?</summary>
+
+**A:** Always taking the successor biases the tree over many deletes, raising height toward `√n`; balanced trees (or alternating successor/predecessor) avoid it.
+
+</details>
 
 ## Sources & Verify
 

@@ -132,10 +132,30 @@ A frequency map is one of the most reused tools in algorithms — spotting "this
 | "First" caveat | scan the input in order — a plain map has no positional order |
 | Map as | a multiset (elements with multiplicities) |
 
-- **Q:** Why is hash-map counting `O(n)` and not `O(n²)`? **A:** Each element is tallied with one `O(1)`-average map update, so the whole count builds in a single pass.
-- **Q:** Why scan the input again for "first non-repeating" instead of scanning the map? **A:** A plain hash map has no input-order, so only the original sequence tells you which count-1 element came first.
-- **Q:** How does counting solve anagram checking? **A:** Two strings are anagrams iff their `char → count` maps are identical.
-- **Q:** How does counting connect to sliding windows? **A:** When the window's state is "which elements and how many," a count map *is* that state, maintained as the window moves.
+<details>
+<summary><strong>Q:</strong> Why is hash-map counting `O(n)` and not `O(n²)`?</summary>
+
+**A:** Each element is tallied with one `O(1)`-average map update, so the whole count builds in a single pass.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why scan the input again for "first non-repeating" instead of scanning the map?</summary>
+
+**A:** A plain hash map has no input-order, so only the original sequence tells you which count-1 element came first.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does counting solve anagram checking?</summary>
+
+**A:** Two strings are anagrams iff their `char → count` maps are identical.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does counting connect to sliding windows?</summary>
+
+**A:** When the window's state is "which elements and how many," a count map *is* that state, maintained as the window moves.
+
+</details>
 
 ## Sources & Verify
 

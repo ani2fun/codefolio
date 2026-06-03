@@ -160,10 +160,30 @@ Insertion is "search, then attach a leaf" — simple, with one consequential sid
 | Cost | `O(h)` (search + `O(1)` attach) |
 | Caveat | insertion order determines balance; sorted input → height-`n` chain |
 
-- **Q:** Where does a new key get attached? **A:** At the empty child slot where a search for it falls off the tree — as a new leaf.
-- **Q:** Does insertion move existing nodes? **A:** No — it only adds one link; new keys are always leaves.
-- **Q:** How are duplicates handled? **A:** By policy — usually ignored (or counted); never inserted as a second equal key.
-- **Q:** Why does insertion order matter so much? **A:** Each key attaches relative to existing keys with no re-balancing, so sorted input builds a degenerate chain; balancing trees use rotations to prevent this.
+<details>
+<summary><strong>Q:</strong> Where does a new key get attached?</summary>
+
+**A:** At the empty child slot where a search for it falls off the tree — as a new leaf.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Does insertion move existing nodes?</summary>
+
+**A:** No — it only adds one link; new keys are always leaves.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How are duplicates handled?</summary>
+
+**A:** By policy — usually ignored (or counted); never inserted as a second equal key.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why does insertion order matter so much?</summary>
+
+**A:** Each key attaches relative to existing keys with no re-balancing, so sorted input builds a degenerate chain; balancing trees use rotations to prevent this.
+
+</details>
 
 ## Sources & Verify
 

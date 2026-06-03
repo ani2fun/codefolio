@@ -276,11 +276,36 @@ Red-black is the balance the industry settled on:
 | Cases 2+3 (black uncle) | ≤2 rotations, then done |
 | Rotations | insert ≤2, delete ≤3 (constant — beats AVL on writes) |
 
-- **Q:** The five invariants in one breath? **A:** Every node red/black; root black; NILs black; a red node's children are black; every root-to-leaf path has the same black count.
-- **Q:** Why insert new nodes red, not black? **A:** Red preserves the global equal-black-height invariant and risks only a local red-red — cheap to fix (or free if the parent is black); black would instantly break black-heights everywhere.
-- **Q:** When does insert rotate vs only recolour? **A:** Red uncle → recolour and propagate up (no rotation); black uncle → ≤2 rotations (Case 2 to straighten, Case 3 to finish).
-- **Q:** Why does RB beat AVL on writes despite being taller? **A:** Bounded rotations (≤2 insert, ≤3 delete) vs AVL's possible `O(log n)` delete cascade, plus a 1-bit overhead.
-- **Q:** Where do the invariants "come from"? **A:** A red-black tree is a binary encoding of a 2-3-4 (order-4 B-)tree; the colour rules are the B-tree's "all leaves same depth."
+<details>
+<summary><strong>Q:</strong> The five invariants in one breath?</summary>
+
+**A:** Every node red/black; root black; NILs black; a red node's children are black; every root-to-leaf path has the same black count.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why insert new nodes red, not black?</summary>
+
+**A:** Red preserves the global equal-black-height invariant and risks only a local red-red — cheap to fix (or free if the parent is black); black would instantly break black-heights everywhere.
+
+</details>
+<details>
+<summary><strong>Q:</strong> When does insert rotate vs only recolour?</summary>
+
+**A:** Red uncle → recolour and propagate up (no rotation); black uncle → ≤2 rotations (Case 2 to straighten, Case 3 to finish).
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why does RB beat AVL on writes despite being taller?</summary>
+
+**A:** Bounded rotations (≤2 insert, ≤3 delete) vs AVL's possible `O(log n)` delete cascade, plus a 1-bit overhead.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Where do the invariants "come from"?</summary>
+
+**A:** A red-black tree is a binary encoding of a 2-3-4 (order-4 B-)tree; the colour rules are the B-tree's "all leaves same depth."
+
+</details>
 
 ## Sources & Verify
 

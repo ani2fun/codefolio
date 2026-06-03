@@ -191,11 +191,36 @@ The menu, the niches, and where you've already been using these without knowing:
 | B-tree | high fanout `b`; height `log_b n`; on disk |
 | Defaults | RAM → RB-tree · disk → B+-tree |
 
-- **Q:** What is the unbalanced-BST cliff? **A:** Sorted input degenerates a plain BST into a linked list, turning `O(log n)` operations into `O(n)` — and it happens by accident (sorted imports, ordered replays).
-- **Q:** What property must a rotation preserve, and why? **A:** The in-order (sorted) sequence — so rebalancing never breaks BST search.
-- **Q:** Why do standard libraries ship Red-Black, not the shallower AVL? **A:** Bounded rotations on writes (≤2 insert, ≤3 delete vs AVL's `O(log n)` delete cascades) and a 1-bit overhead; the equal asymptotics make the taller tree a non-issue.
-- **Q:** When does AVL beat Red-Black? **A:** Read-heavy, write-rare workloads, where the ~30% shallower tree speeds lookups and rotation cost rarely triggers.
-- **Q:** Two defaults — in-memory vs on-disk sorted map? **A:** In-memory → Red-Black; on-disk → B+-tree (high fanout keeps it ~5 levels for billions of keys).
+<details>
+<summary><strong>Q:</strong> What is the unbalanced-BST cliff?</summary>
+
+**A:** Sorted input degenerates a plain BST into a linked list, turning `O(log n)` operations into `O(n)` — and it happens by accident (sorted imports, ordered replays).
+
+</details>
+<details>
+<summary><strong>Q:</strong> What property must a rotation preserve, and why?</summary>
+
+**A:** The in-order (sorted) sequence — so rebalancing never breaks BST search.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why do standard libraries ship Red-Black, not the shallower AVL?</summary>
+
+**A:** Bounded rotations on writes (≤2 insert, ≤3 delete vs AVL's `O(log n)` delete cascades) and a 1-bit overhead; the equal asymptotics make the taller tree a non-issue.
+
+</details>
+<details>
+<summary><strong>Q:</strong> When does AVL beat Red-Black?</summary>
+
+**A:** Read-heavy, write-rare workloads, where the ~30% shallower tree speeds lookups and rotation cost rarely triggers.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Two defaults — in-memory vs on-disk sorted map?</summary>
+
+**A:** In-memory → Red-Black; on-disk → B+-tree (high fanout keeps it ~5 levels for billions of keys).
+
+</details>
 
 ## Sources & Verify
 

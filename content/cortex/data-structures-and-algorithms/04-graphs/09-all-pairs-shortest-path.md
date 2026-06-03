@@ -155,11 +155,36 @@ Floyd-Warshall is the all-pairs workhorse and a model dynamic program:
 | Negatives | edges OK; `dist[i][i] < 0` after = negative cycle |
 | Use when | dense graph, negative edges, or `N ≲ 10⁴` |
 
-- **Q:** What does Floyd-Warshall compute, and at what cost? **A:** Shortest distance between *all* pairs of nodes, in `O(N³)` time / `O(N²)` space.
-- **Q:** What's the DP state and recurrence? **A:** `dist[s][t]` using only nodes `0…k` as intermediates; `dist[s][t] = min(dist[s][t], dist[s][k] + dist[k][t])`.
-- **Q:** Why must the `k` loop be outermost? **A:** `k` is the DP dimension; outermost ordering guarantees `dist[s][k]` and `dist[k][t]` are already final for intermediates `< k` when read — inner-`k` reads not-yet-computed cells and silently produces wrong answers.
-- **Q:** Floyd-Warshall vs `N`×Dijkstra? **A:** FW (`O(N³)`) wins on dense graphs / negatives / small `N`; `N`×Dijkstra (`O(N(N+E)log N)`) wins on large sparse non-negative graphs.
-- **Q:** How does it detect a negative cycle? **A:** After the loops, any `dist[i][i] < 0` means a cycle through `i` with negative total weight.
+<details>
+<summary><strong>Q:</strong> What does Floyd-Warshall compute, and at what cost?</summary>
+
+**A:** Shortest distance between *all* pairs of nodes, in `O(N³)` time / `O(N²)` space.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What's the DP state and recurrence?</summary>
+
+**A:** `dist[s][t]` using only nodes `0…k` as intermediates; `dist[s][t] = min(dist[s][t], dist[s][k] + dist[k][t])`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why must the `k` loop be outermost?</summary>
+
+**A:** `k` is the DP dimension; outermost ordering guarantees `dist[s][k]` and `dist[k][t]` are already final for intermediates `< k` when read — inner-`k` reads not-yet-computed cells and silently produces wrong answers.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Floyd-Warshall vs `N`×Dijkstra?</summary>
+
+**A:** FW (`O(N³)`) wins on dense graphs / negatives / small `N`; `N`×Dijkstra (`O(N(N+E)log N)`) wins on large sparse non-negative graphs.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does it detect a negative cycle?</summary>
+
+**A:** After the loops, any `dist[i][i] < 0` means a cycle through `i` with negative total weight.
+
+</details>
 
 ## Sources & Verify
 

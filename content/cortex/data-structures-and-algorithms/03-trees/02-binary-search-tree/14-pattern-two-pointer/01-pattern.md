@@ -213,10 +213,30 @@ Two-pointer-on-a-BST is a clean example of composing patterns:
 | Sum `> k` | advance descending (smaller `hi`) |
 | Cost | `O(n)` time, `O(h)` space (vs `O(n)` for flatten + array two-pointer) |
 
-- **Q:** How is BST two-sum solved with two pointers? **A:** Run an ascending and a descending iterator as `lo`/`hi`; compare their sum to `k` and advance the appropriate one until they cross.
-- **Q:** Why does the array two-pointer algorithm work unchanged on a BST? **A:** It only needs "next from each end," which two BST iterators provide — no random access required.
-- **Q:** What's the space advantage over flattening? **A:** Generating keys on demand keeps it to the iterators' `O(h)` stacks, versus `O(n)` for a materialized sorted array.
-- **Q:** Which two patterns does this compose? **A:** The array converging two-pointer and BST iterators (one ascending, one descending).
+<details>
+<summary><strong>Q:</strong> How is BST two-sum solved with two pointers?</summary>
+
+**A:** Run an ascending and a descending iterator as `lo`/`hi`; compare their sum to `k` and advance the appropriate one until they cross.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why does the array two-pointer algorithm work unchanged on a BST?</summary>
+
+**A:** It only needs "next from each end," which two BST iterators provide — no random access required.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What's the space advantage over flattening?</summary>
+
+**A:** Generating keys on demand keeps it to the iterators' `O(h)` stacks, versus `O(n)` for a materialized sorted array.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Which two patterns does this compose?</summary>
+
+**A:** The array converging two-pointer and BST iterators (one ascending, one descending).
+
+</details>
 
 ## Sources & Verify
 

@@ -178,11 +178,36 @@ These two walks are the substrate of the whole graph-algorithms chapter:
 | Complexity | `O(V + E)` (adjacency list) |
 | Use | DFS: cycles, topo sort, components · BFS: fewest hops, nearest |
 
-- **Q:** Why can't a plain `for` loop or tree recursion traverse a graph? **A:** A `for` loop ignores structure; tree recursion loops forever on cycles — graphs need a visited set and an explicit order.
-- **Q:** What does the two-level structure (inner search + outer loop) buy you? **A:** The outer loop restarts the search from each unvisited node, so disconnected components are all covered.
-- **Q:** DFS vs BFS — mechanism and use? **A:** DFS = recursion/stack (deep, backtrack) for cycles/topo/components; BFS = queue (ripple) for fewest-hops / nearest-first.
-- **Q:** Why mark a node visited on *enqueue* in BFS, not on dequeue? **A:** So each node enters the queue exactly once (no redundant enqueues) and its first/shortest discovery wins — marking late bloats the queue and can corrupt distances.
-- **Q:** Why is traversal `O(V + E)`? **A:** Each vertex is processed once and each edge examined once, given an adjacency list.
+<details>
+<summary><strong>Q:</strong> Why can't a plain `for` loop or tree recursion traverse a graph?</summary>
+
+**A:** A `for` loop ignores structure; tree recursion loops forever on cycles — graphs need a visited set and an explicit order.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What does the two-level structure (inner search + outer loop) buy you?</summary>
+
+**A:** The outer loop restarts the search from each unvisited node, so disconnected components are all covered.
+
+</details>
+<details>
+<summary><strong>Q:</strong> DFS vs BFS — mechanism and use?</summary>
+
+**A:** DFS = recursion/stack (deep, backtrack) for cycles/topo/components; BFS = queue (ripple) for fewest-hops / nearest-first.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why mark a node visited on *enqueue* in BFS, not on dequeue?</summary>
+
+**A:** So each node enters the queue exactly once (no redundant enqueues) and its first/shortest discovery wins — marking late bloats the queue and can corrupt distances.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is traversal `O(V + E)`?</summary>
+
+**A:** Each vertex is processed once and each edge examined once, given an adjacency list.
+
+</details>
 
 ## Sources & Verify
 

@@ -141,10 +141,30 @@ The two-speed walk is one of the most reused list tricks because the speed ratio
 | Even length | `slow` on the **second** middle = head of the second half |
 | Cost | `O(n)` one pass, `O(1)` space |
 
-- **Q:** Why does `slow` land on the middle when `fast` reaches the end? **A:** `fast` moves twice as fast, so when it has covered the whole list, `slow` has covered exactly half.
-- **Q:** What does the `while fast and fast.next` guard protect against? **A:** Dereferencing `null` in `fast.next.next`, and it sets the correct stopping node for both odd and even lengths.
-- **Q:** On an even-length list, which middle does `slow` land on, and why is that handy? **A:** The second middle — it's the head of the second half, so splitting is just severing the link before `slow`.
-- **Q:** How does the same pattern detect a cycle? **A:** With a cycle, the fast pointer laps and collides with the slow one; with no cycle, fast simply exits.
+<details>
+<summary><strong>Q:</strong> Why does `slow` land on the middle when `fast` reaches the end?</summary>
+
+**A:** `fast` moves twice as fast, so when it has covered the whole list, `slow` has covered exactly half.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What does the `while fast and fast.next` guard protect against?</summary>
+
+**A:** Dereferencing `null` in `fast.next.next`, and it sets the correct stopping node for both odd and even lengths.
+
+</details>
+<details>
+<summary><strong>Q:</strong> On an even-length list, which middle does `slow` land on, and why is that handy?</summary>
+
+**A:** The second middle — it's the head of the second half, so splitting is just severing the link before `slow`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does the same pattern detect a cycle?</summary>
+
+**A:** With a cycle, the fast pointer laps and collides with the slow one; with no cycle, fast simply exits.
+
+</details>
 
 ## Sources & Verify
 

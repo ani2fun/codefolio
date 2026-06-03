@@ -152,10 +152,30 @@ Drill the family in **Practice** — [Punctual Arrival Speed](/cortex/data-struc
 | Cost | `O(log(range) × cost(feasible))` |
 | Precondition | feasibility MUST be monotone, or the search is invalid |
 
-- **Q:** What does "binary search on the answer" search over? **A:** The numeric range of possible answers, evaluating a monotone `feasible(mid)` instead of comparing an array element.
-- **Q:** What must hold for the pattern to apply? **A:** `feasible` must be monotone over the range (`false…false, true…true`) — otherwise "discard half" is invalid.
-- **Q:** How does it relate to lower bound? **A:** It *is* lower bound: the answer range is the array and `feasible` is the comparison; you find the first `true`.
-- **Q:** What's the recognition trigger? **A:** "Minimize `X` such that a condition holds," where checking one `X` is easy but trying all is too slow and feasibility is monotone.
+<details>
+<summary><strong>Q:</strong> What does "binary search on the answer" search over?</summary>
+
+**A:** The numeric range of possible answers, evaluating a monotone `feasible(mid)` instead of comparing an array element.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What must hold for the pattern to apply?</summary>
+
+**A:** `feasible` must be monotone over the range (`false…false, true…true`) — otherwise "discard half" is invalid.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does it relate to lower bound?</summary>
+
+**A:** It *is* lower bound: the answer range is the array and `feasible` is the comparison; you find the first `true`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What's the recognition trigger?</summary>
+
+**A:** "Minimize `X` such that a condition holds," where checking one `X` is easy but trying all is too slow and feasibility is monotone.
+
+</details>
 
 ## Sources & Verify
 

@@ -137,10 +137,30 @@ Insertion sort is the best of the elementary sorts and a real production buildin
 | Adaptive | yes — work ∝ disorder |
 | Real use | small-run fallback inside Timsort / introsort |
 
-- **Q:** How does insertion sort place each element? **A:** It shifts the larger elements of the sorted prefix one slot right to open a gap, then drops the element in.
-- **Q:** Why is it `O(n)` on already-sorted input? **A:** Each element is already `≥` the prefix, so the shift loop never runs — `O(1)` per element.
-- **Q:** Why is it stable? **A:** The strict `> key` shift test never moves an equal element past `key`, preserving relative order.
-- **Q:** Why do real-world sorts use it for small subarrays? **A:** Its low constant factor and adaptivity beat the recursion overhead of `O(n log n)` sorts on tiny, nearly-ordered runs.
+<details>
+<summary><strong>Q:</strong> How does insertion sort place each element?</summary>
+
+**A:** It shifts the larger elements of the sorted prefix one slot right to open a gap, then drops the element in.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is it `O(n)` on already-sorted input?</summary>
+
+**A:** Each element is already `≥` the prefix, so the shift loop never runs — `O(1)` per element.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is it stable?</summary>
+
+**A:** The strict `> key` shift test never moves an equal element past `key`, preserving relative order.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why do real-world sorts use it for small subarrays?</summary>
+
+**A:** Its low constant factor and adaptivity beat the recursion overhead of `O(n log n)` sorts on tiny, nearly-ordered runs.
+
+</details>
 
 ## Sources & Verify
 

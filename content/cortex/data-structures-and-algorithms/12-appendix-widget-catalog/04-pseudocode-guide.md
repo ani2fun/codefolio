@@ -4,9 +4,11 @@ essential: false
 ---
 # Pseudocode Reference
 
-Every lesson in this section opens with a **🧠 Pseudocode** tab — the algorithm stripped of any specific language's syntax, so you can see the *shape* of the solution before the noise of `public static void`s and `fmt.Println`s.
+> **Archived reference — not currently active.** The book's lessons now use **Python** and **Java** tabs only; there is no pseudocode tab. This page is kept in the appendix as a reference for the convention should a 🧠 Pseudocode tab be implemented in the future.
 
-This page is the one-stop reference for the conventions that tab uses. Bookmark it; come back any time a symbol surprises you.
+The idea of a pseudocode tab is to strip an algorithm of any specific language's syntax, so you can see the *shape* of the solution before the noise of `public static void`s and `fmt.Println`s.
+
+This page documents the conventions such a tab would use — read it like English with a few math symbols.
 
 ---
 

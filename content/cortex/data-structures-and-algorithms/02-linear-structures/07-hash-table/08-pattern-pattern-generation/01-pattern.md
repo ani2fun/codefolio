@@ -149,10 +149,30 @@ Key generation is "design a fingerprint, let the hash map do the rest":
 | Cost | `O(n · len)` time and space |
 | Composes with | counting (a count signature can *be* the key) |
 
-- **Q:** Why generate a canonical key instead of hashing the raw input? **A:** Equivalent inputs differ literally; only a canonical key makes them collide into the same bucket.
-- **Q:** What two properties must a good key have? **A:** Invariant over the equivalence (equal keys for equivalent inputs) and distinguishing across classes (different keys otherwise).
-- **Q:** Why use a first-occurrence pattern, not sorted letters, for isomorphic strings? **A:** Isomorphism is about repetition *shape*, not letter identity; sorted letters would wrongly separate `"egg"` and `"add"`.
-- **Q:** How does this compose with counting? **A:** A frequency/count signature can serve as the canonical key (e.g., for anagram grouping).
+<details>
+<summary><strong>Q:</strong> Why generate a canonical key instead of hashing the raw input?</summary>
+
+**A:** Equivalent inputs differ literally; only a canonical key makes them collide into the same bucket.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What two properties must a good key have?</summary>
+
+**A:** Invariant over the equivalence (equal keys for equivalent inputs) and distinguishing across classes (different keys otherwise).
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why use a first-occurrence pattern, not sorted letters, for isomorphic strings?</summary>
+
+**A:** Isomorphism is about repetition *shape*, not letter identity; sorted letters would wrongly separate `"egg"` and `"add"`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does this compose with counting?</summary>
+
+**A:** A frequency/count signature can serve as the canonical key (e.g., for anagram grouping).
+
+</details>
 
 ## Sources & Verify
 

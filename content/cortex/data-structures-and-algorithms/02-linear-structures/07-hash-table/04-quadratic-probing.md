@@ -196,10 +196,30 @@ Quadratic probing is the middle rung of the open-addressing ladder:
 | Coverage rule | prime capacity + `α < 0.5` (or `(i²+i)/2` for power-of-2) |
 | Otherwise | same as linear probing (tombstones, `get` stops at `EMPTY`) |
 
-- **Q:** How does quadratic probing differ from linear probing? **A:** The probe step is `i²` (jump by growing squares) instead of `i` (one slot), so collisions scatter.
-- **Q:** What clustering does it fix, and what remains? **A:** Fixes primary clustering (different home slots merging); secondary clustering remains (same home slot → same probe path).
-- **Q:** Why the prime-capacity, `α < 0.5` requirement? **A:** Square offsets don't necessarily cover every slot, so the bound guarantees an empty slot is reachable.
-- **Q:** What does the leftover secondary clustering motivate? **A:** Double hashing — give each key its own step size from a second hash so same-home keys diverge.
+<details>
+<summary><strong>Q:</strong> How does quadratic probing differ from linear probing?</summary>
+
+**A:** The probe step is `i²` (jump by growing squares) instead of `i` (one slot), so collisions scatter.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What clustering does it fix, and what remains?</summary>
+
+**A:** Fixes primary clustering (different home slots merging); secondary clustering remains (same home slot → same probe path).
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why the prime-capacity, `α < 0.5` requirement?</summary>
+
+**A:** Square offsets don't necessarily cover every slot, so the bound guarantees an empty slot is reachable.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What does the leftover secondary clustering motivate?</summary>
+
+**A:** Double hashing — give each key its own step size from a second hash so same-home keys diverge.
+
+</details>
 
 ## Sources & Verify
 

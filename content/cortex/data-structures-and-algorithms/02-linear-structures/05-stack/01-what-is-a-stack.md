@@ -157,10 +157,30 @@ The tradeoff to carry: a stack buys `O(1)` ends and a dead-simple contract by re
 | search / access by position | `O(n)` | you must pop everything above it; no random access |
 | space | `O(n)` | one slot or node per stored item |
 
-- **Q:** What rule does a stack enforce, and what creates it? **A:** LIFO (last in, first out) — created by allowing add/remove at one end only.
-- **Q:** Why are push and pop `O(1)`? **A:** They touch only the top; no scanning or shifting.
-- **Q:** Name the four stack operations. **A:** push, pop, peek, size.
-- **Q:** What real structure is the canonical stack? **A:** The CPU's call stack — push a return address per call, pop per return.
+<details>
+<summary><strong>Q:</strong> What rule does a stack enforce, and what creates it?</summary>
+
+**A:** LIFO (last in, first out) — created by allowing add/remove at one end only.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why are push and pop `O(1)`?</summary>
+
+**A:** They touch only the top; no scanning or shifting.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Name the four stack operations.</summary>
+
+**A:** push, pop, peek, size.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What real structure is the canonical stack?</summary>
+
+**A:** The CPU's call stack — push a return address per call, pop per return.
+
+</details>
 
 ## Sources & Verify
 

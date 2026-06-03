@@ -151,10 +151,30 @@ Upper bound completes the boundary-search toolkit:
 | Counting | value: `upper(x) − lower(x)`; range `[a,b]`: `upper(b) − lower(a)` |
 | Cost | `O(log n)`, `O(1)` space |
 
-- **Q:** What signals an upper-bound problem? **A:** "First `> x`," the ceiling, a count of a value or range, or the `true → false` breaking point.
-- **Q:** How do you count elements in the closed range `[a, b]`? **A:** `upper_bound(b) − lower_bound(a)` — lower bound for the inclusive left edge, upper bound for the inclusive right edge.
-- **Q:** What's the only code difference from lower bound? **A:** `arr[mid] <= target` (instead of `<`), so equal elements are skipped to the right.
-- **Q:** Why is upper bound rarely used alone? **A:** Its power is in the *pair* with lower bound — bracketing a value and counting ranges.
+<details>
+<summary><strong>Q:</strong> What signals an upper-bound problem?</summary>
+
+**A:** "First `> x`," the ceiling, a count of a value or range, or the `true → false` breaking point.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How do you count elements in the closed range `[a, b]`?</summary>
+
+**A:** `upper_bound(b) − lower_bound(a)` — lower bound for the inclusive left edge, upper bound for the inclusive right edge.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What's the only code difference from lower bound?</summary>
+
+**A:** `arr[mid] <= target` (instead of `<`), so equal elements are skipped to the right.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is upper bound rarely used alone?</summary>
+
+**A:** Its power is in the *pair* with lower bound — bracketing a value and counting ranges.
+
+</details>
 
 ## Sources & Verify
 

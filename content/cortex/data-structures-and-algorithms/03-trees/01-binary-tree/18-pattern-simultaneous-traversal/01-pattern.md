@@ -170,10 +170,30 @@ Simultaneous traversal is single-tree recursion lifted to operate on a *pair*:
 | Mirror symmetry | pair cross sides (`l↔r`, `r↔l`) |
 | Cost | `O(n)` over the smaller tree, `O(h)` stack |
 
-- **Q:** What's the core move of simultaneous traversal? **A:** Recurse on a *pair* of nodes `(a, b)`, advancing through both trees in lockstep, with base cases for the `None` combinations.
-- **Q:** How do you turn an equality check into a symmetry check? **A:** Cross the recursive pairing — compare `a.left` with `b.right` and `a.right` with `b.left` instead of same-side.
-- **Q:** Why is lockstep better than serialize-and-compare? **A:** One pass, `O(h)` space, fails fast at the first structural divergence, and it can *merge* (build a new tree), which string comparison can't.
-- **Q:** How does subtree-of reuse this? **A:** Run `is_same(s, node)` at every node of `t` — the lockstep equality check applied across all anchor points.
+<details>
+<summary><strong>Q:</strong> What's the core move of simultaneous traversal?</summary>
+
+**A:** Recurse on a *pair* of nodes `(a, b)`, advancing through both trees in lockstep, with base cases for the `None` combinations.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How do you turn an equality check into a symmetry check?</summary>
+
+**A:** Cross the recursive pairing — compare `a.left` with `b.right` and `a.right` with `b.left` instead of same-side.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is lockstep better than serialize-and-compare?</summary>
+
+**A:** One pass, `O(h)` space, fails fast at the first structural divergence, and it can *merge* (build a new tree), which string comparison can't.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does subtree-of reuse this?</summary>
+
+**A:** Run `is_same(s, node)` at every node of `t` — the lockstep equality check applied across all anchor points.
+
+</details>
 
 ## Sources & Verify
 

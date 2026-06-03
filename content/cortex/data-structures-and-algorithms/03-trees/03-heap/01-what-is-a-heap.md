@@ -136,10 +136,30 @@ Why a heap and not a sorted array or a balanced tree? All three can do the job, 
 | build a heap from `n` items | `O(n)` | most nodes sit near the bottom and barely sift |
 | find / remove an arbitrary value | `O(n)` | a heap orders only the root, not the whole set |
 
-- **Q:** What two invariants define a binary heap? **A:** It's a *complete* binary tree (short, `log n` height) and *heap-ordered* (every parent beats its children).
-- **Q:** Where is a heap actually stored, and how do you find a node's children? **A:** In a flat array; node `[i]`'s children are `[2i+1]` and `[2i+2]`, its parent `[(i−1)//2]`.
-- **Q:** Why are push and pop `O(log n)`? **A:** Each restores the order by sifting along one root-to-leaf path, whose length is the tree's height, `log n`.
-- **Q:** When is a heap the *wrong* choice? **A:** When you need a total order or fast lookup of arbitrary elements — a heap only exposes the extreme.
+<details>
+<summary><strong>Q:</strong> What two invariants define a binary heap?</summary>
+
+**A:** It's a *complete* binary tree (short, `log n` height) and *heap-ordered* (every parent beats its children).
+
+</details>
+<details>
+<summary><strong>Q:</strong> Where is a heap actually stored, and how do you find a node's children?</summary>
+
+**A:** In a flat array; node `[i]`'s children are `[2i+1]` and `[2i+2]`, its parent `[(i−1)//2]`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why are push and pop `O(log n)`?</summary>
+
+**A:** Each restores the order by sifting along one root-to-leaf path, whose length is the tree's height, `log n`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> When is a heap the *wrong* choice?</summary>
+
+**A:** When you need a total order or fast lookup of arbitrary elements — a heap only exposes the extreme.
+
+</details>
 
 ## Sources & Verify
 

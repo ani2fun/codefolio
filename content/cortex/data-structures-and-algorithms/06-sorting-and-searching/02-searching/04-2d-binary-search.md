@@ -146,10 +146,30 @@ This is a structural lesson — drill searching in the pattern sets.
 | Cost | `O(log(m·n)) = O(log m + log n)`, `O(1)` space |
 | If only row/col-sorted | use staircase search instead |
 
-- **Q:** How does 2D binary search avoid a 2D algorithm? **A:** A fully-sorted matrix is a 1D sorted array in row-major order, so it binary-searches the flat index and decodes each index to a cell.
-- **Q:** How do you map a flat index to a cell? **A:** `row = i // cols`, `col = i % cols`.
-- **Q:** Why is flatten-search the same cost as row-then-column search? **A:** `log(m·n) = log m + log n`; the difference is simplicity and fewer off-by-one bugs, not asymptotics.
-- **Q:** When does this approach fail? **A:** When the matrix is only row- and column-sorted (rows don't chain), so it isn't globally sorted — use the staircase search.
+<details>
+<summary><strong>Q:</strong> How does 2D binary search avoid a 2D algorithm?</summary>
+
+**A:** A fully-sorted matrix is a 1D sorted array in row-major order, so it binary-searches the flat index and decodes each index to a cell.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How do you map a flat index to a cell?</summary>
+
+**A:** `row = i // cols`, `col = i % cols`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is flatten-search the same cost as row-then-column search?</summary>
+
+**A:** `log(m·n) = log m + log n`; the difference is simplicity and fewer off-by-one bugs, not asymptotics.
+
+</details>
+<details>
+<summary><strong>Q:</strong> When does this approach fail?</summary>
+
+**A:** When the matrix is only row- and column-sorted (rows don't chain), so it isn't globally sorted — use the staircase search.
+
+</details>
 
 ## Sources & Verify
 

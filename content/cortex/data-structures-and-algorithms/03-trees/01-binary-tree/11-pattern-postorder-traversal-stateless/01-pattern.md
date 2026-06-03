@@ -151,10 +151,30 @@ Postorder-stateless is the "my answer depends on my children" template:
 | Multi-fact | return a tuple/sentinel (e.g. height-or-`-1` for balanced) — one pass |
 | Family | height, sum, count, balanced, full/perfect, diameter |
 
-- **Q:** When do you use bottom-up postorder? **A:** When a node's answer depends on its children's results (height, subtree sum, balanced/full checks, diameter).
-- **Q:** How does information flow, versus preorder? **A:** Upward via the return value (children → node), the opposite of preorder's downward argument.
-- **Q:** Why return a tuple? **A:** When a node needs several facts from each child, computing them in one pass and returning them together avoids re-walking subtrees (`O(n)` vs `O(n²)`).
-- **Q:** Why is the naive `is_balanced` `O(n²)`? **A:** It calls `height()` (an `O(n)` walk) at every node; the single-pass version returns height-and-balance together, visiting each node once.
+<details>
+<summary><strong>Q:</strong> When do you use bottom-up postorder?</summary>
+
+**A:** When a node's answer depends on its children's results (height, subtree sum, balanced/full checks, diameter).
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does information flow, versus preorder?</summary>
+
+**A:** Upward via the return value (children → node), the opposite of preorder's downward argument.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why return a tuple?</summary>
+
+**A:** When a node needs several facts from each child, computing them in one pass and returning them together avoids re-walking subtrees (`O(n)` vs `O(n²)`).
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is the naive `is_balanced` `O(n²)`?</summary>
+
+**A:** It calls `height()` (an `O(n)` walk) at every node; the single-pass version returns height-and-balance together, visiting each node once.
+
+</details>
 
 ## Sources & Verify
 

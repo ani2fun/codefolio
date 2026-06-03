@@ -260,11 +260,36 @@ flowchart TB
 | Grows from | the **top** (root split) ⇒ all leaves at equal depth |
 | B+-tree | data only in leaves + leaf linked-list ⇒ fast range scans (every DB) |
 
-- **Q:** Why B-trees over binary trees on disk? **A:** High fanout means height `log_m n` — a few disk seeks instead of `log₂ n` (≈30); each node fills one I/O block.
-- **Q:** What happens when a node fills on insert? **A:** It splits; the middle key is promoted up into the parent, leaving two half-full siblings.
-- **Q:** Why are all leaves always at the same depth? **A:** The tree only grows when the root splits, which adds a level to every path at once — depth is never added to a single path.
-- **Q:** B-tree vs B+-tree? **A:** B+-trees store data only in leaves and link them, making range scans and sequential reads cheap; that's why every relational DB uses them.
-- **Q:** How does this connect to red-black trees? **A:** A red-black tree is an order-4 (2-3-4) B-tree encoded with one colour bit per binary node.
+<details>
+<summary><strong>Q:</strong> Why B-trees over binary trees on disk?</summary>
+
+**A:** High fanout means height `log_m n` — a few disk seeks instead of `log₂ n` (≈30); each node fills one I/O block.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What happens when a node fills on insert?</summary>
+
+**A:** It splits; the middle key is promoted up into the parent, leaving two half-full siblings.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why are all leaves always at the same depth?</summary>
+
+**A:** The tree only grows when the root splits, which adds a level to every path at once — depth is never added to a single path.
+
+</details>
+<details>
+<summary><strong>Q:</strong> B-tree vs B+-tree?</summary>
+
+**A:** B+-trees store data only in leaves and link them, making range scans and sequential reads cheap; that's why every relational DB uses them.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does this connect to red-black trees?</summary>
+
+**A:** A red-black tree is an order-4 (2-3-4) B-tree encoded with one colour bit per binary node.
+
+</details>
 
 ## Sources & Verify
 

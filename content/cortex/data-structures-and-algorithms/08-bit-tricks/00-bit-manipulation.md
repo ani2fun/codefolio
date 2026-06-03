@@ -140,10 +140,30 @@ This is foundational technique, not a structure — and two later topics lean on
 | toggle bit `i` | `x ^ (1 << i)` | flip it |
 | lowest set bit | `x & -x` | isolate it |
 
-- **Q:** How do you build a mask for a single bit `i`? **A:** `1 << i` — a 1 shifted left into position `i`.
-- **Q:** Why does `x & ~(1 << i)` clear bit `i` without disturbing the rest? **A:** `~(1 << i)` is all 1s except bit `i`; `AND` keeps every other bit and zeros only bit `i`.
-- **Q:** What two properties make XOR special? **A:** `a ^ a = 0` and `a ^ 0 = a` — it's its own inverse, so duplicates cancel.
-- **Q:** Why is bit manipulation fast? **A:** Each operator runs in one instruction over all 64 bits at once, so an integer acts as a 64-flag set.
+<details>
+<summary><strong>Q:</strong> How do you build a mask for a single bit `i`?</summary>
+
+**A:** `1 << i` — a 1 shifted left into position `i`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why does `x & ~(1 << i)` clear bit `i` without disturbing the rest?</summary>
+
+**A:** `~(1 << i)` is all 1s except bit `i`; `AND` keeps every other bit and zeros only bit `i`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What two properties make XOR special?</summary>
+
+**A:** `a ^ a = 0` and `a ^ 0 = a` — it's its own inverse, so duplicates cancel.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is bit manipulation fast?</summary>
+
+**A:** Each operator runs in one instruction over all 64 bits at once, so an integer acts as a 64-flag set.
+
+</details>
 
 ## Sources & Verify
 

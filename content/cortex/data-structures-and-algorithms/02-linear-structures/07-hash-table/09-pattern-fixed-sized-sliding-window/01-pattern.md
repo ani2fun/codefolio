@@ -167,10 +167,30 @@ This pattern is the meeting point of two earlier ideas:
 | Gotcha | delete zero-count keys or dictionary equality silently fails |
 | Cost | `O(n)` time, `O(σ)` space (`σ` = alphabet) |
 
-- **Q:** How does this differ from the array fixed sliding window? **A:** The window's state is a frequency map, not a single number, but the slide-by-one add/evict maintenance is the same.
-- **Q:** Why delete a key when its count hits zero? **A:** Structural map equality treats `{x:0}` as different from absent, so a stale zero makes the anagram check silently fail.
-- **Q:** What's the per-step cost and why is it `O(1)`? **A:** One increment and one decrement (plus an `O(σ)` constant-alphabet comparison) — no recompute of the whole window.
-- **Q:** Which two earlier patterns does this combine? **A:** The array fixed sliding window (slide mechanics) and hash-map counting (the map as state).
+<details>
+<summary><strong>Q:</strong> How does this differ from the array fixed sliding window?</summary>
+
+**A:** The window's state is a frequency map, not a single number, but the slide-by-one add/evict maintenance is the same.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why delete a key when its count hits zero?</summary>
+
+**A:** Structural map equality treats `{x:0}` as different from absent, so a stale zero makes the anagram check silently fail.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What's the per-step cost and why is it `O(1)`?</summary>
+
+**A:** One increment and one decrement (plus an `O(σ)` constant-alphabet comparison) — no recompute of the whole window.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Which two earlier patterns does this combine?</summary>
+
+**A:** The array fixed sliding window (slide mechanics) and hash-map counting (the map as state).
+
+</details>
 
 ## Sources & Verify
 

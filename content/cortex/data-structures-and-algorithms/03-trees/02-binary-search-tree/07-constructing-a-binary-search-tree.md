@@ -163,10 +163,30 @@ Construction is "you have the data — lay it out optimally":
 | Cost / height | `O(n)` time, height `⌊log₂ n⌋` (optimal) |
 | Uses | bulk-load; rebalance a degenerate tree (flatten → rebuild) |
 
-- **Q:** How do you build a balanced BST from sorted data? **A:** Make the middle element the root and recursively build the left/right subtrees from the smaller/larger halves.
-- **Q:** Why does middle-as-root guarantee balance? **A:** It splits the remaining keys into two equal-sized halves at every level, so height is `⌊log₂ n⌋`.
-- **Q:** How do you rebalance a degenerate BST? **A:** In-order traverse it to a sorted array, then rebuild balanced with this construction — `O(n)`.
-- **Q:** Online vs offline balancing? **A:** Construction balances all at once (data in hand); AVL/red-black balance incrementally via rotations (data arrives over time).
+<details>
+<summary><strong>Q:</strong> How do you build a balanced BST from sorted data?</summary>
+
+**A:** Make the middle element the root and recursively build the left/right subtrees from the smaller/larger halves.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why does middle-as-root guarantee balance?</summary>
+
+**A:** It splits the remaining keys into two equal-sized halves at every level, so height is `⌊log₂ n⌋`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How do you rebalance a degenerate BST?</summary>
+
+**A:** In-order traverse it to a sorted array, then rebuild balanced with this construction — `O(n)`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Online vs offline balancing?</summary>
+
+**A:** Construction balances all at once (data in hand); AVL/red-black balance incrementally via rotations (data arrives over time).
+
+</details>
 
 ## Sources & Verify
 

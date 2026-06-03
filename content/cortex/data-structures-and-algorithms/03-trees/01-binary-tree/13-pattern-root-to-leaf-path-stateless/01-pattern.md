@@ -145,10 +145,30 @@ Root-to-leaf-stateless is "summarize the paths without storing them":
 | Why stateless | accumulator in the argument; nothing shared, nothing to undo |
 | Use when | you want a *summary* (total/exists/count), not the concrete paths |
 
-- **Q:** How does the stateless form handle a root-to-leaf path? **A:** It carries the accumulated value down as an argument, finalizes at the leaf, and aggregates the leaf results up via return values.
-- **Q:** What decides the query (sum vs any vs count)? **A:** The aggregator at internal nodes — `+` totals, `or` checks existence, counting tallies.
-- **Q:** When use stateless vs stateful root-to-leaf? **A:** Stateless for a *summary* (a number about the paths); stateful when you need the *actual paths* (shared list + backtracking).
-- **Q:** Which two traversal flows does it combine? **A:** Preorder push-down (the accumulator argument) and postorder aggregate-up (the return values).
+<details>
+<summary><strong>Q:</strong> How does the stateless form handle a root-to-leaf path?</summary>
+
+**A:** It carries the accumulated value down as an argument, finalizes at the leaf, and aggregates the leaf results up via return values.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What decides the query (sum vs any vs count)?</summary>
+
+**A:** The aggregator at internal nodes — `+` totals, `or` checks existence, counting tallies.
+
+</details>
+<details>
+<summary><strong>Q:</strong> When use stateless vs stateful root-to-leaf?</summary>
+
+**A:** Stateless for a *summary* (a number about the paths); stateful when you need the *actual paths* (shared list + backtracking).
+
+</details>
+<details>
+<summary><strong>Q:</strong> Which two traversal flows does it combine?</summary>
+
+**A:** Preorder push-down (the accumulator argument) and postorder aggregate-up (the return values).
+
+</details>
 
 ## Sources & Verify
 

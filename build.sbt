@@ -74,6 +74,7 @@ lazy val sharedJVM = shared.jvm.settings(
   // (asserts the hand-written VizGraph.scala fields match the yaml — ADR-0026).
   libraryDependencies += "org.yaml" % "snakeyaml" % "2.3" % Test
 )
+
 lazy val sharedJS = shared.js
 
 // ---- server --------------------------------------------------------------

@@ -136,10 +136,30 @@ The monotonic stack is one of the highest-value stack patterns — recognizing i
 | Why `O(n)` | each element pushed once, popped ≤ once → amortized `O(1)` |
 | Cost | `O(n)` time, `O(n)` space |
 
-- **Q:** Why is the inner `while` loop not `O(n²)`? **A:** Each element is pushed once and popped at most once, so total pops ≤ `n` — amortized `O(1)` per element.
-- **Q:** Why is it safe to discard popped elements? **A:** A popped element is smaller than the current one and to its left, so it's shadowed — it can never be the nearest-greater for anything further right.
-- **Q:** How do you switch from previous-greater to previous-smaller? **A:** Flip the pop test from `top ≤ x` to `top ≥ x`, turning the decreasing stack into an increasing one.
-- **Q:** How do you get *next* greater instead of *previous*? **A:** Scan right-to-left with the same monotonic stack (the next pattern).
+<details>
+<summary><strong>Q:</strong> Why is the inner `while` loop not `O(n²)`?</summary>
+
+**A:** Each element is pushed once and popped at most once, so total pops ≤ `n` — amortized `O(1)` per element.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is it safe to discard popped elements?</summary>
+
+**A:** A popped element is smaller than the current one and to its left, so it's shadowed — it can never be the nearest-greater for anything further right.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How do you switch from previous-greater to previous-smaller?</summary>
+
+**A:** Flip the pop test from `top ≤ x` to `top ≥ x`, turning the decreasing stack into an increasing one.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How do you get *next* greater instead of *previous*?</summary>
+
+**A:** Scan right-to-left with the same monotonic stack (the next pattern).
+
+</details>
 
 ## Sources & Verify
 

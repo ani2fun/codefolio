@@ -163,11 +163,36 @@ Cycle detection is the canonical "same DFS, graph-type-specific rule" lesson:
 | Load-bearing line | `in_path.remove(node)` on exit (grey→black) |
 | Both | `O(V + E)`; directed cycle-free ⇔ has a topological order |
 
-- **Q:** What's the undirected cycle rule, and why the parent exclusion? **A:** A visited neighbour that isn't the parent = cycle; without excluding the parent, every bidirectional edge would falsely look like a back edge.
-- **Q:** Why doesn't the undirected rule work for directed graphs? **A:** It treats any visited node as a back edge; in a directed graph a node can be visited via a *different* finished path (the diamond) without forming a cycle.
-- **Q:** What's the directed cycle rule? **A:** A directed edge to a node still on the current DFS path (grey / in the recursion stack) is a cycle; an edge to a finished (black) node is not.
-- **Q:** Why is `in_path.remove(node)` on exit essential? **A:** It flips a node grey→black so a finished node leaves the path; without it the diamond's re-visited node looks grey and false-positives.
-- **Q:** How does directed cycle detection relate to topological sort? **A:** A directed graph is topologically sortable iff it's acyclic — the grey-node check is exactly topo sort's failure condition.
+<details>
+<summary><strong>Q:</strong> What's the undirected cycle rule, and why the parent exclusion?</summary>
+
+**A:** A visited neighbour that isn't the parent = cycle; without excluding the parent, every bidirectional edge would falsely look like a back edge.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why doesn't the undirected rule work for directed graphs?</summary>
+
+**A:** It treats any visited node as a back edge; in a directed graph a node can be visited via a *different* finished path (the diamond) without forming a cycle.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What's the directed cycle rule?</summary>
+
+**A:** A directed edge to a node still on the current DFS path (grey / in the recursion stack) is a cycle; an edge to a finished (black) node is not.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is `in_path.remove(node)` on exit essential?</summary>
+
+**A:** It flips a node grey→black so a finished node leaves the path; without it the diamond's re-visited node looks grey and false-positives.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does directed cycle detection relate to topological sort?</summary>
+
+**A:** A directed graph is topologically sortable iff it's acyclic — the grey-node check is exactly topo sort's failure condition.
+
+</details>
 
 ## Sources & Verify
 

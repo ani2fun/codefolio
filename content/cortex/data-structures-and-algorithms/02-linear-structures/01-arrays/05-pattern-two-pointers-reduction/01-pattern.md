@@ -140,10 +140,30 @@ The tradeoff worth knowing: Two Sum also has a *hash-table* solution that's `O(n
 | Cost | `O(n)` scan, `O(1)` space; `O(n log n)` including the sort |
 | Invariant | a discarded end can't belong to any remaining valid pair |
 
-- **Q:** What does the "reduction" reshape, and why? **A:** It sorts (usually) so the left end is the min and the right the max — making the sum a reliable signal for which pointer to move.
-- **Q:** Given `sum < target`, which pointer moves and why? **A:** `left++` — `arr[left]` is the smallest value and can't reach the target even with the current largest, so discard it.
-- **Q:** Total time and space? **A:** `O(n log n)` time (the sort dominates the `O(n)` scan), `O(1)` extra space.
-- **Q:** When does the hash-table Two Sum beat this? **A:** When the array isn't sorted and `O(n)` extra space is acceptable — it's `O(n)` time without sorting.
+<details>
+<summary><strong>Q:</strong> What does the "reduction" reshape, and why?</summary>
+
+**A:** It sorts (usually) so the left end is the min and the right the max — making the sum a reliable signal for which pointer to move.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Given `sum < target`, which pointer moves and why?</summary>
+
+**A:** `left++` — `arr[left]` is the smallest value and can't reach the target even with the current largest, so discard it.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Total time and space?</summary>
+
+**A:** `O(n log n)` time (the sort dominates the `O(n)` scan), `O(1)` extra space.
+
+</details>
+<details>
+<summary><strong>Q:</strong> When does the hash-table Two Sum beat this?</summary>
+
+**A:** When the array isn't sorted and `O(n)` extra space is acceptable — it's `O(n)` time without sorting.
+
+</details>
 
 ## Sources & Verify
 

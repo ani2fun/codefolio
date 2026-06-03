@@ -194,10 +194,30 @@ Level-order is the breadth-first counterpart to every depth-first tree pattern:
 | Why it works | at snapshot time the queue holds *only* this level |
 | Family | level sum, right-side view, zigzag, deepest leaves, cousins |
 
-- **Q:** What makes BFS "level-order" rather than a flat stream? **A:** Snapshotting `n = len(queue)` before draining, so each round processes exactly one level's worth of nodes.
-- **Q:** Why must the snapshot come before the inner loop? **A:** The drain enqueues children into the same queue; if you don't freeze `n` first, those children get counted in the current level and the boundaries merge.
-- **Q:** When choose BFS over DFS on a tree? **A:** When the question is about levels/depth/nearest — level sums, right-side view, zigzag, shortest unweighted distance.
-- **Q:** How does this relate to graphs? **A:** It's graph BFS with no `visited` set (a tree has no cycles); the frontier-by-frontier loop is identical.
+<details>
+<summary><strong>Q:</strong> What makes BFS "level-order" rather than a flat stream?</summary>
+
+**A:** Snapshotting `n = len(queue)` before draining, so each round processes exactly one level's worth of nodes.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why must the snapshot come before the inner loop?</summary>
+
+**A:** The drain enqueues children into the same queue; if you don't freeze `n` first, those children get counted in the current level and the boundaries merge.
+
+</details>
+<details>
+<summary><strong>Q:</strong> When choose BFS over DFS on a tree?</summary>
+
+**A:** When the question is about levels/depth/nearest — level sums, right-side view, zigzag, shortest unweighted distance.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does this relate to graphs?</summary>
+
+**A:** It's graph BFS with no `visited` set (a tree has no cycles); the frontier-by-frontier loop is identical.
+
+</details>
 
 ## Sources & Verify
 

@@ -10,23 +10,20 @@ import scala.jdk.CollectionConverters.*
 /**
  * Phase 1 drift guard (ADR-0026) — the Scala half of the schema single-source.
  *
- * `viz-schema.yaml` is the source of truth for the viz render contract; the TS
- * side is generated from it (`npm run codegen:viz`). The Scala side stays
- * HAND-WRITTEN in [[VizGraph]] (circe `Encoder`), so this spec asserts the
- * hand-written case-class fields match the yaml — field-for-field, per type.
- * If someone adds a field to `VizGraph.scala` without updating
- * `viz-schema.yaml` (or vice versa), this fails, the same way the retired
- * `bin/gen-ts-types.py` drift guard worked, but now anchored on the yaml.
+ * `viz-schema.yaml` is the source of truth for the viz render contract; the TS side is generated from it
+ * (`npm run codegen:viz`). The Scala side stays HAND-WRITTEN in [[VizGraph]] (circe `Encoder`), so this spec
+ * asserts the hand-written case-class fields match the yaml — field-for-field, per type. If someone adds a
+ * field to `VizGraph.scala` without updating `viz-schema.yaml` (or vice versa), this fails, the same way the
+ * retired `bin/gen-ts-types.py` drift guard worked, but now anchored on the yaml.
  *
- * Scope: NAME-level conformance (property names == case-class field names) plus
- * the "every property is required" invariant (circe always emits every field,
- * so the yaml must mark them all required → openapi-typescript emits `T`, not
- * `T?`). It does not check types — that would be brittle; the high-value drift
- * (added/removed/renamed field) is caught here, and `types-codegen.test.ts`
- * pins the nullable-field types on the TS side.
+ * Scope: NAME-level conformance (property names == case-class field names) plus the "every property is
+ * required" invariant (circe always emits every field, so the yaml must mark them all required →
+ * openapi-typescript emits `T`, not `T?`). It does not check types — that would be brittle; the high-value
+ * drift (added/removed/renamed field) is caught here, and `types-codegen.test.ts` pins the nullable-field
+ * types on the TS side.
  *
- * Uses snakeyaml (JVM-only test dep) rather than circe-yaml to avoid pulling a
- * yaml codec into the cross-compiled main sources.
+ * Uses snakeyaml (JVM-only test dep) rather than circe-yaml to avoid pulling a yaml codec into the
+ * cross-compiled main sources.
  */
 object VizSchemaConformanceSpec extends ZIOSpecDefault:
 
@@ -75,15 +72,23 @@ object VizSchemaConformanceSpec extends ZIOSpecDefault:
     val required = requiredNames(typeName)
     val scala    = scalaFields.toSet
     assertTrue(
-      props == scala,        // names match Scala ↔ yaml
-      required == props       // every property required (circe always emits → matches types.ts non-optional)
+      props == scala,   // names match Scala ↔ yaml
+      required == props // every property required (circe always emits → matches types.ts non-optional)
     ) ?? s"$typeName: yamlProps=$props scalaFields=$scala required=$required"
 
   // The 10 viz render types. Adding one here + in the yaml + VizGraph.scala is
   // the deliberate three-touch when the render contract grows.
   private val ExpectedTypes = Set(
-    "VizField", "VizNode", "VizEdge", "VizCursor", "Annotation",
-    "VizLocal", "VizFrame", "VizGraphStep", "VizGraph", "VizCases"
+    "VizField",
+    "VizNode",
+    "VizEdge",
+    "VizCursor",
+    "Annotation",
+    "VizLocal",
+    "VizFrame",
+    "VizGraphStep",
+    "VizGraph",
+    "VizCases"
   )
 
   override def spec: Spec[Any, Any] = suite("VizSchemaConformance")(
@@ -91,14 +96,14 @@ object VizSchemaConformanceSpec extends ZIOSpecDefault:
       assertTrue(schemas.keySet == ExpectedTypes) ??
         s"yaml schemas=${schemas.keySet} expected=$ExpectedTypes"
     },
-    test("VizField")     { conforms("VizField", fieldNames[VizField]) },
-    test("VizNode")      { conforms("VizNode", fieldNames[VizNode]) },
-    test("VizEdge")      { conforms("VizEdge", fieldNames[VizEdge]) },
-    test("VizCursor")    { conforms("VizCursor", fieldNames[VizCursor]) },
-    test("Annotation")   { conforms("Annotation", fieldNames[Annotation]) },
-    test("VizLocal")     { conforms("VizLocal", fieldNames[VizLocal]) },
-    test("VizFrame")     { conforms("VizFrame", fieldNames[VizFrame]) },
-    test("VizGraphStep") { conforms("VizGraphStep", fieldNames[VizGraphStep]) },
-    test("VizGraph")     { conforms("VizGraph", fieldNames[VizGraph]) },
-    test("VizCases")     { conforms("VizCases", fieldNames[VizCases]) }
+    test("VizField")(conforms("VizField", fieldNames[VizField])),
+    test("VizNode")(conforms("VizNode", fieldNames[VizNode])),
+    test("VizEdge")(conforms("VizEdge", fieldNames[VizEdge])),
+    test("VizCursor")(conforms("VizCursor", fieldNames[VizCursor])),
+    test("Annotation")(conforms("Annotation", fieldNames[Annotation])),
+    test("VizLocal")(conforms("VizLocal", fieldNames[VizLocal])),
+    test("VizFrame")(conforms("VizFrame", fieldNames[VizFrame])),
+    test("VizGraphStep")(conforms("VizGraphStep", fieldNames[VizGraphStep])),
+    test("VizGraph")(conforms("VizGraph", fieldNames[VizGraph])),
+    test("VizCases")(conforms("VizCases", fieldNames[VizCases]))
   )

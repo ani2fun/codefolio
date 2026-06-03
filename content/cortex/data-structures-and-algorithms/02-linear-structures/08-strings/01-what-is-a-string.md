@@ -123,10 +123,30 @@ Because a string *is* an array, the array scan patterns apply directly — the [
 | build with `+=` in a loop | `O(n²)` ✗ | immutability copies the whole string each time |
 | build with list + `join` / `StringBuilder` | `O(n)` ✓ | one copy at the end |
 
-- **Q:** What is a string, under the hood? **A:** An array of characters, each stored as a number (its code point).
-- **Q:** Why is `s[i]` `O(1)`? **A:** It's array indexing — address arithmetic over fixed-size character codes.
-- **Q:** What does "immutable" mean for a string, and what's the consequence? **A:** You can't change a character in place; "editing" copies the whole string (`O(n)`), so `+=` in a loop is `O(n²)`.
-- **Q:** How do you build a string efficiently? **A:** Collect parts in a list and `join` once (or use a `StringBuilder`) — `O(n)`.
+<details>
+<summary><strong>Q:</strong> What is a string, under the hood?</summary>
+
+**A:** An array of characters, each stored as a number (its code point).
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is `s[i]` `O(1)`?</summary>
+
+**A:** It's array indexing — address arithmetic over fixed-size character codes.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What does "immutable" mean for a string, and what's the consequence?</summary>
+
+**A:** You can't change a character in place; "editing" copies the whole string (`O(n)`), so `+=` in a loop is `O(n²)`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How do you build a string efficiently?</summary>
+
+**A:** Collect parts in a list and `join` once (or use a `StringBuilder`) — `O(n)`.
+
+</details>
 
 ## Sources & Verify
 

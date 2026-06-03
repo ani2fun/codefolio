@@ -206,10 +206,30 @@ The chunk-reversal skeleton is the same across structures; the doubly twist is t
 | Doubly hazard | fixing only `next` leaves `prev` stale → broken backward walk |
 | Cost | `O(n)` time, `O(1)` space |
 
-- **Q:** How does doubly chunk-reversal differ from the singly version? **A:** Each seam needs both a `next` and a `prev` reconnected — four boundary pointers per chunk instead of two.
-- **Q:** What's the classic bug, and how do you catch it? **A:** Fixing `next` but not `prev`; catch it by walking backward from the tail and checking it mirrors the forward walk.
-- **Q:** Why a dummy node? **A:** It gives the first group a real predecessor, so reversing the head is not a special case.
-- **Q:** Why count `n` and gate on `n ≥ k`? **A:** So only full groups reverse and a short remainder is left untouched.
+<details>
+<summary><strong>Q:</strong> How does doubly chunk-reversal differ from the singly version?</summary>
+
+**A:** Each seam needs both a `next` and a `prev` reconnected — four boundary pointers per chunk instead of two.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What's the classic bug, and how do you catch it?</summary>
+
+**A:** Fixing `next` but not `prev`; catch it by walking backward from the tail and checking it mirrors the forward walk.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why a dummy node?</summary>
+
+**A:** It gives the first group a real predecessor, so reversing the head is not a special case.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why count `n` and gate on `n ≥ k`?</summary>
+
+**A:** So only full groups reverse and a short remainder is left untouched.
+
+</details>
 
 ## Sources & Verify
 

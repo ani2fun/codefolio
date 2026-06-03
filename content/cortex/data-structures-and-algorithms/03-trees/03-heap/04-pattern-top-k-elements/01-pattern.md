@@ -148,10 +148,30 @@ The size-K heap is the go-to for "best few out of many":
 | Orientation | largest → min-heap · smallest → max-heap |
 | Cost | `O(n log K)` time, `O(K)` space |
 
-- **Q:** Why use a min-heap to track the *largest* elements? **A:** Its root is the smallest keeper — the threshold a newcomer must beat and the element you evict, both in `O(log K)`.
-- **Q:** What's the cost, and when does it beat sorting? **A:** `O(n log K)` vs `O(n log n)` — better when `K ≪ n`, and it works on streams.
-- **Q:** Where is the Kth largest after the pass? **A:** At the heap's root (the smallest of the K largest).
-- **Q:** How do you adapt it to the K smallest? **A:** Use a max-heap of size K and pop the largest each time.
+<details>
+<summary><strong>Q:</strong> Why use a min-heap to track the *largest* elements?</summary>
+
+**A:** Its root is the smallest keeper — the threshold a newcomer must beat and the element you evict, both in `O(log K)`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What's the cost, and when does it beat sorting?</summary>
+
+**A:** `O(n log K)` vs `O(n log n)` — better when `K ≪ n`, and it works on streams.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Where is the Kth largest after the pass?</summary>
+
+**A:** At the heap's root (the smallest of the K largest).
+
+</details>
+<details>
+<summary><strong>Q:</strong> How do you adapt it to the K smallest?</summary>
+
+**A:** Use a max-heap of size K and pop the largest each time.
+
+</details>
 
 ## Sources & Verify
 

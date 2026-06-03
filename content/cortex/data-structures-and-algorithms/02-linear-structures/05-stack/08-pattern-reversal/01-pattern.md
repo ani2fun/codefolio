@@ -131,10 +131,30 @@ Stack-reversal is the simplest stack pattern, and it clarifies *when* a stack ea
 | Use when | sequential-only access, a stream/queue, or a step in a bigger stack algorithm |
 | Don't use when | you can two-pointer an array in place (`O(1)` space) |
 
-- **Q:** Why does popping a stack yield reverse order? **A:** LIFO — the last element pushed is the first popped, so the pop sequence is the input flipped.
-- **Q:** What's the cost, and what's the catch? **A:** `O(n)` time and `O(n)` space; the space is wasted if an in-place two-pointer swap on an array would work.
-- **Q:** When is the stack the *right* choice for reversal? **A:** Sequential-only access (stream/queue), or when reversal is a sub-step of a larger stack algorithm.
-- **Q:** How does stack reversal relate to recursion? **A:** The call stack reverses naturally — acting on the way back up processes elements last-to-first, the same mechanism as an explicit stack.
+<details>
+<summary><strong>Q:</strong> Why does popping a stack yield reverse order?</summary>
+
+**A:** LIFO — the last element pushed is the first popped, so the pop sequence is the input flipped.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What's the cost, and what's the catch?</summary>
+
+**A:** `O(n)` time and `O(n)` space; the space is wasted if an in-place two-pointer swap on an array would work.
+
+</details>
+<details>
+<summary><strong>Q:</strong> When is the stack the *right* choice for reversal?</summary>
+
+**A:** Sequential-only access (stream/queue), or when reversal is a sub-step of a larger stack algorithm.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does stack reversal relate to recursion?</summary>
+
+**A:** The call stack reverses naturally — acting on the way back up processes elements last-to-first, the same mechanism as an explicit stack.
+
+</details>
 
 ## Sources & Verify
 

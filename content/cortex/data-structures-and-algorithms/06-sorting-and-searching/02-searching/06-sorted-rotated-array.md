@@ -159,10 +159,30 @@ Rotated-array search shows binary search applies beyond strictly sorted data:
 | Cost | `O(log n)`; `O(n)` worst case with duplicates |
 | Related | find the minimum / rotation count via the same frame |
 
-- **Q:** Why is at least one half always sorted in a rotated array? **A:** Rotation creates a single discontinuity, which falls into one half; the other half is a clean ascending run.
-- **Q:** How do you decide which way to recurse? **A:** Identify the sorted half, check if the target lies in its known value range; if yes search it, otherwise search the other half.
-- **Q:** What breaks the `O(log n)` bound? **A:** Duplicates make `arr[lo] == arr[mid]` ambiguous, forcing a linear scan past them — `O(n)` worst case.
-- **Q:** What's the general principle beyond rotated arrays? **A:** Binary search needs only a way to discard half the space with one test — not full sortedness — so it applies to rotated, bitonic, peak, and predicate searches.
+<details>
+<summary><strong>Q:</strong> Why is at least one half always sorted in a rotated array?</summary>
+
+**A:** Rotation creates a single discontinuity, which falls into one half; the other half is a clean ascending run.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How do you decide which way to recurse?</summary>
+
+**A:** Identify the sorted half, check if the target lies in its known value range; if yes search it, otherwise search the other half.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What breaks the `O(log n)` bound?</summary>
+
+**A:** Duplicates make `arr[lo] == arr[mid]` ambiguous, forcing a linear scan past them — `O(n)` worst case.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What's the general principle beyond rotated arrays?</summary>
+
+**A:** Binary search needs only a way to discard half the space with one test — not full sortedness — so it applies to rotated, bitonic, peak, and predicate searches.
+
+</details>
 
 ## Sources & Verify
 

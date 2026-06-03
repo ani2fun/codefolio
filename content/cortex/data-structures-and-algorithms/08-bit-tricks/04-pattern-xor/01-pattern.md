@@ -146,10 +146,30 @@ XOR's self-inverse property is a Swiss-army knife for "things that come in pairs
 | Swap no temp | `a^=b; b^=a; a^=b` |
 | Cost | `O(n)` time, `O(1)` space |
 
-- **Q:** Why does XOR-ing an array leave only the odd-occurring values? **A:** Even counts pair off to `0` (`a^a=0`), and order doesn't matter (commutative/associative), so only odd-count values survive.
-- **Q:** Does the value need to appear *exactly twice* to cancel? **A:** No — any *even* count cancels; parity of the count is what matters.
-- **Q:** How do you find *two* odd-occurring values? **A:** XOR all to get `x = a^b`, isolate a differing bit with `x & -x`, partition the array by that bit, and XOR each group.
-- **Q:** How does XOR find the missing number in `0..n`? **A:** XOR all the values with all the indices `0..n`; every present number cancels its index, leaving the missing one.
+<details>
+<summary><strong>Q:</strong> Why does XOR-ing an array leave only the odd-occurring values?</summary>
+
+**A:** Even counts pair off to `0` (`a^a=0`), and order doesn't matter (commutative/associative), so only odd-count values survive.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Does the value need to appear *exactly twice* to cancel?</summary>
+
+**A:** No — any *even* count cancels; parity of the count is what matters.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How do you find *two* odd-occurring values?</summary>
+
+**A:** XOR all to get `x = a^b`, isolate a differing bit with `x & -x`, partition the array by that bit, and XOR each group.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does XOR find the missing number in `0..n`?</summary>
+
+**A:** XOR all the values with all the indices `0..n`; every present number cancels its index, leaving the missing one.
+
+</details>
 
 ## Sources & Verify
 

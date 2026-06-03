@@ -168,10 +168,30 @@ The dummy-head + tail-splice skeleton is the reusable core; the variants only ch
 | Leftover | when one list empties, attach the other's remaining tail wholesale |
 | Cost | `O(m + n)` time, `O(1)` extra space (nodes reused) |
 
-- **Q:** Why is merging sorted lists `O(m+n)` and not `O((m+n) log(m+n))`? **A:** Sorted inputs make the next node always the smaller of two heads — no sort or search, just one linear pass.
-- **Q:** What does the dummy head buy you? **A:** The first node is spliced like any other — no "is the output empty yet?" special case.
-- **Q:** Why attach the leftover tail in one step instead of looping? **A:** The remaining list is sorted and ≥ everything already placed, so there's nothing left to compare — a single pointer assignment suffices.
-- **Q:** Why `<=` rather than `<`? **A:** On ties it takes the node from `a` first, keeping the merge stable (original order preserved).
+<details>
+<summary><strong>Q:</strong> Why is merging sorted lists `O(m+n)` and not `O((m+n) log(m+n))`?</summary>
+
+**A:** Sorted inputs make the next node always the smaller of two heads — no sort or search, just one linear pass.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What does the dummy head buy you?</summary>
+
+**A:** The first node is spliced like any other — no "is the output empty yet?" special case.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why attach the leftover tail in one step instead of looping?</summary>
+
+**A:** The remaining list is sorted and ≥ everything already placed, so there's nothing left to compare — a single pointer assignment suffices.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why `<=` rather than `<`?</summary>
+
+**A:** On ties it takes the node from `a` first, keeping the merge stable (original order preserved).
+
+</details>
 
 ## Sources & Verify
 

@@ -161,10 +161,30 @@ The three-pointer flip is one of the highest-leverage list moves — it shows up
 | Returns | `previous` — the old tail, now the head |
 | Cost | `O(n)` time, `O(1)` space (no copy, values never move) |
 
-- **Q:** Why save `next` before flipping `current.next`? **A:** The flip overwrites `current.next` — without the saved lookahead you'd lose the only pointer to the rest of the list.
-- **Q:** What does `previous` hold when the loop ends? **A:** The old tail, which is the new head — `current` has just walked off the end into `null`.
-- **Q:** How do you reverse only an inner segment `[i, j]`? **A:** Reverse exactly those nodes, then stitch the reversed piece back to the node before `i` and the node after `j`.
-- **Q:** Why prefer the iterative loop over recursion? **A:** Recursion uses `O(n)` stack space (overflow risk on long lists); the loop is `O(1)`.
+<details>
+<summary><strong>Q:</strong> Why save `next` before flipping `current.next`?</summary>
+
+**A:** The flip overwrites `current.next` — without the saved lookahead you'd lose the only pointer to the rest of the list.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What does `previous` hold when the loop ends?</summary>
+
+**A:** The old tail, which is the new head — `current` has just walked off the end into `null`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How do you reverse only an inner segment `[i, j]`?</summary>
+
+**A:** Reverse exactly those nodes, then stitch the reversed piece back to the node before `i` and the node after `j`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why prefer the iterative loop over recursion?</summary>
+
+**A:** Recursion uses `O(n)` stack space (overflow risk on long lists); the loop is `O(1)`.
+
+</details>
 
 ## Sources & Verify
 

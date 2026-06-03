@@ -143,10 +143,30 @@ These four primitives are the alphabet the rest of bit manipulation spells with:
 | Toggle | `n ^ mask` |
 | Cost | `O(1)` each |
 
-- **Q:** What is the mask for bit `k`, and what makes it work? **A:** `1 << (k-1)` — a single `1` at position `k`; its zeros leave all other bits untouched under the bitwise operators.
-- **Q:** Which operator does each of check/set/clear/toggle use? **A:** `&`, `|`, `& ~`, `^` respectively.
-- **Q:** Why `k - 1` in the shift? **A:** Positions are 1-based but shift counts are 0-based; `1 << 0` puts the `1` in position 1.
-- **Q:** Why are the other bits unaffected? **A:** Bitwise operators act per-position, and the mask is `0` everywhere except `k`, so elsewhere `OR`/`XOR`/`AND ~mask` leave the input unchanged.
+<details>
+<summary><strong>Q:</strong> What is the mask for bit `k`, and what makes it work?</summary>
+
+**A:** `1 << (k-1)` — a single `1` at position `k`; its zeros leave all other bits untouched under the bitwise operators.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Which operator does each of check/set/clear/toggle use?</summary>
+
+**A:** `&`, `|`, `& ~`, `^` respectively.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why `k - 1` in the shift?</summary>
+
+**A:** Positions are 1-based but shift counts are 0-based; `1 << 0` puts the `1` in position 1.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why are the other bits unaffected?</summary>
+
+**A:** Bitwise operators act per-position, and the mask is `0` everywhere except `k`, so elsewhere `OR`/`XOR`/`AND ~mask` leave the input unchanged.
+
+</details>
 
 ## Sources & Verify
 

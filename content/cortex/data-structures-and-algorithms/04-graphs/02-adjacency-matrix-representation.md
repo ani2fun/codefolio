@@ -142,11 +142,36 @@ The matrix is one half of the representation choice every graph program makes:
 | Neighbours of `i` | scan row `i` ⇒ `O(N)` |
 | Use when | dense graph, `O(1)` edge tests (Floyd-Warshall), small `N` |
 
-- **Q:** What does `adj[i][j]` mean and what does it cost? **A:** "Is there an edge between `i` and `j`?" — `O(1)`, a single indexed fetch.
-- **Q:** How do you tell an undirected matrix from a directed one? **A:** Undirected is symmetric (`adj[i][j] == adj[j][i]`); directed generally isn't.
-- **Q:** Why is the matrix wrong for large sparse graphs? **A:** Space is `O(N²)` regardless of edge count — a billion-node sparse graph would need `10¹⁸` cells, almost all `false`.
-- **Q:** When is the matrix the right choice? **A:** Dense graphs (`E ≈ N²`), `O(1)`-edge-query-bound algorithms (Floyd-Warshall), or small `N`.
-- **Q:** What's the `[[False]*n]*n` trap? **A:** It makes `n` references to one shared row, so editing a cell mutates the whole column; build rows with a comprehension/factory.
+<details>
+<summary><strong>Q:</strong> What does `adj[i][j]` mean and what does it cost?</summary>
+
+**A:** "Is there an edge between `i` and `j`?" — `O(1)`, a single indexed fetch.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How do you tell an undirected matrix from a directed one?</summary>
+
+**A:** Undirected is symmetric (`adj[i][j] == adj[j][i]`); directed generally isn't.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is the matrix wrong for large sparse graphs?</summary>
+
+**A:** Space is `O(N²)` regardless of edge count — a billion-node sparse graph would need `10¹⁸` cells, almost all `false`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> When is the matrix the right choice?</summary>
+
+**A:** Dense graphs (`E ≈ N²`), `O(1)`-edge-query-bound algorithms (Floyd-Warshall), or small `N`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What's the `[[False]*n]*n` trap?</summary>
+
+**A:** It makes `n` references to one shared row, so editing a cell mutates the whole column; build rows with a comprehension/factory.
+
+</details>
 
 ## Sources & Verify
 

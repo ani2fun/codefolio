@@ -126,10 +126,30 @@ The fixed window is the simplest "stop recomputing, start maintaining" pattern, 
 | Works for | slidable aggregates: sum, count, average, max/min (deque) |
 | Fails for | median / rank-based — needs `O(log k)` structure |
 
-- **Q:** Why is the fixed window `O(n)` and not `O(n·k)`? **A:** Each slide repairs the aggregate with one add + one subtract instead of re-summing all `k` elements.
-- **Q:** What makes an aggregate "slidable"? **A:** A single element's contribution can be added *and* removed in `O(1)`, independent of the others.
-- **Q:** Why can't a sliding median use this trick? **A:** Median depends on relative rank, so an entering/leaving element can't be patched arithmetically — you need an `O(log k)` ordered structure.
-- **Q:** What two things change when the window slides one step? **A:** Exactly one element enters on the right and one leaves on the left.
+<details>
+<summary><strong>Q:</strong> Why is the fixed window `O(n)` and not `O(n·k)`?</summary>
+
+**A:** Each slide repairs the aggregate with one add + one subtract instead of re-summing all `k` elements.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What makes an aggregate "slidable"?</summary>
+
+**A:** A single element's contribution can be added *and* removed in `O(1)`, independent of the others.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why can't a sliding median use this trick?</summary>
+
+**A:** Median depends on relative rank, so an entering/leaving element can't be patched arithmetically — you need an `O(log k)` ordered structure.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What two things change when the window slides one step?</summary>
+
+**A:** Exactly one element enters on the right and one leaves on the left.
+
+</details>
 
 ## Sources & Verify
 

@@ -189,10 +189,30 @@ The BST iterator is "recursion made resumable," and the technique transfers wide
 | Cost | `O(1)` amortized per call (each node pushed/popped once), `O(h)` space |
 | vs flatten | `O(h)` lazy vs `O(n)` eager list; better if you stop early |
 
-- **Q:** What does the iterator's stack hold? **A:** The current left-spine — the unvisited ancestors on the path to the next-smallest key; the top is that key.
-- **Q:** What does `next()` do? **A:** Pops the smallest unvisited node and pushes the left-spine of its right child (its in-order successors).
-- **Q:** Why is `next()` `O(1)` amortized despite sometimes pushing many nodes? **A:** Each node is pushed and popped exactly once over the whole iteration — `2n` ops across `n` calls.
-- **Q:** Iterator vs flattening to a sorted list? **A:** The iterator is `O(h)` space and lazy (first key ready immediately, can stop early); flattening is `O(n)` space and eager.
+<details>
+<summary><strong>Q:</strong> What does the iterator's stack hold?</summary>
+
+**A:** The current left-spine — the unvisited ancestors on the path to the next-smallest key; the top is that key.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What does `next()` do?</summary>
+
+**A:** Pops the smallest unvisited node and pushes the left-spine of its right child (its in-order successors).
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is `next()` `O(1)` amortized despite sometimes pushing many nodes?</summary>
+
+**A:** Each node is pushed and popped exactly once over the whole iteration — `2n` ops across `n` calls.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Iterator vs flattening to a sorted list?</summary>
+
+**A:** The iterator is `O(h)` space and lazy (first key ready immediately, can stop early); flattening is `O(n)` space and eager.
+
+</details>
 
 ## Sources & Verify
 

@@ -218,7 +218,7 @@ Canonical wins: dynamic array push (resize once per 2× growth), splay tree acce
 
 #### Generic Implementation
 
-**See:** [Palindrome checker](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers#palindrome-checker) · [Reverse words](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers#reverse-words) · [Vowel exchange](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers#vowel-exchange) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers)
+**See:** [Palindrome checker](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers#palindrome-checker) · [Reverse words](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers#reverse-words) · [Vowel exchange](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers#vowel-exchange) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-pattern)
 
 ### Two pointers (reduction)
 > Sort first, then converge. Pointer movement is dictated by comparing the running pair to a target.
@@ -242,7 +242,7 @@ Canonical wins: dynamic array push (resize once per 2× growth), splay tree acce
 
 #### Generic Implementation
 
-**See:** [Two sum](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-reduction#two-sum) · [Largest container](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-reduction#largest-container) · [Target-limited two sum](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-reduction#target-limited-two-sum) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-reduction)
+**See:** [Two sum](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-reduction#two-sum) · [Largest container](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-reduction#largest-container) · [Target-limited two sum](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-reduction#target-limited-two-sum) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-reduction-pattern)
 
 ### Two pointers (subproblem)
 > Decompose into independent sub-instances; each one is a vanilla two-pointer scan. Outer loop fixes one variable; inner loop two-pointers the rest.
@@ -263,7 +263,7 @@ Canonical wins: dynamic array push (resize once per 2× growth), splay tree acce
 
 #### Generic Implementation
 
-**See:** [Three sum](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-subproblem#three-sum) · [Four sum](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-subproblem#four-sum) · [K rotations](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-subproblem#k-rotations-right) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-subproblem)
+**See:** [Three sum](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-subproblem#three-sum) · [Four sum](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-subproblem#four-sum) · [K rotations](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-subproblem#k-rotations-right) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers-subproblem-pattern)
 
 ### Simultaneous traversal
 > Walk two (or k) sorted sequences in lockstep; advance the pointer whose element loses the comparison.
@@ -287,7 +287,7 @@ Canonical wins: dynamic array push (resize once per 2× growth), splay tree acce
 
 #### Generic Implementation
 
-**See:** [Merge sorted arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-simultaneous-traversal#merge-sorted-arrays) · [Unique intersections](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-simultaneous-traversal#unique-intersections) · [Subsequence checker](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-simultaneous-traversal#subsequence-checker) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-simultaneous-traversal)
+**See:** [Merge sorted arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-simultaneous-traversal#merge-sorted-arrays) · [Unique intersections](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-simultaneous-traversal#unique-intersections) · [Subsequence checker](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-simultaneous-traversal#subsequence-checker) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-simultaneous-traversal-pattern)
 
 ### Fixed sliding window
 > Window of constant size K slides one step at a time. Maintain aggregate by *add one, remove one* in O(1) per step.
@@ -309,7 +309,7 @@ Canonical wins: dynamic array push (resize once per 2× growth), splay tree acce
 
 #### Generic Implementation
 
-**See:** [Subarray size equals K](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-fixed-sliding-window#subarray-size-equals-k) · [Maximum ones](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-fixed-sliding-window#maximum-ones) · [Even odd count](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-fixed-sliding-window#even-odd-count) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-fixed-sliding-window)
+**See:** [Subarray size equals K](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-fixed-sliding-window#subarray-size-equals-k) · [Maximum ones](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-fixed-sliding-window#maximum-ones) · [Even odd count](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-fixed-sliding-window#even-odd-count) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-fixed-sliding-window-pattern)
 
 ### Variable sliding window
 > Window expands when valid, contracts when invalid. Both pointers move forward only — each element enters and leaves once.
@@ -331,7 +331,7 @@ Canonical wins: dynamic array push (resize once per 2× growth), splay tree acce
 
 #### Generic Implementation
 
-**See:** [Consecutive ones with K flips](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-variable-sliding-window#consecutive-ones-with-k-flips) · [Product conundrum](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-variable-sliding-window#product-conundrum) · [Maximum subarray sum](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-variable-sliding-window#maximum-subarray-sum) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-variable-sliding-window)
+**See:** [Consecutive ones with K flips](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-variable-sliding-window#consecutive-ones-with-k-flips) · [Product conundrum](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-variable-sliding-window#product-conundrum) · [Maximum subarray sum](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-variable-sliding-window#maximum-subarray-sum) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-variable-sliding-window-pattern)
 
 ### Interval merging
 > Sort by start. Walk once; merge into the last interval if it overlaps, else append a new one.
@@ -354,7 +354,7 @@ Canonical wins: dynamic array push (resize once per 2× growth), splay tree acce
 
 #### Generic Implementation
 
-**See:** [Verify schedule](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-interval-merging#verify-schedule) · [Overlap reduction](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-interval-merging#overlap-reduction) · [Insert interval](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-interval-merging#insert-interval) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-interval-merging)
+**See:** [Verify schedule](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-interval-merging#verify-schedule) · [Overlap reduction](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-interval-merging#overlap-reduction) · [Insert interval](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-interval-merging#insert-interval) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-interval-merging-pattern)
 
 ### Maximum overlap (sweep line)
 > Convert intervals to start/end events, sort, sweep; running counter peaks at maximum concurrent overlap.
@@ -377,7 +377,7 @@ Canonical wins: dynamic array push (resize once per 2× growth), splay tree acce
 
 #### Generic Implementation
 
-**See:** [Minimum meeting rooms](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-maximum-overlap#minimum-meeting-rooms) · [Busiest interval](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-maximum-overlap#busiest-interval) · [Peak resource requirement](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-maximum-overlap#peak-resource-requirement) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-maximum-overlap)
+**See:** [Minimum meeting rooms](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-maximum-overlap#minimum-meeting-rooms) · [Busiest interval](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-maximum-overlap#busiest-interval) · [Peak resource requirement](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-maximum-overlap#peak-resource-requirement) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-maximum-overlap-pattern)
 
 **Drill in:** [Arrays index →](/cortex/data-structures-and-algorithms/linear-structures-arrays-index)
 
@@ -415,7 +415,7 @@ Canonical wins: dynamic array push (resize once per 2× growth), splay tree acce
 
 #### Generic Implementation
 
-**See:** [Reverse a list](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reversal#reverse-a-list) · [Reverse first K nodes](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reversal#reverse-first-k-nodes) · [Reverse the given segment](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reversal#reverse-the-given-segment) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reversal)
+**See:** [Reverse a list](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reversal#reverse-a-list) · [Reverse first K nodes](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reversal#reverse-first-k-nodes) · [Reverse the given segment](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reversal#reverse-the-given-segment) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reversal-pattern)
 
 ### Reversal subproblem
 > Compose reversals over groups: locate the segment, store the boundary nodes, reverse just the segment, reattach.
@@ -439,7 +439,7 @@ Canonical wins: dynamic array push (resize once per 2× growth), splay tree acce
 
 #### Generic Implementation
 
-**See:** [Reverse K-segments](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reversal-subproblem#reverse-k-segments) · [Pairwise swap](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reversal-subproblem#pairwise-swap) · [Reverse alternate segments](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reversal-subproblem#reverse-alternate-segments) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reversal-subproblem)
+**See:** [Reverse K-segments](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reversal-subproblem#reverse-k-segments) · [Pairwise swap](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reversal-subproblem#pairwise-swap) · [Reverse alternate segments](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reversal-subproblem#reverse-alternate-segments) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reversal-subproblem-pattern)
 
 ### Sliding window traversal
 > Two pointers K steps apart march together. When `end` falls off, `start` is exactly K from the tail.
@@ -461,7 +461,7 @@ Canonical wins: dynamic array push (resize once per 2× growth), splay tree acce
 
 #### Generic Implementation
 
-**See:** [Trim Nth node](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-sliding-window-traversal#trim-nth-node) · [Swap Nth nodes](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-sliding-window-traversal#swap-nth-nodes) · [K maximum sum](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-sliding-window-traversal#k-maximum-sum) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-sliding-window-traversal)
+**See:** [Trim Nth node](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-sliding-window-traversal#trim-nth-node) · [Swap Nth nodes](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-sliding-window-traversal#swap-nth-nodes) · [K maximum sum](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-sliding-window-traversal#k-maximum-sum) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-sliding-window-traversal-pattern)
 
 ### Fast and slow pointers (Floyd)
 > Move fast 2× speed, slow 1×. When fast hits end → slow is at middle. When pointers meet in a cycle → restart slow from head, march both 1× → meeting point is cycle start.
@@ -484,7 +484,7 @@ Canonical wins: dynamic array push (resize once per 2× growth), splay tree acce
 
 #### Generic Implementation
 
-**See:** [Middle node search](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-fast-and-slow-pointers#middle-node-search) · [Split list in half](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-fast-and-slow-pointers#split-list-in-half) · [Palindrome checker](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-fast-and-slow-pointers#palindrome-checker) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-fast-and-slow-pointers)
+**See:** [Middle node search](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-fast-and-slow-pointers#middle-node-search) · [Split list in half](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-fast-and-slow-pointers#split-list-in-half) · [Palindrome checker](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-fast-and-slow-pointers#palindrome-checker) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-fast-and-slow-pointers-pattern)
 
 ### Split
 > Route each node into one of K output lists via a classifier. Use dummy heads to avoid edge cases.
@@ -508,7 +508,7 @@ Canonical wins: dynamic array push (resize once per 2× growth), splay tree acce
 
 #### Generic Implementation
 
-**See:** [Even odd split](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-split#even-odd-split) · [Split by modulo](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-split#split-by-modulo) · [K-way list split](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-split#k-way-list-split) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-split)
+**See:** [Even odd split](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-split#even-odd-split) · [Split by modulo](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-split#split-by-modulo) · [K-way list split](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-split#k-way-list-split) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-split-pattern)
 
 ### Merge
 > Walk two (or k) sorted lists; selector picks the smaller head; splice it in. Dummy head simplifies the empty-output edge case.
@@ -531,7 +531,7 @@ Canonical wins: dynamic array push (resize once per 2× growth), splay tree acce
 
 #### Generic Implementation
 
-**See:** [Merge sorted lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-merge#merge-sorted-lists) · [Alternate node fusion](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-merge#alternate-node-fusion) · [List addition](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-merge#list-addition) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-merge)
+**See:** [Merge sorted lists](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-merge#merge-sorted-lists) · [Alternate node fusion](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-merge#alternate-node-fusion) · [List addition](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-merge#list-addition) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-merge-pattern)
 
 ### Reorder
 > Split → reverse one half → merge halves alternately. Reorder = split + reverse + merge composed in order.
@@ -552,7 +552,7 @@ Canonical wins: dynamic array push (resize once per 2× growth), splay tree acce
 
 #### Generic Implementation
 
-**See:** [Shuffle list](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reorder#shuffle-list) · [Parity order](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reorder#parity-order) · [Value partition](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reorder#value-partition) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reorder)
+**See:** [Shuffle list](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reorder#shuffle-list) · [Parity order](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reorder#parity-order) · [Value partition](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reorder#value-partition) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-pattern-reorder-pattern)
 
 ### Doubly linked list reversal
 > No three-pointer dance — just swap `prev`/`next` on every node and walk via the (now swapped) `prev` pointer.
@@ -574,7 +574,7 @@ Canonical wins: dynamic array push (resize once per 2× growth), splay tree acce
 
 #### Generic Implementation
 
-**See:** Reverse DLL · Reverse segment of DLL · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-reversal)
+**See:** Reverse DLL · Reverse segment of DLL · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-reversal-pattern)
 
 ### Doubly linked list two pointers
 > DLL enables both-direction walk without reversal — left from head, right from tail, converging on the middle.
@@ -595,9 +595,9 @@ Canonical wins: dynamic array push (resize once per 2× growth), splay tree acce
 
 #### Generic Implementation
 
-**See:** [Palindrome number](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-two-pointers#palindrome-number) · [Two sum](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-two-pointers#two-sum) · [Duplicate-aware two sum](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-two-pointers#duplicate-aware-two-sum) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-two-pointers)
+**See:** [Palindrome number](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-two-pointers#palindrome-number) · [Two sum](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-two-pointers#two-sum) · [Duplicate-aware two sum](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-two-pointers#duplicate-aware-two-sum) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-two-pointers-pattern)
 
-**Also on DLL:** [Reversal subproblem](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-reversal-subproblem) (reverse only a segment of a DLL — re-attach via prev pointers) · [Reorder](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-reorder) (split + reverse + merge, mirror of the SLL reorder pattern).
+**Also on DLL:** [Reversal subproblem](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-reversal-subproblem-pattern) (reverse only a segment of a DLL — re-attach via prev pointers) · [Reorder](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-pattern-reorder-pattern) (split + reverse + merge, mirror of the SLL reorder pattern).
 
 **Drill in:** [Singly linked list index →](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-index) · [Doubly linked list index →](/cortex/data-structures-and-algorithms/linear-structures-doubly-linked-list-index)
 
@@ -634,7 +634,7 @@ Stack uses: undo, recursion simulation, bracket matching, monotonic ops, postfix
 
 #### Generic Implementation
 
-**See:** [Stack inversion](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-reversal#stack-inversion) · [Reverse the string](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-reversal#reverse-the-string) · [Reverse word order](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-reversal#reverse-word-order) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-reversal)
+**See:** [Stack inversion](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-reversal#stack-inversion) · [Reverse the string](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-reversal#reverse-the-string) · [Reverse word order](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-reversal#reverse-word-order) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-reversal-pattern)
 
 ### Monotonic stack — previous closest occurrence
 > Maintain decreasing/increasing stack. Top of stack at index *i* is the answer for *i*. Pop dominated elements before pushing.
@@ -656,7 +656,7 @@ Stack uses: undo, recursion simulation, bracket matching, monotonic ops, postfix
 
 #### Generic Implementation
 
-**See:** [Preceding superior element](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-previous-closest-occurrence#preceding-superior-element) · [Preceding inferior element](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-previous-closest-occurrence#preceding-inferior-element) · [Preceding superior element II](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-previous-closest-occurrence#preceding-superior-element-ii) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-previous-closest-occurrence)
+**See:** [Preceding superior element](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-previous-closest-occurrence#preceding-superior-element) · [Preceding inferior element](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-previous-closest-occurrence#preceding-inferior-element) · [Preceding superior element II](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-previous-closest-occurrence#preceding-superior-element-ii) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-previous-closest-occurrence-pattern)
 
 ### Monotonic stack — next closest occurrence
 > Walk left-to-right; resolve old indices retroactively when a dominating element arrives. Whatever stays on the stack at the end has no answer.
@@ -677,7 +677,7 @@ Stack uses: undo, recursion simulation, bracket matching, monotonic ops, postfix
 
 #### Generic Implementation
 
-**See:** [Succeeding superior element](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-next-closest-occurrence#succeeding-superior-element) · [Retained rainwater](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-next-closest-occurrence#retained-rainwater) · [Largest rectangle area](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-next-closest-occurrence#largest-rectangle-area) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-next-closest-occurrence)
+**See:** [Succeeding superior element](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-next-closest-occurrence#succeeding-superior-element) · [Retained rainwater](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-next-closest-occurrence#retained-rainwater) · [Largest rectangle area](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-next-closest-occurrence#largest-rectangle-area) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-next-closest-occurrence-pattern)
 
 ### Sequence validation (bracket matching)
 > Push openers; on a closer, top must be its matching opener. Empty stack at end ⇔ balanced.
@@ -698,7 +698,7 @@ Stack uses: undo, recursion simulation, bracket matching, monotonic ops, postfix
 
 #### Generic Implementation
 
-**See:** [Parentheses checker](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-sequence-validation#parentheses-checker) · [Redundant parentheses](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-sequence-validation#redundant-parentheses) · [Balanced span](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-sequence-validation#balanced-span) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-sequence-validation)
+**See:** [Parentheses checker](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-sequence-validation#parentheses-checker) · [Redundant parentheses](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-sequence-validation#redundant-parentheses) · [Balanced span](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-sequence-validation#balanced-span) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-sequence-validation-pattern)
 
 ### Linear evaluation (expression / path)
 > Stack holds partial results. On a closer (or operator), pop chunk, transform, push the new partial result back.
@@ -719,7 +719,7 @@ Stack uses: undo, recursion simulation, bracket matching, monotonic ops, postfix
 
 #### Generic Implementation
 
-**See:** [Canonicalise path](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-linear-evaluation#canonicalise-path) · [String expansion](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-linear-evaluation#string-expansion) · [Formula parsing](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-linear-evaluation#formula-parsing) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-linear-evaluation)
+**See:** [Canonicalise path](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-linear-evaluation#canonicalise-path) · [String expansion](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-linear-evaluation#string-expansion) · [Formula parsing](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-linear-evaluation#formula-parsing) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-stack-pattern-linear-evaluation-pattern)
 
 ### Monotonic deque (sliding-window max/min)
 > Deque holds candidates that *could* still become the window max. Pop dominated from the back on insert; pop front when it leaves the window.
@@ -786,7 +786,7 @@ Stack uses: undo, recursion simulation, bracket matching, monotonic ops, postfix
 
 #### Generic Implementation
 
-**See:** [First non repeating character](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting#first-non-repeating-character) · [Anagram checker](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting#anagram-checker) · [Build palindrome](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting#build-palindrome) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting)
+**See:** [First non repeating character](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting#first-non-repeating-character) · [Anagram checker](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting#anagram-checker) · [Build palindrome](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting#build-palindrome) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-counting-pattern)
 
 ### Key generation (canonical form)
 > Transform input to a canonical key; equal canonical keys = equivalent inputs. Bucket by canonical key.
@@ -807,7 +807,7 @@ Stack uses: undo, recursion simulation, bracket matching, monotonic ops, postfix
 
 #### Generic Implementation
 
-**See:** [Row specific words](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-pattern-generation#row-specific-words) · [Homomorphic strings](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-pattern-generation#homomorphic-strings) · [Cluster displaced strings](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-pattern-generation#cluster-displaced-strings) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-pattern-generation)
+**See:** [Row specific words](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-pattern-generation#row-specific-words) · [Homomorphic strings](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-pattern-generation#homomorphic-strings) · [Cluster displaced strings](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-pattern-generation#cluster-displaced-strings) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-pattern-generation-pattern)
 
 ### Fixed-window with hash (frequency over window)
 > Slide a fixed-K window; maintain a frequency map by `add(end) / remove(start)`. Compare maps against target.
@@ -829,7 +829,7 @@ Stack uses: undo, recursion simulation, bracket matching, monotonic ops, postfix
 
 #### Generic Implementation
 
-**See:** [Duplicate detection](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-fixed-sized-sliding-window#duplicate-detection) · [Contains variation](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-fixed-sized-sliding-window#contains-variation) · [Anagram finder](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-fixed-sized-sliding-window#anagram-finder) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-fixed-sized-sliding-window)
+**See:** [Duplicate detection](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-fixed-sized-sliding-window#duplicate-detection) · [Contains variation](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-fixed-sized-sliding-window#contains-variation) · [Anagram finder](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-fixed-sized-sliding-window#anagram-finder) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-fixed-sized-sliding-window-pattern)
 
 ### Variable-window with hash
 > Window's predicate uses a frequency map (e.g. "at most K distinct"). Shrink while invalid; record best while valid.
@@ -851,7 +851,7 @@ Stack uses: undo, recursion simulation, bracket matching, monotonic ops, postfix
 
 #### Generic Implementation
 
-**See:** [Unique character span](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-variable-sized-sliding-window#unique-character-span) · [K characters span](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-variable-sized-sliding-window#k-characters-span) · [Subarray sum equals k](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-variable-sized-sliding-window#subarray-sum-equals-k) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-variable-sized-sliding-window)
+**See:** [Unique character span](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-variable-sized-sliding-window#unique-character-span) · [K characters span](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-variable-sized-sliding-window#k-characters-span) · [Subarray sum equals k](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-variable-sized-sliding-window#subarray-sum-equals-k) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-variable-sized-sliding-window-pattern)
 
 ### Prefix sum + hash
 > `sum(i..j) = prefix[j] − prefix[i−1]`. Look up `prefix − target` in a map of previously-seen prefix sums.
@@ -873,7 +873,7 @@ Stack uses: undo, recursion simulation, bracket matching, monotonic ops, postfix
 
 #### Generic Implementation
 
-**See:** [Subarray sum equals K](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-prefix-sum#subarray-sum-equals-k) · [Balanced binary subarray](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-prefix-sum#balanced-binary-subarray) · [Zero sum subarrays](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-prefix-sum#zero-sum-subarrays) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-prefix-sum)
+**See:** [Subarray sum equals K](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-prefix-sum#subarray-sum-equals-k) · [Balanced binary subarray](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-prefix-sum#balanced-binary-subarray) · [Zero sum subarrays](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-prefix-sum#zero-sum-subarrays) · [Full chapter →](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-prefix-sum-pattern)
 
 **Drill in:** [Hash table index →](/cortex/data-structures-and-algorithms/linear-structures-hash-table-index)
 
@@ -911,7 +911,7 @@ For BST: inorder = sorted ascending; reverse-inorder = sorted descending.
 
 #### Generic Implementation
 
-**See:** [Sum of path](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless#problem-1--sum-of-path) · [Depth assignment](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless#problem-2--depth-assignment) · [Concatenated path](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless#problem-3--concatenated-path) · [Full chapter →](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless)
+**See:** [Sum of path](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless#problem-1--sum-of-path) · [Depth assignment](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless#problem-2--depth-assignment) · [Concatenated path](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless#problem-3--concatenated-path) · [Full chapter →](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateless-pattern)
 
 ### Preorder traversal — stateful
 > One shared mutable accumulator. Push on entry, pop on return — backtracking discipline.
@@ -934,7 +934,7 @@ For BST: inorder = sorted ascending; reverse-inorder = sorted descending.
 
 #### Generic Implementation
 
-**See:** [Duplicates in path](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateful#problem-1--duplicates-in-path) · [Left view](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateful#problem-3--left-view) · [Right view](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateful#problem-4--right-view) · [Full chapter →](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateful)
+**See:** [Duplicates in path](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateful#problem-1--duplicates-in-path) · [Left view](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateful#problem-3--left-view) · [Right view](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateful#problem-4--right-view) · [Full chapter →](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-preorder-traversal-stateful-pattern)
 
 ### Postorder traversal — stateless
 > Children answer first via return; parent combines into its own answer. No external state.
@@ -953,7 +953,7 @@ For BST: inorder = sorted ascending; reverse-inorder = sorted descending.
 
 #### Generic Implementation
 
-**See:** [Sum of leaves](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless#problem-1--sum-of-leaves) · [Height of a binary tree](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless#problem-2--height-of-a-binary-tree) · [Maximum root-to-leaf path sum](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless#problem-3--maximum-root-to-leaf-path-sum) · [Full chapter →](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless)
+**See:** [Sum of leaves](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless#problem-1--sum-of-leaves) · [Height of a binary tree](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless#problem-2--height-of-a-binary-tree) · [Maximum root-to-leaf path sum](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless#problem-3--maximum-root-to-leaf-path-sum) · [Full chapter →](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateless-pattern)
 
 ### Postorder traversal — stateful
 > Return one value to parent, side-channel a different value into a global. Common in "diameter at any node" patterns where the answer isn't on the recursion's return path.
@@ -972,7 +972,7 @@ For BST: inorder = sorted ascending; reverse-inorder = sorted descending.
 
 #### Generic Implementation
 
-**See:** [Diameter of tree](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateful#problem-1--diameter-of-tree) · [Longest monotonic path](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateful#problem-5--longest-monotonic-path) · [Path sum count](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateful#problem-7--path-sum-count) · [Full chapter →](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateful)
+**See:** [Diameter of tree](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateful#problem-1--diameter-of-tree) · [Longest monotonic path](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateful#problem-5--longest-monotonic-path) · [Path sum count](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateful#problem-7--path-sum-count) · [Full chapter →](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-postorder-traversal-stateful-pattern)
 
 ### Root-to-leaf path — stateless
 > Accumulator descends preorder; verdict is computed at leaves; parents combine subtree verdicts postorder.
@@ -994,7 +994,7 @@ For BST: inorder = sorted ascending; reverse-inorder = sorted descending.
 
 #### Generic Implementation
 
-**See:** [Root to leaf path (sum check)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateless#problem-1--root-to-leaf-path-sum-check) · [Binary summation of tree](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateless#problem-2--binary-summation-of-tree) · [Even path](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateless#problem-3--even-path) · [Full chapter →](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateless)
+**See:** [Root to leaf path (sum check)](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateless#problem-1--root-to-leaf-path-sum-check) · [Binary summation of tree](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateless#problem-2--binary-summation-of-tree) · [Even path](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateless#problem-3--even-path) · [Full chapter →](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateless-pattern)
 
 ### Root-to-leaf path — stateful
 > Maintain the path as a mutable list; at leaves (or matches), record a *copy*. Pop on the way back up.
@@ -1017,7 +1017,7 @@ For BST: inorder = sorted ascending; reverse-inorder = sorted descending.
 
 #### Generic Implementation
 
-**See:** [Root-to-leaf paths summing to target](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateful#problem-1--root-to-leaf-paths-summing-to-target) · [Equal evens-and-odds paths](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateful#problem-2--equal-evens-and-odds-paths) · [Duplicate paths](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateful#problem-3--duplicate-paths) · [Full chapter →](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateful)
+**See:** [Root-to-leaf paths summing to target](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateful#problem-1--root-to-leaf-paths-summing-to-target) · [Equal evens-and-odds paths](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateful#problem-2--equal-evens-and-odds-paths) · [Duplicate paths](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateful#problem-3--duplicate-paths) · [Full chapter →](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-root-to-leaf-path-stateful-pattern)
 
 ### Level-order traversal
 > BFS with a queue. The trick: snapshot `len(queue)` at the start of each iteration — that's "all nodes on this level".
@@ -1039,7 +1039,7 @@ For BST: inorder = sorted ascending; reverse-inorder = sorted descending.
 
 #### Generic Implementation
 
-**See:** [Level sum](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal#problem-1--level-sum) · [Zigzag traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal#problem-4--zigzag-traversal) · [Complete binary tree check](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal#problem-3--complete-binary-tree-check) · [Full chapter →](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal)
+**See:** [Level sum](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal#problem-1--level-sum) · [Zigzag traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal#problem-4--zigzag-traversal) · [Complete binary tree check](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal#problem-3--complete-binary-tree-check) · [Full chapter →](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-pattern)
 
 ### Level-order traversal — columns
 > BFS each node with its column index (`left → col − 1`, `right → col + 1`). Group by column for vertical/top/bottom views.
@@ -1058,7 +1058,7 @@ For BST: inorder = sorted ascending; reverse-inorder = sorted descending.
 
 #### Generic Implementation
 
-**See:** [Top view](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-columns#problem-1--top-view) · [Bottom view](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-columns#problem-2--bottom-view) · [Vertical traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-columns#problem-3--vertical-traversal) · [Full chapter →](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-columns)
+**See:** [Top view](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-columns#problem-1--top-view) · [Bottom view](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-columns#problem-2--bottom-view) · [Vertical traversal](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-columns#problem-3--vertical-traversal) · [Full chapter →](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-level-order-traversal-columns-pattern)
 
 ### Lowest common ancestor (binary tree)
 > Recurse left and right. If both sides return non-null → current node is LCA. Otherwise propagate the non-null side up.
@@ -1079,7 +1079,7 @@ For BST: inorder = sorted ascending; reverse-inorder = sorted descending.
 
 #### Generic Implementation
 
-**See:** [Lowest Common Ancestor](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-lowest-common-ancestor#problem-1--lowest-common-ancestor) · [LCA of the deepest leaves](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-lowest-common-ancestor#problem-4--lca-of-the-deepest-leaves) · [Distance between two nodes](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-lowest-common-ancestor#problem-5--distance-between-two-nodes) · [Full chapter →](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-lowest-common-ancestor)
+**See:** [Lowest Common Ancestor](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-lowest-common-ancestor#problem-1--lowest-common-ancestor) · [LCA of the deepest leaves](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-lowest-common-ancestor#problem-4--lca-of-the-deepest-leaves) · [Distance between two nodes](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-lowest-common-ancestor#problem-5--distance-between-two-nodes) · [Full chapter →](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-lowest-common-ancestor-pattern)
 
 ### Simultaneous traversal (two trees)
 > Walk both trees together. Base case: both null = ok; one null = mismatch.
@@ -1102,7 +1102,7 @@ For BST: inorder = sorted ascending; reverse-inorder = sorted descending.
 
 #### Generic Implementation
 
-**See:** [Identical trees](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-simultaneous-traversal#problem-1--identical-trees) · [Symmetry detection](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-simultaneous-traversal#problem-2--symmetry-detection) · [Subtree detection](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-simultaneous-traversal#problem-3--subtree-detection) · [Full chapter →](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-simultaneous-traversal)
+**See:** [Identical trees](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-simultaneous-traversal#problem-1--identical-trees) · [Symmetry detection](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-simultaneous-traversal#problem-2--symmetry-detection) · [Subtree detection](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-simultaneous-traversal#problem-3--subtree-detection) · [Full chapter →](/cortex/data-structures-and-algorithms/trees-binary-tree-pattern-simultaneous-traversal-pattern)
 
 ***
 
@@ -1134,7 +1134,7 @@ For BST: inorder = sorted ascending; reverse-inorder = sorted descending.
 
 #### Generic Implementation
 
-**See:** [Lowest absolute variance](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-sorted-traversal#lowest-absolute-variance) · [BST validator](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-sorted-traversal#bst-validator) · [BST to sorted array](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-sorted-traversal#bst-to-sorted-array) · [Full chapter →](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-sorted-traversal)
+**See:** [Lowest absolute variance](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-sorted-traversal#lowest-absolute-variance) · [BST validator](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-sorted-traversal#bst-validator) · [BST to sorted array](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-sorted-traversal#bst-to-sorted-array) · [Full chapter →](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-sorted-traversal-pattern)
 
 ### BST — reversed sorted traversal
 > Right → node → left yields descending order. Same idea, mirrored.
@@ -1153,7 +1153,7 @@ For BST: inorder = sorted ascending; reverse-inorder = sorted descending.
 
 #### Generic Implementation
 
-**See:** [Rank nodes](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-reversed-sorted-traversal#rank-nodes) · [Kth largest element](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-reversed-sorted-traversal#kth-largest-element) · [Enriched sum tree](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-reversed-sorted-traversal#enriched-sum-tree) · [Full chapter →](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-reversed-sorted-traversal)
+**See:** [Rank nodes](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-reversed-sorted-traversal#rank-nodes) · [Kth largest element](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-reversed-sorted-traversal#kth-largest-element) · [Enriched sum tree](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-reversed-sorted-traversal#enriched-sum-tree) · [Full chapter →](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-reversed-sorted-traversal-pattern)
 
 ### BST — range postorder
 > Postorder, but prune any subtree entirely outside `[lo, hi]`. Useful for trim, range aggregates, and range deletion.
@@ -1174,7 +1174,7 @@ For BST: inorder = sorted ascending; reverse-inorder = sorted descending.
 
 #### Generic Implementation
 
-**See:** [Range summation](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-range-postorder#range-summation) · [Range diameter](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-range-postorder#range-diameter) · [Range exclusive trim](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-range-postorder#range-exclusive-trim) · [Full chapter →](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-range-postorder)
+**See:** [Range summation](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-range-postorder#range-summation) · [Range diameter](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-range-postorder#range-diameter) · [Range exclusive trim](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-range-postorder#range-exclusive-trim) · [Full chapter →](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-range-postorder-pattern)
 
 ### BST — two pointer (forward + reverse iterator)
 > One iterator yields ascending, another yields descending. Advance pointers like the array two-pointer pattern.
@@ -1198,7 +1198,7 @@ For BST: inorder = sorted ascending; reverse-inorder = sorted descending.
 
 #### Generic Implementation
 
-**See:** [Two sum on BST](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-two-pointer#two-sum-on-bst) · [Median in BST](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-two-pointer#median-in-bst) · [BST pair sum](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-two-pointer#bst-pair-sum) · [Full chapter →](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-two-pointer)
+**See:** [Two sum on BST](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-two-pointer#two-sum-on-bst) · [Median in BST](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-two-pointer#median-in-bst) · [BST pair sum](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-two-pointer#bst-pair-sum) · [Full chapter →](/cortex/data-structures-and-algorithms/trees-binary-search-tree-pattern-two-pointer-pattern)
 
 ***
 
@@ -1235,7 +1235,7 @@ A heap is a complete binary tree backed by a flat array. Parent of `i` is `(i−
 
 #### Generic Implementation
 
-**See:** [Kth largest element](/cortex/data-structures-and-algorithms/trees-heap-pattern-top-k-elements#kth-largest-element) · [Kth smallest element](/cortex/data-structures-and-algorithms/trees-heap-pattern-top-k-elements#kth-smallest-element) · [K sorted array sorting](/cortex/data-structures-and-algorithms/trees-heap-pattern-top-k-elements#k-sorted-array-sorting) · [Full chapter →](/cortex/data-structures-and-algorithms/trees-heap-pattern-top-k-elements)
+**See:** [Kth largest element](/cortex/data-structures-and-algorithms/trees-heap-pattern-top-k-elements#kth-largest-element) · [Kth smallest element](/cortex/data-structures-and-algorithms/trees-heap-pattern-top-k-elements#kth-smallest-element) · [K sorted array sorting](/cortex/data-structures-and-algorithms/trees-heap-pattern-top-k-elements#k-sorted-array-sorting) · [Full chapter →](/cortex/data-structures-and-algorithms/trees-heap-pattern-top-k-elements-pattern)
 
 ### Heap — custom comparator
 > Wrap entries in a class with `__lt__` defining your order, or push tuples whose natural tuple-ordering matches your priority.
@@ -1257,7 +1257,7 @@ A heap is a complete binary tree backed by a flat array. Parent of `i` is `(i−
 
 #### Generic Implementation
 
-**See:** [K-way list merge](/cortex/data-structures-and-algorithms/trees-heap-pattern-comparator#k-way-list-merge) · [K most frequent elements](/cortex/data-structures-and-algorithms/trees-heap-pattern-comparator#k-most-frequent-elements) · [K closest values](/cortex/data-structures-and-algorithms/trees-heap-pattern-comparator#k-closest-values) · [Full chapter →](/cortex/data-structures-and-algorithms/trees-heap-pattern-comparator)
+**See:** [K-way list merge](/cortex/data-structures-and-algorithms/trees-heap-pattern-comparator#k-way-list-merge) · [K most frequent elements](/cortex/data-structures-and-algorithms/trees-heap-pattern-comparator#k-most-frequent-elements) · [K closest values](/cortex/data-structures-and-algorithms/trees-heap-pattern-comparator#k-closest-values) · [Full chapter →](/cortex/data-structures-and-algorithms/trees-heap-pattern-comparator-pattern)
 
 ***
 
@@ -1547,7 +1547,7 @@ Half the code of a segment tree; only supports invertible aggregates (sum, XOR, 
 
 #### Generic Implementation
 
-**See:** [Minimum cost path](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-dijkstra#problem-minimum-cost-path) · [Cheapest flights with K stops](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-dijkstra#problem-cheapest-flights-with-k-stops) · [Minimum travel time](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-dijkstra#problem-minimum-travel-time) · [Full chapter →](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-dijkstra)
+**See:** [Minimum cost path](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-dijkstra#problem-minimum-cost-path) · [Cheapest flights with K stops](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-dijkstra#problem-cheapest-flights-with-k-stops) · [Minimum travel time](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-dijkstra#problem-minimum-travel-time) · [Full chapter →](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-dijkstra-pattern)
 
 ### Single-source shortest path — Bellman-Ford
 > Relax all edges V − 1 times. A V-th relaxation that still decreases distance = negative cycle.
@@ -1609,7 +1609,7 @@ Half the code of a segment tree; only supports invertible aggregates (sum, XOR, 
 
 #### Generic Implementation
 
-**See:** [Source to target paths](/cortex/data-structures-and-algorithms/graphs-pattern-depth-first-search#problem-source-to-target-paths) · [Hamiltonian paths](/cortex/data-structures-and-algorithms/graphs-pattern-depth-first-search#problem-hamiltonian-paths) · [Simple cycles](/cortex/data-structures-and-algorithms/graphs-pattern-depth-first-search#problem-simple-cycles) · [Full chapter →](/cortex/data-structures-and-algorithms/graphs-pattern-depth-first-search)
+**See:** [Source to target paths](/cortex/data-structures-and-algorithms/graphs-pattern-depth-first-search#problem-source-to-target-paths) · [Hamiltonian paths](/cortex/data-structures-and-algorithms/graphs-pattern-depth-first-search#problem-hamiltonian-paths) · [Simple cycles](/cortex/data-structures-and-algorithms/graphs-pattern-depth-first-search#problem-simple-cycles) · [Full chapter →](/cortex/data-structures-and-algorithms/graphs-pattern-depth-first-search-pattern)
 
 ### Connected components
 > For every unvisited node, run a flood (DFS/BFS); each flood marks one component. Or feed every edge to DSU and count distinct roots.
@@ -1630,7 +1630,7 @@ Half the code of a segment tree; only supports invertible aggregates (sum, XOR, 
 
 #### Generic Implementation
 
-**See:** [Find connected components](/cortex/data-structures-and-algorithms/graphs-pattern-connected-components#problem-find-connected-components) · [Island count](/cortex/data-structures-and-algorithms/graphs-pattern-connected-components#problem-island-count) · [Size of largest island](/cortex/data-structures-and-algorithms/graphs-pattern-connected-components#problem-size-of-largest-island) · [Full chapter →](/cortex/data-structures-and-algorithms/graphs-pattern-connected-components)
+**See:** [Find connected components](/cortex/data-structures-and-algorithms/graphs-pattern-connected-components#problem-find-connected-components) · [Island count](/cortex/data-structures-and-algorithms/graphs-pattern-connected-components#problem-island-count) · [Size of largest island](/cortex/data-structures-and-algorithms/graphs-pattern-connected-components#problem-size-of-largest-island) · [Full chapter →](/cortex/data-structures-and-algorithms/graphs-pattern-connected-components-pattern)
 
 ### Two-colouring (bipartite check)
 > BFS/DFS while assigning alternating colours. Any edge between same-coloured endpoints = not bipartite.
@@ -1651,7 +1651,7 @@ Half the code of a segment tree; only supports invertible aggregates (sum, XOR, 
 
 #### Generic Implementation
 
-**See:** [Two colourable](/cortex/data-structures-and-algorithms/graphs-pattern-two-colouring#problem-two-colourable) · [Dislike pairs](/cortex/data-structures-and-algorithms/graphs-pattern-two-colouring#problem-dislike-pairs) · [Colour repair](/cortex/data-structures-and-algorithms/graphs-pattern-two-colouring#problem-colour-repair) · [Full chapter →](/cortex/data-structures-and-algorithms/graphs-pattern-two-colouring)
+**See:** [Two colourable](/cortex/data-structures-and-algorithms/graphs-pattern-two-colouring#problem-two-colourable) · [Dislike pairs](/cortex/data-structures-and-algorithms/graphs-pattern-two-colouring#problem-dislike-pairs) · [Colour repair](/cortex/data-structures-and-algorithms/graphs-pattern-two-colouring#problem-colour-repair) · [Full chapter →](/cortex/data-structures-and-algorithms/graphs-pattern-two-colouring-pattern)
 
 ### BFS shortest path pattern (unweighted)
 > Standard BFS. The first time you pop a node, the recorded distance is optimal. Use parent-pointers to reconstruct path.
@@ -1672,7 +1672,7 @@ Half the code of a segment tree; only supports invertible aggregates (sum, XOR, 
 
 #### Generic Implementation
 
-**See:** [Minimum steps in a grid](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-breadth-first-search#problem-minimum-steps-in-a-grid) · [Nearest distance (multi-source BFS)](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-breadth-first-search#problem-nearest-distance-multi-source-bfs) · [Shortest word transformation](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-breadth-first-search#problem-shortest-word-transformation) · [Full chapter →](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-breadth-first-search)
+**See:** [Minimum steps in a grid](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-breadth-first-search#problem-minimum-steps-in-a-grid) · [Nearest distance (multi-source BFS)](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-breadth-first-search#problem-nearest-distance-multi-source-bfs) · [Shortest word transformation](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-breadth-first-search#problem-shortest-word-transformation) · [Full chapter →](/cortex/data-structures-and-algorithms/graphs-pattern-shortest-path-breadth-first-search-pattern)
 
 ### Minimum spanning tree — Kruskal
 > Sort edges by weight. Add each edge if it joins two different components (DSU.union returns true). Stop after V − 1 edges added.
@@ -1822,7 +1822,7 @@ Three things every recursive function needs:
 
 #### Generic Implementation
 
-**See:** [Calculate factorial](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-head-recursion#calculate-factorial) · [Sum of digits](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-head-recursion#sum-of-digits) · [Reverse a queue](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-head-recursion#reverse-a-queue) · [Full chapter →](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-head-recursion)
+**See:** [Calculate factorial](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-head-recursion#calculate-factorial) · [Sum of digits](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-head-recursion#sum-of-digits) · [Reverse a queue](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-head-recursion#reverse-a-queue) · [Full chapter →](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-head-recursion-pattern)
 
 ### Tail recursion
 > Do work first, accumulator descends; recursive call is the *last* action. With TCO this is a loop in disguise.
@@ -1839,7 +1839,7 @@ Three things every recursive function needs:
 
 #### Generic Implementation
 
-**See:** [Reverse sequence](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-tail-recursion#reverse-sequence) · [Search element](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-tail-recursion#search-element) · [Is palindrome](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-tail-recursion#is-palindrome) · [Full chapter →](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-tail-recursion)
+**See:** [Reverse sequence](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-tail-recursion#reverse-sequence) · [Search element](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-tail-recursion#search-element) · [Is palindrome](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-tail-recursion#is-palindrome) · [Full chapter →](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-tail-recursion-pattern)
 
 ### Multiple recursion
 > Two+ self-calls per invocation. The call tree branches; total work is exponential unless subproblems repeat (→ memoise).
@@ -1858,7 +1858,7 @@ Three things every recursive function needs:
 
 Naive O(2ⁿ); add memoisation → O(n) for Fibonacci-like recurrences.
 
-**See:** [Fibonacci number](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multiple-recursion#fibonacci-number) · [Climb stairs](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multiple-recursion#climb-stairs) · [Catalan number](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multiple-recursion#catalan-number) · [Full chapter →](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multiple-recursion)
+**See:** [Fibonacci number](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multiple-recursion#fibonacci-number) · [Climb stairs](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multiple-recursion#climb-stairs) · [Catalan number](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multiple-recursion#catalan-number) · [Full chapter →](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multiple-recursion-pattern)
 
 ### Multidimensional recursion
 > Two or more parameters each shrink independently. State space is a grid of (param₁, param₂, …); memoise on the tuple.
@@ -1875,7 +1875,7 @@ Naive O(2ⁿ); add memoisation → O(n) for Fibonacci-like recurrences.
 
 #### Generic Implementation
 
-**See:** [Binomial coefficient](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multidimensional-recursion#binomial-coefficient) · [Lattice paths](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multidimensional-recursion#lattice-paths) · [Egg dropping](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multidimensional-recursion#egg-dropping) · [Full chapter →](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multidimensional-recursion)
+**See:** [Binomial coefficient](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multidimensional-recursion#binomial-coefficient) · [Lattice paths](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multidimensional-recursion#lattice-paths) · [Egg dropping](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multidimensional-recursion#egg-dropping) · [Full chapter →](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multidimensional-recursion-pattern)
 
 ***
 
@@ -1901,7 +1901,7 @@ Naive O(2ⁿ); add memoisation → O(n) for Fibonacci-like recurrences.
 
 #### Generic Implementation
 
-**See:** [Unique subsets](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-unconditional-enumeration#unique-subsets) · [Case transformations](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-unconditional-enumeration#case-transformations) · [Phone combinations](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-unconditional-enumeration#phone-combinations) · [Full chapter →](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-unconditional-enumeration)
+**See:** [Unique subsets](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-unconditional-enumeration#unique-subsets) · [Case transformations](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-unconditional-enumeration#case-transformations) · [Phone combinations](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-unconditional-enumeration#phone-combinations) · [Full chapter →](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-unconditional-enumeration-pattern)
 
 ### Backtracking — conditional enumeration
 > Same shape, but prune invalid branches early. Two forms: **choice-bounded** (skip invalid choices) and **constraint-bounded** (return early if state is doomed).
@@ -1922,7 +1922,7 @@ Naive O(2ⁿ); add memoisation → O(n) for Fibonacci-like recurrences.
 
 #### Generic Implementation
 
-**See:** [Generate parentheses](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-conditional-enumeration#generate-parentheses) · [Target sum combinations](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-conditional-enumeration#target-sum-combinations) · [Generate IP addresses](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-conditional-enumeration#generate-ip-addresses) · [Full chapter →](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-conditional-enumeration)
+**See:** [Generate parentheses](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-conditional-enumeration#generate-parentheses) · [Target sum combinations](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-conditional-enumeration#target-sum-combinations) · [Generate IP addresses](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-conditional-enumeration#generate-ip-addresses) · [Full chapter →](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-conditional-enumeration-pattern)
 
 ### Backtracking search (one valid solution)
 > Mutate state in place; return `True` on first success; on `False`, undo and try the next choice.
@@ -1944,7 +1944,7 @@ Naive O(2ⁿ); add memoisation → O(n) for Fibonacci-like recurrences.
 
 #### Generic Implementation
 
-**See:** [Rat in a maze](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-backtracking-search#rat-in-a-maze) · [Solve N queens](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-backtracking-search#solve-n-queens) · [Solve sudoku](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-backtracking-search#solve-sudoku) · [Full chapter →](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-backtracking-search)
+**See:** [Rat in a maze](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-backtracking-search#rat-in-a-maze) · [Solve N queens](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-backtracking-search#solve-n-queens) · [Solve sudoku](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-backtracking-search#solve-sudoku) · [Full chapter →](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-pattern-backtracking-search-pattern)
 
 **Drill in:** [Recursion index →](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-index) · [Backtracking index →](/cortex/data-structures-and-algorithms/algorithms-by-strategy-backtracking-index)
 
@@ -2086,7 +2086,7 @@ If only (1) is satisfied, memoisation is enough. If (2) is missing, you can't us
 
 #### Generic Implementation
 
-**See:** Edit distance · One-edit distance · [Full chapter →](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-edit-distance) · [Pattern: edit-distance family](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-edit-distance)
+**See:** Edit distance · One-edit distance · [Full chapter →](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-edit-distance) · [Pattern: edit-distance family](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-edit-distance-pattern)
 
 ### Longest palindromic subsequence
 > Equivalent to LCS of s with its reverse. Or directly: `dp[i][j]` over `s[i..j]`; if endpoints match add 2 to `dp[i+1][j-1]`, else `max(dp[i+1][j], dp[i][j-1])`.
@@ -2198,7 +2198,7 @@ If only (1) is satisfied, memoisation is enough. If (2) is missing, you can't us
 |---|---|---|
 | O(n·S) | O(S) | "partition equal subset sum", "target sum", "minimum subset sum difference", "can-form-sum-X" |
 
-**See:** [Full chapter →](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-subset-sum)
+**See:** [Full chapter →](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-subset-sum-pattern)
 
 ### Interval DP (matrix chain, optimal BST, palindrome partition, optimal strategy)
 > `dp[i][j]` over a range; combine via a split point `k ∈ [i, j]`. Fill by *length* (small ranges first), not by index.
@@ -2241,7 +2241,7 @@ If only (1) is satisfied, memoisation is enough. If (2) is missing, you can't us
 
 #### Generic Implementation
 
-**See:** [Longest ascending route](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-2d-grid#longest-ascending-route) · [Largest square area of 1s](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-2d-grid#largest-square-area-of-1s) · [Destination path count](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-2d-grid#destination-path-count) · [Full chapter →](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-2d-grid)
+**See:** [Longest ascending route](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-2d-grid#longest-ascending-route) · [Largest square area of 1s](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-2d-grid#largest-square-area-of-1s) · [Destination path count](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-2d-grid#destination-path-count) · [Full chapter →](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-2d-grid-pattern)
 
 ### Prefix-sum DP
 > When transition uses sums over a sliding range, precompute a prefix-sum array of the DP table itself. Drops cost from O(n²) to O(n).
@@ -2250,7 +2250,7 @@ If only (1) is satisfied, memoisation is enough. If (2) is missing, you can't us
 |---|---|---|
 | O(n) | O(n) | "ways to score N", "number of distinct ways with range step", "moves that touch a range" |
 
-**See:** [Full chapter →](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-prefix-sum)
+**See:** [Full chapter →](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dynamic-programming-pattern-prefix-sum-pattern)
 
 ### Bitmask DP
 > State indexes a subset of n elements as an integer mask. Useful when n ≤ ~20.
@@ -2316,7 +2316,7 @@ If only (1) is satisfied, memoisation is enough. If (2) is missing, you can't us
 
 #### Generic Implementation
 
-**See:** [Kth smallest element](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-quickselect#kth-smallest-element) · [Median finder](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-quickselect#median-finder) · [K closest elements](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-quickselect#k-closest-elements) · [Full chapter →](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-quickselect)
+**See:** [Kth smallest element](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-quickselect#kth-smallest-element) · [Median finder](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-quickselect#median-finder) · [K closest elements](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-quickselect#k-closest-elements) · [Full chapter →](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-quickselect-pattern)
 
 ### Custom comparator
 > Replace `<` with a function/tuple-key. Any sort algorithm composes with any custom order. In Python: `key=` lambda or `functools.cmp_to_key`.
@@ -2337,7 +2337,7 @@ If only (1) is satisfied, memoisation is enough. If (2) is missing, you can't us
 
 #### Generic Implementation
 
-**See:** [Bitwise sort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-custom-compare#bitwise-sort) · [Sort characters by frequency](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-custom-compare#sort-characters-by-frequency) · [Largest number](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-custom-compare#largest-number) · [Full chapter →](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-custom-compare)
+**See:** [Bitwise sort](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-custom-compare#bitwise-sort) · [Sort characters by frequency](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-custom-compare#sort-characters-by-frequency) · [Largest number](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-custom-compare#largest-number) · [Full chapter →](/cortex/data-structures-and-algorithms/sorting-and-searching-sorting-pattern-custom-compare-pattern)
 
 ### Binary search canonical
 > Halve the search range each iteration. Pick a half-open or closed convention and stick to it; the *only* bug source is the `mid = ...` and the boundary update.
@@ -2360,7 +2360,7 @@ If only (1) is satisfied, memoisation is enough. If (2) is missing, you can't us
 
 #### Generic Implementation
 
-**See:** [Recovery validation](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-binary-search#recovery-validation) · [Reverse binary search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-binary-search#reverse-binary-search) · [Minimum shared element](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-binary-search#minimum-shared-element) · [Full chapter →](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-binary-search)
+**See:** [Recovery validation](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-binary-search#recovery-validation) · [Reverse binary search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-binary-search#reverse-binary-search) · [Minimum shared element](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-binary-search#minimum-shared-element) · [Full chapter →](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-binary-search-pattern)
 
 ### Lower bound
 > Smallest index `i` such that `a[i] ≥ target`. = "first occurrence" of target (if present), or insertion point.
@@ -2382,7 +2382,7 @@ If only (1) is satisfied, memoisation is enough. If (2) is missing, you can't us
 
 #### Generic Implementation
 
-**See:** [Search insert position](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-lower-bound#search-insert-position) · [First and last position](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-lower-bound#first-and-last-position) · [K closest elements](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-lower-bound#k-closest-elements) · [Full chapter →](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-lower-bound)
+**See:** [Search insert position](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-lower-bound#search-insert-position) · [First and last position](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-lower-bound#first-and-last-position) · [K closest elements](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-lower-bound#k-closest-elements) · [Full chapter →](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-lower-bound-pattern)
 
 ### Upper bound
 > Smallest index `i` such that `a[i] > target`. Count occurrences of target = `upper(target) − lower(target)`.
@@ -2402,7 +2402,7 @@ If only (1) is satisfied, memoisation is enough. If (2) is missing, you can't us
 
 #### Generic Implementation
 
-**See:** [Limit count](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-upper-bound#limit-count) · [Ceiling index](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-upper-bound#ceiling-index) · [Breaking index](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-upper-bound#breaking-index) · [Full chapter →](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-upper-bound)
+**See:** [Limit count](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-upper-bound#limit-count) · [Ceiling index](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-upper-bound#ceiling-index) · [Breaking index](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-upper-bound#breaking-index) · [Full chapter →](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-upper-bound-pattern)
 
 ### Minimum predicate search (binary search on the answer)
 > The answer space is monotone in a boolean predicate `P`: once true, stays true. Binary-search the *value*, not an array — find the smallest `x` with `P(x) = True`.
@@ -2425,7 +2425,7 @@ If only (1) is satisfied, memoisation is enough. If (2) is missing, you can't us
 
 #### Generic Implementation
 
-**See:** [Punctual arrival speed](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search#punctual-arrival-speed) · [Minimum shipping capacity](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search#minimum-shipping-capacity) · [Trip completion frenzy](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search#trip-completion-frenzy) · [Full chapter →](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search)
+**See:** [Punctual arrival speed](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search#punctual-arrival-speed) · [Minimum shipping capacity](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search#minimum-shipping-capacity) · [Trip completion frenzy](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search#trip-completion-frenzy) · [Full chapter →](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-minimum-predicate-search-pattern)
 
 ### Maximum predicate search
 > Mirror of above — find the largest `x` with `P(x) = True`. Mind the off-by-one: use `mid = lo + (hi - lo + 1) // 2` to bias upward.
@@ -2445,7 +2445,7 @@ If only (1) is satisfied, memoisation is enough. If (2) is missing, you can't us
 
 #### Generic Implementation
 
-**See:** [Calculate square root](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-maximum-predicate-search#calculate-square-root) · [Build staircase](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-maximum-predicate-search#build-staircase) · [K ribbons](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-maximum-predicate-search#k-ribbons) · [Full chapter →](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-maximum-predicate-search)
+**See:** [Calculate square root](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-maximum-predicate-search#calculate-square-root) · [Build staircase](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-maximum-predicate-search#build-staircase) · [K ribbons](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-maximum-predicate-search#k-ribbons) · [Full chapter →](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-pattern-maximum-predicate-search-pattern)
 
 ### Sorted rotated array
 > Find the pivot (or use a clever invariant), then binary-search the right half. Or do "smart" binary search: at each step, one half is guaranteed sorted — check if the target is inside it.
@@ -2593,7 +2593,7 @@ a ^= b; b ^= a; a ^= b
 
 #### Generic Implementation
 
-**See:** [Odd-occurring element](/cortex/data-structures-and-algorithms/bit-tricks-pattern-xor#odd-occurring-element) · [Odd-occurring element II](/cortex/data-structures-and-algorithms/bit-tricks-pattern-xor#odd-occurring-element-ii) · [Swap numbers without a temporary](/cortex/data-structures-and-algorithms/bit-tricks-pattern-xor#swap-numbers-without-a-temporary) · [Full chapter →](/cortex/data-structures-and-algorithms/bit-tricks-pattern-xor)
+**See:** [Odd-occurring element](/cortex/data-structures-and-algorithms/bit-tricks-pattern-xor#odd-occurring-element) · [Odd-occurring element II](/cortex/data-structures-and-algorithms/bit-tricks-pattern-xor#odd-occurring-element-ii) · [Swap numbers without a temporary](/cortex/data-structures-and-algorithms/bit-tricks-pattern-xor#swap-numbers-without-a-temporary) · [Full chapter →](/cortex/data-structures-and-algorithms/bit-tricks-pattern-xor-pattern)
 
 ### Bitmask as subset enumeration
 > A bitmask of n bits encodes a subset of n elements. Looping `mask` from 0 to `2ⁿ − 1` enumerates every subset.
@@ -2611,7 +2611,7 @@ a ^= b; b ^= a; a ^= b
 
 #### Generic Implementation
 
-**See:** [Unique subsets](/cortex/data-structures-and-algorithms/bit-tricks-pattern-bitmasking#unique-subsets) · [Pairwise bits swap](/cortex/data-structures-and-algorithms/bit-tricks-pattern-bitmasking#pairwise-bits-swap) · [Full chapter →](/cortex/data-structures-and-algorithms/bit-tricks-pattern-bitmasking)
+**See:** [Unique subsets](/cortex/data-structures-and-algorithms/bit-tricks-pattern-bitmasking#unique-subsets) · [Pairwise bits swap](/cortex/data-structures-and-algorithms/bit-tricks-pattern-bitmasking#pairwise-bits-swap) · [Full chapter →](/cortex/data-structures-and-algorithms/bit-tricks-pattern-bitmasking-pattern)
 
 ### Set-bit finder and Kernighan's algorithm
 > `n & (n − 1)` clears the lowest set bit. Loop until 0 to count set bits in O(popcount) instead of O(bit-width).
@@ -2628,13 +2628,13 @@ a ^= b; b ^= a; a ^= b
 
 #### Generic Implementation
 
-**See:** [Only set bit](/cortex/data-structures-and-algorithms/bit-tricks-pattern-set-bit-finder#only-set-bit) · [Rightmost set bit](/cortex/data-structures-and-algorithms/bit-tricks-pattern-set-bit-finder#rightmost-set-bit) · [Full chapter →](/cortex/data-structures-and-algorithms/bit-tricks-pattern-set-bit-finder)
+**See:** [Only set bit](/cortex/data-structures-and-algorithms/bit-tricks-pattern-set-bit-finder#only-set-bit) · [Rightmost set bit](/cortex/data-structures-and-algorithms/bit-tricks-pattern-set-bit-finder#rightmost-set-bit) · [Full chapter →](/cortex/data-structures-and-algorithms/bit-tricks-pattern-set-bit-finder-pattern)
 
 ### Other patterns
 
-- **Kth bit pattern** — `1 << k` mask for set/clear/toggle/check. O(1). [Full chapter →](/cortex/data-structures-and-algorithms/bit-tricks-pattern-kth-bit)
-- **Bit restructuring** — reverse bits, circular shift, byte-swap. Useful for CRCs, networking. [Full chapter →](/cortex/data-structures-and-algorithms/bit-tricks-pattern-restructuring)
-- **Bit applications** — parity, fast exponentiation (`pow(a, b, m)` via bit decomposition), Gray code. [Full chapter →](/cortex/data-structures-and-algorithms/bit-tricks-pattern-applications)
+- **Kth bit pattern** — `1 << k` mask for set/clear/toggle/check. O(1). [Full chapter →](/cortex/data-structures-and-algorithms/bit-tricks-pattern-kth-bit-pattern)
+- **Bit restructuring** — reverse bits, circular shift, byte-swap. Useful for CRCs, networking. [Full chapter →](/cortex/data-structures-and-algorithms/bit-tricks-pattern-restructuring-pattern)
+- **Bit applications** — parity, fast exponentiation (`pow(a, b, m)` via bit decomposition), Gray code. [Full chapter →](/cortex/data-structures-and-algorithms/bit-tricks-pattern-applications-pattern)
 
 **Drill in:** [Bit tricks index →](/cortex/data-structures-and-algorithms/bit-tricks-index)
 

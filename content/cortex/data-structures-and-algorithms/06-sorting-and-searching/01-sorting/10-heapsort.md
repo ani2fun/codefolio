@@ -157,10 +157,30 @@ Heapsort is the guarantee-everything sort — and a lesson in why big-O isn't th
 | Stability | **not** stable |
 | Niche | only sort that's both worst-case `O(n log n)` and in-place; introsort fallback |
 
-- **Q:** What makes heapsort `O(n log n)` worst-case *and* in-place? **A:** The heap lives in the array (in-place), and each of the `n` max-extractions is `O(log n)` regardless of input (worst-case guaranteed).
-- **Q:** How is heapsort related to selection sort? **A:** Both repeatedly extract the max; heapsort uses a heap (`O(log n)` per extract) instead of a linear scan (`O(n)`).
-- **Q:** Why is bottom-up heap construction `O(n)`, not `O(n log n)`? **A:** Most nodes are near the leaves and sift only a little; the summed work converges to `O(n)`.
-- **Q:** If its big-O is great, why isn't heapsort the default? **A:** Poor cache locality (it jumps across the array) makes it slower than quicksort in practice; it's mainly used as introsort's worst-case fallback.
+<details>
+<summary><strong>Q:</strong> What makes heapsort `O(n log n)` worst-case *and* in-place?</summary>
+
+**A:** The heap lives in the array (in-place), and each of the `n` max-extractions is `O(log n)` regardless of input (worst-case guaranteed).
+
+</details>
+<details>
+<summary><strong>Q:</strong> How is heapsort related to selection sort?</summary>
+
+**A:** Both repeatedly extract the max; heapsort uses a heap (`O(log n)` per extract) instead of a linear scan (`O(n)`).
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is bottom-up heap construction `O(n)`, not `O(n log n)`?</summary>
+
+**A:** Most nodes are near the leaves and sift only a little; the summed work converges to `O(n)`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> If its big-O is great, why isn't heapsort the default?</summary>
+
+**A:** Poor cache locality (it jumps across the array) makes it slower than quicksort in practice; it's mainly used as introsort's worst-case fallback.
+
+</details>
 
 ## Sources & Verify
 

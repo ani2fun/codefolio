@@ -163,10 +163,30 @@ Maximum-predicate completes the binary-search-on-the-answer pair:
 | Answer | `best` (the loop lands past the last true) |
 | vs minimum-predicate | last-true / upper-bound vs first-true / lower-bound |
 
-- **Q:** When does maximum-predicate search apply? **A:** When feasibility is monotone-decreasing (`true…true, false…false`) and you want the largest value that still satisfies it.
-- **Q:** Why track a separate `best` variable? **A:** The search moves right on every `true`, so it overshoots the last feasible value; `best` records it before the pointers pass it.
-- **Q:** How does it differ from minimum-predicate search? **A:** Opposite monotonicity — find the *last* true (upper-bound flavor) rather than the *first* true (lower-bound flavor).
-- **Q:** What phrasing signals this pattern? **A:** "Maximize the minimum" / "minimize the maximum," and allocation/capacity/√ problems with an easy feasibility check.
+<details>
+<summary><strong>Q:</strong> When does maximum-predicate search apply?</summary>
+
+**A:** When feasibility is monotone-decreasing (`true…true, false…false`) and you want the largest value that still satisfies it.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why track a separate `best` variable?</summary>
+
+**A:** The search moves right on every `true`, so it overshoots the last feasible value; `best` records it before the pointers pass it.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does it differ from minimum-predicate search?</summary>
+
+**A:** Opposite monotonicity — find the *last* true (upper-bound flavor) rather than the *first* true (lower-bound flavor).
+
+</details>
+<details>
+<summary><strong>Q:</strong> What phrasing signals this pattern?</summary>
+
+**A:** "Maximize the minimum" / "minimize the maximum," and allocation/capacity/√ problems with an easy feasibility check.
+
+</details>
 
 ## Sources & Verify
 

@@ -193,10 +193,30 @@ Linear probing is open addressing at its simplest, and it frames the whole famil
 | delete | write a tombstone, never `EMPTY` |
 | Cost / limit | `O(1)` average at low `α`; load factor must stay `< 1`; primary clustering |
 
-- **Q:** How does linear probing resolve a collision? **A:** It walks forward one slot at a time from the hashed index to the first empty slot.
-- **Q:** Why must deletion leave a tombstone instead of emptying the slot? **A:** A `get` stops at the first `EMPTY` slot, so emptying a slot mid-chain would make keys probed past it unreachable.
-- **Q:** What is primary clustering? **A:** Occupied slots form runs; any key hashing into a run extends it, so clusters grow and lengthen probes — a self-reinforcing slowdown.
-- **Q:** Open addressing vs chaining — the core trade? **A:** Open addressing gives cache locality and no pointers but caps `α < 1` and needs tombstones; chaining tolerates `α > 1` and deletes trivially.
+<details>
+<summary><strong>Q:</strong> How does linear probing resolve a collision?</summary>
+
+**A:** It walks forward one slot at a time from the hashed index to the first empty slot.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why must deletion leave a tombstone instead of emptying the slot?</summary>
+
+**A:** A `get` stops at the first `EMPTY` slot, so emptying a slot mid-chain would make keys probed past it unreachable.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What is primary clustering?</summary>
+
+**A:** Occupied slots form runs; any key hashing into a run extends it, so clusters grow and lengthen probes — a self-reinforcing slowdown.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Open addressing vs chaining — the core trade?</summary>
+
+**A:** Open addressing gives cache locality and no pointers but caps `α < 1` and needs tombstones; chaining tolerates `α > 1` and deletes trivially.
+
+</details>
 
 ## Sources & Verify
 

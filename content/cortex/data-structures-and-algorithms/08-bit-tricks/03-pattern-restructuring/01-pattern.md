@@ -146,10 +146,30 @@ Restructuring is "lossless bit movement," and it recurs in low-level code:
 | Avoid overshift | `k %= width` before rotating |
 | Respect width | mask after shifting; Java `>>>` not `>>` |
 
-- **Q:** Why can't a plain shift rotate a number? **A:** A shift drops the bits that fall off the end; rotation must wrap them around, which the OR of two complementary shifts does.
-- **Q:** What does each half of `(n << k) | (n >> (w−k))` contribute? **A:** The left shift moves the low bits up; the right shift brings the displaced top bits down to the bottom.
-- **Q:** Why `k %= width` before rotating? **A:** Shifting by `≥ width` is undefined in C/Java (and meaningless), so reduce the rotation amount first.
-- **Q:** Why mask after the shifts? **A:** The left shift can push bits past the logical width; masking discards that overflow so the result stays width-bounded.
+<details>
+<summary><strong>Q:</strong> Why can't a plain shift rotate a number?</summary>
+
+**A:** A shift drops the bits that fall off the end; rotation must wrap them around, which the OR of two complementary shifts does.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What does each half of `(n << k) | (n >> (w−k))` contribute?</summary>
+
+**A:** The left shift moves the low bits up; the right shift brings the displaced top bits down to the bottom.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why `k %= width` before rotating?</summary>
+
+**A:** Shifting by `≥ width` is undefined in C/Java (and meaningless), so reduce the rotation amount first.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why mask after the shifts?</summary>
+
+**A:** The left shift can push bits past the logical width; masking discards that overflow so the result stays width-bounded.
+
+</details>
 
 ## Sources & Verify
 

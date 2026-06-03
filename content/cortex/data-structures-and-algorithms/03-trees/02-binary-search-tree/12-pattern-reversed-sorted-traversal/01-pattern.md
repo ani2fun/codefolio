@@ -186,10 +186,30 @@ Reversed traversal is sorted traversal's mirror, plus the accumulator twist:
 | Why one pass | descending ⇒ all larger keys already accumulated |
 | Cost | `O(n)` (or `O(k+h)`), `O(h)` space |
 
-- **Q:** How do you visit a BST's keys in descending order? **A:** Reversed in-order — right subtree, then node, then left subtree.
-- **Q:** How do you find the k-th largest? **A:** Reversed in-order counting visits, returning the key at count `k` (early-exit).
-- **Q:** Why does descending order make the greater-sum tree a one-pass `O(n)` computation? **A:** When you visit a node, every larger key is already in the running total, so one addition maintains "sum of everything ≥ this node."
-- **Q:** What's the only difference from sorted traversal? **A:** Direction — right-first (descending) instead of left-first (ascending); same template.
+<details>
+<summary><strong>Q:</strong> How do you visit a BST's keys in descending order?</summary>
+
+**A:** Reversed in-order — right subtree, then node, then left subtree.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How do you find the k-th largest?</summary>
+
+**A:** Reversed in-order counting visits, returning the key at count `k` (early-exit).
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why does descending order make the greater-sum tree a one-pass `O(n)` computation?</summary>
+
+**A:** When you visit a node, every larger key is already in the running total, so one addition maintains "sum of everything ≥ this node."
+
+</details>
+<details>
+<summary><strong>Q:</strong> What's the only difference from sorted traversal?</summary>
+
+**A:** Direction — right-first (descending) instead of left-first (ascending); same template.
+
+</details>
 
 ## Sources & Verify
 

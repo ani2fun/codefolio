@@ -129,9 +129,9 @@ object TracedCodeBlock:
             )
           )
         else
-          val activeTab     = langTabS.value
-          val selectTab     = (i: Int) => langTabS.setState(i)
-          val isCompanion   = activeTab > 0 && activeTab <= props.companions.size
+          val activeTab   = langTabS.value
+          val selectTab   = (i: Int) => langTabS.setState(i)
+          val isCompanion = activeTab > 0 && activeTab <= props.companions.size
 
           // ── Companion (source-only) tab is active ─────────────────────────────
           if isCompanion then
@@ -273,7 +273,9 @@ object TracedCodeBlock:
     if isJava(lang) then "☕ Java"
     else "🐍 Python"
 
-  /** Tab label for a companion language. Kotlin gets its emoji; Scala gets the text (brand icon added in JSX). */
+  /**
+   * Tab label for a companion language. Kotlin gets its emoji; Scala gets the text (brand icon added in JSX).
+   */
   private def companionTabLabel(lang: String): String = lang.toLowerCase match
     case "kotlin" | "kt" => "💜 Kotlin"
     case _               => lang.capitalize // "Scala" — brand icon prepended by renderTabStrip
@@ -293,8 +295,8 @@ object TracedCodeBlock:
       ^.className := "traced-code__tabs",
       // Tab 0 — primary language (always first)
       <.button(
-        ^.key       := "0",
-        ^.tpe       := "button",
+        ^.key := "0",
+        ^.tpe := "button",
         ^.className :=
           (if activeTab == 0 then "traced-code__tab traced-code__tab--active"
            else "traced-code__tab"),
@@ -303,18 +305,21 @@ object TracedCodeBlock:
       ),
       // Tabs 1+ — companion languages
       props.companions.zipWithIndex.toTagMod { case (c, idx) =>
-        val tabIdx  = idx + 1
+        val tabIdx   = idx + 1
         val isActive = activeTab == tabIdx
         <.button(
-          ^.key       := tabIdx.toString,
-          ^.tpe       := "button",
+          ^.key := tabIdx.toString,
+          ^.tpe := "button",
           ^.className :=
             (if isActive then "traced-code__tab traced-code__tab--active"
              else "traced-code__tab"),
           ^.onClick --> selectTab(tabIdx),
           // Scala gets the real wave-mark brand icon (no clean emoji); all others use the emoji prefix.
           if isScala(c.language) then
-            TagMod(BrandIcons.Scala("traced-code__brand-icon traced-code__brand-icon--scala"), companionTabLabel(c.language))
+            TagMod(
+              BrandIcons.Scala("traced-code__brand-icon traced-code__brand-icon--scala"),
+              companionTabLabel(c.language)
+            )
           else companionTabLabel(c.language)
         )
       }
@@ -425,7 +430,7 @@ object TracedCodeBlock:
       case "kotlin" | "kt" => "kotlin"
       case "scala"         => "scala"
       case _               => "python" // default: python / pseudocode
-    val lines     = source.split("\n", -1)
+    val lines = source.split("\n", -1)
     <.pre(
       ^.className := "traced-code__source not-prose",
       lines.zipWithIndex.toVdomArray { case (line, i) =>

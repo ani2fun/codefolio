@@ -175,10 +175,30 @@ Range-postorder is "let the ordering prune your traversal":
 | Trim | postorder: set children to trimmed, return node (or surviving child) |
 | Cost | `O(visited)` — pruned subtrees never entered; `O(n)` worst |
 
-- **Q:** How does the pattern prune? **A:** A node `< low` makes its whole left subtree out of range (recurse right only); a node `> high` skips its right subtree.
-- **Q:** Why is skipping a subtree safe? **A:** The BST property guarantees the entire subtree is on one side of a bound, so a single comparison certifies it out of range without visiting it.
-- **Q:** Why is trim done in postorder? **A:** It fixes (trims) the children first, then returns the node (or its surviving child) so the parent can wire in the rebuilt subtree.
-- **Q:** When is this much faster than a full scan? **A:** For a narrow range on a balanced tree — only overlapping subtrees are visited (`O(visited)`), versus `O(n)` for an unordered tree.
+<details>
+<summary><strong>Q:</strong> How does the pattern prune?</summary>
+
+**A:** A node `< low` makes its whole left subtree out of range (recurse right only); a node `> high` skips its right subtree.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is skipping a subtree safe?</summary>
+
+**A:** The BST property guarantees the entire subtree is on one side of a bound, so a single comparison certifies it out of range without visiting it.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is trim done in postorder?</summary>
+
+**A:** It fixes (trims) the children first, then returns the node (or its surviving child) so the parent can wire in the rebuilt subtree.
+
+</details>
+<details>
+<summary><strong>Q:</strong> When is this much faster than a full scan?</summary>
+
+**A:** For a narrow range on a balanced tree — only overlapping subtrees are visited (`O(visited)`), versus `O(n)` for an unordered tree.
+
+</details>
 
 ## Sources & Verify
 

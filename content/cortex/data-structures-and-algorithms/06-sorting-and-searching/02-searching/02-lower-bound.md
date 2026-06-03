@@ -141,10 +141,30 @@ Lower bound is the boundary-finding half of binary search:
 | No early return | keeps shrinking to the *leftmost* match |
 | Uses | leftmost occurrence, insertion point, count of `< target` |
 
-- **Q:** What does lower bound return? **A:** The first index whose value is `≥ target` (or `len` if every element is smaller).
-- **Q:** Why no `== target` early return? **A:** It wants the *leftmost* match; stopping early could land on a middle duplicate, so it keeps shrinking left.
-- **Q:** Why `hi = mid` rather than `hi = mid − 1` on the `≥` branch? **A:** `mid` itself satisfies `≥ target`, so it's a valid candidate and must stay in the range.
-- **Q:** How does lower bound count elements? **A:** Its returned index equals the number of elements `< target`; `upper_bound − lower_bound` gives the count equal to the target.
+<details>
+<summary><strong>Q:</strong> What does lower bound return?</summary>
+
+**A:** The first index whose value is `≥ target` (or `len` if every element is smaller).
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why no `== target` early return?</summary>
+
+**A:** It wants the *leftmost* match; stopping early could land on a middle duplicate, so it keeps shrinking left.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why `hi = mid` rather than `hi = mid − 1` on the `≥` branch?</summary>
+
+**A:** `mid` itself satisfies `≥ target`, so it's a valid candidate and must stay in the range.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does lower bound count elements?</summary>
+
+**A:** Its returned index equals the number of elements `< target`; `upper_bound − lower_bound` gives the count equal to the target.
+
+</details>
 
 ## Sources & Verify
 

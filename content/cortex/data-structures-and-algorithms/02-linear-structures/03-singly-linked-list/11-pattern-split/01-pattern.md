@@ -183,10 +183,30 @@ Splitting is the "re-link, never copy" principle applied to *carving*:
 | More parts than nodes | trailing parts come out empty (`size = 0`) — no special case |
 | Cost | `O(n)` time, `O(1)` extra space (nodes reused, not copied) |
 
-- **Q:** Why re-link instead of copying into new sublists? **A:** The nodes are already in order; severing `next` reuses them in `O(1)` extra space instead of `O(n)` for copies.
-- **Q:** When `n` isn't divisible by `k`, how are the extra nodes distributed? **A:** The first `n % k` parts each get one extra node (`base + 1`); the rest get `base`.
-- **Q:** What happens when `k > n`? **A:** The first `n` parts hold one node each and the trailing `k − n` parts are empty — the `base/extra` math yields `size = 0` for them automatically.
-- **Q:** How does split relate to the fast/slow midpoint pattern? **A:** Splitting at the middle is the `k = 2` case, with the cut point found by a two-speed walk instead of a count.
+<details>
+<summary><strong>Q:</strong> Why re-link instead of copying into new sublists?</summary>
+
+**A:** The nodes are already in order; severing `next` reuses them in `O(1)` extra space instead of `O(n)` for copies.
+
+</details>
+<details>
+<summary><strong>Q:</strong> When `n` isn't divisible by `k`, how are the extra nodes distributed?</summary>
+
+**A:** The first `n % k` parts each get one extra node (`base + 1`); the rest get `base`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What happens when `k > n`?</summary>
+
+**A:** The first `n` parts hold one node each and the trailing `k − n` parts are empty — the `base/extra` math yields `size = 0` for them automatically.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does split relate to the fast/slow midpoint pattern?</summary>
+
+**A:** Splitting at the middle is the `k = 2` case, with the cut point found by a two-speed walk instead of a count.
+
+</details>
 
 ## Sources & Verify
 

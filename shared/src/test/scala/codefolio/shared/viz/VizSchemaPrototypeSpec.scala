@@ -8,62 +8,62 @@ import zio.test.*
 /**
  * Phase 0 deliverable 8 / gap 4 (ADR-0025) — Scala-side round-trip prototype.
  *
- * This spec proves that the `oneOf` + `discriminator` pattern round-trips
- * cleanly through `circe` — i.e. that **circe itself** can encode/decode the
- * discriminated unions. The case classes + codecs below are HAND-WRITTEN.
+ * This spec proves that the `oneOf` + `discriminator` pattern round-trips cleanly through `circe` — i.e. that
+ * **circe itself** can encode/decode the discriminated unions. The case classes + codecs below are
+ * HAND-WRITTEN.
  *
- * IMPORTANT (post-audit correction): this spec does NOT prove that
- * `sbt-openapi-codegen` *emits* working codecs. When the real plugin (1.11.22)
- * was run against `viz-schema-prototype.yaml`, it did NOT produce compiling
- * Scala (broken tapir Schema file referencing phantom `*Kind` types; circe
- * serdes only emitted for endpoint bodies; tuple-as-array unsupported; enum
- * codec needs an extra dependency). See ADR-0025 §"Schema-design prototype" for
- * the full table. The Phase-1 recommendation is therefore yaml → TS codegen +
- * hand-written Scala + circe with a conformance test, NOT plugin-generated
- * Scala.
+ * IMPORTANT (post-audit correction): this spec does NOT prove that `sbt-openapi-codegen` *emits* working
+ * codecs. When the real plugin (1.11.22) was run against `viz-schema-prototype.yaml`, it did NOT produce
+ * compiling Scala (broken tapir Schema file referencing phantom `*Kind` types; circe serdes only emitted for
+ * endpoint bodies; tuple-as-array unsupported; enum codec needs an extra dependency). See ADR-0025
+ * §"Schema-design prototype" for the full table. The Phase-1 recommendation is therefore yaml → TS codegen +
+ * hand-written Scala + circe with a conformance test, NOT plugin-generated Scala.
  *
- * Two known divergences between this spec and the real schema, kept because the
- * spec still serves its narrow purpose (circe CAN round-trip discriminated
- * unions): (1) tuples here are array-encoded `[name, value]`, but the real
- * schema must use object encoding `{name, value}` (array-of-oneOf fails
- * codegen); (2) `HeapScalar.Null` here uses the string `"Null"`, matching the
- * (now quote-fixed) yaml.
+ * Two known divergences between this spec and the real schema, kept because the spec still serves its narrow
+ * purpose (circe CAN round-trip discriminated unions): (1) tuples here are array-encoded `[name, value]`, but
+ * the real schema must use object encoding `{name, value}` (array-of-oneOf fails codegen); (2)
+ * `HeapScalar.Null` here uses the string `"Null"`, matching the (now quote-fixed) yaml.
  */
 object VizSchemaPrototypeSpec extends ZIOSpecDefault:
 
   // ── Scala types — mirror viz-schema-prototype.yaml exactly ──────────────
 
   sealed trait HeapScalarP
+
   object HeapScalarP:
-    final case class I(value: Long) extends HeapScalarP
-    final case class D(value: Double) extends HeapScalarP
+    final case class I(value: Long)    extends HeapScalarP
+    final case class D(value: Double)  extends HeapScalarP
     final case class B(value: Boolean) extends HeapScalarP
-    final case class S(value: String) extends HeapScalarP
-    case object NullV extends HeapScalarP
+    final case class S(value: String)  extends HeapScalarP
+    case object NullV                  extends HeapScalarP
 
   sealed trait HeapValueP
+
   object HeapValueP:
     final case class Scalar(value: HeapScalarP) extends HeapValueP
-    final case class Ref(id: String) extends HeapValueP
+    final case class Ref(id: String)            extends HeapValueP
 
   sealed trait HeapObjectP
+
   object HeapObjectP:
     /** Tuple encoded as JSON array `[name, value]`. */
     final case class Instance(cls: String, fields: List[(String, HeapValueP)]) extends HeapObjectP
-    final case class Arr(arrKind: String, items: List[HeapValueP]) extends HeapObjectP
-    final case class Dict(entries: List[(HeapValueP, HeapValueP)]) extends HeapObjectP
+    final case class Arr(arrKind: String, items: List[HeapValueP])             extends HeapObjectP
+    final case class Dict(entries: List[(HeapValueP, HeapValueP)])             extends HeapObjectP
 
   // ── Codecs — discriminator-style, mirroring codegen output ──────────────
 
   given Encoder[HeapScalarP] with
+
     def apply(s: HeapScalarP): Json = s match
-      case HeapScalarP.I(v)   => Json.obj("kind" -> "I".asJson,    "value" -> v.asJson)
-      case HeapScalarP.D(v)   => Json.obj("kind" -> "D".asJson,    "value" -> v.asJson)
-      case HeapScalarP.B(v)   => Json.obj("kind" -> "B".asJson,    "value" -> v.asJson)
-      case HeapScalarP.S(v)   => Json.obj("kind" -> "S".asJson,    "value" -> v.asJson)
-      case HeapScalarP.NullV  => Json.obj("kind" -> "Null".asJson)
+      case HeapScalarP.I(v)  => Json.obj("kind" -> "I".asJson, "value" -> v.asJson)
+      case HeapScalarP.D(v)  => Json.obj("kind" -> "D".asJson, "value" -> v.asJson)
+      case HeapScalarP.B(v)  => Json.obj("kind" -> "B".asJson, "value" -> v.asJson)
+      case HeapScalarP.S(v)  => Json.obj("kind" -> "S".asJson, "value" -> v.asJson)
+      case HeapScalarP.NullV => Json.obj("kind" -> "Null".asJson)
 
   given Decoder[HeapScalarP] with
+
     def apply(c: HCursor): Decoder.Result[HeapScalarP] =
       c.downField("kind").as[String].flatMap {
         case "I"    => c.downField("value").as[Long].map(HeapScalarP.I.apply)
@@ -75,11 +75,13 @@ object VizSchemaPrototypeSpec extends ZIOSpecDefault:
       }
 
   given Encoder[HeapValueP] with
+
     def apply(v: HeapValueP): Json = v match
       case HeapValueP.Scalar(s) => Json.obj("kind" -> "Scalar".asJson, "value" -> s.asJson)
-      case HeapValueP.Ref(id)   => Json.obj("kind" -> "Ref".asJson,    "id" -> id.asJson)
+      case HeapValueP.Ref(id)   => Json.obj("kind" -> "Ref".asJson, "id" -> id.asJson)
 
   given Decoder[HeapValueP] with
+
     def apply(c: HCursor): Decoder.Result[HeapValueP] =
       c.downField("kind").as[String].flatMap {
         case "Scalar" => c.downField("value").as[HeapScalarP].map(HeapValueP.Scalar.apply)
@@ -92,35 +94,38 @@ object VizSchemaPrototypeSpec extends ZIOSpecDefault:
     def apply(t: (String, HeapValueP)): Json = Json.arr(t._1.asJson, t._2.asJson)
 
   private given Decoder[(String, HeapValueP)] with
+
     def apply(c: HCursor): Decoder.Result[(String, HeapValueP)] =
       for
         arr <- c.values.toRight(DecodingFailure("expected array tuple", c.history))
-        v   <- arr.toList match
-                  case k :: v :: Nil =>
-                    for
-                      sk <- k.as[String]
-                      sv <- v.as[HeapValueP]
-                    yield (sk, sv)
-                  case _ => Left(DecodingFailure("expected [string, HeapValue]", c.history))
+        v <- arr.toList match
+          case k :: v :: Nil =>
+            for
+              sk <- k.as[String]
+              sv <- v.as[HeapValueP]
+            yield (sk, sv)
+          case _ => Left(DecodingFailure("expected [string, HeapValue]", c.history))
       yield v
 
   private given Encoder[(HeapValueP, HeapValueP)] with
     def apply(t: (HeapValueP, HeapValueP)): Json = Json.arr(t._1.asJson, t._2.asJson)
 
   private given Decoder[(HeapValueP, HeapValueP)] with
+
     def apply(c: HCursor): Decoder.Result[(HeapValueP, HeapValueP)] =
       for
         arr <- c.values.toRight(DecodingFailure("expected array tuple", c.history))
-        v   <- arr.toList match
-                  case k :: v :: Nil =>
-                    for
-                      kv <- k.as[HeapValueP]
-                      vv <- v.as[HeapValueP]
-                    yield (kv, vv)
-                  case _ => Left(DecodingFailure("expected [HeapValue, HeapValue]", c.history))
+        v <- arr.toList match
+          case k :: v :: Nil =>
+            for
+              kv <- k.as[HeapValueP]
+              vv <- v.as[HeapValueP]
+            yield (kv, vv)
+          case _ => Left(DecodingFailure("expected [HeapValue, HeapValue]", c.history))
       yield v
 
   given Encoder[HeapObjectP] with
+
     def apply(o: HeapObjectP): Json = o match
       case HeapObjectP.Instance(cls, fields) =>
         Json.obj("kind" -> "Instance".asJson, "cls" -> cls.asJson, "fields" -> fields.asJson)
@@ -130,6 +135,7 @@ object VizSchemaPrototypeSpec extends ZIOSpecDefault:
         Json.obj("kind" -> "Dict".asJson, "entries" -> entries.asJson)
 
   given Decoder[HeapObjectP] with
+
     def apply(c: HCursor): Decoder.Result[HeapObjectP] =
       c.downField("kind").as[String].flatMap {
         case "Instance" =>

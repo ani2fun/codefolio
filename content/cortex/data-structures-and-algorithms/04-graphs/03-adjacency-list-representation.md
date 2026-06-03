@@ -155,11 +155,36 @@ The adjacency list is the representation you'll use 95% of the time:
 | Inner lists | dynamic arrays (cache-friendly), built with a factory |
 | Default because | real graphs sparse + algorithms walk neighbours |
 
-- **Q:** How much space does an adjacency list use, and why is that better for sparse graphs? **A:** `O(V + E)` — it stores only real edges (`2E` entries undirected), versus the matrix's `O(V²)` regardless of edge count.
-- **Q:** What's the cost of iterating a node's neighbours vs the matrix? **A:** `O(degree)` for the list (touches only real edges) vs `O(V)` for the matrix (scans a whole row).
-- **Q:** What query does the list lose to the matrix? **A:** Random edge-existence (`is u↔v?`): `O(degree(u))` for the list vs `O(1)` for the matrix.
-- **Q:** Why is the list the default despite that? **A:** Most graphs are sparse and most algorithms expand neighbours (BFS/DFS/Dijkstra), where the list is optimal in both time and space.
-- **Q:** What's the `[[]] * n` trap? **A:** It makes `n` references to one shared list, so every append hits all rows; build inner lists with a factory.
+<details>
+<summary><strong>Q:</strong> How much space does an adjacency list use, and why is that better for sparse graphs?</summary>
+
+**A:** `O(V + E)` — it stores only real edges (`2E` entries undirected), versus the matrix's `O(V²)` regardless of edge count.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What's the cost of iterating a node's neighbours vs the matrix?</summary>
+
+**A:** `O(degree)` for the list (touches only real edges) vs `O(V)` for the matrix (scans a whole row).
+
+</details>
+<details>
+<summary><strong>Q:</strong> What query does the list lose to the matrix?</summary>
+
+**A:** Random edge-existence (`is u↔v?`): `O(degree(u))` for the list vs `O(1)` for the matrix.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is the list the default despite that?</summary>
+
+**A:** Most graphs are sparse and most algorithms expand neighbours (BFS/DFS/Dijkstra), where the list is optimal in both time and space.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What's the `[[]] * n` trap?</summary>
+
+**A:** It makes `n` references to one shared list, so every append hits all rows; build inner lists with a factory.
+
+</details>
 
 ## Sources & Verify
 

@@ -156,11 +156,36 @@ Topological sort is the DAG's defining operation:
 | Cycle detection | Kahn's outputs `< V` nodes ⇒ cycle |
 | Complexity | `O(V + E)` for both |
 
-- **Q:** What is a topological sort and when does one exist? **A:** A linear ordering where every directed edge points forward; it exists iff the graph is a DAG (acyclic).
-- **Q:** Why does the DFS method append on finish and then reverse? **A:** At finish, all descendants are already appended, so a node lands after its descendants — the reverse of topo order; one reverse fixes it.
-- **Q:** How does Kahn's algorithm work, and how does it detect cycles? **A:** Repeatedly remove a node with indegree 0 and decrement neighbours; if it can't output all `V` nodes, the remaining ones form a cycle.
-- **Q:** DFS vs Kahn's — trade-offs? **A:** Same `O(V+E)`; DFS recurses (depth risk) and reuses traversal; Kahn's is iterative and detects cycles for free. Both give a (usually different) valid order.
-- **Q:** Why is topological order useful beyond sequencing? **A:** It's the evaluation order for DAG dynamic programming — every dependency is finalized before you process a node (longest/shortest path in a DAG, path counts).
+<details>
+<summary><strong>Q:</strong> What is a topological sort and when does one exist?</summary>
+
+**A:** A linear ordering where every directed edge points forward; it exists iff the graph is a DAG (acyclic).
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why does the DFS method append on finish and then reverse?</summary>
+
+**A:** At finish, all descendants are already appended, so a node lands after its descendants — the reverse of topo order; one reverse fixes it.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does Kahn's algorithm work, and how does it detect cycles?</summary>
+
+**A:** Repeatedly remove a node with indegree 0 and decrement neighbours; if it can't output all `V` nodes, the remaining ones form a cycle.
+
+</details>
+<details>
+<summary><strong>Q:</strong> DFS vs Kahn's — trade-offs?</summary>
+
+**A:** Same `O(V+E)`; DFS recurses (depth risk) and reuses traversal; Kahn's is iterative and detects cycles for free. Both give a (usually different) valid order.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why is topological order useful beyond sequencing?</summary>
+
+**A:** It's the evaluation order for DAG dynamic programming — every dependency is finalized before you process a node (longest/shortest path in a DAG, path counts).
+
+</details>
 
 ## Sources & Verify
 

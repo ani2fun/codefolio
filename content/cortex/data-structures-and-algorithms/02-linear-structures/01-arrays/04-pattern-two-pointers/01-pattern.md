@@ -145,10 +145,30 @@ And when the two markers march in the *same* direction instead of converging, yo
 | Invariant | outside `[left, right]` is done; inside is unsolved |
 | Signals | sorted + "find a pair" · in place · from both ends |
 
-- **Q:** What does the converging two-pointer pattern cost in time and space? **A:** `O(n)` time, `O(1)` space.
-- **Q:** Reversing `n` items takes how many swaps? **A:** About `n/2` — each swap places two items.
-- **Q:** What invariant holds during an in-place reverse? **A:** Everything outside `[left, right]` is already in final position.
-- **Q:** Three signals that two pointers fits? **A:** A sorted array + "find a pair"; an in-place requirement; work from both ends.
+<details>
+<summary><strong>Q:</strong> What does the converging two-pointer pattern cost in time and space?</summary>
+
+**A:** `O(n)` time, `O(1)` space.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Reversing `n` items takes how many swaps?</summary>
+
+**A:** About `n/2` — each swap places two items.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What invariant holds during an in-place reverse?</summary>
+
+**A:** Everything outside `[left, right]` is already in final position.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Three signals that two pointers fits?</summary>
+
+**A:** A sorted array + "find a pair"; an in-place requirement; work from both ends.
+
+</details>
 
 ## Sources & Verify
 

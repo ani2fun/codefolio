@@ -162,10 +162,30 @@ Stateful preorder is for *gathering across branches*:
 | Forget the pop | siblings inherit a finished branch's nodes → wrong paths |
 | Family | all paths · tree views · on-path duplicates · path search |
 
-- **Q:** When do you need stateful (not stateless) preorder? **A:** When you must collect information across multiple branches (all paths, views), not just compute one value per node.
-- **Q:** What does the `path.pop()` on exit accomplish? **A:** It backtracks — undoing the entry append so siblings see the correct root-to-node prefix instead of a finished branch's nodes.
-- **Q:** Why snapshot `list(path)` at a leaf instead of `path`? **A:** `path` is shared and mutated by later pops; storing it directly would leave a reference that ends up empty.
-- **Q:** How does this relate to backtracking algorithms? **A:** "Append on enter, undo on exit, record at the goal" is the backtracking skeleton — tree paths are its simplest case; subsets/permutations use the same discipline.
+<details>
+<summary><strong>Q:</strong> When do you need stateful (not stateless) preorder?</summary>
+
+**A:** When you must collect information across multiple branches (all paths, views), not just compute one value per node.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What does the `path.pop()` on exit accomplish?</summary>
+
+**A:** It backtracks — undoing the entry append so siblings see the correct root-to-node prefix instead of a finished branch's nodes.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why snapshot `list(path)` at a leaf instead of `path`?</summary>
+
+**A:** `path` is shared and mutated by later pops; storing it directly would leave a reference that ends up empty.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does this relate to backtracking algorithms?</summary>
+
+**A:** "Append on enter, undo on exit, record at the goal" is the backtracking skeleton — tree paths are its simplest case; subsets/permutations use the same discipline.
+
+</details>
 
 ## Sources & Verify
 

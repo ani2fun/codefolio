@@ -141,10 +141,30 @@ The comparator turns the heap into a general "best-by-any-criterion" engine:
 | Tie-break | composite key: `(primary, secondary, …)` / `thenComparing` |
 | Cost | `O(n log K)` — same as top-K |
 
-- **Q:** What does the comparator change versus plain top-K? **A:** Only the ranking key — the size-K cap and `O(n log K)` cost are identical.
-- **Q:** Why pair `(key, element)` instead of pushing bare elements? **A:** The heap compares its entries, so the ranking key must travel inside each entry or it ranks by the wrong thing.
-- **Q:** How do you rank by X and break ties by Y? **A:** A composite key — a tuple `(X, Y, …)` in Python or chained `Comparator` in Java.
-- **Q:** How does merge-K-sorted-lists use this? **A:** A heap of `(value, list-id)` always pops the global minimum, so you repeatedly emit it and pull the next from that list.
+<details>
+<summary><strong>Q:</strong> What does the comparator change versus plain top-K?</summary>
+
+**A:** Only the ranking key — the size-K cap and `O(n log K)` cost are identical.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why pair `(key, element)` instead of pushing bare elements?</summary>
+
+**A:** The heap compares its entries, so the ranking key must travel inside each entry or it ranks by the wrong thing.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How do you rank by X and break ties by Y?</summary>
+
+**A:** A composite key — a tuple `(X, Y, …)` in Python or chained `Comparator` in Java.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How does merge-K-sorted-lists use this?</summary>
+
+**A:** A heap of `(value, list-id)` always pops the global minimum, so you repeatedly emit it and pull the next from that list.
+
+</details>
 
 ## Sources & Verify
 

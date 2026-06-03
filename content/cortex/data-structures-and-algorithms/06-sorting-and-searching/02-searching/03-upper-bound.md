@@ -153,10 +153,30 @@ Upper bound completes the boundary pair:
 | `upper − lower` | count of elements equal to target |
 | Cost | `O(log n)` time, `O(1)` space |
 
-- **Q:** What does upper bound return? **A:** The first index whose value is strictly greater than the target — one past the last occurrence.
-- **Q:** What's the only code difference from lower bound? **A:** The comparison is `arr[mid] <= target` (instead of `<`), so equal elements are skipped to the right.
-- **Q:** How do you count occurrences of `x`? **A:** `upper_bound(x) − lower_bound(x)`.
-- **Q:** Why do lower and upper bound land on opposite ends of a duplicate run? **A:** On equal elements, lower bound looks left (toward the first), upper bound goes right (past the last).
+<details>
+<summary><strong>Q:</strong> What does upper bound return?</summary>
+
+**A:** The first index whose value is strictly greater than the target — one past the last occurrence.
+
+</details>
+<details>
+<summary><strong>Q:</strong> What's the only code difference from lower bound?</summary>
+
+**A:** The comparison is `arr[mid] <= target` (instead of `<`), so equal elements are skipped to the right.
+
+</details>
+<details>
+<summary><strong>Q:</strong> How do you count occurrences of `x`?</summary>
+
+**A:** `upper_bound(x) − lower_bound(x)`.
+
+</details>
+<details>
+<summary><strong>Q:</strong> Why do lower and upper bound land on opposite ends of a duplicate run?</summary>
+
+**A:** On equal elements, lower bound looks left (toward the first), upper bound goes right (past the last).
+
+</details>
 
 ## Sources & Verify
 
