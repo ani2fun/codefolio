@@ -10,10 +10,10 @@ jobs:
     name: sbt build + tests + frontend
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "21"
@@ -22,7 +22,7 @@ jobs:
         uses: sbt/setup-sbt@v1
 
       - name: Cache sbt
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.sbt
@@ -33,7 +33,7 @@ jobs:
             ${{ runner.os }}-sbt-
 
       - name: Set up Node 20
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "20"
           cache: npm
@@ -75,6 +75,6 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Build Docker image
         run: docker build -t codefolio:ci .
