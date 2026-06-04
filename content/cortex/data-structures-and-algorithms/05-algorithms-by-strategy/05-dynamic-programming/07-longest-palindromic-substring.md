@@ -15,7 +15,7 @@ It's the engine behind "find the longest mirror sequence" in DNA, the textbook d
 
 `dp[i][j]` is `True` when `s[i..j]` reads the same both ways. The ends must match **and** the strictly-inside slice `s[i+1..j-1]` must itself be a palindrome. Fill by increasing length so that inner slice is already decided, and remember the longest `True` span.
 
-```python run
+```python run viz=grid
 def longest_palindrome(s):
     n = len(s)
     if n < 2:
@@ -37,7 +37,7 @@ print(longest_palindrome("babad"))   # bab
 print(longest_palindrome("cbbd"))    # bb
 ```
 
-```java run
+```java run viz=grid
 public class Main {
     static String longestPalindrome(String s) {
         int n = s.length();
@@ -95,7 +95,7 @@ This is the substring/subsequence line drawn as sharply as it gets. Reuse `"bbba
 
 **Predict before you run:** for `"bbbab"`, can the longest palindromic *substring* also reach `4`, or must it be shorter?
 
-```python run
+```python run viz=grid
 def lps(s):                                       # longest palindromic SUBSEQUENCE (gaps allowed)
     n = len(s)
     dp = [[0] * n for _ in range(n)]
@@ -141,7 +141,7 @@ The subsequence is `4` (`"bbbb"`); the substring is `"bbb"`, length `3`. The fou
 
 **Palindromic Substrings** ([LeetCode 647](https://leetcode.com/problems/palindromic-substrings/)) — *count* every palindromic substring (each position and length counts separately). It's the same "a palindrome is defined by its center" insight, now tallied: expand around all `2n−1` centers and add one for every step the mirror survives.
 
-```python run
+```python run viz=array
 def count_substrings(s):
     n = len(s)
     total = 0
@@ -163,7 +163,7 @@ print(count_substrings("aaa"))   # 6   ("a"x3, "aa"x2, "aaa")
 print(count_substrings("abc"))   # 3   (each single char)
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static int countSubstrings(String s) {
         int n = s.length(), total = 0;

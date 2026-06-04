@@ -14,8 +14,7 @@ Given the **head** of a singly linked list and two integers **left** and **right
 
 You need to reverse the segment in place.
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1:**
 ```
@@ -41,11 +40,12 @@ Output: [5, 4, 3, 2, 1]
 Explanation: left = 1, right = n is the full-list reversal special case.
 ```
 
-</details>
 
 ---
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The **structural property** is the generic case of the pattern: a contiguous interior segment `[left, right]` needs to flip direction, while the prefix (positions `1..left − 1`) and the suffix (positions `right + 1..n`) stay in place. Two stitches are needed: the prefix's last node must point to the reversed segment's new head, and the reversed segment's new tail must point to the suffix's first node. The segment-reversal loop from the pattern lesson handles the second stitch for free — initialising `previous = rightBound = end.next` makes the reversed tail point at the suffix's first node automatically.
 
@@ -53,9 +53,10 @@ The **pointer placement** requires two positional walks. Walk to position `right
 
 What **breaks if you reach for a naive iterate-and-reverse without capturing endpoints first**? A single-pass solution that flips pointers as it walks loses access to the prefix's last node the moment it advances past it. The classic "head insertion" variant (used in some textbook solutions) keeps a dummy node and rebuilds the segment by repeated head insertions in `O(right − left + 1)` time — correct but harder to reason about than the explicit endpoint-then-reverse approach, which reuses the segment-reversal helper without modification.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | Check | Answer for Reverse the Given Segment |
 |---|---|
@@ -64,19 +65,24 @@ What **breaks if you reach for a naive iterate-and-reverse without capturing end
 | **Q3.** Is the work strictly structural (only `next` pointers change)? | **Yes** — values are never inspected; only `current.next` flips during the loop, plus one prefix-stitching assignment. |
 | **Q4.** Is `O(1)` extra space required? | **Yes** — a constant number of references (`leftBound`, `start`, `end`, plus the helper's three) regardless of `n`, `left`, or `right`. |
 
----
+</details>
+<details>
+<summary><h2>Brute Force: Two-Pass Value Shuffle</h2></summary>
 
-## Brute Force: Two-Pass Value Shuffle
 
 Walk the list and copy positions `left..right` into an array. Reverse the array. Walk the list a second time and write the reversed values back into those positions. `O(n)` time, `O(right − left + 1)` extra space — and once again misses the pattern's lesson that order is encoded in `next` pointers, not in values.
 
-## Key Insight: Capture Endpoints, Call the Segment-Reversal Helper, Stitch the Prefix
+</details>
+<details>
+<summary><h2>Key Insight: Capture Endpoints, Call the Segment-Reversal Helper, Stitch the Prefix</h2></summary>
+
 
 The segment-reversal helper (from the pattern lesson) takes `start` and `end` and returns the new head of the reversed segment. It captures `rightBound = end.next` internally and initialises `previous = rightBound`, so the reversed segment's tail automatically points to the suffix's first node — the second stitch is built into the helper. The only remaining work for the caller is the prefix stitch: `leftBound.next = newHead`. The full-list special case (`left == 1`) has no prefix; in that case the helper's returned new head replaces the list's head.
 
----
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
 
-## Approach
 
 Capture endpoints, reverse, stitch.
 
@@ -87,8 +93,9 @@ Capture endpoints, reverse, stitch.
 5. **Reverse the segment and stitch the prefix.** Call the reversal helper with `start` and `end`. Assign `leftBound.next = newHead`. The segment-reversal helper already handled the suffix stitch by initialising `previous = end.next` before the loop.
 6. **Return the original head.** Because the prefix is intact (we never reassigned `head`), the original head is still the head of the modified list.
 
+</details>
 <details>
-<summary><strong>Solution &amp; Analysis</strong></summary>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
 ### Solution
 
@@ -392,7 +399,10 @@ When you next see a linked-list problem that mentions "backward", "reverse", "pa
 > </details>
 
 </details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 Positional segment reversal composes two positional walks with the segment-reversal helper. The helper's `previous = rightBound` initialisation handles the suffix stitch for free; the caller only needs to write the prefix stitch — `leftBound.next = newHead` — and handle the `left == 1` special case where there is no prefix.
+
+</details>

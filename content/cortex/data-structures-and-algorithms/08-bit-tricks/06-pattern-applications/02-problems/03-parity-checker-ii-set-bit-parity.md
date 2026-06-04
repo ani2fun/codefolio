@@ -42,7 +42,7 @@ Both work. Kernighan's runs in O(set-bit count); the shift-and-count loop runs i
 
 
 
-```python run
+```python run viz=array
 class Solution:
     def parity_checker_ii(self, num: int) -> str:
 
@@ -79,7 +79,7 @@ print(Solution().parity_checker_ii(3))     # even
 print(Solution().parity_checker_ii(5))     # even
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static class Solution {
         public String parityCheckerII(int num) {

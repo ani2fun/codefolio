@@ -14,8 +14,7 @@ Given the **head** of a doubly linked list and a non-negative integer **k**, wri
 
 You need to reverse the prefix in place.
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1:**
 ```
@@ -35,11 +34,12 @@ Input:  head = [1, 2, 3, 4, 5], k = 0
 Output: [1, 2, 3, 4, 5]
 ```
 
-</details>
 
 ---
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The **structural property** is that the first `k` nodes form a contiguous prefix segment that needs both pointer fields swapped on every node, while the tail (everything from position `k + 1` onward) stays in place. After the swap loop, the original `head` becomes the new tail of the reversed prefix, and the original `k`-th node becomes the new head. The two halves are then stitched together: the new tail (the original head) must point forward to whatever node currently sits at position `k + 1`, and that suffix node must point back at the new tail to keep the backward chain consistent.
 
@@ -47,9 +47,10 @@ The **pointer placement** mirrors the full-list reversal with one extra knob —
 
 What **breaks if you reach for a single sweep without saving the original head**? Three things, all on the boundary. First, the forward stitch: `head.next` must be reassigned to `current` (the first un-flipped node); without that, the new tail's `next` is still `null` from its own swap. Second, the backward stitch on the suffix: `current.prev` must be reassigned to `head`, or the suffix's first node still points back into the reversed prefix at a node that is no longer at position `k`. Third, the new head's `prev`: the original `k`-th node's swap left it pointing at whatever was at position `k + 1`, so `previous.prev` must be cleared to `null`. Forget any one and either the forward walk or the backward walk silently corrupts.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | Check | Answer for Reverse First K Nodes |
 |---|---|
@@ -58,21 +59,26 @@ What **breaks if you reach for a single sweep without saving the original head**
 | **Q3.** Is the work strictly structural (only `prev`/`next` pointers change)? | **Yes** — values are never read; only the two pointer fields on each segment node swap, plus three boundary assignments after the loop. |
 | **Q4.** Is `O(1)` extra space required? | **Yes** — three references (`current`, `previous`, `next_node`) plus an integer counter, regardless of `n` or `k`. |
 
----
+</details>
+<details>
+<summary><h2>Brute Force: Slice and Splice</h2></summary>
 
-## Brute Force: Slice and Splice
 
 Walk the list to collect the first `k` values into an array, reverse the array, and write the reversed values back into the first `k` nodes' `val` fields. The structural chain in both directions is left untouched.
 
 This is correct but costs `O(k)` extra space and conflates value movement with list reversal. The pattern's whole point is that the `prev` and `next` pointers carry the order — swap them and the order reverses for free, with no auxiliary storage.
 
-## Key Insight: Same Swap Loop, Add a Counter and Three Boundary Writes
+</details>
+<details>
+<summary><h2>Key Insight: Same Swap Loop, Add a Counter and Three Boundary Writes</h2></summary>
+
 
 The per-node swap body is byte-identical to full-list reversal. The only differences are at the boundaries: a `count < k` guard on the loop condition (so the loop stops after `k` swaps instead of running to the end), and three stitching writes after the loop. The forward stitch `head.next = current` reconnects the new tail to the unreversed suffix. The backward stitch `current.prev = head` keeps the suffix's first node's `prev` consistent. The head-`prev` clear `previous.prev = null` makes the new head a proper list head. The original `head` reference is the anchor — it never moves during the loop, so it is still available as the new tail when the stitches are needed.
 
----
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
 
-## Approach
 
 Run the prefix-bounded per-node swap loop, then stitch in three writes.
 
@@ -84,8 +90,9 @@ Run the prefix-bounded per-node swap loop, then stitch in three writes.
 6. **Clear the new head's `prev`.** If `previous` is not `null`, set `previous.prev = null`. The original `k`-th node (now the new head) had its `prev` swapped with its old `next`, so without this write its `prev` would point at the old position-`(k+1)` node.
 7. **Return the new head.** `previous` holds the new head of the reversed prefix. Return it.
 
+</details>
 <details>
-<summary><strong>Solution &amp; Analysis</strong></summary>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
 ### Solution
 
@@ -319,7 +326,10 @@ The prefix `[5, 7]` flips to `[7, 5]` while the suffix `[3, 10, 3]` is left comp
 | Single-node list, `k = 1` | One iteration runs; the swap is a no-op on a single-node list; the stitches' null guards leave everything alone. Return the single node. |
 
 </details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 Prefix reversal is full-list reversal plus a counter and three boundary writes. The original `head` reference is the anchor — it is never reassigned during the loop, so it remains available as the new tail when the stitches reconnect the prefix to the unreversed suffix in both directions.
+
+</details>

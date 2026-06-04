@@ -28,8 +28,7 @@ Explanation: Need two values to sum.
 
 ---
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -59,11 +58,12 @@ Output: [[1, 1]]
 Explanation: Every value is the same; the first (1, 1) pair is recorded, and the duplicate-skip helpers collapse the rest of the run to a single recorded pair.
 ```
 
-</details>
 
 ---
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The **structural property** is the same as plain Two Sum — sorted DLL, monotonic running sum, converging walkers — plus a new constraint: the result set must contain no duplicate pairs even when the input does. The duplicate-skip step is the only addition. The list is still sorted, so all copies of any given value sit in a contiguous run; advancing past every node in that run lands the pointer on the next distinct value in `O(k)` for a run of length `k`, and across all runs the total skip work amortises to `O(n)`.
 
@@ -71,9 +71,10 @@ The **pointer placement** keeps `left = head` and `right = tail` exactly as befo
 
 What **breaks if you reach for the naive approach**? Running plain Two Sum and de-duplicating the result afterwards (e.g. `set(map(tuple, result))`) works but pays `O(p)` extra space for the seen-set plus an extra pass over the result. Worse, it produces duplicate pair *values* in transit — on `[2, 2, 2, 2], target = 4` the loop records `(2, 2)` once, then advances both pointers to the next 2s and records `(2, 2)` again, etc. — until the de-dup pass collapses them. The skip helpers prevent the duplicate work from happening in the first place, keeping the space at `O(1)` auxiliary and the time at `O(n)`.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | Check | Answer for Duplicate-Aware Two Sum |
 |---|---|
@@ -82,9 +83,10 @@ What **breaks if you reach for the naive approach**? Running plain Two Sum and d
 | **Q3.** Do both pointers move strictly inward? | **Yes** — the main loop and the skip helpers both move pointers inward only; no backward step ever happens after a match. |
 | **Q4.** Is the per-step work `O(1)`? | **Amortised yes** — each iteration is `O(1)` plus the skip-helper cost, and the skip work across the whole run amortises to `O(n)` total. |
 
----
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
 
-## Approach
 
 Run the converging two-pointer loop, with duplicate-skipping after each match.
 
@@ -96,6 +98,7 @@ Run the converging two-pointer loop, with duplicate-skipping after each match.
 6. **Skip-right helper.** Walk `right` backward while `right.val == right.prev.val` and `left != right`; return `right.prev` (the first different value).
 7. **Return the result.** When the loop exits, `result` holds every distinct value pair summing to `target`, outermost-first.
 
+</details>
 <details>
 <summary><h2>What Does "Skipping Duplicates Safely" Mean?</h2></summary>
 
@@ -457,7 +460,10 @@ Result: [[1, 5], [2, 4]] ✓
 The pattern stays the same — we just bolted on a way to dodge repeats. Now the real boss fight: what if we need *three* numbers, and an exact match isn't even guaranteed?
 
 </details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 What is *new* here vs plain Two Sum is the skip-duplicates plumbing — two helpers that walk past every run of equal values after a match. The skeleton is unchanged; the duplicate work is amortised to `O(n)` because each node is visited at most twice (once by the main loop, once by a helper).
+
+</details>

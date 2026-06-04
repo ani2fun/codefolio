@@ -29,6 +29,16 @@ A coat check at a busy theatre. Every time a guest hands over a coat (`+1`) and 
 
 ## Visual Summary
 
+```mermaid
+flowchart LR
+  ev["split each [s, e] into<br/>+1 at s, −1 at e"] --> srt["sort events by time"]
+  srt --> sweep["sweep a running count<br/>of active intervals"]
+  sweep --> peak["track the maximum"]
+  style peak fill:#bbf7d0,stroke:#16a34a
+```
+
+<p align="center"><strong>Turn each interval into a +1 start and a −1 end event, sort by time, and sweep a running counter — its peak is the most intervals active at once (max rooms, peak concurrency).</strong></p>
+
 ---
 
 ## Pattern Recognition Triggers

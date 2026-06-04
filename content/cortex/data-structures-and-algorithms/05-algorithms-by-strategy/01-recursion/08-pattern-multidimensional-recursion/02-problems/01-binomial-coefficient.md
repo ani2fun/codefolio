@@ -123,7 +123,7 @@ table: "C(n, k) recursion grid (Pascal's triangle)" {
 
 ### The Solution
 
-```python run
+```python run viz=array
 class Solution:
     def binomial_coefficient(self, n: int, k: int) -> int:
 
@@ -153,7 +153,7 @@ print(Solution().binomial_coefficient(6, 2))    # 15
 print(Solution().binomial_coefficient(7, 3))    # 35
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static class Solution {
         public int binomialCoefficient(int N, int K) {

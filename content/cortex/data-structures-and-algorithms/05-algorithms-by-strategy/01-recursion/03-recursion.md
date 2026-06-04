@@ -15,7 +15,7 @@ That's recursion, and it works whenever a problem has two features: **a smallest
 
 The queue-position problem, dictated straight from its two pieces: base case `pos(1) = 1`, recursive relation `pos(n) = 1 + pos(n-1)`.
 
-```python run
+```python run viz=array
 def find_position(n):
     if n == 1:                              # base case: the front of the line
         return 1
@@ -24,7 +24,7 @@ def find_position(n):
 print("find_position(4):", find_position(4))
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static int findPosition(int n) {
         if (n == 1) return 1;               // base case
@@ -102,7 +102,7 @@ The base case must actually be *reachable* from every input the function is call
 
 **Predict before you run:** what does `find_position(0)` do — return `0`, return something wrong, or crash?
 
-```python run
+```python run viz=array
 import sys
 sys.setrecursionlimit(2000)
 
@@ -128,7 +128,7 @@ It raises `RecursionError`. `find_position(0)` checks `n == 1` (false), so it re
 
 Two more relations, same two-piece recipe. **Sum to n:** base `sum(0) = 0`, relation `sum(n) = n + sum(n−1)`. **Factorial:** base `fact(1) = 1`, relation `fact(n) = n · fact(n−1)`.
 
-```python run
+```python run viz=array
 def sum_to(n):
     if n == 0: return 0                     # base case
     return n + sum_to(n - 1)                # recursive relation
@@ -141,7 +141,7 @@ print("sum_to(5):", sum_to(5))              # 15
 print("factorial(5):", factorial(5))        # 120
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static int sumTo(int n) {
         if (n == 0) return 0;                       // base case

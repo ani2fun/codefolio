@@ -93,7 +93,7 @@ Because quicksort's pass does far more than finalize the pivot — it *also spli
 
 The reusable in-place quicksort:
 
-```python run
+```python run viz=array
 def partition(arr, lo, hi):
     pivot = arr[hi]
     i = lo - 1
@@ -117,7 +117,7 @@ print(quicksort([5, 2, 8, 1, 9, 3]))   # [1, 2, 3, 5, 8, 9]
 print(quicksort([3, 3, 1, 2, 3]))      # [1, 2, 3, 3, 3]
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {

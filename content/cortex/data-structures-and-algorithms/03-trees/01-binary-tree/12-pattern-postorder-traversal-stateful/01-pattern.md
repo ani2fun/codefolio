@@ -85,7 +85,7 @@ Because the two numbers answer two different questions. `lh + rh = 4` is "the lo
 
 Diameter plus the maximum path sum (same shape, clamp negatives):
 
-```python run
+```python run viz=binary-tree viz-root=root
 class TreeNode:
     def __init__(self, val, left=None, right=None):
         self.val = val; self.left = left; self.right = right
@@ -117,7 +117,7 @@ root = TreeNode(-10, TreeNode(9), TreeNode(20, TreeNode(15), TreeNode(7)))
 print(diameter(root), max_path_sum(root))   # 3 42
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 public class Main {
   static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } TreeNode(int v, TreeNode l, TreeNode r){ val=v; left=l; right=r; } }
   static int best;

@@ -72,7 +72,7 @@ Because each half has 1s only in *complementary* positions: after shifts, the fi
 
 ### The Solution
 
-```python run
+```python run viz=array
 import sys
 
 class Solution:
@@ -116,7 +116,7 @@ print(Solution().pairwise_bits_swap(4))          # 8
 print(Solution().pairwise_bits_swap(10))         # 5
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static class Solution {
         public int pairwiseBitsSwap(int num) {

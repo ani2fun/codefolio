@@ -15,7 +15,7 @@ That's different from the [edit-distance pattern](/cortex/data-structures-and-al
 
 **Unique Paths** ([LeetCode 62](https://leetcode.com/problems/unique-paths/)) — how many routes from the top-left to the bottom-right of an `m × n` grid, moving only right or down? Each cell is reached from the cell above plus the cell to the left, so `dp[i][j] = dp[i-1][j] + dp[i][j-1]`. The top row and left column have exactly one route each.
 
-```python run
+```python run viz=grid
 def unique_paths(m, n):
     dp = [[1] * n for _ in range(m)]                 # first row & column: one way along the edge
     for i in range(1, m):
@@ -27,7 +27,7 @@ print(unique_paths(3, 7))   # 28
 print(unique_paths(3, 3))   # 6
 ```
 
-```java run
+```java run viz=grid
 public class Main {
     static int uniquePaths(int m, int n) {
         int[][] dp = new int[m][n];
@@ -80,7 +80,7 @@ The aggregator choice isn't cosmetic — on the "largest all-1s square" problem 
 
 **Predict before you run:** on this grid (a `3×3` of 1s with a single `0` in the centre), the largest all-1s square is just `1×1` — every `2×2` swallows the hole. If you write `max(top, left, diagonal) + 1` instead of `min`, what square side does the DP claim?
 
-```python run
+```python run viz=grid
 def maximal_square(grid, use_max=False):
     m, n = len(grid), len(grid[0])
     dp = [[0] * n for _ in range(m)]
@@ -114,7 +114,7 @@ Correct (`min`) gives side `1`; the buggy `max` claims side `3`. The true answer
 
 **Minimum Path Sum** ([LeetCode 64](https://leetcode.com/problems/minimum-path-sum/)) — find the cheapest top-left-to-bottom-right path through a grid of costs, moving only right or down. Same traversal as unique paths, but the aggregator is `grid[i][j] + min(top, left)`, and the boundary is *cumulative* (only one way to reach an edge cell).
 
-```python run
+```python run viz=grid
 def min_path_sum(grid):
     m, n = len(grid), len(grid[0])
     dp = [[0] * n for _ in range(m)]
@@ -132,7 +132,7 @@ print(min_path_sum([[1, 3, 1], [1, 5, 1], [4, 2, 1]]))   # 7
 print(min_path_sum([[1, 2, 3], [4, 5, 6]]))              # 12
 ```
 
-```java run
+```java run viz=grid
 public class Main {
     static int minPathSum(int[][] grid) {
         int m = grid.length, n = grid[0].length;

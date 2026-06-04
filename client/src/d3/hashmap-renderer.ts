@@ -66,7 +66,7 @@ function reconstruct(step: VizGraphStep): Bucket[] {
   return buckets;
 }
 
-const ENTRY_NEW_COLOR = "#c8693e"; // terracotta, matches the canon "new this step" hue
+const ENTRY_NEW_COLOR = "#4f5bd5"; // indigo, matches the canon "new this step" hue
 
 export const hashmapRenderer: RendererFn = defineRenderer({
   className: "hashmap-renderer",

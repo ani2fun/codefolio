@@ -24,8 +24,7 @@ Given an array `strs` of lowercase strings, group strings that belong to the sam
 > -   **Input:** `["abcd","efg","hi","j"]`
 > -   **Output:** `[["abcd"],["efg"],["hi"],["j"]]`
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -56,9 +55,10 @@ Output: [["az", "ba"]]
 Explanation: az → (z−a)=25 → "25,". ba → (a−b)=−1, wrapped +26 → "25,". Same class.
 ```
 
-</details>
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The structural property that makes this a **key-generation** problem is that "belongs to the same displacing sequence" is a property of each string's *internal shape*, not of any pair. Shifting every character by the same amount leaves the gaps between consecutive characters unchanged, so two strings displace into each other exactly when their gap sequences match. That gap sequence is the key.
 
@@ -66,7 +66,10 @@ The key per string is the sequence of **consecutive-character gaps**, taken modu
 
 The naive approach compares every pair of strings to test displacement, which re-derives the same gap facts `O(M²)` times over `M` strings. Keying each string once and bucketing by key collapses the grouping to `O(1)` per string after the scan. The mod-26 step is the one subtlety — without it, a wrapped gap like `a − z` would be negative and the encoding would split strings that actually displace into each other.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for Cluster Displaced Strings |
 |---|---|
@@ -75,6 +78,7 @@ The naive approach compares every pair of strings to test displacement, which re
 | **Q3.** Is each input keyed independently in a single pass? | **Yes** — each string is scanned once on its own, then dropped into a bucket. |
 | **Q4.** Is the per-item work `O(1)`? | **Yes** — each character pair is one subtraction, one wrap check, and one append, all `O(1)`. |
 
+</details>
 <details>
 <summary><h2>Approach</h2></summary>
 
@@ -118,8 +122,9 @@ inputs.s7 -> keys.k3: "no gaps"
 <p align="center"><strong>Cluster displaced strings — the key is the sequence of consecutive-character gaps (modulo 26 to handle wrap). Strings with identical gap sequences belong to the same displacing class and collide into the same hash-map bucket.</strong></p>
 
 </details>
+<details>
+<summary><h2>Approach in Words</h2></summary>
 
-## Approach in Words
 
 Key each string by its gap sequence, then bucket by key.
 
@@ -129,6 +134,7 @@ Key each string by its gap sequence, then bucket by key.
 4. **Collect the buckets.** Gather the map's value lists into the result; each list is one displacement class.
 5. **Return the result.** It holds the groups in any order, as the problem permits.
 
+</details>
 <details>
 <summary><h2>Solution</h2></summary>
 
@@ -276,8 +282,9 @@ public class Main {
 ```
 
 </details>
+<details>
+<summary><h2>Dry Run</h2></summary>
 
-## Dry Run
 
 Walk Example 1 — `["abc", "ghi", "xyz", "b", "c", "ab", "cd"]`. Each string is keyed by its mod-26 gap sequence, then bucketed:
 
@@ -295,7 +302,10 @@ result = [["abc", "ghi", "xyz"], ["b", "c"], ["ab", "cd"]]
 
 The three buckets match the expected output (group order may vary).
 
-## Complexity Analysis
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
+
 
 | Measure | Value | Why |
 |---|---|---|
@@ -304,7 +314,10 @@ The three buckets match the expected output (group order may vary).
 
 Keying a string is linear in its length, and bucketing is one `O(1)` map operation per string, so the whole grouping is one pass over all characters.
 
-## Edge Cases
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
+
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -315,10 +328,14 @@ Keying a string is linear in its length, and bucketing is one `O(1)` map operati
 | Different lengths | `["abcd", "efg", "hi", "j"]` | `[["abcd"], ["efg"], ["hi"], ["j"]]` | Gap-sequence lengths differ, so no two strings can share a key. |
 | Same gaps, different start | `["abc", "ghi"]` | `[["abc", "ghi"]]` | Both have gaps `(1, 1)`; the starting letter is irrelevant to the key. |
 
-## Key Takeaway
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
 
 The new idea here is a **relational key** — the mod-26 sequence of gaps between consecutive characters — which is invariant under shifting every character by a constant, so displaced strings collapse to one bucket.
 
+</details>
 <details>
 <summary><h2>Key Takeaway</h2></summary>
 

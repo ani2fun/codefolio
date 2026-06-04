@@ -87,7 +87,7 @@ After pushing `(` and `[`, the top is `[`. The next char `)` wants to match a `(
 
 The reusable bracket validator:
 
-```python run
+```python run viz=array viz-kind=stack
 def is_valid(s):
     pairs = {')': '(', ']': '[', '}': '{'}
     stack = []
@@ -103,7 +103,7 @@ for t in ["([{}])", "()[]{}", "([)]", "(]", "((("]:
     print(t, "->", is_valid(t))      # True True False False False
 ```
 
-```java run
+```java run viz=array viz-kind=stack
 import java.util.*;
 
 public class Main {

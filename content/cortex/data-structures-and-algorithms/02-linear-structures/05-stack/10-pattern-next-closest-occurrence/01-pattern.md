@@ -76,7 +76,7 @@ Because once `7` is pushed, it stays on the stack as long as nothing larger arri
 
 The reusable next-greater (flip the comparison for next-smaller):
 
-```python run
+```python run viz=array viz-kind=stack
 def next_greater(arr):
     stack, result = [], [None] * len(arr)
     for i in range(len(arr) - 1, -1, -1):
@@ -91,7 +91,7 @@ print(next_greater([2, 5, 3, 7, 1]))           # [5, 7, 7, None, None]
 print(next_greater([1, 2, 3, 4]))              # [2, 3, 4, None]
 ```
 
-```java run
+```java run viz=array viz-kind=stack
 import java.util.*;
 
 public class Main {

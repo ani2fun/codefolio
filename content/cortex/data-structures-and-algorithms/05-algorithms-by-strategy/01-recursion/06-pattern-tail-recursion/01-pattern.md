@@ -45,7 +45,7 @@ flowchart TB
 
 Sum `1..n` tail-recursively. A wrapper hides the accumulator; the helper folds `acc + n` *before* the tail call.
 
-```python run
+```python run viz=array
 def sum_to_n(n):
     def helper(n, acc):
         if n == 0:                          # base: hand back the finished answer
@@ -56,7 +56,7 @@ def sum_to_n(n):
 print("sum_to_n(5):", sum_to_n(5))
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static int sumToN(int n) { return helper(n, 0); }
     static int helper(int n, int acc) {
@@ -121,7 +121,7 @@ Three diagnostic questions: **Q1** — can the answer be built *as you descend*,
 
 **Predict before you run:** does Python run `tail_sum(100_000)` in `O(1)` stack like a loop, or does it crash?
 
-```python run
+```python run viz=array
 import sys
 print("recursion limit:", sys.getrecursionlimit())
 
@@ -147,7 +147,7 @@ It raises `RecursionError`. The call is in *perfect* tail position — but **Pyt
 
 A palindrome check is naturally tail-recursive: compare the ends, then tail-call on the inner substring. The "accumulator" is degenerate — the answer is `True` unless a mismatch returns early — and the recursive call is the last action.
 
-```python run
+```python run viz=array
 def is_palindrome(s, lo=0, hi=None):
     if hi is None: hi = len(s) - 1
     if lo >= hi:                            # base: pointers crossed → palindrome
@@ -160,7 +160,7 @@ print("racecar:", is_palindrome("racecar"))  # True
 print("hello:", is_palindrome("hello"))      # False
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static boolean isPalindrome(String s, int lo, int hi) {
         if (lo >= hi) return true;                       // base

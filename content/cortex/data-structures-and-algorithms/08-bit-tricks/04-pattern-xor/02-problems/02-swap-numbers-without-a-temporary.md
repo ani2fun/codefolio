@@ -39,7 +39,7 @@ Disaster. Step 1 sets the location to `x ^ x = 0`. Step 2 sets it to `0 ^ 0 = 0`
 
 
 
-```python run
+```python run viz=array
 class Solution:
     def swap_numbers(self, num1: int, num2: int) -> None:
 
@@ -75,7 +75,7 @@ Solution().swap_numbers(-1, 1)     # 1, -1
 Solution().swap_numbers(0, 7)      # 7, 0
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static class Solution {
         public void swapNumbers(int num1, int num2) {

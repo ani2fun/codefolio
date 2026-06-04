@@ -17,7 +17,7 @@ The answer is governed by one of the most elegant results in graph theory, the *
 
 A small network, source 0 → sink 3. Ford-Fulkerson pushes flow along augmenting paths until none remain; the total is the max flow. Run it.
 
-```python run
+```python run viz=graph viz-kind=graph
 def max_flow(graph, source, sink):          # graph[u] = list of (neighbour, capacity)
     n = len(graph)
     res = [[0]*n for _ in range(n)]          # residual capacity matrix
@@ -86,7 +86,7 @@ The **reverse edge** rescues it. When 1 unit is pushed along `s→A→B→t`, th
 
 Ford-Fulkerson in both languages — a direct-plus-detour network, and the reverse-edge graph that reaches 20:
 
-```python run
+```python run viz=graph viz-kind=graph
 def max_flow(graph, source, sink):
     n = len(graph)
     res = [[0]*n for _ in range(n)]
@@ -113,7 +113,7 @@ print(max_flow([[(1,8),(2,10)], [], [(3,3)], [(1,2)]], 0, 1))           # 10  (d
 print(max_flow([[(1,10),(2,10)], [(2,1),(3,10)], [(3,10)], []], 0, 3))  # 20  (reverse-edge undo)
 ```
 
-```java run
+```java run viz=graph viz-kind=graph
 import java.util.*;
 public class Main {
   static int n;

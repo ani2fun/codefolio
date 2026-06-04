@@ -32,6 +32,15 @@ Imagine a long apartment building where every flat has the exact same floor plan
 
 ## Visual Summary
 
+```mermaid
+flowchart LR
+  idx(["index i = 3"]) -->|"addr = base + i × size"| a3
+  a0["arr[0]"] --- a1["arr[1]"] --- a2["arr[2]"] --- a3["arr[3]"] --- a4["arr[4]"]
+  style a3 fill:#c7d2fe,stroke:#4f5bd5
+```
+
+<p align="center"><strong>An array is one contiguous block of equal-size cells. Any index is a single multiply-add away — addr = base + i × size — so access and modify are O(1) regardless of length.</strong></p>
+
 ---
 
 ## Key Operations

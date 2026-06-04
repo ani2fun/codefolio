@@ -428,8 +428,8 @@
      the old hand-rolled pane's faint tints (the prior --next was 0.06 alpha) so the
      active + next lines read clearly on the dark editor theme. */
   .algolens-mono__line--current {
-    background: rgba(200, 105, 62, 0.24);
-    box-shadow: inset 3px 0 0 0 #c8693e;
+    background: rgba(79, 91, 213, 0.24);
+    box-shadow: inset 3px 0 0 0 #4f5bd5;
   }
   .algolens-mono__line--next {
     background: rgba(245, 158, 11, 0.16);
@@ -458,7 +458,7 @@
     font-size: 10px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: hsl(var(--muted-foreground));
+    color: hsl(var(--foreground) / 0.62);
   }
   .algolens-frames__hint {
     font-family: var(--font-mono);
@@ -518,9 +518,12 @@
     overflow: hidden;
   }
   .algolens-frame__title em {
-    font-family: var(--font-display);
-    font-style: italic;
-    font-size: 16px;
+    /* Function / class / <module> names are code identifiers — keep them upright
+       (not the editorial display-italic) so they're easy to read. */
+    font-family: var(--font-sans);
+    font-style: normal;
+    font-weight: 600;
+    font-size: 14px;
     color: hsl(var(--foreground));
     flex-shrink: 0;
   }
@@ -570,7 +573,9 @@
   .algolens-frame__local-name  { color: hsl(var(--foreground)); font-weight: 500; }
   .algolens-frame__local-type  {
     font-size: 10px;
-    color: hsl(var(--muted-foreground));
+    /* Brighter than --muted-foreground so the type column stays legible on the
+       dark modal surface (theme-aware: near-ink in light, near-white in dark). */
+    color: hsl(var(--foreground) / 0.72);
     padding: 1px 4px;
     border-radius: 3px;
     background: hsl(var(--muted) / 0.7);
@@ -879,13 +884,24 @@
     outline-offset: -1px;
     border-color: hsl(var(--primary) / 0.6);
   }
+  /* Console-style output surface — an inset terminal block that preserves the
+     program's exact whitespace (leading spaces, blank lines, tabs) the way a
+     VS Code terminal does. `min-height` keeps a console area even when output
+     is short or empty. */
   .algolens-output__pre {
     margin: 0;
+    padding: 12px 14px;
+    border-radius: 8px;
+    border: 1px solid hsl(var(--border) / 0.6);
+    background: hsl(var(--muted) / 0.5);
     font-family: var(--font-mono);
-    font-size: 12px;
-    line-height: 1.55;
+    font-size: 12.5px;
+    line-height: 1.6;
     color: hsl(var(--foreground));
     white-space: pre-wrap;
+    tab-size: 4;
+    min-height: 3.4em;
+    overflow-x: auto;
   }
   .algolens-output__placeholder {
     font-family: var(--font-mono);
@@ -937,7 +953,61 @@
   .algolens__pane--canvas {
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    overflow: hidden;
+  }
+  /* The diagram occupies the pane and centres (margin:auto keeps tall diagrams
+     scrollable rather than clipped); the source-line footer pins to the bottom. */
+  .algolens-canvas-stage {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    display: flex;
+  }
+  .algolens-canvas-stage > * { margin: auto; }
+  .algolens-canvas-lines {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 10px 16px;
+    border-top: 1px solid hsl(var(--border) / 0.6);
+    background: hsl(var(--card) / 0.6);
+  }
+  .algolens-canvas-line {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    min-width: 0;
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+  .algolens-canvas-line__label {
+    flex: 0 0 5.5rem;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+  }
+  .algolens-canvas-line__code {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: hsl(var(--foreground) / 0.65);
+  }
+  .algolens-canvas-line__num {
+    color: hsl(var(--muted-foreground));
+    margin-right: 8px;
+    opacity: 0.65;
+  }
+  .algolens-canvas-line__code--none { color: hsl(var(--muted-foreground)); }
+  .algolens-canvas-line--current .algolens-canvas-line__label {
+    color: hsl(var(--primary));
+    font-weight: 600;
+  }
+  .algolens-canvas-line--current .algolens-canvas-line__code {
+    color: hsl(var(--foreground));
+    font-weight: 500;
   }
   .canvas__annotation {
     max-width: 60ch;
@@ -1047,6 +1117,55 @@
       grid-column: 1 / -1;
       flex-wrap: wrap;
     }
+  }
+
+  /* ── Phone: lead with the canvas, compress the chrome ──────────────── */
+  /* On a full-bleed phone modal (visualise-modal.css drops the card to
+     100dvh below md) the top bar + controls otherwise wrap into tall stacks
+     that crowd out the visualisation. Tighten their padding, drop the
+     decorative brand text, and reorder the stacked panes so the canvas — the
+     point of "Visualise" — sits first. */
+  @media (max-width: 640px) {
+    .algolens__topbar {
+      gap: 8px;
+      row-gap: 6px;
+      padding: 8px 12px;
+    }
+    /* Decorative brand bits — recover the row they cost on a narrow bar. */
+    .algolens__topbar-eyebrow,
+    .algolens__topbar-product,
+    .algolens__topbar-divider {
+      display: none;
+    }
+    .algolens__topbar-mark { font-size: 16px; }
+    .algolens__topbar-btn {
+      height: 28px;
+      padding: 0 9px;
+      font-size: 11px;
+    }
+    .algolens__topbar-icon-btn { width: 28px; height: 28px; }
+    /* The action cluster has flex:0 0 auto, so its own flex-wrap never fires and
+       the row (incl. Close) spills past the screen edge. Give it a full-width
+       row of its own so every control — especially Close — stays on-screen. */
+    .algolens__topbar-actions {
+      flex: 1 1 100%;
+      justify-content: flex-start;
+    }
+
+    /* Canvas first; trim the stacked min-heights so less scrolling is needed
+       to reach the code + frames below it. */
+    .algolens__pane--canvas { order: -1; min-height: 240px; }
+    .algolens__pane--code   { min-height: 180px; }
+    .algolens__pane--frames { min-height: 150px; }
+
+    .algolens-controls {
+      gap: 10px;
+      padding: 8px 12px;
+    }
+    .algolens-controls__tbtn { width: 28px; height: 28px; }
+
+    /* Keep the output panel from dominating the short viewport. */
+    .algolens-output__body { max-height: 120px; }
   }
 
   /* ═══════════════════════════════════════════════════════════════════════
@@ -1327,7 +1446,7 @@
        var(--c-fg-muted)   → hsl(var(--muted-foreground))
        hsl(var(--background)) (unchanged)
      `--top-color` is set inline by the renderer from the `top` pointer-canon
-     colour (terracotta by default) so the modifier doesn't need to know the
+     colour (indigo by default) so the modifier doesn't need to know the
      palette — the renderer pushes it in via a style attr.
      Block prefix: .stack-renderer
      ════════════════════════════════════════════════════════════════════ */
@@ -1361,7 +1480,7 @@
     font-size: 11px;
     letter-spacing: 0.10em;
     text-transform: uppercase;
-    color: #c8693e;
+    color: #4f5bd5;
     white-space: nowrap;
     transition:
       top 320ms cubic-bezier(0.4, 0, 0.2, 1),
@@ -1427,7 +1546,7 @@
     color: var(--top-color);
   }
   .stack-renderer__cell--new {
-    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--top-color, #c8693e) 60%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--top-color, #4f5bd5) 60%, transparent);
   }
   .stack-renderer__cell--changed {
     background: rgba(106, 150, 86, 0.10);
@@ -1531,8 +1650,8 @@
     color: hsl(var(--muted-foreground));
   }
   .hashmap-renderer__entry--new {
-    border-color: var(--entry-new-color, #c8693e);
-    background: color-mix(in oklab, var(--entry-new-color, #c8693e) 12%, transparent);
+    border-color: var(--entry-new-color, #4f5bd5);
+    background: color-mix(in oklab, var(--entry-new-color, #4f5bd5) 12%, transparent);
   }
   .hashmap-renderer__entry--changed {
     background: rgba(106, 150, 86, 0.1);
@@ -1610,7 +1729,7 @@
     border-left-color: var(--head-color);
   }
   .queue-renderer__cell--new {
-    background: color-mix(in oklab, var(--tail-color, #c8693e) 12%, transparent);
+    background: color-mix(in oklab, var(--tail-color, #4f5bd5) 12%, transparent);
   }
   .queue-renderer__cell--changed {
     background: rgba(106, 150, 86, 0.1);
@@ -1653,14 +1772,14 @@
      accent, clear bits (value 0) stay muted — so the bitset reads as a row of
      on/off flags, not a generic array of small ints. A `n bits · k set`
      popcount summary sits above the row; each cell carries its bit index.
-     `--bit-set` is the canon "on" accent (terracotta), shared by the set fill,
+     `--bit-set` is the canon "on" accent (indigo), shared by the set fill,
      border, and value text. `--changed` (the bit that just flipped) layers a
      green ring OVER the set/clear base so it shows for both 0→1 and 1→0.
      Block prefix: .bitset-renderer
      ════════════════════════════════════════════════════════════════════ */
 
   .bitset-renderer {
-    --bit-set: #c8693e;
+    --bit-set: #4f5bd5;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1872,7 +1991,7 @@
      ════════════════════════════════════════════════════════════════════ */
 
   .fenwick-renderer {
-    --fen-cursor-color: #c8693e;
+    --fen-cursor-color: #4f5bd5;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -2102,9 +2221,9 @@
     color: var(--node-color);
     box-shadow: 0 0 0 2px color-mix(in oklab, var(--node-color) 14%, transparent);
   }
-  /* A node inserted this step — terracotta "new" ring (MarkerColors canon). */
+  /* A node inserted this step — indigo "new" ring (MarkerColors canon). */
   .list-renderer__node--new {
-    box-shadow: 0 0 0 2px color-mix(in oklab, #c8693e 18%, transparent);
+    box-shadow: 0 0 0 2px color-mix(in oklab, #4f5bd5 18%, transparent);
   }
   .list-renderer__node--changed {
     box-shadow: 0 0 0 2px color-mix(in oklab, #5a8a5a 16%, transparent);

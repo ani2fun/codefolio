@@ -42,7 +42,7 @@ flowchart TB
 
 Generate every length-`n` sequence over the alphabet `1..k`. Leaf check records a *copy*; the loop extends, recurses, and undoes.
 
-```python run
+```python run viz=array
 def enumerate_all(n, k):
     results, state = [], []
     def helper():
@@ -59,7 +59,7 @@ def enumerate_all(n, k):
 print(enumerate_all(2, 2))
 ```
 
-```java run
+```java run viz=graph viz-kind=graph
 import java.util.*;
 public class Main {
     static void helper(int n, int k, List<Integer> state, List<List<Integer>> res) {
@@ -109,7 +109,7 @@ That `state.copy()` at the leaf looks like a harmless habit — surely appending
 
 **Predict before you run:** replace `results.append(state.copy())` with `results.append(state)`. What does `enumerate_all(2, 2)` return?
 
-```python run
+```python run viz=array
 def enumerate_buggy(n, k):
     results, state = [], []
     def helper():
@@ -135,7 +135,7 @@ It returns `[[], [], [], []]` — four references to the *same* list, all empty.
 
 **Letter Combinations of a Phone Number** ([LeetCode 17](https://leetcode.com/problems/letter-combinations-of-a-phone-number/)) — each digit maps to a set of letters (2→abc, 3→def, …); enumerate every combination. One slot per digit, a different choice set per slot (Q3's varying-but-bounded branching).
 
-```python run
+```python run viz=array
 def letter_combinations(digits):
     if not digits: return []
     pad = {'2':"abc", '3':"def", '4':"ghi", '5':"jkl", '6':"mno", '7':"pqrs", '8':"tuv", '9':"wxyz"}
@@ -152,7 +152,7 @@ print(letter_combinations("23"))
 print("count:", len(letter_combinations("23")))
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static String[] pad = {"","","abc","def","ghi","jkl","mno","pqrs","tuv","wxyz"};

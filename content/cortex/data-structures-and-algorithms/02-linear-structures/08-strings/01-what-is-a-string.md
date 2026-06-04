@@ -78,7 +78,7 @@ About a *trillion* character-copies — each of the million edits rebuilds the w
 
 The right way to build a string — collect the pieces, join once:
 
-```python run
+```python run viz=array
 # Strings are immutable, so build with a list + join (O(n)), never += in a loop.
 parts = []
 for word in ["data", "structures", "rock"]:
@@ -86,7 +86,7 @@ for word in ["data", "structures", "rock"]:
 print(" ".join(parts))     # Data Structures Rock
 ```
 
-```java run
+```java run viz=array
 public class Main {
   public static void main(String[] args) {
     // Java strings are immutable too — build with a StringBuilder for O(n).

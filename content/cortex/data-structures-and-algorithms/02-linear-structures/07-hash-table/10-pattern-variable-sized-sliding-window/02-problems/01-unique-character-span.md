@@ -21,8 +21,7 @@ Given a string `s`, return the length of the longest substring with **distinct**
 ### Example 3
 > -   **Input:** `s = "abcdefgh"` → **Output:** `8` (the whole string)
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -56,7 +55,6 @@ Explanation: the second 'a' forces a contraction past index 0, then 'b' extends
 the window to "ab" → length 2.
 ```
 
-</details>
 <details>
 <summary><h2>Solution</h2></summary>
 
@@ -185,8 +183,9 @@ public class Main {
 ```
 
 </details>
+<details>
+<summary><h2>Intuition</h2></summary>
 
-## Intuition
 
 This is a **longest contiguous subsequence** problem, and the rule — "no repeated characters" — reads directly off a frequency map. That combination is the signature of the variable-sized sliding window. Keep a window `s[start..end]` and a count of every character inside it; the window is valid exactly when every count is `1`. Because the answer is a contiguous run and the rule is a simple map check, the pattern fits.
 
@@ -194,7 +193,10 @@ The two pointers play asymmetric roles, and the placement is what makes a single
 
 The naive approach breaks on cost, not correctness. Restarting the scan from each index rebuilds the window from scratch and pays **O(N²)** time. The window approach never rewinds `start`: once a duplicate disqualifies every window containing the earlier copy, those windows are gone for good. Each character is admitted once and evicted at most once, so the whole scan is **O(N)**.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for Unique Character Span |
 |---|---|
@@ -203,7 +205,10 @@ The naive approach breaks on cost, not correctness. Restarting the scan from eac
 | **Q3.** Can you add `s[end]` and remove `s[start]` in `O(1)`? | **Yes** — one increment on expand, one decrement (and possible key delete) on contract. |
 | **Q4.** Is the rule monotonic as the window grows? | **Yes** — adding a character can only introduce a duplicate; removing one can only clear it. |
 
-## Approach
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
+
 
 1. Initialise `start = 0`, an empty `frequency` map, and `maxLength = 0`.
 2. Advance `end` across the string. For each `end`, increment `frequency[s[end]]`.
@@ -211,7 +216,10 @@ The naive approach breaks on cost, not correctness. Restarting the scan from eac
 4. The window `s[start..end]` now has no duplicates. Record `maxLength = max(maxLength, end − start + 1)`.
 5. After the loop, return `maxLength`.
 
-## Dry Run
+</details>
+<details>
+<summary><h2>Dry Run</h2></summary>
+
 
 Walk Example 1: `s = "abcbed"`, expected output `4`. The window is `s[start..end]`; the rule is "no duplicate character":
 
@@ -230,14 +238,20 @@ return maxLength = 4
 
 The result `4` matches the expected output — `"cbed"` is the longest substring with no repeated characters.
 
-## Complexity Analysis
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
+
 
 | | Cost | Why |
 |---|---|---|
 | **Time** | **O(N)** | `end` advances `N` times; `start` advances at most `N` times. Each character is admitted once and evicted at most once, so the inner `while` is amortised `O(1)`. |
 | **Space** | **O(K)** | The map holds at most one entry per distinct character in the window — `K` is the alphabet size, `O(1)` for a fixed alphabet. |
 
-## Edge Cases
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
+
 
 | Input | Output | Why |
 |---|---|---|
@@ -248,6 +262,11 @@ The result `4` matches the expected output — `"cbed"` is the longest substring
 | `"aab"` | `2` | Contracts past the first `'a'` at index 1, then grows to `"ab"`. |
 | `"abcdefgh"` | `8` | All distinct — no contraction ever fires; the window is the whole string. |
 
-## Key Takeaway
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
 
 This is the base case of the pattern — the rule "every character count `≤ 1`" maps to contracting while the newest character's count exceeds `1`. Every later problem swaps in a different map-readable rule on the same expand-contract-record skeleton.
+
+</details>

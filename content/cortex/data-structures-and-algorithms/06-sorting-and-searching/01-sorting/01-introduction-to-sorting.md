@@ -17,7 +17,7 @@ That's why sorting is the most common preprocessing step in computing. You pay `
 
 The payoff in one snippet: sort once, then answer membership queries in `O(log n)` with binary search (which only works *because* the data is ordered). Run it.
 
-```python run
+```python run viz=array
 import bisect
 
 data = [37, 12, 95, 4, 60, 23]
@@ -69,7 +69,7 @@ A comparison sort learns about the order *only* through yes/no comparisons. Mode
 
 See **stability** for yourself — sort records by one key and watch equal keys keep their input order:
 
-```python run
+```python run viz=array
 # a STABLE sort preserves the input order of equal-key elements
 records = [("alice", 2), ("bob", 1), ("carol", 2), ("dave", 1)]
 records.sort(key=lambda r: r[1])     # sort by the number only
@@ -78,7 +78,7 @@ print(records)
 # bob before dave (both 1), alice before carol (both 2) — input order kept
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {

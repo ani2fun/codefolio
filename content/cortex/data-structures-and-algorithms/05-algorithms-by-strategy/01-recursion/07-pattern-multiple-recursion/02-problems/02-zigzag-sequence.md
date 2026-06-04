@@ -111,7 +111,7 @@ flowchart TB
 
 ### The Solution
 
-```python run
+```python run viz=array
 class Solution:
     def zig_zag_sequence(self, n: int) -> int:
 
@@ -152,7 +152,7 @@ print(Solution().zig_zag_sequence(3))   # 2
 print(Solution().zig_zag_sequence(4))   # 1
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static class Solution {
         public int zigZagSequence(int N) {

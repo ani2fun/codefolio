@@ -66,7 +66,7 @@ export const fenwickRenderer: RendererFn = defineRenderer({
         // the staircase (the adapter emits one index-cursor per active index local).
         const cursorIds = new Set(step.cursor.map((c) => c.target));
         // Each cursor carries its ROLE colour (MarkerColors canon, stamped by the
-        // adapter): `i` is deep blue, `mid`/`cur` terracotta, `right` bordeaux, …. Tint
+        // adapter): `i` is deep blue, `mid`/`cur` indigo, `right` bordeaux, …. Tint
         // the highlighted cell in that hue rather than a hardcoded accent, so the same
         // pointer name reads the same colour on every structure — one palette (ADR-0016).
         const cursorColor = new Map(step.cursor.map((c) => [c.target, c.color]));

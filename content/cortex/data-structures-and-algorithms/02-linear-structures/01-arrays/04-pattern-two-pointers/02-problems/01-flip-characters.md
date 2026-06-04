@@ -21,9 +21,7 @@ This is the canonical direct application of the two-pointer pattern — the temp
 
 ---
 
-<details>
-<summary><h2>Examples</h2></summary>
-
+## Examples
 
 **Example 1**
 ```
@@ -43,7 +41,6 @@ Input:  arr = []
 Output:       []
 ```
 
-</details>
 <details>
 <summary><h2>Intuition</h2></summary>
 

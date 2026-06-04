@@ -17,7 +17,7 @@ So flip the matrix's question. Instead of "between *every* pair, is there an edg
 
 The same 5-node graph as the matrix lesson, stored as an array of neighbour lists. Building it is one pass over the edges; reading a node's neighbours is direct. Run it.
 
-```python run
+```python run viz=graph viz-kind=graph
 def create_graph(n, edges):
     adj = [[] for _ in range(n)]               # one empty list per node (factory — no aliasing!)
     for u, v in edges:
@@ -78,7 +78,7 @@ The matrix wins **random edge-existence tests**. "Are `u` and `v` adjacent?" is 
 
 Build the list, check an edge (`O(degree)`), and convert a list back to a matrix — in both languages:
 
-```python run
+```python run viz=graph viz-kind=graph
 def create_graph(n, edges):
     adj = [[] for _ in range(n)]
     for u, v in edges:
@@ -102,7 +102,7 @@ print(has_edge(adj, 1, 3), has_edge(adj, 0, 3)) # True False
 print(to_matrix(adj)[1])                         # [1, 0, 1, 1, 0]
 ```
 
-```java run
+```java run viz=graph viz-kind=graph
 import java.util.*;
 public class Main {
   static List<List<Integer>> createGraph(int n, int[][] edges) {

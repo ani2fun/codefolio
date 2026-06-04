@@ -15,7 +15,7 @@ It's the boolean (or counting) specialization of [knapsack](/cortex/data-structu
 
 `dp[j]` = "is sum `j` reachable from some subset seen so far?" Seed `dp[0] = True` (the empty subset sums to 0). For each number, sweep targets **descending** and mark `dp[j]` reachable if `dp[j - x]` already was.
 
-```python run
+```python run viz=array
 def subset_sum(nums, target):
     dp = [False] * (target + 1)
     dp[0] = True                                     # empty subset sums to 0 — the seed
@@ -28,7 +28,7 @@ print(subset_sum([3, 34, 4, 12, 5, 2], 9))   # True   (4 + 5)
 print(subset_sum([1, 2, 5], 4))              # False
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static boolean subsetSum(int[] nums, int target) {
         boolean[] dp = new boolean[target + 1];
@@ -78,7 +78,7 @@ The descending sweep gets all the attention, but the quieter bug is the seed. `d
 
 **Predict before you run:** you initialize `dp` to all-`False` and forget the `dp[0] = True` seed, but the descending sweep and `dp[j] |= dp[j-x]` update are perfect. Does `subset_sum([3, 4, 5], 9)` still find the `4 + 5` subset?
 
-```python run
+```python run viz=array
 def subset_sum(nums, target):                        # correct: seeded
     dp = [False] * (target + 1)
     dp[0] = True
@@ -109,7 +109,7 @@ Correct is `True`; the buggy version returns `False` — and it would return `Fa
 
 **Minimum Subset Sum Difference** (a.k.a. Last Stone Weight II, [LeetCode 1049](https://leetcode.com/problems/last-stone-weight-ii/)) — split the numbers into two groups minimizing `|sum₁ − sum₂|`. The trick: one group's sum determines the other's, so find the *reachable* subset sum closest to `total/2`. Subset sum builds the full reachability set; you read off the best.
 
-```python run
+```python run viz=array
 def min_subset_diff(nums):
     total = sum(nums)
     half = total // 2
@@ -125,7 +125,7 @@ print(min_subset_diff([1, 2, 3, 9]))    # 3   ({1,2,3}=6  vs  {9}=9)
 print(min_subset_diff([1, 6, 11, 5]))   # 1   ({1,5,6}=12 vs  {11}=11)
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static int minSubsetDiff(int[] nums) {
         int total = 0; for (int x : nums) total += x;

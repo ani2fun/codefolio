@@ -90,7 +90,7 @@ Because descending order visits keys in exactly the sequence "largest, then next
 
 k-th largest plus the greater-sum tree, both on one reversed in-order walk:
 
-```python run
+```python run viz=binary-tree viz-root=root
 class TreeNode:
     def __init__(self, val):
         self.val = val; self.left = None; self.right = None
@@ -131,7 +131,7 @@ print(kth_largest(root, 2))                          # 8
 print(inorder(greater_sum_tree(root)))               # [37, 36, 33, 29, 24, 17, 9]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

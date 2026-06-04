@@ -39,7 +39,7 @@ flowchart LR
 
 Enumerate every path from `0` to `4` on that graph. The `on_path` set is added-to on entry and removed on exit — that removal is what lets node 4 (and 2) participate in more than one path.
 
-```python run
+```python run viz=graph viz-kind=graph
 adj = {0: [1, 2], 1: [4], 2: [3, 4], 3: [4], 4: [0]}
 
 def all_paths(adj, s, t):
@@ -61,7 +61,7 @@ for p in paths: print(" -> ".join(map(str, p)))
 print("count:", len(paths))
 ```
 
-```java run
+```java run viz=graph viz-kind=graph
 import java.util.*;
 
 public class Main {
@@ -150,7 +150,7 @@ The pattern lives or dies on the entry/exit symmetry. Suppose you replace the pe
 
 **Predict before you run:** on the same graph, how many of the three `0 → 4` paths does the buggy version find?
 
-```python run
+```python run viz=graph viz-kind=graph
 adj = {0: [1, 2], 1: [4], 2: [3, 4], 3: [4], 4: [0]}
 
 def all_paths_buggy(adj, s, t):
@@ -182,7 +182,7 @@ It finds just **one** path: `0 → 1 → 4`. Once the first path consumes nodes 
 
 The canonical version: **All Paths From Source to Target** ([LeetCode 797](https://leetcode.com/problems/all-paths-from-source-to-target/)). Given a DAG as an adjacency list, return every path from `0` to `n − 1`. Because it's acyclic you don't even need the `on_path` guard — but the add-on-entry / undo-on-exit rhythm is identical.
 
-```python run
+```python run viz=graph viz-kind=graph
 def all_paths_source_target(graph):
     n = len(graph); res, path = [], []
     def dfs(u):
@@ -199,7 +199,7 @@ print(all_paths_source_target([[1, 2], [3], [3], []]))  # [[0, 1, 3], [0, 2, 3]]
 print(all_paths_source_target([[1], [2], []]))          # [[0, 1, 2]]
 ```
 
-```java run
+```java run viz=graph viz-kind=graph
 import java.util.*;
 
 public class Main {

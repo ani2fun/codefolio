@@ -16,8 +16,7 @@ Given an array `heights` of non-negative integers representing an elevation map 
 > -   **Input:** `heights = [0, 2, 4, 3, 0, 3, 5, 2, 0, 4, 3, 0, 2]`
 > -   **Output:** `14`
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -48,9 +47,10 @@ Output: 0
 Explanation: A monotonically increasing wall has no valley — water runs straight off.
 ```
 
-</details>
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The structural property that makes this a **monotonic-stack** problem is that the water above any bar is bounded by its *next taller bar to the right* and its *nearest taller bar to the left*. Those two "find the nearest taller boundary" queries are exactly the next-greater shape the pattern fires on — only here a resolved boundary lets you *compute a trapped strip* instead of recording a single value.
 
@@ -58,7 +58,10 @@ The stack holds the indices of bars in **decreasing** height, each waiting for a
 
 The naive approach computes, for each bar, the max height to its left and the max to its right, then sums `min(maxLeft, maxRight) − height`. Done with two nested scans that is `O(N²)` time. Precomputing the two max arrays drops it to `O(N)` time but `O(N)` extra space; the stack reaches the same `O(N)` time while building the boundaries on the fly.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for Retained Rainwater |
 |---|---|
@@ -67,6 +70,7 @@ The naive approach computes, for each bar, the max height to its left and the ma
 | **Q3.** Is the comparison monotone — strictly greater or smaller? | **Yes** — a decreasing stack pops when a strictly taller bar arrives. |
 | **Q4.** Is the per-element work `O(1)` amortised? | **Yes** — each index is pushed once and popped at most once; each pop computes one strip in `O(1)`. |
 
+</details>
 <details>
 <summary><h2>Approach</h2></summary>
 
@@ -97,8 +101,9 @@ flowchart LR
 <p align="center"><strong>Trapping rain water — pop the "valley" bar, the new top is the left wall, the current bar is the right wall, and the area trapped on top is one strip. Sum the strips.</strong></p>
 
 </details>
+<details>
+<summary><h2>Approach in Words</h2></summary>
 
-## Approach in Words
 
 Sweep left to right with a decreasing stack of bar indices, settling one horizontal strip of water on every pop.
 
@@ -109,6 +114,7 @@ Sweep left to right with a decreasing stack of bar indices, settling one horizon
 5. **Compute the strip.** The new top is the `left` wall and `i` is the `right` wall. Add `(min(heights[i], heights[left]) − heights[floor]) × (i − left − 1)` to `waterTrapped`.
 6. **Push and continue.** Push `i` onto the stack and move on; return `waterTrapped` once the sweep ends.
 
+</details>
 <details>
 <summary><h2>Solution</h2></summary>
 
@@ -227,8 +233,9 @@ public class Main {
 ```
 
 </details>
+<details>
+<summary><h2>Dry Run</h2></summary>
 
-## Dry Run
 
 Walk the example — `heights = [0, 2, 4, 3, 0, 3, 5, 2, 0, 4, 3, 0, 2]` (indices `0`–`12`). The stack holds indices in decreasing height; every pop with a left wall present settles one strip. Only the six water-adding pops are shown:
 
@@ -245,7 +252,10 @@ water_trapped = 14
 
 The result `14` matches the expected output. The strip at `i=6` over `idx5` adds `0` because the right wall `5` and floor `3` differ by the same amount the left wall constrains — included to show that flat or fully-walled pops contribute nothing.
 
-## Complexity Analysis
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
+
 
 | Measure | Value | Why |
 |---|---|---|
@@ -254,7 +264,10 @@ The result `14` matches the expected output. The strip at `i=6` over `idx5` adds
 
 Each pop computes a single strip in `O(1)`, so the total strip work is bounded by the `O(N)` pop count — the nested `while` does not make this `O(N²)`.
 
-## Edge Cases
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
+
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -266,6 +279,11 @@ Each pop computes a single strip in `O(1)`, so the total strip work is bounded b
 | Monotonic increasing | `heights = [1, 2, 3, 4, 5]` | `0` | No right wall ever closes a valley — water runs off the top. |
 | Monotonic decreasing | `heights = [5, 4, 3, 2, 1]` | `0` | No left wall ever exists — water runs off the start. |
 
-## Key Takeaway
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
 
 What is new here is *area aggregation*: instead of recording a single next-greater value, each pop computes a horizontal strip `(min(left, right) − floor) × width` and sums it. The decreasing stack is unchanged — the right wall is just the element that triggers the pop, and the left wall is the survivor beneath it.
+
+</details>

@@ -119,7 +119,7 @@ flowchart TB
 
 ### The Solution
 
-```python run
+```python run viz=array
 class Solution:
     def factorial(self, n: int) -> int:
 
@@ -145,7 +145,7 @@ print(Solution().factorial(2))   # 2
 print(Solution().factorial(10))  # 3628800
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static class Solution {
         public int factorial(int N) {

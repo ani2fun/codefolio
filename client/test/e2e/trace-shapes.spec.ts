@@ -433,12 +433,14 @@ test("bitset renders a set/clear bit row with a popcount summary", async ({ page
   });
 });
 
-// Phase 2i (ADR-0027) — Linked-list renderer (#9), per-card delegate. A chain of
-// Instance nodes (joined by `next`) renders left-to-right with a `head` caret
-// (free from the `head` local) and a synthesised `∅` null sentinel after the
-// tail — the terminator the generic path omits. Asserts the chain + the null
-// node, not a bespoke DOM block (this one delegates to renderGraph like heap).
-test("linked-list renders a chain ending in a null sentinel", async ({ page }) => {
+// Phase 2i (ADR-0027) — Linked-list renderer (#9), per-card BESPOKE DOM (rewritten
+// to the design's horizontal boxes; structureType `list-single` → `linkedListRenderer`
+// in RENDERERS, NOT the generic SVG path). A chain of Instance nodes (joined by
+// `next`) renders left-to-right as value boxes, a `next` arrow after each box, a `∅`
+// null terminator span, a `head` caret over the head box and a `cur` caret under the
+// visited box. Asserts the `.list-renderer__*` HTML grid — explicitly NOT `.viz-graph`
+// SVG circles.
+test("linked-list renders a horizontal box chain ending in a null sentinel", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(`pageerror: ${e.message}`));
   page.on("console", (msg) => {
@@ -452,31 +454,38 @@ test("linked-list renders a chain ending in a null sentinel", async ({ page }) =
   }, { timeout: 15_000 });
   expect(await page.locator("#harness-root").getAttribute("data-render-state")).toBe("ready");
 
+  await expect(page.locator(".list-renderer").first()).toBeVisible();
   await jumpToLastStep(page);
   await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => r(null))));
 
-  // 3 ListNodes + 1 synthesised null sentinel = 4 SVG circles, joined by 3
-  // `next` edges (N1→N2, N2→N3, N3→∅).
-  await expect(page.locator(".viz-graph__circle")).toHaveCount(4);
-  await expect(page.locator(".viz-graph__node--null")).toHaveCount(1);
-  const edgeCount = await page.locator("path.viz-graph__edge, .viz-graph__edge").count();
-  expect(edgeCount, "expected next edges incl. the tail→null link").toBeGreaterThanOrEqual(3);
+  // 3 ListNode boxes joined by a `next` arrow after each (incl. the tail→∅ arrow),
+  // terminated by a single `∅` null sentinel span (not itself a node box).
+  await expect(page.locator(".list-renderer__node")).toHaveCount(3);
+  await expect(page.locator(".list-renderer__edge")).toHaveCount(3);
+  await expect(page.locator(".list-renderer__null")).toHaveCount(1);
+  await expect(page.locator(".list-renderer__null")).toHaveText("∅");
 
-  // Node values spell the chain 1/2/3, terminated by the ∅ sentinel.
-  const labels = (await page.locator(".viz-graph__value").allTextContents()).join("");
+  // Node values spell the chain 1/2/3.
+  const labels = (await page.locator(".list-renderer__val").allTextContents()).join("");
   for (const ch of ["1", "2", "3"]) {
     expect(labels, `node values: ${labels}`).toContain(ch);
   }
-  expect(labels, "null sentinel present").toContain("∅");
-  await expect(page.locator(".viz-graph__node--null .viz-graph__value")).toHaveText("∅");
 
-  // The `head` and `cur` Ref locals surface as carets over their nodes (free from
-  // the trace): at the terminal step head is on N1, cur has advanced to N3.
-  await expect(page.locator(".viz-graph__node--cursor")).toHaveCount(2);
-  await expect(page.locator(".viz-graph__cursor-mark").filter({ hasText: "head" })).toHaveCount(1);
-  await expect(page.locator(".viz-graph__cursor-mark").filter({ hasText: "cur" })).toHaveCount(1);
+  // The `head` and `cur` Ref locals surface as carets on their boxes (free from the
+  // trace): at the terminal step `head` labels N1 and `cur` marks the visited N3.
+  await expect(page.locator(".list-renderer__node--active")).toHaveCount(1);
+  await expect(page.locator(".list-renderer__head-label")).toHaveCount(1);
+  await expect(page.locator(".list-renderer__head-label")).toContainText("head");
+  await expect(page.locator(".list-renderer__cur")).toHaveCount(1);
+  await expect(page.locator(".list-renderer__cur")).toContainText("cur");
 
-  // Not a bespoke-DOM block — this renderer delegates to the generic SVG renderGraph.
+  // Singly-linked: no doubly variant, no PREV compartment, no two-arrow legend.
+  await expect(page.locator(".list-renderer--double")).toHaveCount(0);
+  await expect(page.locator(".list-renderer__field--prev")).toHaveCount(0);
+  await expect(page.locator(".list-renderer__legend")).toHaveCount(0);
+
+  // Bespoke HTML — explicitly NOT the generic SVG renderer, nor the other bespoke blocks.
+  await expect(page.locator(".viz-graph__circle")).toHaveCount(0);
   await expect(page.locator(".stack-renderer")).toHaveCount(0);
   await expect(page.locator(".queue-renderer")).toHaveCount(0);
   await expect(page.locator(".bitset-renderer")).toHaveCount(0);
@@ -509,23 +518,23 @@ test("segment-tree renders the range-bar overlay with a cur descent", async ({ p
   await jumpToLastStep(page);
   await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => r(null))));
 
-  // 7 nodes (root + 2 internal + 4 leaves); the 4 leaves are the array cells.
+  // 7 nodes (root + 2 internal + 4 leaf nodes).
   await expect(page.locator(".segment-tree-renderer__node")).toHaveCount(7);
   await expect(page.locator(".segment-tree-renderer__node--leaf")).toHaveCount(4);
-  // Internal nodes carry their [lo,hi] range label — root [0,3] + [0,1] + [2,3].
-  await expect(page.locator(".segment-tree-renderer__node-range")).toHaveCount(3);
-  await expect(page.locator(".segment-tree-renderer__node-range").filter({ hasText: "[0,3]" })).toHaveCount(1);
-  // An index row 0..3 beneath the leaves connects each leaf column to its array index.
-  await expect(page.locator(".segment-tree-renderer__index")).toHaveCount(4);
-  await expect(page.locator(".segment-tree-renderer__index").last()).toHaveText("3");
-  // The root bar holds the full-range sum 3+1+4+2 = 10.
-  const values = (await page.locator(".segment-tree-renderer__node-value").allTextContents());
+  // Every node carries its covered [lo,hi] range label; the root spans the whole array.
+  await expect(page.locator(".segment-tree-renderer__range")).toHaveCount(7);
+  await expect(page.locator(".segment-tree-renderer__range").filter({ hasText: "[0,3]" })).toHaveCount(1);
+  // The underlying-array row beneath the tree: one indexed cell per array slot (0..3).
+  await expect(page.locator(".segment-tree-renderer__leaf")).toHaveCount(4);
+  await expect(page.locator(".segment-tree-renderer__leaf em").last()).toHaveText("3");
+  // The root holds the full-range sum 3+1+4+2 = 10.
+  const values = (await page.locator(".segment-tree-renderer__val").allTextContents());
   expect(values, `node values: ${values.join(",")}`).toContain("10");
 
   // The `cur` pointer has descended root → [0,1] → [1,1]: exactly one node is the
   // cursor, and it's the leaf holding array[1] = 1.
   await expect(page.locator(".segment-tree-renderer__node--cursor")).toHaveCount(1);
-  await expect(page.locator(".segment-tree-renderer__node--cursor .segment-tree-renderer__node-value")).toHaveText("1");
+  await expect(page.locator(".segment-tree-renderer__node--cursor .segment-tree-renderer__val")).toHaveText("1");
 
   // Bespoke DOM — not the generic SVG renderer, not the other bespoke blocks.
   await expect(page.locator(".viz-graph__circle")).toHaveCount(0);

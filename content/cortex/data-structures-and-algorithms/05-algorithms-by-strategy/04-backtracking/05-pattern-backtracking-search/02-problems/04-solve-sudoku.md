@@ -413,7 +413,7 @@ The next major topic in the course is **sorting**, where the four backtracking p
 <details>
 <summary><strong>Answer — open after you've thought about it</strong></summary>
 
-```python run
+```python run viz=grid
 class Solution:
     def count_sudoku_solutions(self, board):
         count = [0]                      # mutable counter (closure trick)

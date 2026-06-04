@@ -21,9 +21,7 @@ The words stay in place — only the characters inside each word are reversed.
 
 ---
 
-<details>
-<summary><h2>Examples</h2></summary>
-
+## Examples
 
 **Example 1**
 ```
@@ -54,7 +52,6 @@ Output:     "a b c"
 Explanation: Reversing a single character is a no-op.
 ```
 
-</details>
 <details>
 <summary><h2>Intuition</h2></summary>
 

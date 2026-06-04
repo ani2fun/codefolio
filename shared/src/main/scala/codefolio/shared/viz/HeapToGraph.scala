@@ -202,7 +202,7 @@ object HeapToGraph:
       truncated: Boolean,
       vizKind: Option[String]
   ): Either[String, VizGraph] =
-    resolveRootId(HeapTrace(seg, truncated), rootHint) match
+    resolveRootId(HeapTrace(seg, truncated), rootHint, layoutHint) match
       case None =>
         Left(
           "Couldn't find a structure to visualise — add a `viz-root=<variable>` hint " +
@@ -360,12 +360,16 @@ object HeapToGraph:
    * the attribute alone). An array-valued local needs no special case — it is a local holding a `Ref`, and
    * `buildStep` expands whatever object it points at. Falls back to auto-detection.
    */
-  private def resolveRootId(trace: HeapTrace, rootHint: Option[String]): Option[String] =
+  private def resolveRootId(
+      trace: HeapTrace,
+      rootHint: Option[String],
+      layoutHint: String
+  ): Option[String] =
     val byHint = rootHint.flatMap { hint =>
       if hint.contains('.') then resolveDotted(trace, hint)
       else resolveLocal(trace, hint).orElse(resolveAttr(trace, hint))
     }
-    byHint.orElse(autoDetectRoot(trace))
+    byHint.orElse(autoDetectRoot(trace, layoutHint))
 
   /** The object id of the first local variable named `name` that holds a reference. */
   private def resolveLocal(trace: HeapTrace, name: String): Option[String] =
@@ -410,15 +414,32 @@ object HeapToGraph:
               .flatMap(followFields(_, rest, heap))
           case _ => None
 
-  /** Auto-detect: the in-degree-0 object with the largest reachable object set, in the final heap. */
-  private def autoDetectRoot(trace: HeapTrace): Option[String] =
-    val heap = trace.steps.last.heap
-    if heap.isEmpty then None
-    else
-      val referenced = heap.values.flatMap(outRefs).toSet
-      val roots      = heap.keySet.diff(referenced)
-      val pool       = if roots.nonEmpty then roots else heap.keySet
-      pool.maxByOption(id => reachableFrom(id, heap).size)
+  /**
+   * Auto-detect (no explicit `viz-root`). When the layout is array-shaped (`viz=array`), first look for an
+   * `Arr` bound to a frame local in ANY step — a function-scoped array (e.g. a `def solve(arr)` parameter) is
+   * popped before the final module-level step, so a final-heap-only scan would miss it and a competing dict
+   * would win the reachability tiebreak, forcing the array layout onto a non-array (empty canvas — the "bare
+   * `viz=array` next to a hashmap" bug). Otherwise fall back to the in-degree-0 object with the largest
+   * reachable set in the final heap.
+   */
+  private def autoDetectRoot(trace: HeapTrace, layoutHint: String): Option[String] =
+    val arrayRoot =
+      if layoutHint.toLowerCase.contains("array") then
+        trace.steps.iterator.flatMap { s =>
+          headLocals(s).collectFirst {
+            case (_, HeapValue.Ref(id)) if s.heap.get(id).exists(_.isInstanceOf[HeapObject.Arr]) => id
+          }
+        }.nextOption()
+      else None
+    arrayRoot.orElse {
+      val heap = trace.steps.last.heap
+      if heap.isEmpty then None
+      else
+        val referenced = heap.values.flatMap(outRefs).toSet
+        val roots      = heap.keySet.diff(referenced)
+        val pool       = if roots.nonEmpty then roots else heap.keySet
+        pool.maxByOption(id => reachableFrom(id, heap).size)
+    }
 
   /**
    * The eyebrow kind for a trace step's `event`. Maps the harness's raw event string into one of the four

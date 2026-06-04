@@ -16,7 +16,7 @@ In a garbage-collected language this is the GC's job — it won't reclaim an obj
 
 Hazard pointers in miniature: a reader publishes the node it holds; `retire` frees a node only if it isn't hazarded, else defers it for a later `scan`. (Single-threaded simulation for determinism; real implementations run this across threads with atomic slots.)
 
-```python run
+```python run viz=array
 class Node:
     def __init__(self, value): self.value = value; self.freed = False
 
@@ -47,7 +47,7 @@ r.scan()
 print(x.freed)                                             # True  (now safe to free)
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static class Node { Object value; boolean freed = false; Node(Object v) { value = v; } }
@@ -106,7 +106,7 @@ The danger is abstract until you watch a free land on a node someone's still rea
 
 **Predict before you run:** a lock-free pop returns node `x` (value `42`) and the popper frees it *immediately*. A concurrent reader grabbed `x`'s pointer a moment earlier and is about to read `x.value`. With **no** reclamation scheme, what does that reader see — `42`, or something else?
 
-```python run
+```python run viz=array
 class Node:
     def __init__(self, value): self.value = value; self.freed = False
 class Reclaimer:
@@ -144,7 +144,7 @@ The **unprotected** reader sees `<REUSED>`, not `42` — a textbook **use-after-
 
 **RCU grace period.** A reader enters a read-side critical section; an updater unlinks a node and must wait until every reader *active at that moment* exits before freeing. Show that a reader entering *after* the unlink doesn't delay the free — it can't have seen the old node.
 
-```python run
+```python run viz=array
 class RCU:
     def __init__(self): self.active = {}; self.next_id = 0
     def read_lock(self):
@@ -166,7 +166,7 @@ rcu.read_unlock(a)                                         # A exits -> grace pe
 print("A out, B in:", can_free())                          # True   (B was not in the snapshot, so it's irrelevant)
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static class RCU {

@@ -111,7 +111,7 @@ The iterators **abstract away the structure**: an ascending BST iterator deliver
 
 The reusable BST two-sum:
 
-```python run
+```python run viz=binary-tree viz-root=root
 class TreeNode:
     def __init__(self, val):
         self.val = val; self.left = None; self.right = None
@@ -149,7 +149,7 @@ for v in [5, 3, 8, 1, 4, 7, 9]:
 print(find_target(root, 12), find_target(root, 100))   # True False
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

@@ -12,8 +12,7 @@ difficulty: easy
 
 Given the **head** of a singly linked list, write a function to split the list into two separate lists such that the first list contains the nodes with even values and the second list contains the nodes with odd values. Your function should return the heads of both these lists.
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1:**
 ```
@@ -38,11 +37,12 @@ Output: [[], [1]]
 Explanation: A single odd node — even bucket stays empty, odd bucket holds [1].
 ```
 
-</details>
 
 ---
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The **structural property** that makes this a split problem is that each node's destination is decided by a *local* test on the node itself — `current.val % 2`. Nothing about the rest of the list influences where a given node lands. That locality is the split pattern's signal: when a classifier reads only the node in front of it, the routing skeleton (one dummy and one tail per bucket) handles everything else without any look-ahead or backtracking.
 
@@ -50,9 +50,10 @@ The **bucket placement** follows directly. With `k = 2`, allocate two dummy node
 
 What **breaks if you reach for a naive approach**? The two-pass solution walks the list once collecting evens (allocating fresh nodes), then a second time collecting odds — `O(n)` time but `O(n)` extra space, plus a copy step that mutates nothing in the original list (so the caller still holds the original chain). The other naive option — two passes that re-thread instead of copy — has to guard against routing the same node twice and against breaking the original chain mid-pass. The split template is one pass, no allocations beyond two dummies, and never touches a node it has already routed.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | Check | Answer for Even Odd Split |
 |---|---|
@@ -61,9 +62,10 @@ What **breaks if you reach for a naive approach**? The two-pass solution walks t
 | **Q3.** Is the work at each step `O(1)`? | **Yes** — one modulo, one tail-append, one pointer advance per node. |
 | **Q4.** Can output lists share original nodes (re-linked, not copied)? | **Yes** — the problem returns the original nodes re-threaded into two chains, no fresh allocations needed. |
 
----
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
 
-## Approach
 
 Walk the original list once. Route each node to one of two pre-anchored output chains by parity.
 
@@ -75,8 +77,9 @@ Walk the original list once. Route each node to one of two pre-anchored output c
 6. **Seal both buckets after the walk.** Set `even_tail.next = null` and `odd_tail.next = null` so neither output chain inherits a stray edge into the other bucket.
 7. **Return the real heads.** Return `[even_dummy.next, odd_dummy.next]` to skip past the placeholders.
 
+</details>
 <details>
-<summary><strong>Solution &amp; Analysis</strong></summary>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
 ### Solution
 
@@ -355,7 +358,10 @@ Two output lists, sizes `e` and `o` with `e + o = n`. Either size may be `0` if 
 | Negative values (`[-3, -2, -1]`) | `-2 % 2 == 0` (Python and Java agree on the even classification); odd parity routes negatives normally. Return `[-2, -3 → -1]`. |
 
 </details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 The smallest instance of the split template — `k = 2`, classifier is one modulo, no auxiliary state. Every other problem in this section is the same skeleton with a different `classify(node)` line.
+
+</details>

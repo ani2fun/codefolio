@@ -20,8 +20,7 @@ Circular variant of preceding inferior. Same approach with the comparison flippe
 > -   **Input:** `arr = [6, 7, 8, 9, 8]`
 > -   **Output:** `[-1, 6, 7, 8, 7]`
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -53,9 +52,10 @@ Output: []
 Explanation: An empty array yields an empty result; the loop runs zero times.
 ```
 
-</details>
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The structural property is the circular previous-**smaller** query — each value wants the nearest strictly-smaller value to its left, with the search allowed to wrap past the array start. This combines the two twists seen so far: the *inferior* comparison from problem 2 and the *circular* doubled pass from problem 3.
 
@@ -63,7 +63,10 @@ The stack holds a strictly *increasing* chain of previous-smaller candidates, an
 
 The naive circular approach breaks the time budget the same way both predecessors did. Per index it scans up to `n` wrapped positions for `O(N²)` time, with fiddly seam handling. The doubled increasing-stack pass keeps the `O(N)` guarantee and treats the wrap as just more iterations of the same loop.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for Preceding Inferior Element II |
 |---|---|
@@ -72,7 +75,10 @@ The naive circular approach breaks the time budget the same way both predecessor
 | **Q3.** Is the comparison monotone — strictly greater or smaller? | **Yes** — a strict less-than test drives the survivor choice (increasing stack). |
 | **Q4.** Is the per-element work `O(1)` amortised? | **Yes** — `2n` iterations, each value pushed and popped at most once across the doubled pass. |
 
-## Approach
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
+
 
 Run the linear previous-smaller walk over a doubled index range.
 
@@ -83,6 +89,7 @@ Run the linear previous-smaller walk over a doubled index range.
 5. **Always push.** Push `num` so it can serve later (including wrapped) elements.
 6. **Return the result.** After `2n` iterations, positions with a direct or wrapped smaller predecessor are filled; the rest stay `-1`.
 
+</details>
 <details>
 <summary><h2>Solution</h2></summary>
 
@@ -196,8 +203,9 @@ public class Main {
 ```
 
 </details>
+<details>
+<summary><h2>Dry Run</h2></summary>
 
-## Dry Run
 
 Walk Example 1 — `arr = [2, 5, 1, 6, 10, 3]`, `n = 6`, so `12` iterations. Increasing stack, pop while the top `≥ num`:
 
@@ -220,7 +228,10 @@ result = [1, 2, -1, 1, 6, 1]
 
 The result `[1, 2, -1, 1, 6, 1]` matches the expected output. `res[2]` stays `-1` because `1` is the global minimum — no value, wrapped or direct, is strictly smaller.
 
-## Complexity Analysis
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
+
 
 | Measure | Value | Why |
 |---|---|---|
@@ -229,7 +240,10 @@ The result `[1, 2, -1, 1, 6, 1]` matches the expected output. `res[2]` stays `-1
 
 Stacking the *inferior* flip on top of the *circular* doubled pass changes neither bound — both twists are constant-factor adjustments the `O(N)` analysis absorbs.
 
-## Edge Cases
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
+
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -239,10 +253,14 @@ Stacking the *inferior* flip on top of the *circular* doubled pass changes neith
 | Ascending | `arr = [1, 2, 3]` | `[-1, 1, 2]` | Each value sees its strictly-smaller left neighbour; `1` is the minimum → -1. |
 | All equal | `arr = [5, 5, 5]` | `[-1, -1, -1]` | Equal values are popped by the `≥` test; nothing strictly smaller survives. |
 
-## Key Takeaway
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
 
 This problem stacks both prior twists: the *increasing* stack of the inferior variant runs over the `2n`-iteration doubled pass of the circular variant. Nothing new is invented — it is the composition of the operator flip and the modular index, still `O(N)` time and `O(N)` space.
 
+</details>
 <details>
 <summary><h2>Key Takeaway</h2></summary>
 

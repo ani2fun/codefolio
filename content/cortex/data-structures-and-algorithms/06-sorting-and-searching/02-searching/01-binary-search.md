@@ -17,7 +17,7 @@ Halving the search space each step gives `O(log n)`: a million elements take abo
 
 Find `7` in the sorted array `[1, 3, 5, 7, 9, 11]`. Each step checks the middle and throws away half. Run it.
 
-```python run
+```python run viz=array
 def binary_search(arr, target):
     lo, hi = 0, len(arr) - 1
     while lo <= hi:
@@ -85,7 +85,7 @@ About **30** (`log₂(10⁹) ≈ 30`). Each comparison halves the range, so the 
 
 The reusable binary search:
 
-```python run
+```python run viz=array
 def binary_search(arr, target):
     lo, hi = 0, len(arr) - 1
     while lo <= hi:
@@ -102,7 +102,7 @@ vals = [1, 3, 5, 7, 9, 11]
 print(binary_search(vals, 1), binary_search(vals, 11), binary_search(vals, 8))   # 0 5 -1
 ```
 
-```java run
+```java run viz=array
 public class Main {
   static int binarySearch(int[] arr, int target) {
     int lo = 0, hi = arr.length - 1;

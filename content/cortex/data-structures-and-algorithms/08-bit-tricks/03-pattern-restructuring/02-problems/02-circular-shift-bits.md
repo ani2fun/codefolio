@@ -67,7 +67,7 @@ Python's integers are arbitrary-precision and *signed*, so `num >> k` propagates
 
 ### The Solution
 
-```python run
+```python run viz=array
 class Solution:
 
     # Assuming a 32-bit integer
@@ -101,7 +101,7 @@ print(Solution().circular_shift_bits(2, 1, False))             # 1
 print(Solution().circular_shift_bits(28, 2, False))            # 7
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static class Solution {
 

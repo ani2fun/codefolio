@@ -12,8 +12,7 @@ difficulty: easy
 
 Given the heads of two sorted linked lists **headA** and **headB**, write a function to merge the two lists into one sorted list by splicing together the nodes of each list and return the head of the merged linked list.
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1:**
 ```
@@ -36,11 +35,12 @@ Output: [1, 2, 3, 4, 5, 6, 7]
 Explanation: B is fully consumed before A. The drain step attaches A's tail [5, 6, 7].
 ```
 
-</details>
 
 ---
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The **structural property** that makes this a merge problem is that the output combines two sorted inputs into a single sorted chain, with the choice of "who contributes the next node" decided by a one-comparison selector on the current heads. Because both inputs are sorted, the smallest unmerged value across both lists is always at one of the two cursors — never deeper. A single `if currentA.val <= currentB.val` decides the winner in `O(1)`, and the splice loop appends one node per iteration in correct sorted order.
 
@@ -48,9 +48,10 @@ The **pointer placement** follows directly. Create a `dummy` node whose `.next` 
 
 What **breaks if you reach for a naive approach**? Collecting every value into an array, sorting it, and rebuilding a fresh linked list works in `O((n + m) log(n + m))` time and `O(n + m)` extra space. The sort throws away the sortedness of the inputs and pays a logarithmic penalty for the privilege; the rebuild allocates `n + m` brand-new nodes. The merge technique exploits the sorted-input invariant and does the same job in `O(n + m)` time and `O(1)` extra space, reusing the existing nodes.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | Check | Answer for Merge Sorted Lists |
 |---|---|
@@ -59,9 +60,10 @@ What **breaks if you reach for a naive approach**? Collecting every value into a
 | **Q3.** Are the input nodes rewirable into the output? | **Yes** — `tail.next = winner` splices a single input node onto the output; only `next` fields change. |
 | **Q4.** Is `O(1)` extra space sufficient? | **Yes** — `dummy`, `tail`, `currentA`, `currentB` are four locals regardless of input size. |
 
----
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
 
-## Approach
 
 Run the dummy-head splice loop with a comparator selector that picks the smaller head.
 
@@ -73,8 +75,9 @@ Run the dummy-head splice loop with a comparator selector that picks the smaller
 6. **Drain the non-empty input.** When the loop exits, at most one cursor is non-`null`. If `currentA` is non-`null`, do `tail.next = currentA`; else if `currentB` is non-`null`, do `tail.next = currentB`. The suffix is already sorted and correctly chained.
 7. **Return `dummy.next`.** This skips the throwaway dummy and returns the real head of the merged list.
 
+</details>
 <details>
-<summary><strong>Solution &amp; Analysis</strong></summary>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
 ### Solution
 
@@ -310,7 +313,10 @@ The output contains every node from both inputs — `n + m` nodes total, where `
 | All values equal (`A = [2, 2]`, `B = [2, 2]`) | Each iter picks A on tie; after 2 iters `currentA = null`. Drain attaches `[2, 2]` from B. Output `[2, 2, 2, 2]` — A's pair first, B's pair second, stable. |
 
 </details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 Merge sorted lists is the canonical merge variant — the selector is a single `<=` comparison, and the sorted-input invariant guarantees the smallest unmerged value is always at a cursor. The same skeleton powers `k`-way merge with a min-heap selector, where each extraction is `O(log k)` instead of `O(1)`.
+
+</details>

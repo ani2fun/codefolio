@@ -17,7 +17,7 @@ The move: generate a **canonical key** — a normalized fingerprint that comes o
 
 Group strings by their **pattern** — `"egg"`, `"add"`, `"foo"` all have shape "A B B", so they belong together; `"bar"` ("A B C") stands apart. The key is each character's *first-occurrence index*. Run it.
 
-```python run
+```python run viz=array
 def pattern_key(s):
     seen = {}
     key = []
@@ -78,7 +78,7 @@ Because the equivalence is **isomorphism of structure**, not identity of letters
 
 The reusable key-generation grouping:
 
-```python run
+```python run viz=array
 def pattern_key(s):
     seen, key = {}, []
     for ch in s:
@@ -97,7 +97,7 @@ print(group_isomorphic(["paper", "title", "abc", "xyz", "aab"]))
 # [['paper', 'title'], ['abc', 'xyz'], ['aab']]
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {

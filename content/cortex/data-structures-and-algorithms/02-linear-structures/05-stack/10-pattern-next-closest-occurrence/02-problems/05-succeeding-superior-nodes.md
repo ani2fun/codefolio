@@ -18,8 +18,7 @@ Given the head of a singly-linked list, return an array where `result[i]` is the
 ### Example 2
 > -   **Input:** `head = [2, 7, 4, 3, 5]` → **Output:** `[7, 0, 5, 5, 0]`
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -51,9 +50,10 @@ Output: [0, 0, 0, 0]
 Explanation: A strictly decreasing list — no node has a greater value after it.
 ```
 
-</details>
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The structural property that makes this a **monotonic-stack** problem is the *next-greater* query, identical to *succeeding superior element* — only the data source is a linked list instead of an array. A list cannot be indexed in reverse cheaply, so this problem is the natural home for the left-to-right retroactive-resolution style.
 
@@ -61,7 +61,10 @@ The stack holds `(index, value)` pairs for nodes still *waiting* for a greater s
 
 The naive approach re-walks the tail for every node and breaks the time budget. For each node it scans forward until a greater value appears — `O(N²)` time, quadratic on a sorted-descending list. The single-pass stack visits each node once and resolves answers retroactively, so the work stays `O(N)`.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for Succeeding Superior Nodes |
 |---|---|
@@ -70,6 +73,7 @@ The naive approach re-walks the tail for every node and breaks the time budget. 
 | **Q3.** Is the comparison monotone — strictly greater or smaller? | **Yes** — a strict greater-than test drives every resolve-and-pop (decreasing stack). |
 | **Q4.** Is the per-node work `O(1)` amortised? | **Yes** — each node is pushed once and popped at most once across the single pass. |
 
+</details>
 <details>
 <summary><h2>Approach</h2></summary>
 
@@ -77,8 +81,9 @@ The naive approach re-walks the tail for every node and breaks the time budget. 
 Same algorithm — but the data source is a linked list, so we walk it once with a pointer, tracking each node's index. Stack stores `(index, value)` pairs; on each new value, pop and resolve as before.
 
 </details>
+<details>
+<summary><h2>Approach in Words</h2></summary>
 
-## Approach in Words
 
 Walk the list once with a pointer, resolving stacked nodes retroactively as larger values appear.
 
@@ -88,6 +93,7 @@ Walk the list once with a pointer, resolving stacked nodes retroactively as larg
 4. **Push the current node.** Push `(index, currentValue)`, increment `index`, and advance the pointer to the next node.
 5. **Return the result.** Any node still on the stack at the end of the walk keeps its `0` — no greater successor exists.
 
+</details>
 <details>
 <summary><h2>Solution</h2></summary>
 
@@ -266,8 +272,9 @@ public class Main {
 ```
 
 </details>
+<details>
+<summary><h2>Dry Run</h2></summary>
 
-## Dry Run
 
 Walk Example 1 — `head = [2, 1, 5]`. The stack stores `(index, value)` pairs and stays strictly decreasing by value; resolve while the current value `>` the top's value:
 
@@ -284,7 +291,10 @@ result = [5, 5, 0]
 
 The result `[5, 5, 0]` matches the expected output. Node `5` is never resolved because nothing greater follows it.
 
-## Complexity Analysis
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
+
 
 | Measure | Value | Why |
 |---|---|---|
@@ -293,7 +303,10 @@ The result `[5, 5, 0]` matches the expected output. Node `5` is never resolved b
 
 The nested `while` is `O(N)` amortised, not `O(N²)`: total pushes plus pops across the whole walk never exceed `2N`.
 
-## Edge Cases
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
+
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -304,6 +317,11 @@ The nested `while` is `O(N)` amortised, not `O(N²)`: total pushes plus pops acr
 | Sorted ascending | `head = [1, 2, 3, 4]` | `[2, 3, 4, 0]` | Each node's next-greater is its immediate successor. |
 | Sorted descending | `head = [4, 3, 2, 1]` | `[0, 0, 0, 0]` | No node ever finds a greater successor. |
 
-## Key Takeaway
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
 
 What is new here is the data source — a linked list forces the left-to-right retroactive-resolution style, since you cannot scan a list backwards cheaply. Storing `(index, value)` pairs lets a later node write its value into an earlier node's slot the moment it dominates it; the sentinel is `0` rather than `-1` because the answer is 1-indexed node values.
+
+</details>

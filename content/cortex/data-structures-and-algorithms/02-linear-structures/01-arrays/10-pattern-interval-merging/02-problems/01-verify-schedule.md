@@ -35,8 +35,7 @@ Output: true         (no meetings → no conflicts)
 
 ---
 
-<details>
-<summary><h2>Examples</h2></summary>
+## Examples
 
 **Example 1**
 ```
@@ -62,7 +61,6 @@ Explanation: The two meetings touch at minute 3 but do not overlap —
              back-to-back is allowed under the strict `<` test.
 ```
 
-</details>
 <details>
 <summary><h2>Intuition</h2></summary>
 

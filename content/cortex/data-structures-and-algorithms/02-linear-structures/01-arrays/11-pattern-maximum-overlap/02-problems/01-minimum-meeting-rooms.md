@@ -16,9 +16,7 @@ Two intervals `[s1, e1]` and `[s2, e2]` are considered overlapping if `e1 > s2`.
 
 ---
 
-<details>
-<summary><h2>Examples</h2></summary>
-
+## Examples
 
 **Example 1**
 ```
@@ -47,7 +45,6 @@ Explanation: One meeting room is enough for all the meetings to take
              place (the touching ends never compete for the room).
 ```
 
-</details>
 <details>
 <summary><h2>Intuition</h2></summary>
 

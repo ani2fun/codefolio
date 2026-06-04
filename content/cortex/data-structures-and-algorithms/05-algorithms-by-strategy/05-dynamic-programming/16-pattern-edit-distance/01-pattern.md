@@ -15,7 +15,7 @@ This lesson isn't a new algorithm — it's the *recognition layer*. Once you see
 
 **Wildcard Matching** ([LeetCode 44](https://leetcode.com/problems/wildcard-matching/)) — does pattern `p` (with `?` = any one char, `*` = any run, including empty) match string `s`? It's the pattern with a twist: `?` and a literal use the **diagonal** (match one char), but `*` reads **top or left** — absorb a character or match nothing.
 
-```python run
+```python run viz=grid
 def is_match(s, p):
     m, n = len(s), len(p)
     dp = [[False] * (n + 1) for _ in range(m + 1)]
@@ -35,7 +35,7 @@ print(is_match("adceb", "*a*b"))   # True
 print(is_match("cb", "?a"))        # False
 ```
 
-```java run
+```java run viz=grid
 public class Main {
     static boolean isMatch(String s, String p) {
         int m = s.length(), n = p.length();
@@ -89,7 +89,7 @@ The whole pattern lives in the neighbour choice. Get *which* neighbours a cell r
 
 **Predict before you run:** wildcard `*` should match *any* run of characters. Suppose a tired coder treats `*` exactly like `?` — read the diagonal, match one char. With that bug, does `*` match the two-character string `"ab"`?
 
-```python run
+```python run viz=grid
 def is_match(s, p):                                  # correct: '*' reads top-or-left
     m, n = len(s), len(p)
     dp = [[False] * (n + 1) for _ in range(m + 1)]
@@ -130,7 +130,7 @@ Correct is `True`; the buggy version returns `False`. The diagonal transition `d
 
 **Interleaving String** ([LeetCode 97](https://leetcode.com/problems/interleaving-string/)) — is `s3` formed by interleaving `s1` and `s2`, preserving each one's order? This is the pattern with *no diagonal*: every character of `s3` comes from exactly one source, so each cell reads **top** (next char from `s1`) or **left** (next char from `s2`).
 
-```python run
+```python run viz=grid
 def is_interleave(s1, s2, s3):
     m, n = len(s1), len(s2)
     if m + n != len(s3):
@@ -149,7 +149,7 @@ print(is_interleave("aabcc", "dbbca", "aadbbcbcac"))   # True
 print(is_interleave("aabcc", "dbbca", "aadbbbaccc"))   # False
 ```
 
-```java run
+```java run viz=grid
 public class Main {
     static boolean isInterleave(String s1, String s2, String s3) {
         int m = s1.length(), n = s2.length();

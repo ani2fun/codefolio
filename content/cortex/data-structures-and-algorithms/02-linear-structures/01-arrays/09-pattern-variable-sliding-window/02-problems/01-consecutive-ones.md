@@ -20,9 +20,7 @@ arr = [0, 0, 0]                            →  0
 
 ---
 
-<details>
-<summary><h2>Examples</h2></summary>
-
+## Examples
 
 **Example 1**
 ```
@@ -47,7 +45,6 @@ Output: 0
 Explanation: The maximum number of consecutive ones is 0.
 ```
 
-</details>
 <details>
 <summary><h2>Intuition</h2></summary>
 

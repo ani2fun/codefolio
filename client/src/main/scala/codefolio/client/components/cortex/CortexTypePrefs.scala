@@ -13,10 +13,11 @@ import scala.util.Try
  * Reading preferences panel + FAB. Four controls, all persisted to localStorage and applied as CSS custom
  * properties on `document.documentElement`:
  *
- *   - **Size** — `s` / `m` / `l` → `--reader-fs: 16 / 18.5 / 21 px` on the prose root.
+ *   - **Size** — `s` / `m` / `l` → `--reader-fs: 16.5 / 18 / 21 px` on the prose root.
  *   - **Leading** — `tight` / `comfortable` / `loose` → `--reader-lh: 1.55 / 1.8 / 2.05`.
- *   - **Family** — `sans` / `serif` → swaps `--reader-font` between the site sans and an Iowan/Charter serif
- *     body stack (Instrument Serif italic is too heavy for body text — used only for display).
+ *   - **Family** — `serif` (default) / `sans` / `mono` → swaps `--reader-font` between Literata
+ *     (`--font-read`), the site sans (`--font-sans`), and JetBrains Mono (`--font-code`). Instrument Serif
+ *     italic is too heavy for body text — used only for display.
  *   - **Dark mode** — a second surface for the global light/dark theme. Delegates to [[Theme]] (the
  *     `<html>.dark` class + `localStorage["theme"]`); it does **not** own a separate pref, so it can never
  *     fight the header/footer toggles.
@@ -31,12 +32,13 @@ object CortexTypePrefs:
 
   private val StorageKey = "cortex-reader.typePrefs"
 
-  private val SizeMap = Map("s" -> "16px", "m" -> "18.5px", "l" -> "21px")
+  private val SizeMap = Map("s" -> "16.5px", "m" -> "18px", "l" -> "21px")
   private val LeadMap = Map("tight" -> "1.55", "comfortable" -> "1.8", "loose" -> "2.05")
 
   private val FontMap = Map(
+    "serif" -> "var(--font-read)",
     "sans"  -> "var(--font-sans)",
-    "serif" -> "\"Iowan Old Style\", \"Charter\", Georgia, serif"
+    "mono"  -> "var(--font-code)"
   )
 
   private case class Prefs(size: String, lead: String, font: String):
@@ -44,7 +46,7 @@ object CortexTypePrefs:
     def withLead(l: String): Prefs = copy(lead = l)
     def withFont(f: String): Prefs = copy(font = f)
 
-  private val Defaults = Prefs("m", "comfortable", "sans")
+  private val Defaults = Prefs("m", "comfortable", "serif")
 
   private def readPrefs(): Prefs =
     Try {
@@ -69,9 +71,9 @@ object CortexTypePrefs:
    */
   private def applyPrefs(p: Prefs): Unit =
     val style = dom.document.documentElement.asInstanceOf[js.Dynamic].style
-    style.setProperty("--reader-fs", SizeMap.getOrElse(p.size, "18.5px"))
+    style.setProperty("--reader-fs", SizeMap.getOrElse(p.size, "18px"))
     style.setProperty("--reader-lh", LeadMap.getOrElse(p.lead, "1.8"))
-    style.setProperty("--reader-font", FontMap.getOrElse(p.font, "var(--font-sans)"))
+    style.setProperty("--reader-font", FontMap.getOrElse(p.font, "var(--font-read)"))
     val init = (new js.Object).asInstanceOf[dom.CustomEventInit]
     init.detail = p.size
     val ev = new dom.CustomEvent("cortex:typePrefsChanged", init)
@@ -214,8 +216,9 @@ object CortexTypePrefs:
                 ^.className  := "cortex-reader-type-prefs__seg cortex-reader-type-prefs__seg--family",
                 ^.role       := "radiogroup",
                 ^.aria.label := "Type family",
+                seg("font", p.font, "serif", "Serif"),
                 seg("font", p.font, "sans", "Sans"),
-                seg("font", p.font, "serif", "Serif")
+                seg("font", p.font, "mono", "Mono")
               )
             ),
             // Dark mode toggle — delegates to the global `Theme` (single source

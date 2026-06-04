@@ -157,7 +157,7 @@ Because inserting black breaks the **harder** invariant. Add a black node anywhe
 
 The smallest illustrative insert (`10, 20, 30` → Case 3 rebalances `20` to a black root), in both languages:
 
-```python run
+```python run viz=binary-tree viz-root=root
 RED, BLACK = 0, 1
 class Node:
     __slots__ = ("key", "colour", "left", "right", "parent")
@@ -215,7 +215,7 @@ c = "BLACK" if t.root.colour else "RED"
 print(f"root={t.root.key} {c} L={t.root.left.key} R={t.root.right.key}")   # root=20 BLACK L=10 R=30
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 public class Main {
   static final boolean RED = true, BLACK = false;
   static class Node { int key; boolean colour = RED; Node left, right, parent; Node(int k){ key = k; } }

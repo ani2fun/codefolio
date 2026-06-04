@@ -89,7 +89,7 @@ You'd get **`[[1, 2, 3], [1, 2, 3]]`** — two references to the *same* never-un
 
 All paths plus **path-sum II** (every root-to-leaf path summing to a target) — same skeleton, a predicate at the leaf:
 
-```python run
+```python run viz=binary-tree viz-root=root
 class TreeNode:
     def __init__(self, val, left=None, right=None):
         self.val = val; self.left = left; self.right = right
@@ -127,7 +127,7 @@ print(all_paths(root))          # [[5, 4, 11, 7], [5, 4, 11, 2], [5, 8, 13], [5,
 print(path_sum_ii(root, 22))    # [[5, 4, 11, 2], [5, 8, 4, 5]]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 public class Main {
   static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } TreeNode(int v, TreeNode l, TreeNode r){ val=v; left=l; right=r; } }

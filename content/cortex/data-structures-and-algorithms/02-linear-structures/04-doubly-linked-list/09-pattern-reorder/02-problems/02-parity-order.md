@@ -420,8 +420,7 @@ Result: [2, 3, 8, 1, 4] ✓
 | All odd-length | `[1,2,3]` | `[1, 3, 2]` | Odd stripe gets 2 nodes, even gets 1. |
 
 </details>
-<details>
-<summary><h2>Examples</h2></summary>
+## Examples
 
 **Example 1**
 ```
@@ -451,7 +450,6 @@ Output: [1, 3, 5, 2, 4, 6]
 Explanation: Odd stripe = 1 ⇄ 3 ⇄ 5; even stripe = 2 ⇄ 4 ⇄ 6. The relative order within each stripe matches the input.
 ```
 
-</details>
 <details>
 <summary><h2>Intuition</h2></summary>
 

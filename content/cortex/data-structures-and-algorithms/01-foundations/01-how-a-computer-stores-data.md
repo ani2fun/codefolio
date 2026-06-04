@@ -65,7 +65,7 @@ Now contrast that with finding a value by its *contents* — "where is the `5`?"
 
 Enough pictures — let's see the bytes for real. A 32-bit integer is exactly 4 bytes. Run this and watch numbers break apart into the bytes that live in memory:
 
-```python run
+```python run viz=array
 import struct
 
 for n in [0, 1, 65, 1000]:
@@ -73,7 +73,7 @@ for n in [0, 1, 65, 1000]:
     print(n, "→", list(raw))
 ```
 
-```java run
+```java run viz=array
 public class Main {
   public static void main(String[] args) {
     for (int n : new int[]{0, 1, 65, 1000}) {

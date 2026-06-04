@@ -191,7 +191,7 @@ Because any range `[l, r]` decomposes into at most `O(log n)` **canonical segmen
 
 Build, range-query, and lazy range-update in both languages:
 
-```python run
+```python run viz=binary-tree viz-root=root viz-kind=segment-tree
 class SegTree:
     def __init__(self, arr):
         self.n = len(arr); self.tree = [0]*(4*self.n); self.lazy = [0]*(4*self.n)
@@ -225,7 +225,7 @@ st.update(0,1,10)                        # +10 to A[0],A[1]
 print(st.query(0,3), st.query(0,1))      # 36 24
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root viz-kind=segment-tree
 public class Main {
   static int n; static long[] tree, lazy;
   static void build(int[] a, int nd, int l, int r) {

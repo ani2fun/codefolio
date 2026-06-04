@@ -16,7 +16,7 @@ A **treap** gets the same expected `O(log n)` with almost none of that complexit
 
 Insert keys — even in sorted order — and the treap stays a valid BST that's also balanced. Each insert drops the key in by BST rule, then rotates it up until the heap property on priorities is restored.
 
-```python run
+```python run viz=binary-tree viz-root=root
 import random
 class Node:
     def __init__(self, key, pri):
@@ -60,7 +60,7 @@ print(out == sorted(out))                              # True — always a valid
 print(search(t, 7), search(t, 20))                     # True False
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 public class Main {
     static class Node { int key; double pri; Node left, right; Node(int k, double p) { key = k; pri = p; } }
@@ -133,7 +133,7 @@ The treap's whole reason for existing is defeating the input order that destroys
 
 **Predict before you run:** you insert the keys `1, 2, 3, …, 31` in *sorted* order. A plain unbalanced BST becomes a height-31 chain — `O(n)`. Insert the same sorted keys into a treap with random priorities. What's its height — also around 31, or close to `log₂ 31 ≈ 5`?
 
-```python run
+```python run viz=binary-tree viz-root=root
 import random
 class Node:
     def __init__(self, key, pri):
@@ -184,7 +184,7 @@ The plain BST is height **31** — a pure right-leaning chain, exactly the degen
 
 **Split** a treap by a key into two valid treaps — every key `≤ k` on the left, every key `> k` on the right. It's the treap's signature primitive (the basis of implicit treaps and ropes), and it's a clean recursion: at each node, decide which side it belongs to and recurse into the boundary child.
 
-```python run
+```python run viz=binary-tree viz-root=root
 import random
 class Node:
     def __init__(self, key, pri):
@@ -225,7 +225,7 @@ print(lo)     # [1, 2, 3, 4, 5]
 print(ro)     # [6, 7, 8, 9, 10]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 public class Main {
     static class Node { int key; double pri; Node left, right; Node(int k, double p) { key = k; pri = p; } }

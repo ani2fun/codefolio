@@ -96,7 +96,7 @@ On a singly list there's no `prev`, so finding the node before `15` means walkin
 
 The reusable sorted two-sum on a doubly list:
 
-```python run
+```python run viz=linked-list viz-root=head viz-kind=list-double
 class Node:
     def __init__(self, val):
         self.val = val
@@ -125,7 +125,7 @@ for i in range(len(nodes) - 1):
 print(two_sum(nodes[0], 15))         # (4, 11)
 ```
 
-```java run
+```java run viz=linked-list viz-root=head viz-kind=list-double
 public class Main {
   static class Node { int val; Node prev, next; Node(int v){ val = v; } }
 

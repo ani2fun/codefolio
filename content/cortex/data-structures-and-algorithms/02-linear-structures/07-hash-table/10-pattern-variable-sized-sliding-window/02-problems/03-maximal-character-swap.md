@@ -21,8 +21,7 @@ Given an uppercase string `s` and integer `k`, you may replace at most `k` chara
 ### Example 3
 > -   **Input:** `s = "A", k = 5` → **Output:** `1`
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -56,7 +55,6 @@ Explanation: a window like "AAB" has dominant A (count 2); 3 − 2 = 1 ≤ k rep
 makes it "AAA" → length 3. A 4-wide window would need 2 replacements.
 ```
 
-</details>
 <details>
 <summary><h2>Approach</h2></summary>
 
@@ -227,8 +225,9 @@ public class Main {
 ```
 
 </details>
+<details>
+<summary><h2>Intuition</h2></summary>
 
-## Intuition
 
 This is a **longest contiguous subsequence** problem with a rule that reads off a frequency map indirectly. A window of width `w` can be made all-one-letter with `w − maxFreq` replacements, where `maxFreq` is the count of the window's most frequent letter — those are exactly the non-dominant characters you would overwrite. The window is achievable when `w − maxFreq ≤ k`. Because the answer is a contiguous run and the rule is a count comparison, the variable-sized sliding window fits.
 
@@ -236,7 +235,10 @@ The pointers move asymmetrically, with one twist. The `end` pointer admits a cha
 
 The naive approach is correct but quadratic. Trying every window and counting its dominant letter from scratch is **O(N²)** or worse. The window approach never rewinds `start`, and since `maxLength` only increases when a genuinely better dominant count appears, the single forward pass suffices — **O(N)** total.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for Maximal Character Swap |
 |---|---|
@@ -245,7 +247,10 @@ The naive approach is correct but quadratic. Trying every window and counting it
 | **Q3.** Can you add `s[end]` and remove `s[start]` in `O(1)`? | **Yes** — increment-and-update-`maxFreq` on expand; decrement on contract. |
 | **Q4.** Is the rule monotonic as the window grows? | **Yes** — widening without raising `maxFreq` only increases the replacements needed. |
 
-## Approach
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
+
 
 1. Initialise `start = 0`, an empty `frequency` map, `maxFreq = 0`, and `maxLength = 0`.
 2. Advance `end` across the string. For each `end`, increment `frequency[s[end]]` and set `maxFreq = max(maxFreq, frequency[s[end]])`.
@@ -253,7 +258,10 @@ The naive approach is correct but quadratic. Trying every window and counting it
 4. Record `maxLength = max(maxLength, end − start + 1)`.
 5. After the loop, return `maxLength`.
 
-## Dry Run
+</details>
+<details>
+<summary><h2>Dry Run</h2></summary>
+
 
 Walk Example 1: `s = "ABAB"`, `k = 2`, expected output `4`. The rule is `(width − maxFreq) ≤ k`:
 
@@ -268,14 +276,20 @@ return maxLength = 4
 
 The result `4` matches the expected output — the window never violates the rule, so replacing the two `B`s yields `"AAAA"`.
 
-## Complexity Analysis
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
+
 
 | | Cost | Why |
 |---|---|---|
 | **Time** | **O(N)** | `end` advances `N` times; `start` advances at most `N` times. Each character enters and leaves the map once, so the inner `while` is amortised `O(1)`. |
 | **Space** | **O(K)** | The map holds at most one entry per distinct character — bounded by the alphabet (26 uppercase letters here), so effectively `O(1)`. |
 
-## Edge Cases
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
+
 
 | Input | Output | Why |
 |---|---|---|
@@ -286,6 +300,11 @@ The result `4` matches the expected output — the window never violates the rul
 | `s = "AAAA", k = 2` | `4` | Already uniform — the budget is unused, window covers all. |
 | `s = "A", k = 5` | `1` | Single character — a generous budget cannot extend a length-1 string. |
 
-## Key Takeaway
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
 
 The rule here is `(width − maxFreq) ≤ k`, where `maxFreq` is the dominant letter's count. The non-obvious move is leaving `maxFreq` stale on contraction — it stays a safe lower bound, so the window never grows on a false premise.
+
+</details>

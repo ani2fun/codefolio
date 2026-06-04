@@ -29,6 +29,15 @@ Picture a stack of clean plates on a kitchen counter. You add a washed plate by 
 
 ## Visual Summary
 
+```mermaid
+flowchart TD
+  ops(["push / pop<br/>O(1)"]) --> top
+  top["30 ← top"] --- mid["20"] --- bot["10 ← bottom"]
+  style top fill:#c7d2fe,stroke:#4f5bd5
+```
+
+<p align="center"><strong>A stack only ever touches its top — push and pop are O(1) at one end. Last in, first out; the bottom never moves.</strong></p>
+
 ---
 
 ## Key Operations

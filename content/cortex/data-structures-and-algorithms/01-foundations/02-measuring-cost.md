@@ -20,7 +20,7 @@ Here's the moment that makes it real: a program that finishes instantly on 100 i
 
 Don't count seconds — count *operations*, and watch how that count grows as the input gets bigger. Run this:
 
-```python run
+```python run viz=array
 def linear(n):           # one pass over the input
     ops = 0
     for i in range(n):
@@ -78,7 +78,7 @@ No — it roughly *quadrupled* (6 → 28). The number of pairs grows like `n²/2
 
 Run the counter again, but this time *predict each row before you read it*. If `n` jumps from 1,000 to 2,000, what happens to the `quadratic` column?
 
-```python run
+```python run viz=array
 def quadratic(n):
     ops = 0
     for i in range(n):
@@ -90,7 +90,7 @@ for n in [1000, 2000, 4000]:
     print(f"n={n:>5}   quadratic ops={quadratic(n):>12}")
 ```
 
-```java run
+```java run viz=array
 public class Main {
   static long quadratic(int n) {
     long ops = 0;

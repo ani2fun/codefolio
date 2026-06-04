@@ -38,7 +38,7 @@ flowchart TB
 
 Shortest path on that graph (0 = Source … 5 = Target). Each queue entry carries `(node, distance)`; the first time we pop the target, that distance is minimal.
 
-```python run
+```python run viz=graph viz-kind=graph
 from collections import deque
 
 adj = {0: [1, 2], 1: [0, 3], 2: [0, 3, 4], 3: [1, 2], 4: [2, 5], 5: [4]}
@@ -60,7 +60,7 @@ print("0 -> 5:", bfs_dist(adj, 0, 5))                   # 3
 print("0 -> 3:", bfs_dist(adj, 0, 3))                   # 2
 ```
 
-```java run
+```java run viz=graph viz-kind=graph
 import java.util.*;
 
 public class Main {
@@ -121,7 +121,7 @@ It's tempting to think any traversal that records distance would find the shorte
 
 **Predict before you run:** keep the code identical but pop from the *end* of the frontier (LIFO, turning BFS into DFS). Does it still return the shortest distance 2?
 
-```python run
+```python run viz=graph viz-kind=graph
 def search(graph, source, target, use_stack):
     frontier = [(source, 0)]; seen = {source}
     while frontier:
@@ -150,7 +150,7 @@ FIFO returns `2`; LIFO returns `3`. With a stack, the search dives down the firs
 
 The grid classic: **Shortest Path in Binary Matrix** ([LeetCode 1091](https://leetcode.com/problems/shortest-path-in-binary-matrix/)). From the top-left to the bottom-right of an `n × n` grid, moving through `0` cells in any of **8** directions, return the number of cells on the shortest clear path (or `-1`).
 
-```python run
+```python run viz=grid
 from collections import deque
 
 def shortest_path_binary_matrix(grid):
@@ -172,7 +172,7 @@ print(shortest_path_binary_matrix([[0,0,0],[1,1,0],[1,1,0]]))   # 4
 print(shortest_path_binary_matrix([[1,0,0],[1,1,0],[1,1,0]]))   # -1
 ```
 
-```java run
+```java run viz=grid
 import java.util.*;
 
 public class Main {

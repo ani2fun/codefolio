@@ -16,7 +16,7 @@ You already met the [trie](/cortex/data-structures-and-algorithms/trees-trie-int
 
 A routing table as a binary trie of address bits: insert each prefix by walking its bits and marking the node with a next-hop; look up a destination by walking its bits and remembering the *deepest* marked node — that's the longest match.
 
-```python run
+```python run viz=array
 def ip_to_bits(ip):                                  # 32-bit binary string of an IPv4 address
     o = [int(p) for p in ip.split(".")]
     n = (o[0] << 24) | (o[1] << 16) | (o[2] << 8) | o[3]
@@ -46,7 +46,7 @@ print("192.168.5.5  ->", t.lookup(ip_to_bits("192.168.5.5")))    # /16
 print("8.8.8.8      ->", t.lookup(ip_to_bits("8.8.8.8")))        # default
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static String ipToBits(String ip) {                  // 32-bit binary string of an IPv4 address
@@ -121,7 +121,7 @@ The whole point of LPM is that *specificity*, not insertion order or recency, de
 
 **Predict before you run:** the three routes are inserted in a deliberately misleading order — the most specific `/24` *first*, and the catch-all default route *last*. A naive "first match" or "last match" rule would pick the wrong one. For `192.168.1.42`, which route does longest-prefix match return?
 
-```python run
+```python run viz=array
 def ip_to_bits(ip):
     o = [int(p) for p in ip.split(".")]
     return format((o[0] << 24) | (o[1] << 16) | (o[2] << 8) | o[3], "032b")
@@ -159,7 +159,7 @@ The lookup you just wrote runs on every packet with **no lock**. So what happens
 
 **Predict:** a packet lookup grabs the current routing table. Before it finishes, `ip route` swaps in a new table (a single pointer assignment). Does the in-flight lookup see the old route, the new route, or a torn mix of both?
 
-```python run
+```python run viz=array
 class Router:
     def __init__(self, table): self.table = table       # the "published" RCU-protected pointer
     def read_snapshot(self): return self.table           # rcu_dereference: grab the current version
@@ -172,7 +172,7 @@ print("in-flight reader sees:", reader["10.0.0.0/8"])     # consistent OLD snaps
 print("new reader sees:      ", r.read_snapshot()["10.0.0.0/8"])
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 public class Main {

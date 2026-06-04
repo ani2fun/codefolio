@@ -279,7 +279,7 @@ You came in with the discipline of unconditional enumeration. You're leaving wit
 <details>
 <summary><strong>Answer — open after you've thought about it</strong></summary>
 
-```python run
+```python run viz=array
 class Solution:
     def count_balanced(self, n: int) -> int:
         return self._helper(n, 0, 0, 0)

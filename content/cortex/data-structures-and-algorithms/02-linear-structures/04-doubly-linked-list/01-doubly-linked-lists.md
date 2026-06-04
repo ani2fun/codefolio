@@ -92,7 +92,7 @@ Because a singly `b` doesn't know `a`. You'd have to walk from the head to find 
 
 Build a small list, delete a node you hold in `O(1)`, and walk the result:
 
-```python run
+```python run viz=linked-list viz-root=head viz-kind=list-double
 class Node:
     def __init__(self, val):
         self.val = val
@@ -116,7 +116,7 @@ while node:
 print(out)                             # [10, 30]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head viz-kind=list-double
 public class Main {
   static class Node { int val; Node prev, next; Node(int v) { val = v; } }
 

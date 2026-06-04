@@ -83,7 +83,7 @@ The *second* value popped (`2`) is the left operand and the *first* popped (`1`)
 
 The reusable postfix evaluator:
 
-```python run
+```python run viz=array viz-kind=stack
 def eval_rpn(tokens):
     ops = {'+': lambda a, b: a + b, '-': lambda a, b: a - b,
            '*': lambda a, b: a * b, '/': lambda a, b: int(a / b)}
@@ -100,7 +100,7 @@ print(eval_rpn(["4", "13", "5", "/", "+"]))                  # 4 + (13/5=2) = 6
 print(eval_rpn(["5", "1", "2", "+", "4", "*", "+", "3", "-"]))   # 14
 ```
 
-```java run
+```java run viz=array viz-kind=stack
 import java.util.*;
 
 public class Main {

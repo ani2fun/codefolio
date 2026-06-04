@@ -89,7 +89,7 @@ Just bucket 3 — hash `"dog"` to `3`, then walk that one short chain. It never 
 
 You'll almost never hand-roll one — every language ships a hash table as its dictionary. Here it is doing `O(1)` work:
 
-```python run
+```python run viz=array
 phone = {}                      # Python's dict IS a hash table
 phone["Neha"] = 23
 phone["Hari"] = 7
@@ -97,7 +97,7 @@ print(phone["Neha"])            # O(1) average lookup → 23
 print("Karan" in phone)         # O(1) membership test → False
 ```
 
-```java run
+```java run viz=array
 import java.util.HashMap;
 import java.util.Map;
 

@@ -17,7 +17,7 @@ That collapses a whole class of problems. "Every element appears twice except on
 
 In `[2, 2, 2, 1, 3, 1, 3]`, the `1`s and `3`s appear in pairs and the `2` appears three times (odd). XOR everything and only the odd-occurring `2` survives. Run it.
 
-```python run
+```python run viz=array
 def find_odd_occurring(nums):
     x = 0
     for n in nums:
@@ -89,7 +89,7 @@ What matters is **parity of the count, not the number two**. `5 ^ 5 = 0`, and `0
 
 The reusable odd-occurring finder and the temp-free swap:
 
-```python run
+```python run viz=array
 def find_odd_occurring(nums):
     x = 0
     for n in nums:
@@ -103,7 +103,7 @@ a ^= b; b ^= a; a ^= b      # swap with no temporary
 print(a, b)                  # 9 5
 ```
 
-```java run
+```java run viz=array
 public class Main {
   static int findOddOccurring(int[] nums) {
     int x = 0;

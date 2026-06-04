@@ -87,7 +87,7 @@ The last element (`8`) moves to the root, then sifts down: its children are `3` 
 
 Every language ships a heap as its priority queue — you rarely build one by hand. Watch it drain in sorted order, smallest first:
 
-```python run
+```python run viz=array viz-root=heap viz-kind=heap
 import heapq
 
 tasks = []
@@ -98,7 +98,7 @@ print(heapq.heappop(tasks))           # → 2
 print(heapq.heappop(tasks))           # → 3
 ```
 
-```java run
+```java run viz=array viz-root=heap viz-kind=heap
 import java.util.PriorityQueue;
 
 public class Main {

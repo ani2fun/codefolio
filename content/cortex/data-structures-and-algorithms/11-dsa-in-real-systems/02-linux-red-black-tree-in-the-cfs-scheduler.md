@@ -15,7 +15,7 @@ Linux's **Completely Fair Scheduler** (CFS, the default from 2.6.23 until EEVDF 
 
 The fairness loop in miniature: the run queue is ordered by `vruntime`; each tick picks the leftmost (least-run) task, runs it a slice, and advances its `vruntime`. Watch the CPU time spread out evenly.
 
-```python run
+```python run viz=array
 rq = {"A": 0, "B": 0, "C": 0}             # vruntime per runnable task (all fresh)
 cpu = {"A": 0, "B": 0, "C": 0}
 slice_ms = 10
@@ -27,7 +27,7 @@ print("CPU time:", dict(sorted(cpu.items())))
 print("vruntime:", dict(sorted(rq.items())))
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static String leftmost(TreeMap<String, Integer> rq) {   // smallest vruntime; key order breaks ties by name
@@ -82,7 +82,7 @@ Three engineering choices turn the textbook RB-tree into `kernel/sched/fair.c`:
 
 **Predict before you run:** tasks A, B, C have each run to `vruntime` 100. Task D slept the whole time, so its `vruntime` is still 0. D wakes up. If CFS schedules purely by leftmost with **no** adjustment, what happens over the next 12 ticks — does D run once and yield, or does it monopolize the CPU?
 
-```python run
+```python run viz=array
 busy = {"A": 100, "B": 100, "C": 100}     # three tasks already ran to vruntime 100
 slept = ("D", 0)                           # D slept on I/O the whole time -> vruntime still 0
 slice_ms = 10
@@ -115,7 +115,7 @@ Fairness so far meant *equal* CPU. But `nice`/priority means some tasks deserve 
 
 **Predict:** task `hi` has twice the weight of task `lo`. After 9 equal time-slices are dealt out, how is CPU time split between them?
 
-```python run
+```python run viz=array
 WEIGHT = {"hi": 2, "lo": 1}                # 'hi' carries 2x the scheduling weight (lower nice)
 vr = {"hi": 0, "lo": 0}
 cpu = {"hi": 0, "lo": 0}
@@ -127,7 +127,7 @@ for _ in range(9):
 print("CPU time:", dict(sorted(cpu.items())))
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     public static void main(String[] x) {

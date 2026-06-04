@@ -40,7 +40,7 @@ Compare to `n % 2`: for negative numbers in C and similar languages, `(-3) % 2 =
 
 
 
-```python run
+```python run viz=array
 class Solution:
     def parity_checker(self, num: int) -> str:
 
@@ -68,7 +68,7 @@ print(Solution().parity_checker(-2))     # even
 print(Solution().parity_checker(100))    # even
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static class Solution {
         public String parityChecker(int num) {

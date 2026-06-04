@@ -32,7 +32,7 @@ Output: 10
 `lower_bound(target)` gives the smallest index `i` with `arr[i] >= target`. The closest element is either `arr[i]` or `arr[i - 1]` — compare distances.
 
 
-```python run
+```python run viz=array
 from typing import List
 
 class Solution:
@@ -116,7 +116,7 @@ print(Solution().closest_element([5], 9))                    # 5  — single ele
 print(Solution().closest_element([1, 2, 3, 4, 5, 6], 0))    # 1  — target before all elements
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {

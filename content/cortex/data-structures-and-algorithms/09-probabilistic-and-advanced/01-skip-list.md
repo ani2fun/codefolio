@@ -16,7 +16,7 @@ The trick is that the express lanes are built by **coin flips**, not bookkeeping
 
 Insert values in any order; search and in-order traversal are always correct, whatever the coins decide. (The `Random(seed)` just makes the structure reproducible — the *answers* don't depend on it.)
 
-```python run
+```python run viz=array
 import random
 MAXLVL = 16
 class Node:
@@ -68,7 +68,7 @@ print(sl.search(20))                                  # False
 print(sl.to_list() == sorted([3,6,7,9,12,19,17,26,21,25]))   # True — always sorted
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static final int MAXLVL = 16;
@@ -153,7 +153,7 @@ The express lanes *are* the speed. Strip them away and a skip list is just a sor
 
 **Predict before you run:** searching for the largest value in a 64-node skip list. With normal coin-flip promotions (`p = ½`) it takes a handful of comparisons. If the promotion probability is `0` — every node stays on level 0, no node ever gets promoted — how many comparisons does the same search take?
 
-```python run
+```python run viz=array
 import random
 MAXLVL = 16
 class Node:
@@ -204,7 +204,7 @@ With `p = ½` the search takes just **2** comparisons; with `p = 0` it takes **6
 
 **Range query** — collect every value in `[lo, hi]`. The skip list shines here: leap down the express lanes to the first value `≥ lo`, then walk level 0 until you pass `hi`. (This is exactly how Redis serves `ZRANGEBYSCORE`.)
 
-```python run
+```python run viz=array
 import random
 MAXLVL = 16
 class Node:
@@ -244,7 +244,7 @@ print(sl.range_query(7, 19))     # [7, 9, 12, 17, 19]
 print(sl.range_query(20, 30))    # [21, 25, 26]
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static final int MAXLVL = 16;

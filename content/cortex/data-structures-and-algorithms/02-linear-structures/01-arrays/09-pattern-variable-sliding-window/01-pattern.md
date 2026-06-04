@@ -81,7 +81,7 @@ No — and this is the crux. `start` advanced three steps *here*, but those are 
 
 The reusable longest-valid shape — grow, shrink-while-invalid, measure:
 
-```python run
+```python run viz=array
 def longest_with_at_most_k_zeros(arr, k):
     start = zeros = best = 0
     for end in range(len(arr)):
@@ -97,7 +97,7 @@ def longest_with_at_most_k_zeros(arr, k):
 print(longest_with_at_most_k_zeros([1, 1, 0, 0, 1, 1, 1, 0], 1))   # 4
 ```
 
-```java run
+```java run viz=array
 public class Main {
   static int longestWithAtMostKZeros(int[] arr, int k) {
     int start = 0, zeros = 0, best = 0;

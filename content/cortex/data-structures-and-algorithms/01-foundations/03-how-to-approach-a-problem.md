@@ -67,7 +67,7 @@ Before the next section — how would you *know* the formula is right, and not j
 
 This is the habit that separates people who *think* they're right from people who *are*: run your fast idea against the brute force on hundreds of random inputs. If they ever disagree, you hear about it immediately.
 
-```python run
+```python run viz=array
 import random
 
 def brute(n):                 # the dead-simple correct version: add them up
@@ -85,7 +85,7 @@ for _ in range(1000):
 print("1000 random cases: smart agrees with brute ✓")
 ```
 
-```java run
+```java run viz=array
 import java.util.Random;
 
 public class Main {

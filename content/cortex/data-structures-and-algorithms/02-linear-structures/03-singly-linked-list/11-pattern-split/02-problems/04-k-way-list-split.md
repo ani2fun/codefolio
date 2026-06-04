@@ -14,8 +14,7 @@ Given the **head** of a singly linked list and an integer **k**, write a functio
 
 The length of each part should be as equal as possible. No two parts should have a size differing by more than one. This may lead to some parts being `null`. The parts should be in the order of occurrence in the input list, and parts occurring earlier should always have a size greater than or equal to parts occurring later.
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1:**
 ```
@@ -42,11 +41,12 @@ Explanation: n = 6, k = 2 → partSize = 3, bigLists = 0.
              Each bucket gets exactly partSize = 3 nodes.
 ```
 
-</details>
 
 ---
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The **structural property** that makes this a split problem is that the parts are *consecutive segments* of the original list — every cut sits between two adjacent nodes. Unlike the value- or modulo-based splits, the classifier here is position-driven: bucket `i` collects the `i`-th block of nodes starting from the head. The only twist is sizing — when `n` isn't divisible by `k`, the first `n % k` parts get one extra node each so that no two parts differ by more than one and earlier parts are at least as large as later parts.
 
@@ -54,9 +54,10 @@ The **bucket placement** uses a precomputed sizing pair: `partSize = n // k` and
 
 What **breaks if you reach for a naive approach**? The brute force walks the original list once per output bucket to copy out its nodes — `O(n * k)` time and `O(n)` extra space for the copies. The same approach without copying (re-walk the list per bucket, re-thread the segment) doesn't even terminate cleanly: once the first bucket's segment is severed, the second walk can no longer reach the second segment because the chain is broken. The split-with-precomputed-sizes solution is one length pass plus one routing pass — `O(n)` total — and never copies a node.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | Check | Answer for K-Way List Split |
 |---|---|
@@ -65,9 +66,10 @@ What **breaks if you reach for a naive approach**? The brute force walks the ori
 | **Q3.** Is the work at each step `O(1)`? | **Yes** — each node visit performs at most one pointer hop and at most one severing assignment. The outer length pass is the only non-`O(1)` step, and it's a one-time `O(n)` cost. |
 | **Q4.** Can output lists share original nodes (re-linked, not copied)? | **Yes** — the problem returns the original nodes re-threaded; severing `.next` at each boundary is what turns one chain into `k`. |
 
----
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
 
-## Approach
 
 Run a length pass, then a single routing pass that captures one segment per output bucket.
 
@@ -82,8 +84,9 @@ Run a length pass, then a single routing pass that captures one segment per outp
    - **Decrement `extraNodes` if it was used.** Only the first `bigLists` buckets get the bonus node; after each, `extraNodes -= 1`.
 5. **Return the result array.** Each non-`null` entry is the head of a sealed sublist; `null` entries are empty buckets.
 
+</details>
 <details>
-<summary><strong>Solution &amp; Analysis</strong></summary>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
 ### Solution
 
@@ -368,7 +371,7 @@ Exactly `k` output entries. The first `extraNodes = n % k` parts have `partSize 
 
 </details>
 <details>
-<summary><strong>Key Takeaway</strong></summary>
+<summary><h2>Key Takeaway</h2></summary>
 
 The split pattern is a single template with a swappable classifier:
 
@@ -404,7 +407,10 @@ When you next see "split by rule", "bucket by hash", "round-robin distribute", "
 > </details>
 
 </details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 The position-driven variant of the split template: precompute `partSize` and `bigLists` from one length pass, then sever the original chain at each segment boundary. No dummies are needed because consecutive segments inherit their head naturally — but the severing assignment (`current.next = null`) is still what isolates the buckets.
+
+</details>

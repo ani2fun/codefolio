@@ -16,8 +16,7 @@ The problem needs to be solved without modifying the values in the list's nodes.
 
 ---
 
-<details>
-<summary><h2>Examples</h2></summary>
+## Examples
 
 **Example 1**
 ```
@@ -47,7 +46,6 @@ Output: []
 Explanation: An empty list trivially produces an empty list.
 ```
 
-</details>
 <details>
 <summary><h2>Intuition</h2></summary>
 

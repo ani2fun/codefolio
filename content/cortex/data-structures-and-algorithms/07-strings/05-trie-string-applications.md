@@ -15,7 +15,7 @@ The unifying win is **prefix-shared work**. A hash set answers "is this exact wo
 
 Insert a dictionary, then **autocomplete** a prefix: walk to the prefix node, and DFS the subtree to collect every word beneath it.
 
-```python run
+```python run viz=array
 class Trie:
     def __init__(self):
         self.children = {}
@@ -51,7 +51,7 @@ print(t.autocomplete("ca"))   # ['car', 'card', 'cat']
 print(t.autocomplete("do"))   # ['dog']
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static class Trie {
@@ -126,7 +126,7 @@ The most common trie bug is treating "the path exists" as "the word is present."
 
 **Predict before you run:** you insert only the word `"card"` (not `"car"`). What does `search("car")` return — `True` (the path `c → a → r` clearly exists) or `False`?
 
-```python run
+```python run viz=array
 class Trie:
     def __init__(self):
         self.children = {}
@@ -167,7 +167,7 @@ print("search('card')     :", t.search("card"))
 
 **Longest Common Prefix** ([LeetCode 14](https://leetcode.com/problems/longest-common-prefix/)) via a trie — insert all the words, then walk down from the root *while there's exactly one child and no word has ended*. The moment the path branches (more than one child) or a word terminates, the common prefix stops.
 
-```python run
+```python run viz=array
 class Trie:
     def __init__(self):
         self.children = {}
@@ -195,7 +195,7 @@ print(repr(longest_common_prefix(["flower", "flow", "flight"])))   # 'fl'
 print(repr(longest_common_prefix(["dog", "racecar", "car"])))      # ''
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static class Trie {

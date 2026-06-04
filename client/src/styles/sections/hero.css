@@ -12,7 +12,7 @@
          __lede              — body paragraph with editorial italic
          __cta-row           — horizontal CTA stack on desktop, wraps on mobile
          __cta               — base CTA spacing
-         __cta--primary      — filled (dark on light, terracotta on hover)
+         __cta--primary      — filled (dark on light, indigo on hover)
          __cta--ghost        — outlined neutral
          __cta-icon          — Lucide icon inside a CTA (slides on hover for primary)
          __stats             — 4-col grid → 2-col on mobile
@@ -83,10 +83,10 @@
         @apply text-lg md:text-xl leading-relaxed text-foreground/85 max-w-2xl mt-8 mb-8;
     }
     .hero__lede em {
-        font-family: var(--font-display);
-        font-style: italic;
-        font-weight: 400;
-        letter-spacing: 0.05em;
+        font-family: var(--font-sans);
+        font-style: normal;
+        font-weight: 600;
+        letter-spacing: 0;
         color: hsl(var(--foreground));
     }
 

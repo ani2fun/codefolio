@@ -74,7 +74,7 @@ Before you read on: `3` went in first — so it comes out first. That's the exac
 
 In real code you reach for a ready-made deque — `O(1)` at both ends, no manual ring-buffer bookkeeping:
 
-```python run
+```python run viz=array viz-kind=queue
 from collections import deque
 
 q = deque()
@@ -85,7 +85,7 @@ print(q.popleft())       # → 5
 print(list(q))           # [7]
 ```
 
-```java run
+```java run viz=array viz-kind=queue
 import java.util.ArrayDeque;
 import java.util.Queue;
 

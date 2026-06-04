@@ -42,7 +42,7 @@
                px-3 py-1 text-xs font-semibold hover:bg-primary/90 hover:bg-primary/90;
     }
     .rcb__button--viz {
-        /* Sibling of Run — secondary, outlined, terracotta-tinted on hover.
+        /* Sibling of Run — secondary, outlined, indigo-tinted on hover.
            Declared after .rcb__button so the hover here wins over hover:bg-accent. */
         @apply hover:border-primary hover:text-primary hover:bg-primary/10;
     }
@@ -223,7 +223,7 @@
         width: 18px;
         height: 18px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #c8693e 0%, #8d3f1f 60%, #4c1d0d 100%);
+        background: linear-gradient(135deg, #7e88e6 0%, #4f5bd5 55%, #2a2f6b 100%);
         color: #fff;
         font-family: var(--font-sans);
         font-size: 9px;

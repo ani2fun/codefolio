@@ -8,7 +8,7 @@
          __heading-row       — title left, pulse pill right
          __title             — italic display heading
          __pulse-pill        — "Currently writing: …" pill
-         __pulse-dot         — animated terracotta dot
+         __pulse-dot         — animated indigo dot
          __pulse-text        — pill copy
          (BookGrid renders the cards via __card / __card-* below)
     */

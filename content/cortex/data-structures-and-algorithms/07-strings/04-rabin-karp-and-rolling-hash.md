@@ -16,7 +16,7 @@ The catch that makes it practical is the **rolling hash**: when the window slide
 
 Hash the pattern and the first window with a polynomial hash `Σ c · BASE^k mod P`. Then roll: subtract the leaving character's contribution, multiply by `BASE`, add the entering character — all mod a large prime. On a hash match, verify.
 
-```python run
+```python run viz=array
 BASE, MOD = 256, 1_000_000_007
 def rabin_karp(text, pattern):
     n, m = len(text), len(pattern)
@@ -38,7 +38,7 @@ def rabin_karp(text, pattern):
 print(rabin_karp("abxabcabcaby", "abcaby"))           # [6]
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static final long BASE = 256, MOD = 1_000_000_007L;
@@ -99,7 +99,7 @@ The verification step looks like a paranoid afterthought — surely if two strin
 
 **Predict before you run:** use a deliberately weak hash — the *sum* of character codes. Search `"bcad"` for `"ad"` and report every window whose hash equals the pattern's, **without** the character check. Does it find only the real `"ad"` at index 2, or something extra?
 
-```python run
+```python run viz=array
 def sum_hash_search(text, pattern, verify):
     m = len(pattern)
     target = sum(ord(c) for c in pattern)             # weak hash: sum of char codes
@@ -127,7 +127,7 @@ Without verification you get `[0, 2]` — a **false match at index 0**, where th
 
 **Find repeated substrings of length `k`** — the multi-window strength of rolling hashes (the basis of [Repeated DNA Sequences](https://leetcode.com/problems/repeated-dna-sequences/), LeetCode 187). Roll a hash across every length-`k` window, bucket by hash, and report substrings that recur (verifying within a bucket to dodge collisions).
 
-```python run
+```python run viz=array
 BASE, MOD = 256, 1_000_000_007
 def find_repeated(s, k):
     n = len(s)
@@ -151,7 +151,7 @@ print(find_repeated("banana", 3))        # ['ana']
 print(find_repeated("abcabcabc", 3))     # ['abc', 'bca', 'cab']
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static final long BASE = 256, MOD = 1_000_000_007L;

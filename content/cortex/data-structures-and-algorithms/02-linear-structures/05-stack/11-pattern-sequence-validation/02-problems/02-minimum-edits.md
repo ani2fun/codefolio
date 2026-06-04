@@ -21,8 +21,7 @@ Given a string `s` of `(` and `)` only, return the minimum number of insertions 
 ### Example 3
 > -   **Input:** `s = "(((())))"` → **Output:** `0`
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -56,9 +55,10 @@ Explanation: the leading ')' is unmatched (+1 edit), then "()" cancels,
 then the trailing '(' is left on the stack (+1). Total 2.
 ```
 
-</details>
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 This is a **sequence-validation** problem because `(` and `)` pair up, and an edit is needed for every bracket that cannot find a partner. The pairing must respect order: a `)` matches the most recent unmatched `(`. The minimum number of fixes is exactly the number of brackets left unpaired after a single matching pass.
 
@@ -66,7 +66,10 @@ The stack holds the **unmatched `(` seen so far**. When a `)` arrives with a `(`
 
 A counting shortcut that tracks only a single balance fails on order-sensitive inputs. Consider `")("`: the balance dips to `-1` then returns to `0`, suggesting validity, yet both brackets are unpaired and the answer is `2`. The stack — or its arithmetic equivalent of an opener count plus a separate orphan-closer count — is what correctly separates the two unmatched sides.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for Minimum Edits |
 |---|---|
@@ -75,7 +78,10 @@ A counting shortcut that tracks only a single balance fails on order-sensitive i
 | **Q3.** Is one pass with `O(1)` work per token enough? | **Yes** — each character drives a single push, pop, or counter bump. |
 | **Q4.** Is the answer decided by the stack's contents and an orphan count? | **Yes** — leftover `(` on the stack plus closers counted on the fly give the total edits. |
 
-## Approach in Words
+</details>
+<details>
+<summary><h2>Approach in Words</h2></summary>
+
 
 Match what you can in one pass; count what is left over.
 
@@ -86,6 +92,7 @@ Match what you can in one pass; count what is left over.
 5. **`)` with an empty stack → count an edit.** No opener is available, so this closer is an orphan; add `1` to `edits`.
 6. **After the pass, return `len(stack) + edits`.** The leftover `(` each need one edit, plus the orphaned closers already counted.
 
+</details>
 <details>
 <summary><h2>Approach</h2></summary>
 
@@ -220,8 +227,9 @@ public class Main {
 ```
 
 </details>
+<details>
+<summary><h2>Dry Run</h2></summary>
 
-## Dry Run
 
 Walk Example 1 — `s = "())"`. The stack tracks unmatched `(`; `edits` counts orphaned `)`:
 
@@ -248,7 +256,10 @@ s = ")()("         stack=[]  edits=0
 end of input: len(stack)=1, edits=1 → return 1 + 1 = 2 ✓
 ```
 
-## Complexity Analysis
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
+
 
 | Measure | Value | Why |
 |---|---|---|
@@ -257,7 +268,10 @@ end of input: len(stack)=1, edits=1 → return 1 + 1 = 2 ✓
 
 The runtime is `O(N)` time: a single left-to-right pass with constant work per character, and no second scan. The space is `O(N)` in the worst case — a string of only `(` pushes all `N` and never pops — and `O(1)` in the best case, where a string of only `)` pushes nothing and only increments `edits`.
 
-## Edge Cases
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
+
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -268,6 +282,11 @@ The runtime is `O(N)` time: a single left-to-right pass with constant work per c
 | All openers | `s = "(("` | `2` | Two `(` remain on the stack, each needing one edit. |
 | Closer-then-opener | `s = ")()("` | `2` | One orphaned `)` plus one leftover `(` — the `()` between them cancels. |
 
-## Key Takeaway
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
 
 The minimum edits equal the count of unpaired brackets: orphaned closers counted during the pass, plus leftover openers on the stack at the end. The new idea over the bracket checker is returning a *count* of unmatched items rather than a yes/no — failure no longer stops the scan, it accumulates.
+
+</details>

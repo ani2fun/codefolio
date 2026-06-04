@@ -38,7 +38,7 @@ Because in two's complement, "less than zero" is determined by the sign bit alon
 
 
 
-```python run
+```python run viz=array
 class Solution:
     def have_opposite_signs(self, num1: int, num2: int) -> bool:
 
@@ -60,7 +60,7 @@ print(Solution().have_opposite_signs(1, -1))      # True
 print(Solution().have_opposite_signs(-1, 1))      # True
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static class Solution {
         public boolean haveOppositeSigns(int num1, int num2) {

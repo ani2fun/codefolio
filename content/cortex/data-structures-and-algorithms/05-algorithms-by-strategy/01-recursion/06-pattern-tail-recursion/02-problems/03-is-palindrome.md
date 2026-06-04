@@ -109,7 +109,7 @@ state: "start=2, end=1   start ≥ end" {
 
 ### The Solution
 
-```python run
+```python run viz=array
 from typing import List
 
 class Solution:
@@ -143,7 +143,7 @@ print(Solution().is_palindrome([1, 2, 3]))        # False
 print(Solution().is_palindrome([1, 1, 1, 1]))     # True
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static class Solution {
         private boolean helper(int[] arr, int start, int end) {

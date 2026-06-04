@@ -28,8 +28,7 @@ Explanation: list length 5 < k=8 → no reversal happens.
 
 ---
 
-<details>
-<summary><h2>Examples</h2></summary>
+## Examples
 
 **Example 1**
 ```
@@ -59,7 +58,6 @@ Output: [6, 5, 4, 3, 2, 1]
 Explanation: Exactly one full chunk of size 6 spans the whole list; the inner reversal flips the entire list once.
 ```
 
-</details>
 <details>
 <summary><h2>Intuition</h2></summary>
 

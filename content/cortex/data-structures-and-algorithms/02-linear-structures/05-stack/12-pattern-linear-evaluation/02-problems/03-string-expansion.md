@@ -21,8 +21,7 @@ Given a string encoded with `k[substring]` notation (k a positive integer, subst
 ### Example 3
 > -   **Input:** `"2[abc]3[cd]ef"` → **Output:** `"abcabccdcdcdef"`
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -56,9 +55,10 @@ Explanation: the count is multi-digit. Both digits are read as one number
 10 before the '[', so "a" repeats ten times — not "1" then "0[a]".
 ```
 
-</details>
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 This is a **linear-evaluation** problem with the same shape as bracketed reversal, but the `]` trigger *repeats* a substring instead of reversing it. The encoding `k[...]` nests, so an inner group expands before the outer group multiplies it. The stack parks the count, the `[` marker, and the characters until the matching `]` fires the fold.
 
@@ -66,7 +66,10 @@ The stack holds **counts, characters, `[` markers, and expanded substrings**, fr
 
 A naive approach finds the innermost `k[...]`, expands it, and rescans the whole string for the next innermost group — re-reading the growing result repeatedly, which is far worse than `O(N)` in the output size. A single accumulator fails differently: when `[` opens, the count and the text-so-far must be parked, and one variable cannot hold a stack of suspended `(count, prefix)` pairs. The stack parks each one and resumes it when its `]` closes, so one pass expands everything.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for String Expansion |
 |---|---|
@@ -75,7 +78,10 @@ A naive approach finds the innermost `k[...]`, expands it, and rescans the whole
 | **Q3.** Does a trigger fold only the *most recent* pending chunk? | **Yes** — `]` expands the run back to the nearest `[`, always on top, with the count just beneath. |
 | **Q4.** Is the answer read off the stack at end-of-input? | **Yes** — the surviving tokens, concatenated bottom-to-top, are the decoded string. |
 
-## Approach in Words
+</details>
+<details>
+<summary><h2>Approach in Words</h2></summary>
+
 
 Push counts, letters, and `[`; on `]`, repeat the inner substring by the count below the marker.
 
@@ -88,6 +94,7 @@ Push counts, letters, and `[`; on `]`, repeat the inner substring by the count b
 7. **Push the substring repeated `k` times** as a single token, so an enclosing `]` can multiply across it.
 8. **After the pass, concatenate the stack** bottom-to-top and return it.
 
+</details>
 <details>
 <summary><h2>Approach</h2></summary>
 
@@ -295,8 +302,9 @@ public class Main {
 ```
 
 </details>
+<details>
+<summary><h2>Dry Run</h2></summary>
 
-## Dry Run
 
 Walk Example 1 — `s = "2[ab3[c]]"`. The stack holds counts, characters, `[`, and expanded parts; on `]`, the inner substring is rebuilt and repeated by the count below the marker:
 
@@ -327,7 +335,10 @@ A trace on `s = "10[a]"` shows the multi-digit slurp — both digits become one 
 end of input → "aaaaaaaaaa" ✓
 ```
 
-## Complexity Analysis
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
+
 
 | Measure | Value | Why |
 |---|---|---|
@@ -336,7 +347,10 @@ end of input → "aaaaaaaaaa" ✓
 
 The time is `O(M)`, where `N` is the input length and `M` is the decoded output length: the scan reads each input character once, but each `]` materialises a repeated substring, and the total characters written across all expansions sum to `M`. The space is `O(M)` for the same reason — the stack stores expanded substrings, so `10[a]` holds ten characters from one digit. Because `M` can be exponentially larger than `N` for stacked counts (`2[2[2[...]]]`), state the bound in `M`, not `N`.
 
-## Edge Cases
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
+
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -347,6 +361,11 @@ The time is `O(M)`, where `N` is the input length and `M` is the decoded output 
 | Nested counts | `2[3[x]]` | `xxxxxx` | The inner `3[x]` expands to `xxx`, then the outer doubles it to `xxxxxx`. |
 | Trailing plain text | `2[abc]3[cd]ef` | `abcabccdcdcdef` | Two groups expand, then `ef` is pushed and concatenated unchanged. |
 
-## Key Takeaway
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
 
 Push counts, characters, and `[` markers; on `]`, rebuild the inner substring, read the count just below the marker, and push the substring repeated that many times. The new idea over bracketed reversal is the *count token beneath the opener* — the fold must pop one extra item (the multiplier) before pushing the combined result, and multi-digit counts demand a slurp loop so `10[a]` is not misread as `1` then `0[a]`.
+
+</details>

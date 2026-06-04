@@ -33,7 +33,7 @@ Output: -1
 The skeleton is identical to plain binary search — only the comparison logic flips. In ascending order: `arr[mid] < target` means "look right." In descending order: `arr[mid] < target` means "look *left*" (because larger values are on the left).
 
 
-```python run
+```python run viz=array
 from typing import List
 
 class Solution:
@@ -82,7 +82,7 @@ print(Solution().reverse_binary_search([6, 5, 4, 3, 2, 1], 1))   # 5  — target
 print(Solution().reverse_binary_search([5, 3], 3))                # 1  — two elements, last
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {

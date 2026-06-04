@@ -17,7 +17,7 @@ That single reframing solves a cluster of problems exact-match search can't: the
 
 In `[1, 3, 3, 5, 7]`, find the first index `≥ 3` (it's `1`, the leftmost `3`) and the first index `≥ 4` (it's `3`, where `5` sits). Run it.
 
-```python run
+```python run viz=array
 def lower_bound(arr, target):
     lo, hi = 0, len(arr)              # half-open range [lo, hi)
     while lo < hi:
@@ -83,7 +83,7 @@ Because lower bound wants the *boundary*, not just *a* match. When `arr[mid] == 
 
 The reusable lower bound:
 
-```python run
+```python run viz=array
 def lower_bound(arr, target):
     lo, hi = 0, len(arr)
     while lo < hi:
@@ -98,7 +98,7 @@ a = [1, 3, 3, 5, 7]
 print(lower_bound(a, 0), lower_bound(a, 3), lower_bound(a, 6), lower_bound(a, 8))   # 0 1 4 5
 ```
 
-```java run
+```java run viz=array
 public class Main {
   static int lowerBound(int[] arr, int target) {
     int lo = 0, hi = arr.length;          // half-open [lo, hi)

@@ -16,7 +16,7 @@ LCS is the first **2D dynamic program**: the state is a *pair* of indices `(i, j
 
 `dp[i][j]` = LCS of the first `i` chars of `a` and first `j` of `b`. On a match, extend the diagonal; otherwise take the better of dropping one char from either string.
 
-```python run
+```python run viz=grid
 def lcs(a, b):
     m, n = len(a), len(b)
     dp = [[0] * (n + 1) for _ in range(m + 1)]
@@ -31,7 +31,7 @@ def lcs(a, b):
 print(lcs("abcde", "ace"))                            # 3  ("ace")
 ```
 
-```java run
+```java run viz=grid
 public class Main {
     static int lcs(String a, String b) {
         int m = a.length(), n = b.length();
@@ -76,7 +76,7 @@ The match case uses the *diagonal* `dp[i-1][j-1]`, not the max of the neighbours
 
 **Predict before you run:** with the match case as `1 + max(left, up)`, what is `LCS("aa", "a")` — still `1`, or something else?
 
-```python run
+```python run viz=grid
 def lcs_buggy(a, b):
     m, n = len(a), len(b)
     dp = [[0] * (n + 1) for _ in range(m + 1)]
@@ -110,7 +110,7 @@ Correct is `1` (the string `"a"` has one `a` to match); the buggy version return
 
 **Delete Operations for Two Strings** ([LeetCode 583](https://leetcode.com/problems/delete-operation-for-two-strings/)) — minimum single-character deletions to make `a` and `b` equal. Everything *not* in the LCS must be deleted from one side or the other, so the answer is `m + n − 2·LCS(a, b)` — one formula on top of the same DP.
 
-```python run
+```python run viz=grid
 def lcs(a, b):
     m, n = len(a), len(b); dp = [[0]*(n+1) for _ in range(m+1)]
     for i in range(1, m+1):
@@ -125,7 +125,7 @@ print(min_delete("sea", "eat"))         # 2   (delete 's' and 't'; keep "ea")
 print(min_delete("leetcode", "etco"))   # 4
 ```
 
-```java run
+```java run viz=grid
 public class Main {
     static int lcs(String a, String b) {
         int m=a.length(), n=b.length(); int[][] dp = new int[m+1][n+1];

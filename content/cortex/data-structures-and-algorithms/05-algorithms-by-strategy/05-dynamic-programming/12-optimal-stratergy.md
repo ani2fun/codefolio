@@ -15,7 +15,7 @@ That word *guarantee* is what makes this a new kind of DP. Every problem so far 
 
 `dp[i][j]` = the most the player-to-move can guarantee from the slice `coins[i..j]`. Take the left coin or the right coin; whichever you take, the opponent then plays optimally on the rest and **leaves you the worse of the two remainders** — that's the `min`.
 
-```python run
+```python run viz=grid
 def optimal_strategy(coins):
     n = len(coins)
     dp = [[0] * n for _ in range(n)]
@@ -34,7 +34,7 @@ print(optimal_strategy([8, 15, 3, 7]))   # 22
 print(optimal_strategy([2, 2, 2, 2]))    # 4
 ```
 
-```java run
+```java run viz=grid
 public class Main {
     static int optimalStrategy(int[] coins) {
         int n = coins.length;
@@ -90,7 +90,7 @@ The `min` is doing all the work, and it's easy to write the wrong aggregator the
 
 **Predict before you run:** for coins `[1, 100, 1]`, the first player can only *guarantee* a small amount (the opponent will grab the 100). But what does the buggy `max` version — "opponent always leaves me the better slice" — claim the first player gets?
 
-```python run
+```python run viz=grid
 def guaranteed(coins, adversarial):
     n = len(coins)
     dp = [[0] * n for _ in range(n)]
@@ -121,7 +121,7 @@ Adversarial gives `2`; the buggy `max` claims `101`. With `[1,100,1]`, whatever 
 
 **Predict the Winner** ([LeetCode 486](https://leetcode.com/problems/predict-the-winner/)) — does the first player win (or tie)? This is the *margin* formulation from above: `dp[i][j] = max(nums[i] − dp[i+1][j], nums[j] − dp[i][j-1])`, and the answer is `dp[0][n-1] ≥ 0`. No `min` in sight — the subtraction *is* the adversary.
 
-```python run
+```python run viz=grid
 def predict_winner(nums):
     n = len(nums)
     dp = [[0] * n for _ in range(n)]                          # dp[i][j] = best (mine - opponent's) on [i..j]
@@ -138,7 +138,7 @@ print(predict_winner([1, 5, 2]))       # False
 print(predict_winner([1, 5, 233, 7]))  # True
 ```
 
-```java run
+```java run viz=grid
 public class Main {
     static boolean predictWinner(int[] nums) {
         int n = nums.length;

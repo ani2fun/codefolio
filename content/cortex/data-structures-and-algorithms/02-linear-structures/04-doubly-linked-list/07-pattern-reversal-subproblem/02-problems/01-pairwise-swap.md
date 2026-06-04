@@ -20,8 +20,7 @@ Explanation: pairs (1,2) → (2,1) and (3,4) → (4,3).
 
 ---
 
-<details>
-<summary><h2>Examples</h2></summary>
+## Examples
 
 **Example 1**
 ```
@@ -51,7 +50,6 @@ Output: []
 Explanation: An empty list trivially produces an empty list.
 ```
 
-</details>
 <details>
 <summary><h2>Intuition</h2></summary>
 

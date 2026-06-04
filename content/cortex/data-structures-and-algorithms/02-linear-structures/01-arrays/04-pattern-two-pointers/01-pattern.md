@@ -87,7 +87,7 @@ That lone middle element is also why the loop test is `left < right`, not `left 
 
 Here's a second member of the family — checking a palindrome is the same converging walk, comparing instead of swapping:
 
-```python run
+```python run viz=array
 def is_palindrome(s):
     left, right = 0, len(s) - 1
     while left < right:
@@ -101,7 +101,7 @@ print(is_palindrome("racecar"))  # True
 print(is_palindrome("hello"))    # False
 ```
 
-```java run
+```java run viz=array
 public class Main {
   static boolean isPalindrome(String s) {
     int left = 0, right = s.length() - 1;

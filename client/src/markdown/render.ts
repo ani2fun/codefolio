@@ -22,6 +22,7 @@ import rehypeSlug from "rehype-slug";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeKatex from "rehype-katex";
 import rehypePrettyCode from "rehype-pretty-code";
+import { createCssVariablesTheme } from "shiki";
 import rehypeStringify from "rehype-stringify";
 import { visit } from "unist-util-visit";
 import { fromHtml } from "hast-util-from-html";
@@ -929,6 +930,15 @@ export interface RenderResult {
   toc: TocEntry[];
 }
 
+// Shiki "CSS variables" theme — emits var(--shiki-token-*) for every token color
+// instead of baked hexes, so code recolors with the site's --syn-* palette
+// (mapped onto a dark code slab in chapter-content.css). Built once at module load.
+const cssVarsTheme = createCssVariablesTheme({
+  name: "codefolio",
+  variablePrefix: "--shiki-",
+  fontStyle: true,
+});
+
 /** Render a chapter's raw markdown source. */
 export async function renderChapter(source: string): Promise<RenderResult> {
   const toc: TocEntry[] = [];
@@ -973,9 +983,47 @@ export async function renderChapter(source: string): Promise<RenderResult> {
       },
     })
     .use(rehypeCollectToc(toc))
+    // Collapse the trailing "Sources & Verify" section into a <details> so it
+    // doesn't clutter the chapter by default. Runs after rehypeCollectToc so the
+    // heading keeps its slug id + TOC entry (collectToc visits recursively, so it
+    // still finds the heading once it's nested inside <summary>). The generic
+    // .chapter-content details/summary styling renders the chevron + box.
+    .use((() => (tree: HastRoot) => {
+      const kids = tree.children;
+      const idx = kids.findIndex(
+        (c) =>
+          c.type === "element" &&
+          (c as Element).tagName === "h2" &&
+          collectText(c as Element).trim().toLowerCase() === "sources & verify",
+      );
+      if (idx === -1) return;
+      // Take the heading + every following sibling up to the next h2 (or end).
+      let end = idx + 1;
+      while (
+        end < kids.length &&
+        !(kids[end].type === "element" && (kids[end] as Element).tagName === "h2")
+      ) {
+        end++;
+      }
+      const heading = kids[idx] as Element;
+      const body = kids.slice(idx + 1, end);
+      const summary: Element = {
+        type: "element",
+        tagName: "summary",
+        properties: {},
+        children: [heading],
+      };
+      const details: Element = {
+        type: "element",
+        tagName: "details",
+        properties: { className: ["cortex-sources-details"] },
+        children: [summary, ...body],
+      };
+      kids.splice(idx, end - idx, details);
+    }) as Plugin<[], HastRoot>)
     .use(rehypeKatex)
     .use(rehypePrettyCode, {
-      theme: "github-dark",
+      theme: cssVarsTheme,
       keepBackground: true,
       defaultLang: "plaintext",
       bypassInlineCode: true,
@@ -983,5 +1031,22 @@ export async function renderChapter(source: string): Promise<RenderResult> {
     .use(rehypeStringify, { allowDangerousHtml: true });
 
   const file = await processor.process(source);
-  return { html: String(file), toc };
+  // Markdown inside a raw HTML <summary> (the collapsible Q/A and trace blocks
+  // author it as `<summary>… `code` …</summary>`) is NOT parsed by remark — the
+  // whole <details>…<summary> is an opaque HTML block — so authored `code`
+  // spans survive as literal backticks, which read as stray quotation marks in
+  // the serif reader font. Convert backtick spans to <code> within every
+  // <summary>, leaving the rest of the raw HTML untouched.
+  const html = String(file).replace(
+    /(<summary\b[^>]*>)([\s\S]*?)(<\/summary>)/g,
+    (_m, open: string, inner: string, close: string) =>
+      open +
+      inner.replace(
+        /`([^`\n]+)`/g,
+        (_s, code: string) =>
+          `<code>${code.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code>`,
+      ) +
+      close,
+  );
+  return { html, toc };
 }

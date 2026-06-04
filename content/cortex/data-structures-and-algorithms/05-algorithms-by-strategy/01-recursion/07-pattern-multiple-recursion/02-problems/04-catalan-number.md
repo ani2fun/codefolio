@@ -123,7 +123,7 @@ flowchart TB
 
 ### The Solution
 
-```python run
+```python run viz=array
 class Solution:
     def catalan(self, n: int) -> int:
 
@@ -156,7 +156,7 @@ print(Solution().catalan(3))   # 5
 print(Solution().catalan(4))   # 14
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static class Solution {
         public int catalan(int N) {

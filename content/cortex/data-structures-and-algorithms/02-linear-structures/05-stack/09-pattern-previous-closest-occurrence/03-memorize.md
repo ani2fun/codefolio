@@ -31,6 +31,17 @@ Picture queuing to see a parade and wanting to know the nearest *taller* person 
 
 ## Visual Summary
 
+```mermaid
+flowchart TD
+  scan["scan left → right"] --> pop["pop while top ≤ current"]
+  pop --> ans["whatever remains on top =<br/>nearest greater to the LEFT"]
+  ans --> push["push current, continue"]
+  push --> scan
+  style ans fill:#bbf7d0,stroke:#16a34a
+```
+
+<p align="center"><strong>Keep a monotonic stack: before pushing each element, pop everything not larger than it — whatever remains on top is its nearest greater element to the left. Each index is pushed and popped once → O(n).</strong></p>
+
 ---
 
 ## Pattern Recognition Triggers

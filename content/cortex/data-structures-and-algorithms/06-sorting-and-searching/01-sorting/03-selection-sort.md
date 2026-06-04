@@ -73,7 +73,7 @@ Because selection sort never learns whether the array is sorted — it only ever
 
 The reusable selection sort:
 
-```python run
+```python run viz=array
 def selection_sort(arr):
     n = len(arr)
     for i in range(n - 1):
@@ -88,7 +88,7 @@ print(selection_sort([5, 2, 8, 1, 9, 3]))   # [1, 2, 3, 5, 8, 9]
 print(selection_sort([3, 1, 2]))            # [1, 2, 3]
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {

@@ -17,7 +17,7 @@ Neither standard tool fits. **Worst case** describes the most expensive single o
 
 The claim "amortized `O(1)`" for a doubling array rests on one fact: the *total* copying work over `n` pushes is linear, not quadratic. Count the copies directly:
 
-```python run
+```python run viz=array
 def total_copies(n):                 # doubling dynamic array: count element-copies over n pushes
     cap, size, copies = 1, 0, 0
     for _ in range(n):
@@ -33,7 +33,7 @@ for n in [16, 17, 1024, 1025]:
     print(f"{n:>6} {c:>8} {c/n:>9.3f} {2 * n:>11}")
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static long totalCopies(int n) {                 // doubling array: count element-copies over n pushes
         long cap = 1, size = 0, copies = 0;
@@ -80,7 +80,7 @@ The "geometric growth is the line" claim is worth seeing fail. The *only* differ
 
 **Predict before you run:** a doubling array (`cap × 2` on resize) vs a grow-by-one array (`cap + 1` on resize), both over `n` pushes. The doubling array's total copies grow linearly. The grow-by-one array's total copies grow... also linearly, or quadratically?
 
-```python run
+```python run viz=array
 def copies(n, double):
     cap, size, c = 1, 0, 0
     for _ in range(n):
@@ -108,7 +108,7 @@ The accounting method's whole argument is one invariant: **the credit bank never
 
 **Predict:** charging 3 per push (1 to place + 2 banked) is supposed to cover every resize. Does charging only 2 also work, or does the bank go negative somewhere?
 
-```python run
+```python run viz=array
 def accounting(n, charge):           # accounting method: charge fixed credits/push, bank the surplus
     cap, size, bank, min_bank = 1, 0, 0, 0
     for _ in range(n):
@@ -126,7 +126,7 @@ for charge in [3, 2]:
     print(f"charge={charge}/push -> lowest bank balance ever = {lo:>5}  (stays >= 0? {lo >= 0})")
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static long accounting(int n, int charge) {       // charge fixed credits/push, bank the surplus
         long cap = 1, size = 0, bank = 0, minBank = 0;

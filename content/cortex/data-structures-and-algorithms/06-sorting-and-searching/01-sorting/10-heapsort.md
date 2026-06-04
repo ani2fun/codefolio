@@ -82,7 +82,7 @@ Because **most nodes are near the bottom and barely sift at all**. Half the node
 
 The reusable in-place heapsort:
 
-```python run
+```python run viz=array
 def heapify(arr, n, i):
     largest, l, r = i, 2 * i + 1, 2 * i + 2
     if l < n and arr[l] > arr[largest]: largest = l
@@ -104,7 +104,7 @@ print(heapsort([5, 2, 8, 1, 9, 3]))   # [1, 2, 3, 5, 8, 9]
 print(heapsort([3, 1, 2, 1]))         # [1, 1, 2, 3]
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {

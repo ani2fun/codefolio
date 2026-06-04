@@ -85,7 +85,7 @@ Because **symmetry is a *mirror*, not a *copy*.** `is_same` pairs same-side chil
 
 Mirror **symmetry** (cross-pairing) plus **merge two trees** (same-pairing, summing overlaps — LeetCode 617):
 
-```python run
+```python run viz=binary-tree viz-root=root
 from collections import deque
 
 class TreeNode:
@@ -124,7 +124,7 @@ b = TreeNode(2, TreeNode(1, None, TreeNode(4)), TreeNode(3, None, TreeNode(7)))
 print(to_list(merge(a, b)))   # [3, 4, 5, 5, 4, None, 7]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 public class Main {
   static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } TreeNode(int v, TreeNode l, TreeNode r){ val=v; left=l; right=r; } }
 

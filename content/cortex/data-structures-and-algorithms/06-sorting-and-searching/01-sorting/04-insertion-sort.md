@@ -78,7 +78,7 @@ On a sorted array, `arr[i]` is always `≥ arr[i-1]`, so the `while` condition (
 
 The reusable insertion sort:
 
-```python run
+```python run viz=array
 def insertion_sort(arr):
     for i in range(1, len(arr)):
         key = arr[i]
@@ -93,7 +93,7 @@ print(insertion_sort([5, 2, 8, 1, 9, 3]))   # [1, 2, 3, 5, 8, 9]
 print(insertion_sort([1, 2, 3, 4]))         # [1, 2, 3, 4]  (O(n), no shifts)
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {

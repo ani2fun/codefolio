@@ -12,8 +12,7 @@ difficulty: easy
 
 Given a stack `s`, return a new stack containing the same elements in *reversed* order. The stack is written bottom-to-top, so in `s = [9, 5, 1, 2]` the value `2` is on top.
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1:**
 ```
@@ -33,11 +32,12 @@ Input:  s = []
 Output: []
 ```
 
-</details>
 
 ---
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The **structural property** that makes this a reversal problem is that a stack only exposes its top, so the only legal read is a pop — and popping a stack already yields its elements in reverse order. The input `[9, 5, 1, 2]` has `2` on top, so the pops arrive as `2, 1, 5, 9`. There is no comparison and no index arithmetic; the order flips purely because of the Last In, First Out contract.
 
@@ -45,7 +45,10 @@ The **placement** of the data is the whole trick: pop from the input and push di
 
 What **breaks if you reach for a naive approach**? You might try to index the stack as if it were an array and read `s[0], s[1], ...` into the output. That defeats the exercise: a real stack ADT has no index operator, so the code would not port to an actual stack. You might also pop into a temporary list and re-push — that works but adds an `O(N)` buffer the single transfer never needs. The clean move is pop-from-`s`, push-to-output, nothing in between.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for Stack Inversion |
 |---|---|
@@ -54,6 +57,7 @@ What **breaks if you reach for a naive approach**? You might try to index the st
 | **Q3.** Are two linear passes (load, unload) enough with no comparison? | **One pass here** — the load and unload collapse into a single pop-then-push transfer; still no comparison. |
 | **Q4.** Is `O(N)` auxiliary space acceptable? | **Yes** — the output stack holds all `N` elements; `O(N)` time, `O(N)` space. |
 
+</details>
 <details>
 <summary><h2>Approach</h2></summary>
 
@@ -225,7 +229,10 @@ The input's old top (`2`) was pushed first, so it sits at the bottom of the resu
 | Mutates the input | The loop pops `s` to empty — the caller's input stack is consumed. Copy `s` first if it must survive. |
 
 </details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 Stack inversion is the purest form of the pattern: popping a stack *is* the reversal, so a single pop-from-input, push-to-output transfer reverses it in `O(N)` time and `O(N)` space — no buffer and no indexing, only the LIFO contract.
+
+</details>

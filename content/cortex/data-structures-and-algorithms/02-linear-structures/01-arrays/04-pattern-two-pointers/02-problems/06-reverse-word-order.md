@@ -21,9 +21,7 @@ The words flip order; each word's characters stay intact; redundant whitespace d
 
 ---
 
-<details>
-<summary><h2>Examples</h2></summary>
-
+## Examples
 
 **Example 1 — multiple spaces inside the string**
 ```
@@ -53,7 +51,6 @@ Input:  s = "a good example"
 Output:     "example good a"
 ```
 
-</details>
 <details>
 <summary><h2>Intuition</h2></summary>
 

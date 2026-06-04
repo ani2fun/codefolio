@@ -91,7 +91,7 @@ The collapse comes from the **ordering letting one comparison decide direction f
 
 The reusable BST LCA:
 
-```python run
+```python run viz=binary-tree viz-root=root
 class TreeNode:
     def __init__(self, val):
         self.val = val
@@ -121,7 +121,7 @@ for v in [5, 3, 8, 1, 4, 7, 9]:
 print(lca(root, 7, 9), lca(root, 3, 4), lca(root, 4, 7))   # 8 3 5
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 public class Main {
   static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } }
   static TreeNode insert(TreeNode r, int v) {

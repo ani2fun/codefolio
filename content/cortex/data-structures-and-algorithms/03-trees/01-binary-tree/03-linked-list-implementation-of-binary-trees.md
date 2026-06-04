@@ -90,7 +90,7 @@ The [array lesson](/cortex/data-structures-and-algorithms/trees-binary-tree-arra
 
 **Predict before you run:** a right-leaning chain of `n` nodes. The array representation needs `2ⁿ − 1` slots. The linked representation needs how many node allocations — `2ⁿ`, `n²`, or `n`?
 
-```python run
+```python run viz=binary-tree viz-root=root
 def linked_nodes(n): return n            # one allocation per REAL node, any shape
 def array_slots(n):  return 2 ** n - 1   # array reserves every slot down to depth n
 for n in [4, 10, 20]:
@@ -110,7 +110,7 @@ The single most-used tree primitive is "recurse on `left` and `right`, stop at `
 
 **Predict:** for the tree `1 → (2 → 4, 5), (3)`, which values are leaves, and in what order does a left-before-right recursion emit them?
 
-```python run
+```python run viz=binary-tree viz-root=root
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
         self.val, self.left, self.right = val, left, right
@@ -124,7 +124,7 @@ def leaves(n):
 print("leaves:", leaves(root))   # [4, 5, 3]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 public class Main {
     static class TreeNode {

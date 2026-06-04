@@ -17,7 +17,7 @@ Greedy fails: grab the first available pairing for each left node and you can pa
 
 A bipartite graph (applicants `0–3` ↔ jobs `4–7`). Build the flow network — source→L, R→sink, all capacities 1 — and the max flow is the max matching. Run it.
 
-```python run
+```python run viz=graph viz-kind=graph
 import sys
 
 def max_flow(graph, source, sink):           # Ford-Fulkerson over a residual matrix
@@ -99,7 +99,7 @@ Through an **augmenting path that reroutes an earlier choice** — the exact rev
 
 Bipartite matching in both languages (reusing the Ford-Fulkerson core):
 
-```python run
+```python run viz=graph viz-kind=graph
 import sys
 def max_flow(graph, source, sink):
     n = len(graph); res = [[0]*n for _ in range(n)]
@@ -135,7 +135,7 @@ print(bipartite_matching([[2,3],[2],[],[]], [0,1], [2,3]))               # 2  (t
 print(bipartite_matching([[4],[5],[6],[7],[0],[1],[2],[3]], [0,1,2,3], [4,5,6,7]))  # 4  (perfect)
 ```
 
-```java run
+```java run viz=graph viz-kind=graph
 import java.util.*;
 public class Main {
   static int n;

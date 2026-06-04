@@ -14,8 +14,7 @@ Given the heads of two linked lists, **headA** and **headB**, write a function t
 
 You should take the first node of the first list (with the head as `headA`) as the first node of the result list. If there are no more nodes left in any one of the lists, append the remaining nodes from the other list to the end of the result in the same order as they appear.
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1:**
 ```
@@ -38,11 +37,12 @@ Output: [1, 2, 3, 4]
 Explanation: A runs out after one alternation. The remaining B suffix [3, 4] is appended whole.
 ```
 
-</details>
 
 ---
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The **structural property** that makes this a merge problem is that the output combines two input lists into a single chain, with the choice of "who contributes the next node" decided by a deterministic, `O(1)` selector. Here the selector is the simplest possible state machine — a boolean that flips every iteration — but the rest of the merge machinery is identical to sorted merge, list addition, and every other variant in this pattern. A dummy head, a moving `tail` cursor, two input cursors, and a splice on each iteration.
 
@@ -50,9 +50,10 @@ The **pointer placement** follows directly. Create a `dummy` node whose `.next` 
 
 What **breaks if you reach for a naive approach**? Copying both lists into arrays, interleaving the arrays, and rebuilding a fresh linked list works in `O(n + m)` time but pays `O(n + m)` extra memory for the arrays and allocates `n + m` brand-new nodes. The originals become garbage. Worse, any caller holding a pointer into `headA` or `headB` is now pointing into a stale chain. The merge technique rewires the existing nodes in place — no allocation, no GC churn, no identity loss.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | Check | Answer for Alternate Node Fusion |
 |---|---|
@@ -61,9 +62,10 @@ What **breaks if you reach for a naive approach**? Copying both lists into array
 | **Q3.** Are the input nodes rewirable into the output? | **Yes** — `tail.next = winner` splices a single input node onto the output; only `next` fields change. |
 | **Q4.** Is `O(1)` extra space sufficient? | **Yes** — `dummy`, `tail`, `currentA`, `currentB`, `mergeFirst` are five locals regardless of input size. |
 
----
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
 
-## Approach
 
 Run the dummy-head splice loop with a boolean selector that flips each iteration.
 
@@ -75,8 +77,9 @@ Run the dummy-head splice loop with a boolean selector that flips each iteration
 6. **Drain the non-empty input.** When the loop exits, at most one cursor is non-`null`. If `currentA` is non-`null`, do `tail.next = currentA` in one splice; else if `currentB` is non-`null`, do `tail.next = currentB`. The suffix is already correctly chained — no per-node loop needed.
 7. **Return `dummy.next`.** This skips the throwaway dummy and returns the real head of the merged list.
 
+</details>
 <details>
-<summary><strong>Solution &amp; Analysis</strong></summary>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
 ### Solution
 
@@ -1337,7 +1340,10 @@ The output contains every node from both inputs — `n + m` nodes total, where `
 | Equal lengths (`A = [1,2,3]`, `B = [4,5,6]`) | Six iterations alternate perfectly. After iter 5 `currentA = null`, but `currentB = 6` still. Drain attaches `[6]`. Output `[1, 4, 2, 5, 3, 6]`. |
 
 </details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 Alternate node fusion is the minimal merge — a one-bit boolean selector flipping each tick — and it exercises the full merge skeleton (dummy head, splice loop, drain step) without any value comparison. Every other merge variant in this section reuses the same skeleton with a richer selector.
+
+</details>

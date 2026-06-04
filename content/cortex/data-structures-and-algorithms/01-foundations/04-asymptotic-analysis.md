@@ -16,7 +16,7 @@ You can't predict that gap by counting microseconds — wall-clock time depends 
 
 You can't time Big-O reliably (the clock is noisy), but you *can* count steps exactly. Here are three shapes — a single scan, all-pairs, and repeated halving — instrumented to count their primitive operations at growing `n`:
 
-```python run
+```python run viz=array
 def count_linear(n):                 # scan: one step per element     -> O(n)
     steps = 0
     for _ in range(n): steps += 1
@@ -36,7 +36,7 @@ for n in [10, 100, 1000]:
     print(f"{n:>6} {count_linear(n):>8} {count_quadratic(n):>10} {count_logarithmic(n):>10}")
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static long countLinear(int n) { long s = 0; for (int i = 0; i < n; i++) s++; return s; }            // O(n)
     static long countQuadratic(int n) { long s = 0; for (int i = 0; i < n; i++) for (int j = i + 1; j < n; j++) s++; return s; }  // O(n^2)
@@ -79,7 +79,7 @@ Big-O is an *asymptotic* claim — about large `n`. It's easy to forget that the
 
 **Predict before you run:** algorithm A is `O(n)` but does `100·n` steps (a big constant); algorithm B is `O(n²)` but does just `n²` steps. Asymptotically A wins. But for small `n`, which is actually faster — and where does the ranking flip?
 
-```python run
+```python run viz=array
 def cost_100n(n): return 100 * n      # an O(n) algorithm with a BIG constant
 def cost_n2(n):   return n * n        # an O(n^2) algorithm with a small constant
 print(f"{'n':>6} {'100n':>10} {'n^2':>10} {'faster':>8}")
@@ -101,7 +101,7 @@ The "drop lower-order terms and constants" rule can feel like cheating — you'r
 
 **Predict:** an algorithm does exactly `3n² + 5n + 7` steps. As `n` grows, what share of the total comes from the `3n²` term alone — does it stay around a fifth, or climb toward all of it?
 
-```python run
+```python run viz=array
 def total_ops(n): return 3*n*n + 5*n + 7    # exact step count of some algorithm
 def dominant(n):  return 3*n*n              # just the n^2 term
 print(f"{'n':>7} {'3n^2+5n+7':>12} {'3n^2':>12} {'n^2 share':>11}")
@@ -110,7 +110,7 @@ for n in [1, 10, 100, 10000]:
     print(f"{n:>7} {t:>12} {d:>12} {d/t:>11.4f}")
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static long totalOps(long n) { return 3*n*n + 5*n + 7; }   // exact step count of some algorithm
     static long dominant(long n) { return 3*n*n; }             // just the n^2 term

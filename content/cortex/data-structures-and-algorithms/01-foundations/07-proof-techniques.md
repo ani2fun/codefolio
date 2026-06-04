@@ -16,7 +16,7 @@ This is the engineer's-eye view of proof, not the lemma-axiom-theorem version: y
 
 A loop invariant is just a condition true at the top of every iteration. Make it executable — check it on each pass — and "the loop is correct" stops being a hope. Here's a running-max loop with its invariant verified at every step:
 
-```python run
+```python run viz=array
 def find_max(arr):
     best = arr[0]; held = True
     for i in range(1, len(arr)):
@@ -29,7 +29,7 @@ def find_max(arr):
 find_max([3, 1, 4, 1, 5, 9, 2, 6])
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static int findMax(int[] arr) {
         int best = arr[0]; boolean held = true;
@@ -80,7 +80,7 @@ The reason to prove *termination* separately from correctness is easy to dismiss
 
 **Predict before you run:** binary search computes `mid = lo + (hi - lo) // 2`. Someone "tidies" it to `mid + 1`. Searching for `10` — the *first* element of `[10, 20, 30, 40, 50]` — does the buggy version return the wrong index, or something worse?
 
-```python run
+```python run viz=array
 def search(arr, target, buggy=False):
     lo, hi, steps = 0, len(arr) - 1, 0
     while lo <= hi:
@@ -112,7 +112,7 @@ Induction can feel like a formal ritual. It isn't — the base case and inductiv
 
 **Predict:** the formula `0 + 1 + … + n = n(n+1)/2` and `2⁰ + 2¹ + … + 2^(n-1) = 2ⁿ − 1` are both standard induction results. Run each against the actual loop for `n = 0…20` — do they match at every `n`, including the base case `n = 0`?
 
-```python run
+```python run viz=array
 def sum_loop(n):     return sum(range(n + 1))          # 0+1+...+n
 def sum_formula(n):  return n * (n + 1) // 2
 def pow_loop(n):     return sum(2 ** i for i in range(n))  # 2^0+...+2^(n-1)
@@ -125,7 +125,7 @@ print("2^0+..+2^(n-1) == 2^n-1 for n=0..20 ?", ok_pow)
 print("base case n=0:", sum_loop(0), "==", sum_formula(0))
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static long sumLoop(int n) { long s = 0; for (int i = 0; i <= n; i++) s += i; return s; }      // 0+..+n
     static long sumFormula(int n) { return (long) n * (n + 1) / 2; }

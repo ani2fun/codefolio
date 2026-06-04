@@ -44,7 +44,7 @@ flowchart TB
 
 Bottom-up Fibonacci: allocate a table, seed the base cases, fill it left-to-right with the recurrence. Every subproblem computed exactly once.
 
-```python run
+```python run viz=array
 def fib_tab(n):
     if n < 2: return n
     dp = [0] * (n + 1); dp[1] = 1                 # base cases
@@ -55,7 +55,7 @@ def fib_tab(n):
 print("fib_tab(10):", fib_tab(10))
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static long fibTab(int n) {
         if (n < 2) return n;
@@ -104,7 +104,7 @@ The whole reason DP exists is the cost gap between recomputing and caching. You'
 
 **Predict before you run:** how many calls does naive `fib(35)` make — thousands? millions? — and how many does the *memoised* version make?
 
-```python run
+```python run viz=array
 def count_naive(n):
     c = [0]
     def f(n):
@@ -137,7 +137,7 @@ Naive `fib(35)` makes **29,860,703** calls; the memoised version makes **69**. S
 
 **House Robber** ([LeetCode 198](https://leetcode.com/problems/house-robber/)) — rob a street of houses without hitting two adjacent ones; maximise the loot. Linear DP: at each house, either *skip* it (keep `dp[i-1]`) or *take* it (`dp[i-2] + value`). Recurrence `dp[i] = max(dp[i-1], dp[i-2] + nums[i])`, space-optimised to two scalars.
 
-```python run
+```python run viz=array
 def rob(nums):
     prev2, prev1 = 0, 0                          # dp[i-2], dp[i-1]
     for x in nums:
@@ -148,7 +148,7 @@ print("rob([2,7,9,3,1]):", rob([2, 7, 9, 3, 1]))   # 12  (2 + 9 + 1)
 print("rob([1,2,3,1]):", rob([1, 2, 3, 1]))        # 4   (1 + 3)
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static int rob(int[] nums) {
         int prev2 = 0, prev1 = 0;                       // dp[i-2], dp[i-1]

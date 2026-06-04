@@ -31,6 +31,15 @@ Picture a row of two-way train cars connected by both a forward coupling and a b
 
 ## Visual Summary
 
+```mermaid
+flowchart LR
+  prim["whole-list swap-per-node primitive"] --> seg["apply to a segment:<br/>swap pairs · reverse k · reverse [i..j]"]
+  seg --> relink["repair BOTH links (prev and next)<br/>at each boundary"]
+  style relink fill:#bbf7d0,stroke:#16a34a
+```
+
+<p align="center"><strong>Reverse a doubly list in pieces, then re-stitch — but unlike the singly case you must repair both prev and next at each boundary. The two-way links make the in-place segment flip cheap.</strong></p>
+
 ---
 
 ## Pattern Recognition Triggers

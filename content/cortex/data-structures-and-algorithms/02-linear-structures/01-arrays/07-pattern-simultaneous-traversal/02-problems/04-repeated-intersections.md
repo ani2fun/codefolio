@@ -21,8 +21,7 @@ arr1 = [1, 2, 3],     arr2 = [1, 2, 3]       →  [1, 2, 3]
 
 ---
 
-<details>
-<summary><h2>Examples</h2></summary>
+## Examples
 
 **Example 1**
 ```
@@ -46,7 +45,6 @@ Output: []
 Explanation: No common values exist.
 ```
 
-</details>
 <details>
 <summary><h2>Intuition &amp; Brute Force</h2></summary>
 

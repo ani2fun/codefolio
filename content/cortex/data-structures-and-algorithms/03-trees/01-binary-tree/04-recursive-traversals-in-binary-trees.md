@@ -104,7 +104,7 @@ Here's where the three orders stop being abstract. Take the **expression tree** 
 
 **Predict before you run:** what do preorder, inorder, and postorder produce on this tree — and have you seen those three strings before?
 
-```python run
+```python run viz=binary-tree viz-root=root
 class N:
     def __init__(self, v, l=None, r=None):
         self.v, self.l, self.r = v, l, r
@@ -140,7 +140,7 @@ The one order with a near-magical property is **inorder on a binary search tree*
 
 **Predict:** for this BST, what does inorder (`left, visit, right`) print?
 
-```python run
+```python run viz=binary-tree viz-root=root
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
         self.val, self.left, self.right = val, left, right
@@ -159,7 +159,7 @@ def inorder(n):
 print("inorder:", inorder(root))   # [1, 3, 4, 5, 8, 9] — sorted!
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 public class Main {
     static class TreeNode {

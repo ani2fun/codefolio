@@ -21,8 +21,7 @@ Given a `pattern` string and a string `s` of space-separated words, return `true
 ### Example 3
 > -   **Input:** `pattern = "abc", s = "hello my my"` → **Output:** `false`
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -52,9 +51,10 @@ Output: true
 Explanation: pattern "aab" keys to "0,0,1,"; words [x, x, y] key to "0,0,1,". Equal.
 ```
 
-</details>
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The structural property that makes this a **key-generation** problem is that "following a pattern" is a statement about *shared repeat structure* between two sequences of different element types. The `pattern` is a sequence of characters; `s` is a sequence of words. They match exactly when both sequences have the same shape — the same arrangement of firsts and repeats. That shape is the key.
 
@@ -62,7 +62,10 @@ The key generator works on *any* iterable, so the element type does not matter. 
 
 The bijection requirement is what would make a naive approach fiddly: no two pattern letters may map to the same word, *and* no two words may map to the same letter. The first-occurrence-index encoding enforces both directions for free. If two different items would ever need the same token, they don't get it — each new item earns a fresh index — so any difference in distinct-item count shows up as a key mismatch.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for Pattern Matching |
 |---|---|
@@ -71,6 +74,7 @@ The bijection requirement is what would make a naive approach fiddly: no two pat
 | **Q3.** Is each input keyed independently in a single pass? | **Yes** — the letters and the words are each scanned once, then the two keys are compared. |
 | **Q4.** Is the per-item work `O(1)`? | **Yes** — each character or word is one map lookup and one append, both `O(1)` amortised. |
 
+</details>
 <details>
 <summary><h2>Approach</h2></summary>
 
@@ -80,8 +84,9 @@ The key generator works on *any* iterable. Treat `pattern` as a sequence of char
 The bijection requirement is a real constraint: no two pattern letters can map to the same word, *and* no two words can map to the same pattern letter. The first-occurrence-index encoding handles both directions: if it would assign two different items the same index, it doesn't — each gets a fresh index. So if `s` has more distinct words than `pattern` has distinct letters (or vice versa), the keys differ.
 
 </details>
+<details>
+<summary><h2>Approach in Words</h2></summary>
 
-## Approach in Words
 
 Split `s` into words, then key both sequences and compare.
 
@@ -91,6 +96,7 @@ Split `s` into words, then key both sequences and compare.
 4. **Key the words.** Run the identical scan over the word list.
 5. **Compare the keys.** Return whether the two pattern strings are byte-identical.
 
+</details>
 <details>
 <summary><h2>Solution</h2></summary>
 
@@ -209,8 +215,9 @@ public class Main {
 ```
 
 </details>
+<details>
+<summary><h2>Dry Run</h2></summary>
 
-## Dry Run
 
 Walk Example 1 — `pattern = "mom"`, `s = "hello world hello"`. Splitting `s` gives `[hello, world, hello]` — three words, matching the three pattern letters.
 
@@ -230,7 +237,10 @@ key(pattern) = "0,1,0,"  ==  key(words) = "0,1,0,"  →  return True
 
 The result `true` matches the expected output.
 
-## Complexity Analysis
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
+
 
 | Measure | Value | Why |
 |---|---|---|
@@ -239,7 +249,10 @@ The result `true` matches the expected output.
 
 Keying a word costs work proportional to that word's length for the map lookup, so the whole pass is linear in the total input size rather than the word count alone.
 
-## Edge Cases
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
+
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -250,6 +263,11 @@ Keying a word costs work proportional to that word's length for the map lookup, 
 | All distinct | `pattern = "abc"`, `s = "a b c"` | `true` | Both key to `"0,1,2,"` — three distinct items in order. |
 | Count mismatch | `pattern = "ab"`, `s = "one two three"` | `false` | Two letters versus three words fails the length check before keying. |
 
-## Key Takeaway
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
 
 The new idea here is that the key generator is **element-type agnostic** — the same first-occurrence-index scan keys characters and words alike, so a cross-type match between a letter sequence and a word sequence reduces to comparing two keys.
+
+</details>

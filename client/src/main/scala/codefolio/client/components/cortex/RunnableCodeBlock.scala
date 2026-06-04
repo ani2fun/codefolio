@@ -350,7 +350,7 @@ object RunnableCodeBlock:
               domReadOnly = !editing,
               padding = js.Dynamic.literal(top = 16, bottom = 16),
               fontFamily =
-                "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace",
+                "\"JetBrains Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace",
               fontSize = 13,
               lineHeight = 22,
               tabSize = 4,

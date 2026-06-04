@@ -17,7 +17,7 @@ Both answers are a [DFS](/cortex/data-structures-and-algorithms/graphs-traversin
 
 Undirected cycle detection: DFS, and flag a back edge to a visited node that **isn't the parent**. A square has a cycle; a tree doesn't. Run it.
 
-```python run
+```python run viz=graph viz-kind=graph
 def has_cycle_undirected(graph):
     visited = set()
     def dfs(node, parent):
@@ -82,7 +82,7 @@ The undirected rule conflates **"visited"** with **"on my current path,"** and o
 
 Both detectors in both languages — undirected (parent rule) and directed (recursion-stack rule):
 
-```python run
+```python run viz=graph viz-kind=graph
 def has_cycle_undirected(graph):
     visited = set()
     def dfs(node, parent):
@@ -111,7 +111,7 @@ print(has_cycle_directed([[1,2],[3],[3],[0]]))                 # True  — diamo
 print(has_cycle_directed([[4],[5],[3],[5],[1],[]]))            # False — a DAG
 ```
 
-```java run
+```java run viz=graph viz-kind=graph
 import java.util.*;
 public class Main {
   static boolean dfsDir(List<List<Integer>> g, int node, boolean[] visited, boolean[] inPath) {

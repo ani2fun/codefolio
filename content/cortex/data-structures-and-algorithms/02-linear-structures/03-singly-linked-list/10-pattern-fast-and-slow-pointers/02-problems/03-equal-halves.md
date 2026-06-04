@@ -55,8 +55,7 @@ h1 -> h2
 
 <p align="center"><strong>Split convention — when the list has odd length, the single middle node belongs to the first half. When even, the two halves are equal.</strong></p>
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1:**
 ```
@@ -79,11 +78,12 @@ Output: false
 Explanation: Odd length — middle node (2) stays with the first half. First half (1 + 2 = 3) ≠ second half (3).
 ```
 
-</details>
 
 ---
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The **structural property** that makes this a fast-and-slow problem is that the boundary between the two halves is at a fixed proportional position — the `1/2` point of the list's length. Once the boundary is known, the rest of the work (summing each half and comparing) is independent of the pattern. The pattern's only job is to find where the second half starts; the sums are downstream work.
 
@@ -91,9 +91,10 @@ The **pointer placement** is the standard 2:1 walk. `slow` advances one node per
 
 What **breaks if you reach for a naive approach**? Walking the list once to count `n`, then walking `n / 2` steps to find the boundary, then summing each half, is three passes of `O(n)` work — same asymptotic cost but more redundant traversal. Building an array of all values to index into is `O(n)` time and `O(n)` extra space — wastes memory for a problem that only needs two scalar sums. The fast-and-slow walk plus two range sums hits `O(n)` time and `O(1)` space with two passes total (one for the boundary, then a single pass that sums both halves back-to-back).
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | Check | Answer for Equal Halves |
 |---|---|
@@ -102,9 +103,10 @@ What **breaks if you reach for a naive approach**? Walking the list once to coun
 | **Q3.** Is the work at each step `O(1)`? | **Yes** — each tick of the boundary walk performs three pointer hops; each tick of the sum walks performs one addition. |
 | **Q4.** Is `O(1)` extra space required? | **Yes** — two cursors during the boundary walk plus two integer accumulators for the sums; no auxiliary array. |
 
----
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
 
-## Approach
 
 Find the boundary with the 2:1 walk, then sum each half and compare.
 
@@ -116,8 +118,9 @@ Find the boundary with the 2:1 walk, then sum each half and compare.
 6. **Sum the second half.** Walk from `second_half_start` to `null`, accumulating `val` into `second_half_sum`. The endpoint is inclusive in the sense that every node from `second_half_start` to the tail is counted.
 7. **Compare and return.** Return `first_half_sum == second_half_sum`.
 
+</details>
 <details>
-<summary><strong>Solution &amp; Analysis</strong></summary>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
 ### Solution
 
@@ -347,7 +350,10 @@ Compare: 10 == 10 → True ✓
 | Overflow risk on large lists | Sums are integer-typed; for very long lists with large values the sum may overflow 32-bit signed range. Use 64-bit accumulators in production. <!-- VERIFY: confirm the Java reference uses `int` or `long` for sum accumulators --> |
 
 </details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 Equal-halves is middle-finding plus two range sums — the 2:1 walk locates the boundary, then a single pass accumulates each half's sum into a scalar. The pattern's contribution is the boundary; the sums are independent work that the pattern enables but does not perform.
+
+</details>

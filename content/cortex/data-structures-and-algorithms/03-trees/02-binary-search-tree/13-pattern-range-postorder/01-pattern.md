@@ -93,7 +93,7 @@ Because in a BST, **everything in `8`'s right subtree is `> 8`**, hence `> 7 = h
 
 Range-sum plus trim-to-range (postorder):
 
-```python run
+```python run viz=binary-tree viz-root=root
 class TreeNode:
     def __init__(self, val):
         self.val = val; self.left = None; self.right = None
@@ -127,7 +127,7 @@ print(range_sum(root, 3, 7))                 # 19
 print(inorder(trim(root, 3, 7)))             # [3, 4, 5, 7]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 public class Main {
   static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } }
   static TreeNode insert(TreeNode r, int v) {

@@ -17,7 +17,7 @@ Recomputing that map from scratch for each of the ~`n` windows costs `O(n · m)`
 
 Find every starting index where `s = "cbaebabacd"` contains an anagram of `p = "abc"`. Maintain the window's letter counts and compare to `p`'s counts. Run it.
 
-```python run
+```python run viz=array
 def find_anagrams(s, p):
     if len(p) > len(s):
         return []
@@ -86,7 +86,7 @@ Because dictionary equality is **structural**: `{a:1, b:1, c:0}` is *not* equal 
 
 The reusable fixed-window anagram finder:
 
-```python run
+```python run viz=array
 def find_anagrams(s, p):
     if len(p) > len(s):
         return []
@@ -111,7 +111,7 @@ def find_anagrams(s, p):
 print(find_anagrams("abab", "ab"))      # [0, 1, 2]
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {

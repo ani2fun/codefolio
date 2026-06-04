@@ -41,7 +41,7 @@ flowchart TB
 
 **Generate all balanced parenthesis strings** with `n` pairs. Two counters ride along — `opens` and `closes` — and the choices are *pruned*: only open while `opens < n`, only close while `closes < opens`. Every leaf reached is therefore balanced by construction.
 
-```python run
+```python run viz=array
 def generate_balanced(n):
     res, cur = [], []
     def helper(opens, closes):
@@ -59,7 +59,7 @@ print(s)
 print("count:", len(s))
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static void gen(int n, int opens, int closes, StringBuilder cur, List<String> res) {
@@ -105,7 +105,7 @@ The `closes < opens` guard looks like a micro-optimisation — surely we could j
 
 **Predict before you run:** drop the ordering guard (allow `)` whenever `closes < n`, with no leaf validity check). For `n = 3`, how many strings come out, and are they all balanced?
 
-```python run
+```python run viz=array
 def generate_buggy(n):
     res, cur = [], []
     def helper(opens, closes):
@@ -138,7 +138,7 @@ It emits **20** strings, of which only **5** are balanced. Dropping the `closes 
 
 **Combination Sum** ([LeetCode 39](https://leetcode.com/problems/combination-sum/)) — find all combinations of candidates (reusable) that sum to a target. Constraint-bounded pruning: sort the candidates, and once one exceeds the remaining target, every later one does too — `break`.
 
-```python run
+```python run viz=array
 def combination_sum(candidates, target):
     candidates.sort()
     res, cur = [], []
@@ -158,7 +158,7 @@ print(combination_sum([2, 3, 6, 7], 7))             # [[2, 2, 3], [7]]
 print(combination_sum([2, 3, 5], 8))                # [[2, 2, 2, 2], [2, 3, 3], [3, 5]]
 ```
 
-```java run
+```java run viz=graph viz-kind=graph
 import java.util.*;
 public class Main {
     static void cs(int[] c, int start, int rem, List<Integer> cur, List<List<Integer>> res) {

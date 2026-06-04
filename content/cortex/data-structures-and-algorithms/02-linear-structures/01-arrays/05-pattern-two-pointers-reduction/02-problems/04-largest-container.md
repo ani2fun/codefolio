@@ -25,9 +25,7 @@ Output: 20
 
 ---
 
-<details>
-<summary><h2>Examples</h2></summary>
-
+## Examples
 
 **Example 1**
 ```
@@ -52,7 +50,6 @@ Output: 1
 Explanation: Only two walls — area = min(1,1) × 1 = 1
 ```
 
-</details>
 <details>
 <summary><h2>Visualising the Container</h2></summary>
 

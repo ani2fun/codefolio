@@ -91,7 +91,7 @@ To unlink a node from a singly linked list you need its **predecessor**, because
 
 The reusable remove-`k`-th-from-end — one pass:
 
-```python run
+```python run viz=linked-list viz-root=head viz-kind=list-single
 class ListNode:
     def __init__(self, val, next=None):
         self.val = val
@@ -115,7 +115,7 @@ while node:
 print(out)                             # [1, 2, 3, 5]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head viz-kind=list-single
 public class Main {
   static class ListNode { int val; ListNode next; ListNode(int v){ val = v; } ListNode(int v, ListNode n){ val = v; next = n; } }
 

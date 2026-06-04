@@ -20,8 +20,7 @@ Same as preceding superior element, but the array is **circular** — when looki
 > -   **Input:** `arr = [6, 7, 8, 9, 8]`
 > -   **Output:** `[8, 8, 9, -1, 9]`
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -55,9 +54,10 @@ Output: [-1, -1, -1]
 Explanation: Equal values are never strictly greater, so the pop test removes them all.
 ```
 
-</details>
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The structural property is the same previous-greater query, but the array is now **circular** — a value's nearest strictly-greater predecessor may live to its right, reachable only by wrapping past the start. That single change is what separates this from the linear superior problem; the monotonic stack itself is untouched.
 
@@ -65,7 +65,10 @@ The trick is to **linearise the circle by iterating `2n` indices** with `i % n` 
 
 The naive circular approach breaks the time budget badly. For each index you would scan up to `n` other positions wrapping around — `O(N²)` time and easy to get wrong at the wrap boundary. The doubled-pass stack keeps the single-sweep `O(N)` guarantee and handles the wrap by construction, never special-casing the seam between the end and the start.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for Preceding Superior Element II |
 |---|---|
@@ -74,6 +77,7 @@ The naive circular approach breaks the time budget badly. For each index you wou
 | **Q3.** Is the comparison monotone — strictly greater or smaller? | **Yes** — a strict greater-than test drives every pop (decreasing stack). |
 | **Q4.** Is the per-element work `O(1)` amortised? | **Yes** — `2n` iterations, each value pushed and popped at most once across the doubled pass. |
 
+</details>
 <details>
 <summary><h2>Approach — the doubled-array trick</h2></summary>
 
@@ -102,8 +106,9 @@ flowchart LR
 <p align="center"><strong>Doubled-array trick — iterate <code>2n</code> times with <code>i % n</code> indexing. The first pass establishes most answers; the second pass catches values whose "previous greater" is on the other side of the wrap. Result is O(N) with O(N) extra space.</strong></p>
 
 </details>
+<details>
+<summary><h2>Approach in Words</h2></summary>
 
-## Approach in Words
 
 Run the linear previous-greater walk over a doubled index range.
 
@@ -114,6 +119,7 @@ Run the linear previous-greater walk over a doubled index range.
 5. **Always push.** Push `num` onto the stack so it can serve later (including wrapped) elements.
 6. **Return the result.** After `2n` iterations every position that has a wrapped or direct predecessor is filled; the rest stay `-1`.
 
+</details>
 <details>
 <summary><h2>Solution</h2></summary>
 
@@ -239,8 +245,9 @@ public class Main {
 ```
 
 </details>
+<details>
+<summary><h2>Dry Run</h2></summary>
 
-## Dry Run
 
 Walk Example 1 — `arr = [2, 5, 1, 6, 10, 3]`, `n = 6`, so `12` iterations. Decreasing stack, pop while the top `≤ num`. The first six steps fill direct answers; the last six wrap and finish the rest:
 
@@ -263,7 +270,10 @@ result = [3, 10, 5, 10, -1, 10]
 
 The result `[3, 10, 5, 10, -1, 10]` matches the expected output. Note `res[4]` stays `-1` because `10` is the global maximum — even the wrap finds nothing strictly greater.
 
-## Complexity Analysis
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
+
 
 | Measure | Value | Why |
 |---|---|---|
@@ -272,7 +282,10 @@ The result `[3, 10, 5, 10, -1, 10]` matches the expected output. Note `res[4]` s
 
 Doubling the iteration count multiplies the work by a constant `2`, which `O(N)` absorbs. The space does not double — the stack only ever holds the live candidates of one lap.
 
-## Edge Cases
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
+
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -284,6 +297,11 @@ Doubling the iteration count multiplies the work by a constant `2`, which `O(N)`
 
 <!-- VERIFY: the frozen Python block's inline comment on print(...[3,1,2]) reads "# [3, 3, 3]" but the code returns [-1, 3, 3] (verified by execution). The comment is inside a frozen fence and was left unchanged; flag for Sweep 4 / code-comment correction. -->
 
-## Key Takeaway
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
 
 What is new here is circularity: iterate `2n` times with `i % n` indexing so a value's previous-greater can wrap past the array start. The monotonic stack, the comparison, and the `O(N)` time / `O(N)` space bounds are identical to the linear superior problem — only the loop bound and the modular index change.
+
+</details>

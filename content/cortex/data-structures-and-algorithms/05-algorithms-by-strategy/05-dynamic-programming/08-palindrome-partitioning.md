@@ -15,7 +15,7 @@ The naïve move is to try every partition, but a length-`n` string has `2^(n−1
 
 Two tables, one pass. First fill `is_pal[i][j]` exactly as before. Then walk a 1D array: `cuts[i]` = the minimum cuts needed for the prefix `s[0..i]`. Fix the **last** piece — for every split point `j` where `s[j..i]` is a palindrome, the cost is `cuts[j-1] + 1`; take the cheapest. If the whole prefix is already a palindrome, it costs `0`.
 
-```python run
+```python run viz=array
 def min_cut(s):
     n = len(s)
     if n < 2:
@@ -41,7 +41,7 @@ print(min_cut("a"))     # 0
 print(min_cut("ab"))    # 1
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static int minCut(String s) {
         int n = s.length();
@@ -103,7 +103,7 @@ It's tempting to be greedy: bite off the **longest palindromic prefix** you can,
 
 **Predict before you run:** for `"aaabaa"`, greedy grabs the longest palindromic prefix first. What does it get — and does it match the true minimum?
 
-```python run
+```python run viz=array
 def is_p(t):
     return t == t[::-1]
 
@@ -148,7 +148,7 @@ For `"aaabaa"`, greedy gets `2` but the true minimum is `1`. Greedy grabs `"aaa"
 
 Counting cuts is good, but the **partition itself** is what you usually want. Extend the DP with a parent pointer: record which `j` gave each `cuts[i]` its minimum, then walk the pointers back to recover the pieces.
 
-```python run
+```python run viz=array
 def min_cut_partition(s):
     n = len(s)
     is_pal = [[False] * n for _ in range(n)]
@@ -181,7 +181,7 @@ print(min_cut_partition("aab"))      # ['aa', 'b']
 print(min_cut_partition("aaabaa"))   # ['a', 'aabaa']
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static List<String> minCutPartition(String s) {

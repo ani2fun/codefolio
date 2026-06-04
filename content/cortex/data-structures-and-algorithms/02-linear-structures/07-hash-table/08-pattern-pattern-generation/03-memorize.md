@@ -31,6 +31,19 @@ Picture sorting mail by postcode rather than by reading each address in full. Th
 
 ## Visual Summary
 
+```mermaid
+flowchart LR
+  s1["eat"] --> k1["key = sorted = aet"]
+  s2["tea"] --> k2["key = aet"]
+  s3["bat"] --> k3["key = abt"]
+  k1 --> grp["map: key → group"]
+  k2 --> grp
+  k3 --> grp
+  style grp fill:#bbf7d0,stroke:#16a34a
+```
+
+<p align="center"><strong>Collapse 'equivalent' inputs to one canonical key — sorted letters for anagrams, a normalised shape for isomorphic strings — then bucket by that key in a hash map. Grouping in O(n·k).</strong></p>
+
 ---
 
 ## Pattern Recognition Triggers

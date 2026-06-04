@@ -31,6 +31,17 @@ Picture a tall, narrow can of tennis balls. You drop them in one at a time — f
 
 ## Visual Summary
 
+```mermaid
+flowchart LR
+  inp["input: A B C D"] --> push["push each onto a stack"]
+  push --> stk["stack top → D C B A"]
+  stk --> pop["pop all"]
+  pop --> out["output: D C B A  (reversed)"]
+  style out fill:#bbf7d0,stroke:#16a34a
+```
+
+<p align="center"><strong>A stack reverses any sequence for free: push every element, then pop them all. The last in comes out first, so the output is the input backwards — O(n) time and space.</strong></p>
+
 ---
 
 ## Pattern Recognition Triggers

@@ -20,7 +20,7 @@ That's a **recurrence relation**: "sorting `n` elements costs sorting two halves
 
 The cleanest way to believe `T(n)=2T(n/2)+n` solves to `n log n` is to *count*. This instruments merge sort to tally its total merge work (one unit per element placed) and its recursion depth — deterministically, no clock:
 
-```python run
+```python run viz=array
 import math
 work = 0; max_depth = 0
 def merge_sort(a, depth=0):
@@ -46,7 +46,7 @@ for n in [8, 16, 32]:
     print(f"{n:>6} {work:>11} {max_depth:>6} {int(n * math.log2(n)):>10}")
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static long work = 0;
@@ -107,7 +107,7 @@ The Master theorem's whole trick is that one comparison decides the answer. Let'
 
 **Predict before you run:** all three have `a = 2, b = 2`, so the threshold is `n^(log₂2) = n¹`. They differ only in `f(n)`: `2T(n/2)+1` (constant combine), `2T(n/2)+n` (linear), `2T(n/2)+n²` (quadratic). Which Master case does each fall into?
 
-```python run
+```python run viz=array
 import math
 recs = [(2, 2, 0, "2T(n/2)+1"), (2, 2, 1, "2T(n/2)+n"), (2, 2, 2, "2T(n/2)+n^2")]
 print(f"{'recurrence':>13} {'thr=n^?':>8} {'f=n^?':>6} {'case':>5}")
@@ -130,7 +130,7 @@ The case names ("leaves win," "root wins") are claims about the *shape* of the w
 
 **Predict:** for `2T(n/2)+n` (combine work = node size) the per-level totals are... and for `2T(n/2)+n²` (combine = size²) they are...? One profile is flat across levels, the other decreases from root to leaves — which is which?
 
-```python run
+```python run viz=array
 def work_per_level(n, f_exp):        # f(n)=n^f_exp; total work at each recursion-tree level
     out = []; k = 0; size = n
     while size >= 1:
@@ -143,7 +143,7 @@ print("balanced  2T(n/2)+n    (f=n)  :", work_per_level(n, 1), "-> flat: every l
 print("top-heavy 2T(n/2)+n^2  (f=n^2):", work_per_level(n, 2), "-> geometric: root dominates")
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static List<Long> workPerLevel(int n, int fExp) {     // f(n)=n^fExp; total work at each level

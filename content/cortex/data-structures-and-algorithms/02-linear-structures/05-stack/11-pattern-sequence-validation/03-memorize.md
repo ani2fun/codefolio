@@ -31,6 +31,23 @@ Picture a stack of unpaid restaurant bills on a spike. Each time a table opens a
 
 ## Visual Summary
 
+```mermaid
+flowchart TD
+  ch{"next char"} -->|"opener"| push["push it"]
+  ch -->|"closer"| match{"matches top?"}
+  ch -->|"end of input"| empty{"stack empty?"}
+  match -->|"yes"| pop["pop top"]
+  match -->|"no / empty"| bad["invalid"]
+  push --> ch
+  pop --> ch
+  empty -->|"yes"| ok["valid"]
+  empty -->|"no"| bad
+  style bad fill:#fecaca,stroke:#ef4444
+  style ok fill:#bbf7d0,stroke:#16a34a
+```
+
+<p align="center"><strong>A stack matches nested open/close structure: push each opener, and on a closer check it pairs with the top. Valid only if every closer matches and the stack ends empty — O(n).</strong></p>
+
 ---
 
 ## Pattern Recognition Triggers

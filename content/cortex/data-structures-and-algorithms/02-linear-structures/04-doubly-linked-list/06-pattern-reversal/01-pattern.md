@@ -87,7 +87,7 @@ Because the swap already happened. The instant we swapped node `1`, its old `nex
 
 The reusable doubly-list reversal:
 
-```python run
+```python run viz=linked-list viz-root=head viz-kind=list-double
 class Node:
     def __init__(self, val):
         self.val = val
@@ -114,7 +114,7 @@ while node:
 print(out)                                                        # [4, 3, 2, 1]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head viz-kind=list-double
 public class Main {
   static class Node { int val; Node prev, next; Node(int v){ val = v; } }
 

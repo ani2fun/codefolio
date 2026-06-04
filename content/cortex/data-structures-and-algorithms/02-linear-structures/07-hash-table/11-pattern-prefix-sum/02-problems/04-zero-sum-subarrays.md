@@ -22,8 +22,7 @@ Given an array `arr`, return the start/end indices of **every** subarray that su
 ### Example 3
 > -   **Input:** `[1, 2, 3]` → **Output:** `[]`
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -56,7 +55,6 @@ Explanation: prefix sum 0 recurs at indices 1 and 3, and prefix sum 1 recurs at
 index 2, producing four overlapping zero-sum slices.
 ```
 
-</details>
 <details>
 <summary><h2>Approach</h2></summary>
 
@@ -211,8 +209,9 @@ The four moves:
 > *Coming up — a different kind of lesson. The next file is the **design** lesson: two classic interview problems (LRU cache, RandomisedSet) where you build whole composite data structures from a hash table plus one other piece (a doubly-linked list, a dynamic array). The patterns we just covered prepared us; design problems force us to combine them into a single coherent structure.*
 
 </details>
+<details>
+<summary><h2>Intuition</h2></summary>
 
-## Intuition
 
 The task is to report *every* contiguous slice that sums to zero, as start-end index pairs. The brute-force read sums every slice: fix a start, extend an end, add as you go, and emit the pair whenever the running sum hits zero. Each of the `O(N²)` start-end pairs is examined, and re-summing makes it `O(N³)` unless you cache the running sum per start — still `O(N²)`.
 
@@ -220,7 +219,10 @@ The prefix sum reframes "this slice sums to zero" as "two prefix sums are equal"
 
 This is the same-value-search flavour, extended from "longest" to "all". The hash map maps each prefix sum to the list of indices where it occurred, and the base case `prefix_sum_indices[0] = [-1]` catches slices anchored at index `0`. What breaks without it is any zero-sum prefix starting at the array's front — its prefix sum is `0`, and the seeded `−1` index is the partner it pairs with. The diagnostic signal is "enumerate subarrays with a net-zero property", which one pass over the prefix sums answers.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for Zero Sum Subarrays |
 |---|---|
@@ -229,7 +231,10 @@ This is the same-value-search flavour, extended from "longest" to "all". The has
 | **Q3.** Is the matching slice found by a hash-map lookup? | **Yes** — a map from each prefix sum to its *list* of indices yields every earlier partner in `O(1)` per partner. |
 | **Q4.** Does the rule survive negatives and zeros? | **Yes** — negatives are essential here; they are what let prefix sums repeat and slices net to zero. |
 
-## Approach
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
+
 
 1. Initialise `prefix_sum = 0`, an empty result list, and a map `prefix_sum_indices` seeded with `{0: [-1]}` so slices starting at index `0` are caught.
 2. Sweep `i` across the array, adding `arr[i]` to `prefix_sum`.
@@ -237,7 +242,10 @@ This is the same-value-search flavour, extended from "longest" to "all". The has
 4. Append the current index `i` to the list for `prefix_sum` (creating the list if this prefix value is new).
 5. After the loop, return the result list of index pairs.
 
-## Dry Run
+</details>
+<details>
+<summary><h2>Dry Run</h2></summary>
+
 
 Walk Example 1: `arr = [6, 3, -1, -3, 4, -2, 2, 4, 6, -12, -7]`, expected output `[[2, 4], [2, 6], [5, 6], [6, 9], [0, 10]]`. The map stores each prefix sum's list of indices; a repeat emits one pair per earlier index:
 
@@ -261,14 +269,20 @@ result = [[2, 4], [2, 6], [5, 6], [6, 9], [0, 10]]
 
 The result matches the expected output — prefix sum `9` recurs across indices `1`, `4`, `6` to produce the overlapping slices, and the final prefix sum `0` pairs with the seeded `−1` to report the whole array `arr[0..10]`.
 
-## Complexity Analysis
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
+
 
 | | Cost | Why |
 |---|---|---|
 | **Time** | **O(N + M)** | One pass over the array is `O(N)`; emitting the answer costs `O(M)` where `M` is the number of zero-sum slices. `M` can reach `O(N²)` when many prefix sums coincide. |
 | **Space** | **O(N)** | The map holds at most `N + 1` index entries across all its lists, plus the `O(M)` output. |
 
-## Edge Cases
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
+
 
 | Input | Output | Why |
 |---|---|---|
@@ -279,6 +293,11 @@ The result matches the expected output — prefix sum `9` recurs across indices 
 | `[1, -1, 1, -1]` | `[[0, 1], [1, 2], [0, 3], [2, 3]]` | Prefix sum `0` recurs at indices `1`, `3` and prefix sum `1` recurs at index `2` → four overlapping slices. |
 | `[1, 2, 3, 4, 0]` | `[[4, 4]]` | Only the trailing `0` makes a prefix sum repeat (`10` at indices `3` and `4`). |
 
-## Key Takeaway
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
 
 Mapping each prefix sum to the *list* of indices where it occurred — not only the first — turns "find every zero-sum subarray" into one `O(N)` sweep that emits a pair for each repeated prefix value, and the `map[0] = [-1]` base case is what catches slices anchored at index `0`.
+
+</details>

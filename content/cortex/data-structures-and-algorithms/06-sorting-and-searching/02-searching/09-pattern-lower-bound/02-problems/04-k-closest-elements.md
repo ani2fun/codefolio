@@ -32,7 +32,7 @@ Output: [8, 10, 12]
 `lower_bound(target)` gives the first index `>= target`; that splits the array into a left side (all `< target`) and a right side (all `>= target`). Set `right` to that index and `left` to `right - 1` — the two candidates straddling the target. Expand the window outward `k` times: on each step, take whichever of `arr[left]` / `arr[right]` is closer to `target` (ties broken by the smaller value, i.e. the `left` side), stepping that pointer outward; if one side has run off the array, take the other. The `k` elements collected between the final pointers — `arr[left + 1 : right]` — are the answer, already sorted ascending.
 
 
-```python run
+```python run viz=array
 from typing import List
 
 class Solution:
@@ -120,7 +120,7 @@ print(Solution().k_closest_elements([5], 1, 5))                     # [5] — si
 print(Solution().k_closest_elements([1, 2, 3, 4, 5, 6], 6, 4))     # [1, 2, 3, 4, 5, 6] — k = all
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {

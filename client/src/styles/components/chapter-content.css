@@ -6,7 +6,7 @@
 
     /* Editorial typography for chapter prose. The Tailwind Typography plugin
        drives spacing and lists; we own the heading fonts (serif italic for
-       h1/h2, sans for h3) and pull every prose role onto our terracotta /
+       h1/h2, sans for h3) and pull every prose role onto our indigo /
        cream / ink token stack so the reader flows with the rest of the site. */
     .chapter-content {
         @apply prose dark:prose-invert max-w-none
@@ -16,9 +16,9 @@
            `--reader-font` on `:root`; the prose consumes them with the original
            values as fallbacks. Keeps the old hardcoded baseline when no prefs
            are set, swaps to the user's choice once they touch the controls. */
-        font-size: var(--reader-fs, 16.5px);
-        line-height: var(--reader-lh, 1.72);
-        font-family: var(--reader-font, var(--font-sans));
+        font-size: var(--reader-fs, 18px);
+        line-height: var(--reader-lh, 1.75);
+        font-family: var(--reader-font, var(--font-read));
         --tw-prose-body: hsl(var(--foreground) / 0.85);
         --tw-prose-headings: hsl(var(--foreground));
         --tw-prose-lead: hsl(var(--foreground) / 0.85);
@@ -38,15 +38,15 @@
         --tw-prose-invert-quotes: hsl(var(--foreground) / 0.85);
         --tw-prose-invert-captions: hsl(var(--muted-foreground));
     }
-    /* h2 — Instrument Serif italic, 32px, tight measure. Replaces the
-       Typography plugin's default sans-bold heading. */
+    /* h2 — Newsreader upright medium, 30px. Replaces the Typography plugin's
+       default sans-bold heading; the chapter title above stays Instrument Serif. */
     .chapter-content h2 {
-        font-family: var(--font-display);
-        font-style: italic;
-        font-weight: 400;
-        font-size: 32px;
-        line-height: 1.05;
-        letter-spacing: -0.015em;
+        font-family: var(--font-head);
+        font-style: normal;
+        font-weight: 500;
+        font-size: 30px;
+        line-height: 1.16;
+        letter-spacing: -0.01em;
         margin: 56px 0 14px;
     }
     /* h3 — Geist sans, 17px semibold. Calmer step than h2 so the
@@ -59,13 +59,14 @@
         letter-spacing: -0.005em;
         margin: 36px 0 10px;
     }
-    /* Editorial em — italic-serif accent at +4% size, ink colour. */
+    /* Body em — legible italic in the reading font (Literata italic), ink colour. */
     .chapter-content em {
-        font-family: var(--font-display);
+        font-family: inherit;       /* Literata italic in the body, not display serif */
         font-style: italic;
-        font-size: 1.04em;
+        font-weight: 500;
+        font-size: 1em;
         color: hsl(var(--foreground));
-        letter-spacing: 0.05em;
+        letter-spacing: 0;
     }
     /* Bold uses font-weight 600 (medium-bold), not the plugin's 700. */
     .chapter-content strong {
@@ -75,7 +76,32 @@
     /* Inline code: rehype-pretty-code is bypassed for inline nodes, so we
        own the full look. A muted chip keeps it readable in both themes. */
     .chapter-content :not(pre) > code {
-        @apply rounded px-1.5 py-0.5 bg-muted text-foreground font-mono text-[0.875em];
+        @apply rounded px-1.5 py-0.5 bg-muted text-foreground font-code text-[0.875em];
+    }
+    /* Rendered code fences: JetBrains Mono on a permanent dark slab. Code is a
+       dark island in every theme, so syntax tokens use the dark-tuned --syn
+       variants (the :root values are tuned for light surfaces). These map onto
+       Shiki's css-variables theme output (render.ts → createCssVariablesTheme). */
+    .chapter-content pre {
+        --shiki-background: #2d2d2d;          /* matches the runnable Monaco editor */
+        --shiki-foreground: #d6d3cc;
+        --syn-kw: #7e88e6;
+        --syn-fn: #54b3a1;
+        --syn-str: #84b87d;
+        --syn-num: #d59a55;
+        --syn-com: #8a857c;
+        --shiki-token-keyword: var(--syn-kw);
+        --shiki-token-function: var(--syn-fn);
+        --shiki-token-string: var(--syn-str);
+        --shiki-token-string-expression: var(--syn-str);
+        --shiki-token-constant: var(--syn-num);
+        --shiki-token-comment: var(--syn-com);
+        --shiki-token-parameter: var(--shiki-foreground);
+        --shiki-token-punctuation: #b7b3aa;
+        --shiki-token-link: var(--syn-fn);
+    }
+    .chapter-content pre code {
+        font-family: var(--font-code);
     }
 
     /* D2 embeds Markdown labels inside SVG <foreignObject> nodes. Those nodes

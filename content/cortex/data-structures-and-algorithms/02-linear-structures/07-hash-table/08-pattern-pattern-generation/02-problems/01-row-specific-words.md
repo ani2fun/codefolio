@@ -25,8 +25,7 @@ Given an array of words, return all the words that can be typed using **only one
 ### Example 3
 > -   **Input:** `["him", "else", "bat"]` → **Output:** `[]`
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -59,9 +58,10 @@ Output: ["Alaska", "Dad"]
 Explanation: Case is ignored. "Alaska" → a,l,a,s,k,a all on row 2. "Dad" → d,a,d all on row 2.
 ```
 
-</details>
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The structural property that makes this a **key-generation** problem is that each character carries a single categorical label — its **keyboard row** — and a word is acceptable exactly when every character shares one label. The "row" is the key, and the question collapses to "does this word map to a single key?"
 
@@ -69,7 +69,10 @@ The key per character is its row id (`1`, `2`, or `3`), looked up from three fix
 
 The naive idea — special-casing every word shape or hand-checking pairs of letters — does more work and is fragiler than the lookup. Direct membership testing against three sets gives each character's row in `O(1)`, and one pass over the word decides it. Comparing characters against each other instead of against a fixed label gives no advantage and obscures the real signal: each character's row is an independent fact, not a relationship.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for Row Specific Words |
 |---|---|
@@ -78,6 +81,7 @@ The naive idea — special-casing every word shape or hand-checking pairs of let
 | **Q3.** Is each input keyed independently in a single pass? | **Yes** — each word is scanned once on its own; no word is compared against another. |
 | **Q4.** Is the per-item work `O(1)`? | **Yes** — each character is a single set-membership lookup, which is `O(1)` average. |
 
+</details>
 <details>
 <summary><h2>Approach</h2></summary>
 
@@ -106,8 +110,9 @@ flowchart LR
 <p align="center"><strong>Row-specific words — the key per character is its keyboard row. A word survives the filter only if all its characters share the same key.</strong></p>
 
 </details>
+<details>
+<summary><h2>Approach in Words</h2></summary>
 
-## Approach in Words
 
 Filter the list, keeping each word whose characters all map to one row.
 
@@ -118,6 +123,7 @@ Filter the list, keeping each word whose characters all map to one row.
 5. **Collect the survivors.** Walk the input list, keep each word that passes the single-row test, and append it to the result.
 6. **Return the result.** It holds the words typeable on one row, in input order.
 
+</details>
 <details>
 <summary><h2>Solution</h2></summary>
 
@@ -273,8 +279,9 @@ public class Main {
 ```
 
 </details>
+<details>
+<summary><h2>Dry Run</h2></summary>
 
-## Dry Run
 
 Walk Example 1 — `["you", "were", "some"]`. Rows: `1 = qwertyuiop`, `2 = asdfghjkl`, `3 = zxcvbnm`.
 
@@ -293,7 +300,10 @@ result = ["you", "were"]
 
 The result `["you", "were"]` matches the expected output.
 
-## Complexity Analysis
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
+
 
 | Measure | Value | Why |
 |---|---|---|
@@ -302,7 +312,10 @@ The result `["you", "were"]` matches the expected output.
 
 The per-character row lookup is `O(1)` on average because membership in a hash set is constant-time, so the whole filter costs one pass over every character.
 
-## Edge Cases
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
+
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -313,6 +326,11 @@ The per-character row lookup is `O(1)` on average because membership in a hash s
 | No words qualify | `["him", "else", "bat"]` | `[]` | Every word spans more than one row. |
 | Repeated characters | `["aaa"]` | `["aaa"]` | Repeats resolve to the same row, so the word is kept. |
 
-## Key Takeaway
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
 
 The key here is a **categorical label** — each character's keyboard row — and a word qualifies only when all its per-character keys agree. Unlike the first-occurrence-index problems, the key is a fixed lookup, not a derived order.
+
+</details>

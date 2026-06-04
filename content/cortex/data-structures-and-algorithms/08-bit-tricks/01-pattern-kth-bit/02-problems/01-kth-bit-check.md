@@ -43,7 +43,7 @@ Because `num & mask` keeps bit k *in its original position*, not at bit 1. For `
 
 ### The Solution
 
-```python run
+```python run viz=array
 class Solution:
     def kth_bit_check(self, num: int, k: int) -> bool:
 
@@ -69,7 +69,7 @@ print(Solution().kth_bit_check(7, 3))    # True
 print(Solution().kth_bit_check(8, 4))    # True
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static class Solution {
         public boolean kthBitCheck(int num, int k) {

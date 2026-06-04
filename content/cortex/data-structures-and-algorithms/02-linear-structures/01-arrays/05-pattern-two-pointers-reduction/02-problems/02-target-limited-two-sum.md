@@ -24,9 +24,7 @@ Explanation: smallest pair sum is 10+20=30 ≥ 15
 
 ---
 
-<details>
-<summary><h2>Examples</h2></summary>
-
+## Examples
 
 **Example 1**
 ```
@@ -49,7 +47,6 @@ Output: -1
 Explanation: All pairs sum to ≥ 30, which is ≥ 15.
 ```
 
-</details>
 <details>
 <summary><h2>Intuition</h2></summary>
 

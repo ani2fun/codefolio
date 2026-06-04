@@ -16,7 +16,7 @@ The **Michael-Scott queue** is the classic answer, built entirely on [CAS](/cort
 
 Enqueue links a node and (best-effort) advances the tail; dequeue swings `head` past the dummy and returns the next value. (Python has no real CAS — the GIL serialises bytecode — so we *simulate* it; Java's `AtomicReference` gives genuine CAS on references.)
 
-```python run
+```python run viz=array
 class Node:
     __slots__ = ("value", "next")
     def __init__(self, value=None):
@@ -61,7 +61,7 @@ print(q.dequeue(), q.dequeue(), q.dequeue())           # 1 2 3  (FIFO)
 print(q.dequeue())                                     # None   (empty)
 ```
 
-```java run
+```java run viz=array
 import java.util.concurrent.atomic.AtomicReference;
 public class Main {
     static class Node {
@@ -145,7 +145,7 @@ The "tail lags" claim is the subtlest part, and seeing the intermediate state de
 
 **Predict before you run:** an enqueuing thread runs step 1 (CAS-link the new node) and is then preempted *before* step 2 (advance the tail). At that moment, where does `tail` point — at the node it just linked, or one node *behind* it?
 
-```python run
+```python run viz=array
 class Node:
     __slots__ = ("value", "next")
     def __init__(self, value=None):
@@ -200,7 +200,7 @@ print("drain:", q.dequeue(), q.dequeue(), q.dequeue())
 
 **Interleave** producers and consumers and confirm FIFO holds through a mixed sequence — enqueue some, dequeue some, repeat, and drain to empty.
 
-```python run
+```python run viz=array
 class Node:
     __slots__ = ("value", "next")
     def __init__(self, value=None):
@@ -244,7 +244,7 @@ out.append(q.dequeue())        # None (empty)
 print(out)                     # [1, 2, 3, None]
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 public class Main {

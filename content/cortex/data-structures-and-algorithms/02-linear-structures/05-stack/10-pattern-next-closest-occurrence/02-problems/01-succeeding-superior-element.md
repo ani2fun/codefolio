@@ -20,8 +20,7 @@ Given two arrays `arr1` and `arr2` (where `arr2` is a subset of `arr1` and all e
 > -   **Input:** `arr1 = [5, 9, 7, 8, 1]`, `arr2 = [5, 9, 7]`
 > -   **Output:** `[9, -1, 8]`
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -53,9 +52,10 @@ Output: [-1, -1]
 Explanation: The array is strictly decreasing, so nothing has a greater value to its right.
 ```
 
-</details>
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The structural property that makes this a **monotonic-stack** problem is the *next-greater* query — each value in `arr1` wants the nearest strictly-greater value to its right. That "nearest qualifying successor" shape is the exact signal the next-closest pattern fires on. The queries in `arr2` only re-index answers that already exist inside `arr1`.
 
@@ -63,7 +63,10 @@ The stack holds the indices of values still *waiting* for a greater successor, i
 
 The naive approach re-scans for every query and breaks the time budget. For each value in `arr2` it walks `arr1` rightward until a greater value appears — `O(N × M)` time, quadratic when `arr2` is as long as `arr1`. The stack pass computes every next-greater in `arr1` once, so each query becomes an `O(1)` index-map lookup.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for Succeeding Superior Element |
 |---|---|
@@ -72,7 +75,10 @@ The naive approach re-scans for every query and breaks the time budget. For each
 | **Q3.** Is the comparison monotone — strictly greater or smaller? | **Yes** — a strict greater-than test drives every resolve-and-pop (decreasing stack). |
 | **Q4.** Is the per-element work `O(1)` amortised? | **Yes** — each index is pushed once, popped at most once; the index-map read is `O(1)`. |
 
-## Approach in Words
+</details>
+<details>
+<summary><h2>Approach in Words</h2></summary>
+
 
 Solve the all-positions problem on `arr1` first, then answer `arr2` by lookup. This implementation scans `arr1` in reverse and reuses the previous-closest technique unchanged.
 
@@ -83,6 +89,7 @@ Solve the all-positions problem on `arr1` first, then answer `arr2` by lookup. T
 5. **Answer the queries.** For each value in `arr2`, look up its index in the map and append `nextGreater[index]` to the result, using `-1` when the value is absent.
 6. **Return the result.** It holds one next-greater answer per query, in `arr2` order.
 
+</details>
 <details>
 <summary><h2>Solution</h2></summary>
 
@@ -221,8 +228,9 @@ public class Main {
 ```
 
 </details>
+<details>
+<summary><h2>Dry Run</h2></summary>
 
-## Dry Run
 
 Walk Example 1 — `arr1 = [3, 5, 1, 6, 8, 7]`, `arr2 = [3, 1, 8, 7]`. Scan `arr1` in reverse with a strictly decreasing stack; pop while the top `≤ num`:
 
@@ -243,7 +251,10 @@ result = [5, 6, -1, -1]
 
 The result `[5, 6, -1, -1]` matches the expected output.
 
-## Complexity Analysis
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
+
 
 | Measure | Value | Why |
 |---|---|---|
@@ -252,7 +263,10 @@ The result `[5, 6, -1, -1]` matches the expected output.
 
 The stack pass is `O(N)` amortised: each value is pushed once and popped at most once across the whole walk, capping stack operations at `2N`.
 
-## Edge Cases
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
+
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -262,6 +276,11 @@ The stack pass is `O(N)` amortised: each value is pushed once and popped at most
 | Sorted ascending | `arr1 = [1, 2, 3, 4]`, `arr2 = [1, 3]` | `[2, 4]` | Each value's next-greater is its immediate right neighbour. |
 | Sorted descending | `arr1 = [4, 3, 2, 1]`, `arr2 = [4, 1]` | `[-1, -1]` | A strictly decreasing array has no greater successor anywhere. |
 
-## Key Takeaway
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
 
 This is the canonical next-greater problem and the mirror of *preceding superior element*: build the next-greater array for the full `arr1`, then resolve each `arr2` query as an `O(1)` index-map lookup. The only change from the previous-closest version is the scan direction — walk `arr1` in reverse so a value's previous-greater-in-reverse is its next-greater going forward.
+
+</details>

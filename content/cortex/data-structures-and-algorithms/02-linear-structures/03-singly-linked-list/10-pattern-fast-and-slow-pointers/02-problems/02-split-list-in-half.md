@@ -14,8 +14,7 @@ Given the **head** of a singly linked list, write a function to split the inpu
 
 If there is only one middle node, that node should be part of the first half. 
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1:**
 ```
@@ -38,11 +37,12 @@ Output: [[5], []]
 Explanation: Single node — first half holds it, second half is empty.
 ```
 
-</details>
 
 ---
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The **structural property** that makes this a fast-and-slow problem is that the cut point is at a fixed proportional position — the boundary between the first and second halves. Finding the middle node alone is not enough; the cut requires *severing* the list, which means rewriting one `next` pointer at the boundary. To do that, the walk needs to track not just the middle but also the node immediately before the cut, so its `next` field can be set to `null`.
 
@@ -50,9 +50,10 @@ The **pointer placement** extends the 2:1 walk with one extra reference. `slow` 
 
 What **breaks if you reach for a naive approach**? Two passes — count the length, then walk `n / 2` steps to find the cut — runs in `O(n)` time and `O(1)` space, same asymptotic cost. The penalty is constant-factor (the prefix is walked twice) and the same boundary-bookkeeping problem still exists: the two-pass version also has to track the predecessor of the cut point. Fast-and-slow plus `prev_to_slow` does the whole job in one pass with no redundant work.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | Check | Answer for Split List in Half |
 |---|---|
@@ -61,9 +62,10 @@ What **breaks if you reach for a naive approach**? Two passes — count the leng
 | **Q3.** Is the work at each step `O(1)`? | **Yes** — each tick is three pointer hops and one assignment; no per-node scan. |
 | **Q4.** Is `O(1)` extra space required? | **Yes** — three local references (`slow`, `fast`, `prev_to_slow`) regardless of list length. |
 
----
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
 
-## Approach
 
 Run the 2:1 walk and capture the predecessor of `slow` each tick. Sever the list at the right boundary based on whether the length is odd or even.
 
@@ -74,8 +76,9 @@ Run the 2:1 walk and capture the predecessor of `slow` each tick. Sever the list
 5. **Sever the list at the right boundary.** For even length, the second half starts at `prev_to_slow.next` (which equals `slow`), and the cut is `prev_to_slow.next = null`. For odd length, `slow` is the middle node and belongs to the first half, so the second half starts at `slow.next` and the cut is `slow.next = null`.
 6. **Return both heads.** Return `[head, second_half]`. The original `head` reference still points to the first half because the only `next` we rewrote was the one at the boundary.
 
+</details>
 <details>
-<summary><strong>Solution &amp; Analysis</strong></summary>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
 ### Solution
 
@@ -354,7 +357,10 @@ Return [5, 10] (i.e. [5→7→3→null, 10→6→8→null]). ✓
 | All equal values (`[7, 7, 7, 7]`) | Values are never inspected; the same boundary work runs and returns two two-node halves by identity. |
 
 </details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 Splitting a list at the middle is the middle-finding walk plus one extra reference — `prev_to_slow` — captured before each `slow` advance. The even-vs-odd branch decides whether the cut happens just before `slow` (even) or just after `slow` (odd); the loop body is identical to plain middle-finding.
+
+</details>

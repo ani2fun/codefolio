@@ -12,8 +12,7 @@ difficulty: medium
 
 Given the **head** of a singly linked list and a non-negative integer **k**, write a function to rotate the list to the **right** by k places and return the head of the rotated list.
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1:**
 ```
@@ -36,11 +35,12 @@ Output: [1, 2, 3, 4, 5]
 ```
 Rotating right by the length leaves the list unchanged — `5 % 5 = 0`.
 
-</details>
 
 ---
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The **structural property** that makes this a sliding-window-traversal problem is that a right-rotation by `k` is equivalent to cutting the list at position `length − k` and rejoining the suffix as a new prefix — and finding that cut point is "the `(length − k + 1)`-th node from the start," which is exactly "the `k`-th node from the end." A singly linked list cannot be walked backwards, but the lockstep two-pointer walk locates that node in a single pass.
 
@@ -48,9 +48,10 @@ The **pointer placement** follows directly. Two pointers are spread `k − 1` ap
 
 What **breaks if you reach for a naive approach**? Performing `k` individual right-rotations is `O(n · k)` time, which collapses to `O(n²)` when `k` is `Θ(n)`. Copying values into an array and rotating with `arr[(i − k) % n]` uses `O(n)` extra space and `O(n)` time but requires two passes (load + write back), and it does not generalise to a streaming source. Only the lockstep walk with the `k % length` normalisation delivers a single pass with `O(1)` extra space.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | Check | Answer for K Rotations |
 |---|---|
@@ -59,13 +60,17 @@ What **breaks if you reach for a naive approach**? Performing `k` individual rig
 | **Q3.** Is the work at each tick `O(1)`? | **Yes** — three pointer assignments per tick; three pointer rewires at the end. |
 | **Q4.** Is `O(1)` extra space required? | **Yes** — four local references (`current`, `kth_from_end`, `prev_to_kth_from_end`, `head`) regardless of list length. |
 
----
+</details>
+<details>
+<summary><h2>Brute Force: Apply One Rotation `k` Times</h2></summary>
 
-## Brute Force: Apply One Rotation `k` Times
 
 Each single right-rotation moves the tail to the front. With a one-pass tail lookup per rotation, that costs `O(n)` time per rotation and `O(n · k)` time overall. Correct, but the work grows quadratically when `k` is `Θ(n)` — and the algorithm wastes the obvious structural shortcut: a rotation by `k` is one cut and one rejoin, not `k` independent operations.
 
-## Key Insight: Rotate-by-`k` = Cut at the `(length − k)`-th Node, Rejoin
+</details>
+<details>
+<summary><h2>Key Insight: Rotate-by-`k` = Cut at the `(length − k)`-th Node, Rejoin</h2></summary>
+
 
 A right-rotation by `k` is equivalent to:
 
@@ -75,9 +80,10 @@ A right-rotation by `k` is equivalent to:
 
 The lockstep walk with a gap of `k − 1` parks `current` on the old tail and `kth_from_end` on the new head in a single pass — exactly what the cut-and-rejoin needs.
 
----
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
 
-## Approach
 
 Run the lockstep walk with a gap of `k − 1`. Compute the length to normalise `k` first.
 
@@ -87,8 +93,9 @@ Run the lockstep walk with a gap of `k − 1`. Compute the length to normalise `
 4. **Slide together.** Initialise `kth_from_end = head` and `prev_to_kth_from_end = null`. While `current.next` is not `null`, advance `prev_to_kth_from_end = kth_from_end`, `kth_from_end = kth_from_end.next`, and `current = current.next`.
 5. **Cut and rejoin.** Set `prev_to_kth_from_end.next = null` (severs the list after the new tail). Set `current.next = head` (re-attaches the old prefix to the end of the old suffix). Return `kth_from_end` as the new head.
 
+</details>
 <details>
-<summary><strong>Solution &amp; Analysis</strong></summary>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
 ### Solution
 
@@ -349,7 +356,10 @@ Return new head = 4 → 5 → 1 → 2 → 3. ✓
 | `length == 2`, `k == 1` | Priming runs zero iterations; the slide runs once; the two nodes swap. |
 
 </details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 `K Rotations` is the cut-and-rejoin variant of sliding-window traversal: a single lockstep walk with a gap of `k − 1` parks the new tail (`current`), the cut point (`prev_to_kth_from_end`), and the new head (`kth_from_end`) — three pointer rewires finish the rotation in `O(1)` work. The normalisation `k % length` makes the algorithm robust to inputs larger than the list itself.
+
+</details>

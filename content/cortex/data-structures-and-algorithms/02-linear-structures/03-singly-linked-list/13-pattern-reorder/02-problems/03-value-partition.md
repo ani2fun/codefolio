@@ -12,8 +12,7 @@ difficulty: medium
 
 Given the **head** of a singly linked list and a value **X**, write a function to partition the list such that all nodes less than X come before nodes greater than or equal to X and return the head of the reordered list. The original relative order of the nodes in each of the two partitions should be preserved.
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1:**
 ```
@@ -36,11 +35,12 @@ Output: [1, 2, 5, 3, 4]
 Explanation: Less-than bucket = [1, 2]; greater-or-equal bucket = [5, 3, 4]. Concatenate to get [1, 2, 5, 3, 4].
 ```
 
-</details>
 
 ---
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The **structural property** that makes this a reorder problem is that the output reuses every input node — only `.next` fields change — and the target order is decided by a simple `O(1)` classifier on each node's value. That makes the split-and-merge pipeline a clean fit: route nodes into two buckets by `val < X`, then concatenate. The "preserve relative order within each bucket" requirement is the key constraint, and it's satisfied automatically because each pass walks the input in forward order and appends to the bucket tail.
 
@@ -48,9 +48,10 @@ The **pointer placement** follows directly. Maintain four cursors: `less_head` /
 
 What **breaks if you reach for a naive approach**? Copying every value into two arrays (less-than, greater-or-equal), concatenating, and rebuilding a fresh linked list works in `O(n)` time but pays `O(n)` extra memory and allocates `n` new nodes. Trying to do an in-place "swap nodes when out of order" pass like array quickselect partition is much harder on a singly linked list — there's no `O(1)` way to swap two nodes that aren't adjacent, because every swap requires finding the predecessor of each node. The two-bucket split avoids the swap problem entirely: every node is appended exactly once, and the chain is never partially broken.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | Check | Answer for Value Partition |
 |---|---|
@@ -59,9 +60,10 @@ What **breaks if you reach for a naive approach**? Copying every value into two 
 | **Q3.** Are the sub-lists bounded in count and walkable in one pass? | **Yes** — exactly two buckets; the merge step is a single `less_tail.next = greater_head` splice. |
 | **Q4.** Is `O(1)` extra space sufficient? | **Yes** — two dummy heads plus five cursors (`less_tail`, `greater_tail`, `current`, and the dummy refs) regardless of input size. |
 
----
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
 
-## Approach
 
 Run the reorder pipeline with `f1 = (val < X)` and `f2 = concatenate`.
 
@@ -74,8 +76,9 @@ Run the reorder pipeline with `f1 = (val < X)` and `f2 = concatenate`.
 7. **Concatenate the buckets.** Set `less_tail.next = greater_head.next` (the real head of the greater bucket). Handle the two edge cases inline: if `less_head.next` is `null`, return `greater_head.next`; if `greater_head.next` is `null`, return `less_head.next`.
 8. **Return the head of the merged list.** Skip the throwaway `less_head` and return `less_head.next`.
 
+</details>
 <details>
-<summary><strong>Solution &amp; Analysis</strong></summary>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
 ### Solution
 
@@ -415,7 +418,10 @@ The output contains exactly `n` nodes — every input node appears in the output
 | Mixed with stability test (`head = [5, 1, 3, 2, 4], X = 3`) | Less = `[1, 2]` (in input order); greater = `[5, 3, 4]` (in input order). Concatenate → `[1, 2, 5, 3, 4]`. The relative order within each bucket matches the input. |
 
 </details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 Value-partition is the stable-partition variant of reorder — the classifier reads `val < X` and the merge step is plain concatenation. The bucket-append discipline (append to the tail, never the head) is what guarantees the stability the problem requires.
+
+</details>

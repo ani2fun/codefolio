@@ -15,8 +15,8 @@ import scala.scalajs.js
  * `AuthStore.openSignIn()` and never have to thread modal state through props.
  *
  * Copy is editorial, ported verbatim from the Claude Design `Cortex Auth` artboard — italic-serif title, mono
- * eyebrow, plain-English lede, one terracotta accent. The only deviation: the requested scope reads
- * `user:email` (what the realm's GitHub IdP actually asks for) rather than the design's `read:user`.
+ * eyebrow, plain-English lede, one indigo accent. The only deviation: the requested scope reads `user:email`
+ * (what the realm's GitHub IdP actually asks for) rather than the design's `read:user`.
  */
 object SignInModal:
 

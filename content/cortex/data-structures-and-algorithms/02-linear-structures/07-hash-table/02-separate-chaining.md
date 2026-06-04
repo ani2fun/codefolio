@@ -17,7 +17,7 @@ Separate chaining's answer is the simplest one: make each slot a **chain** — a
 
 A table of capacity 4 with integer keys. Keys `1` and `5` both hash to slot `1` (`1 % 4 == 5 % 4 == 1`), so they share a chain. Run it and watch the collision land in one bucket.
 
-```python run
+```python run viz=array
 class HashTable:
     def __init__(self, capacity=4):
         self.capacity = capacity
@@ -88,7 +88,7 @@ All four hash to slot `1`, so that one chain holds every key while the other thr
 
 The reusable chained hash table (with delete):
 
-```python run
+```python run viz=array
 class HashTable:
     def __init__(self, capacity=8):
         self.capacity = capacity
@@ -118,7 +118,7 @@ t.put(10, "x"); t.put(18, "y")               # 10 and 18 collide at slot 2 (cap 
 print(t.get(18), t.delete(10), t.get(10))    # y True None
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {

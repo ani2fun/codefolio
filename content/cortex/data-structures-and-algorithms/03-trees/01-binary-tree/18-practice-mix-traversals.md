@@ -125,7 +125,7 @@ The single bug that breaks every first attempt at boundary traversal is forgetti
 
 **Predict before you run:** the left boundary of this tree starts at node `8`, whose left child is the leaf `4`. With the skip-leaves guard, what does the left-boundary walk emit? Without it?
 
-```python run
+```python run viz=binary-tree viz-root=root
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
         self.val, self.left, self.right = val, left, right
@@ -161,7 +161,7 @@ Decompositions have to survive degenerate shapes. Run the *same* `boundary` func
 
 **Predict:** for the spine `1 → 2 → 3` (each node's only child is its left), what is the boundary? (Hint: every node is on the left edge or is the single leaf.)
 
-```python run
+```python run viz=binary-tree viz-root=root
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
         self.val, self.left, self.right = val, left, right
@@ -195,7 +195,7 @@ spine = TreeNode(1, TreeNode(2, TreeNode(3), None), None)
 print("spine boundary:", boundary(spine))   # [1, 2, 3]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 public class Main {
     static class TreeNode {

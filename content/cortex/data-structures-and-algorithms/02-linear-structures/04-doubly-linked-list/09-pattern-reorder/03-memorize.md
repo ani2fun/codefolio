@@ -31,6 +31,15 @@ Picture a postal sorting room with one input belt and two outgoing slots. A cler
 
 ## Visual Summary
 
+```mermaid
+flowchart LR
+  before["doubly list"] --> rule["regroup by a rule<br/>(odd/even positions · partition by x)"]
+  rule --> after["relink prev + next for the new order"]
+  style after fill:#bbf7d0,stroke:#16a34a
+```
+
+<p align="center"><strong>Regroup a doubly list by position or pivot like its singly cousin, but maintain both links as you splice — every moved node needs its prev and next repaired. O(n), in place.</strong></p>
+
 ---
 
 ## Pattern Recognition Triggers

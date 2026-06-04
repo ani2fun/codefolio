@@ -30,7 +30,7 @@ Output: -1
 `upper_bound(arr, 0)` returns the first index where `arr[i] > 0` — exactly the first positive element. Return `-1` if it's `n`.
 
 
-```python run
+```python run viz=array
 from typing import List
 
 class Solution:
@@ -95,7 +95,7 @@ print(Solution().positive_index([-3, -2, -1, 0, 1]))          # 4   (positive at
 print(Solution().positive_index([5, 10, 15]))                 # 0   (all positive)
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {

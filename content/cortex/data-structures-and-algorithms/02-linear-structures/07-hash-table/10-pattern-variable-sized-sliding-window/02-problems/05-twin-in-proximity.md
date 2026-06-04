@@ -21,8 +21,7 @@ Given an array `arr` and integer `k`, return `true` if there are two distinct in
 ### Example 3
 > -   **Input:** `arr = [1,7], k = 5` → **Output:** `false`
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -55,7 +54,6 @@ Explanation: the two 1's are at indices 0 and 2, a gap of 2 > 1. With k = 1 only
 adjacent equal values count.
 ```
 
-</details>
 <details>
 <summary><h2>Approach</h2></summary>
 
@@ -91,7 +89,7 @@ inp -> s -> check -> r
 
 
 
-```python run
+```python run viz=array
 from typing import List
 
 class Solution:
@@ -145,7 +143,7 @@ print(Solution().twin_in_proximity([1, 2, 1], 1))               # False
 print(Solution().twin_in_proximity([1, 2, 1], 2))               # True
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {
@@ -224,8 +222,9 @@ Three lessons:
 > *Coming up — the **prefix-sum + hash** pattern. Sliding windows fail when the rule is non-monotonic (think arrays with negatives, or "exact sum equals K"). The prefix-sum trick rescues these problems by transforming "subarray sum" into "difference of two prefix sums" — and a hash map of prefix sums turns that into a single-pass O(N) algorithm. We saw a teaser in the subarray-sum-equals-k problem above; the next lesson opens the toolbox.*
 
 </details>
+<details>
+<summary><h2>Intuition</h2></summary>
 
-## Intuition
 
 This is a **fixed-width existence** problem, a different shape from the longest-window problems before it. The question is not "how long" but "does a duplicate value sit within `k` indices of an earlier copy?" — a yes/no over every contiguous window of width `k + 1`. A hash map from value to its most recent index turns each check into an `O(1)` lookup. This is the variable-sized window's existence cousin: the window has a *capped* size instead of a searched one.
 
@@ -233,7 +232,10 @@ The window is held to exactly `k + 1` indices, and that cap is the placement ins
 
 The naive approach is correct but wasteful. For each index you would scan the previous `k` elements for a match, costing **O(N · k)** time. Sorting to bring equal values together loses the original indices, which are the whole point. The windowed map remembers only what is in range and answers each membership test in `O(1)`, giving **O(N)** time overall.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for Twin in Proximity |
 |---|---|
@@ -242,7 +244,10 @@ The naive approach is correct but wasteful. For each index you would scan the pr
 | **Q3.** Can you add `arr[end]` and remove `arr[start]` in `O(1)`? | **Yes** — insert the new value's index; delete `arr[start]`'s entry once it falls out of range. |
 | **Q4.** Is the rule monotonic as the window grows? | **Yes** — the window is held to a fixed width `k + 1`, so eviction is mechanical, not condition-driven. |
 
-## Approach
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
+
 
 1. Initialise `start = 0` and an empty map `element_index` from value to its most recent index.
 2. Advance `end` across the array. First, check the rule: if `arr[end]` is already a key *and* `end − element_index[arr[end]] ≤ k`, return `true`.
@@ -250,7 +255,10 @@ The naive approach is correct but wasteful. For each index you would scan the pr
 4. Enforce the window width: if `end − start ≥ k`, delete `element_index[arr[start]]` and advance `start`, so the window never exceeds `k + 1` indices.
 5. After the loop, return `false` — no twin within distance `k` was found.
 
-## Dry Run
+</details>
+<details>
+<summary><h2>Dry Run</h2></summary>
+
 
 Walk Example 1: `arr = [1, 2, 3, 4, 1]`, `k = 5`, expected output `true`. The map stores each value's most recent index:
 
@@ -266,14 +274,20 @@ result = true
 
 The result `true` matches the expected output — the value `1` repeats at indices `0` and `4`, a gap of `4 ≤ 5`.
 
-## Complexity Analysis
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
+
 
 | | Cost | Why |
 |---|---|---|
 | **Time** | **O(N)** | One pass; each step does a constant number of `O(1)` map operations (lookup, insert, and at most one delete). |
 | **Space** | **O(min(N, k))** | The map holds at most `k + 1` live entries — the values currently in the window — capped by the array length. |
 
-## Edge Cases
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
+
 
 | Input | Output | Why |
 |---|---|---|
@@ -284,6 +298,11 @@ The result `true` matches the expected output — the value `1` repeats at indic
 | `arr = [1, 2, 1], k = 2` | `true` | Same array, wider budget — distance `2 ≤ 2` now qualifies. |
 | `arr = [1, 2, 3, 4, 5, 6, 1], k = 5` | `false` | The only repeat is distance `6 > 5` — too far apart. |
 
-## Key Takeaway
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
 
 Unlike the longest-window problems, the window here is *capped* at `k + 1` and the answer is a boolean — short-circuit `true` the moment an in-range duplicate appears. The map is keyed on value and stores the latest index, so each membership test is `O(1)`.
+
+</details>

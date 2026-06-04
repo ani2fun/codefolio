@@ -21,9 +21,7 @@ arr = [1, 2],          k = 5   →  -1   (no size-5 subarray exists)
 
 ---
 
-<details>
-<summary><h2>Examples</h2></summary>
-
+## Examples
 
 **Example 1**
 ```
@@ -46,9 +44,10 @@ Output: 11
 Explanation: The subarray [1, 2, 3, 5] has a minimum sum of 11 and a size of 4.
 ```
 
-</details>
 
-## Applying the Diagnostic Questions
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Question | Answer for Subarray Size Equals K |
 |---|---|
@@ -57,6 +56,7 @@ Explanation: The subarray [1, 2, 3, 5] has a minimum sum of 11 and a size of 4.
 | **Q3.** Per-window report or single best? | **Single best** — only the minimum sum is returned, so `process` updates a running `min_sum` rather than appending to a list. |
 | **Q4.** Edge cases defined? | **Yes** — `k > n` returns the sentinel `-1`; `k == n` produces one window (the whole array); `k == 1` reduces to `min(arr)`. |
 
+</details>
 <details>
 <summary><h2>Intuition &amp; Brute Force</h2></summary>
 
@@ -112,7 +112,7 @@ flowchart TB
 
 ### Brute Force: Nested Loops, O(N × k)
 
-```python run
+```python run viz=array
 from typing import List
 
 def subarray_size_equals_k_brute(arr: List[int], k: int) -> int:
@@ -133,7 +133,7 @@ print(subarray_size_equals_k_brute([4, 4, 5, 6, 4], 3))  # 13
 print(subarray_size_equals_k_brute([1, 2, 3, 5], 1))     # 1
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static int subarraySizeEqualsKBrute(int[] arr, int k) {
         int n = arr.length;
@@ -187,7 +187,7 @@ Return: 13 ✓  —  total additions: 9 (3 windows × 3 elements each)
 
 ### Solution
 
-```python run
+```python run viz=array
 from typing import List
 
 class Solution:
@@ -252,7 +252,7 @@ print(Solution().subarray_size_equals_k([10, 1, 2], 5))          # -1 — k > le
 print(Solution().subarray_size_equals_k([-1, -2, -3, -4], 2))   # -7 — negatives
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static class Solution {
         public int subarraySizeEqualsK(int[] arr, int k) {

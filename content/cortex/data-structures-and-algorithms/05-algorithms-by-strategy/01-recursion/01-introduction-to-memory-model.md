@@ -13,7 +13,7 @@ You didn't write a bad algorithm — you ran out of a **region of memory** most 
 
 Recursion makes the stack *visible*. Each call pushes a frame; each return pops one. Watch `fact(3)` stack three frames deep, hit the base case, then unwind last-in-first-out:
 
-```python run
+```python run viz=array
 def fact(n, depth=0):
     pad = "  " * depth
     print(f"{pad}push fact({n})")                 # a frame is pushed onto the stack
@@ -27,7 +27,7 @@ def fact(n, depth=0):
 print("result:", fact(3))
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static int fact(int n, int depth) {
         String pad = "  ".repeat(depth);
@@ -108,7 +108,7 @@ Which region a value lives in decides its lifetime — and a name *assigned* ins
 
 **Predict before you run:** does this print `1`, or something else?
 
-```python run
+```python run viz=array
 counter = 0                      # lives in the static/global region
 
 def tick():
@@ -132,7 +132,7 @@ It raises `UnboundLocalError: cannot access local variable 'counter' where it is
 
 The flip side: state that must **survive across calls** can't live on the stack (frames vanish on return) — it belongs in the **static** region. Implement a call-counter whose value persists even though every call gets a brand-new frame.
 
-```python run
+```python run viz=array
 def call_count():
     # Python has no `static`; a function attribute lives with the function
     # object (heap), which persists across calls — same effect as static.
@@ -142,7 +142,7 @@ def call_count():
 print(call_count(), call_count(), call_count())   # 1 2 3
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static class Counter {
         static int n = 0;                 // class-level static field = static region

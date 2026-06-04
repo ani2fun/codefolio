@@ -16,7 +16,7 @@ Randomized algorithms split into two families by *what* the randomness affects. 
 
 Randomized quicksort picks a **random** pivot each call. It's Las Vegas: the output is *always* the fully sorted array — randomness changes the path, never the destination.
 
-```python run
+```python run viz=array
 import random
 
 def quicksort(arr):
@@ -33,7 +33,7 @@ print(quicksort(data))                               # always [1, 2, 3, 4, 6, 8,
 print(quicksort(data) == sorted(data))               # always True, whatever the pivots
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static final Random RNG = new Random();
@@ -87,7 +87,7 @@ The exponential error decay is the most counterintuitive — and most useful —
 
 **Predict before you run:** after 10 independent trials, is the false-"prime" probability roughly `1/40` (linear: `¼ ÷ 10`), or something dramatically smaller?
 
-```python run
+```python run viz=array
 p = 0.25                                          # one trial's error on a composite
 for k in (1, 5, 10):
     print(f"{k:>2} trials, all agree -> error = (1/4)^{k} = {p**k:.7f}")
@@ -104,7 +104,7 @@ It's `(¼)¹⁰ ≈ 0.00000095` — about *one in a million*, not `1/40`. Indepe
 
 **Kth Largest Element** ([LeetCode 215](https://leetcode.com/problems/kth-largest-element-in-an-array/)) via randomized **quickselect** — quicksort's one-sided cousin. Partition on a random pivot, then recurse into *only* the side that contains the rank you want. Las Vegas again: the answer is always the correct order statistic; the random pivot buys *expected `O(n)`* (versus sorting's `O(n log n)`).
 
-```python run
+```python run viz=array
 import random
 
 def quickselect(arr, k):                             # k = 0-indexed rank (k-th smallest)
@@ -125,7 +125,7 @@ print(quickselect(A, 2))                             # 3   (3rd smallest)
 print(quickselect(A, 2) == sorted(A)[2])             # True, regardless of pivots
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static final Random RNG = new Random();

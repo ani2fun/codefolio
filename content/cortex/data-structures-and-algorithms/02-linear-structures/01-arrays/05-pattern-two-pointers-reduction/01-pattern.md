@@ -76,7 +76,7 @@ Because `9` was already the *largest* value available, and `2 + 9` fell short of
 
 The reusable shape — return the indices of a pair that sums to the target, or nothing:
 
-```python run
+```python run viz=array
 def two_sum_sorted(arr, target):
     left, right = 0, len(arr) - 1
     while left < right:
@@ -93,7 +93,7 @@ print(two_sum_sorted([2, 4, 5, 8, 9], 13))   # (1, 4) → values 4 and 9
 print(two_sum_sorted([1, 3, 6, 10], 100))     # None
 ```
 
-```java run
+```java run viz=array
 import java.util.Arrays;
 
 public class Main {

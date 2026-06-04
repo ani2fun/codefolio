@@ -21,8 +21,7 @@ Given two strings `s` and `t`, return `true` if they are **homomorphic**: each u
 ### Example 3
 > -   **Input:** `s = "all", t = "mom"` → **Output:** `false`
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -52,9 +51,10 @@ Output: false
 Explanation: "ab" → "0,1," (two distinct chars) but "aa" → "0,0," (one repeated char).
 ```
 
-</details>
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The structural property that makes this a **key-generation** problem is that homomorphism depends only on each string's *repeat structure*, not its actual characters. Two strings are homomorphic exactly when they have the same shape — the same pattern of "new character here, repeat of an earlier one there." That shape is the key.
 
@@ -62,7 +62,10 @@ The key per string is its **first-occurrence-index** encoding: the first distinc
 
 The naive approach builds an explicit character-to-character map while walking both strings together, rejecting on any conflict. That works for one pair but reasons about a *relationship* between two inputs. Keying reframes the question as a property of each string alone: encode each independently, then compare. The comparison is one equality check, and the bijection constraint falls out for free — two distinct source characters never collide on one target because each earns a fresh index.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for Homomorphic Strings |
 |---|---|
@@ -71,6 +74,7 @@ The naive approach builds an explicit character-to-character map while walking b
 | **Q3.** Is each input keyed independently in a single pass? | **Yes** — `s` and `t` are each scanned once on their own, then compared. |
 | **Q4.** Is the per-item work `O(1)`? | **Yes** — each character is one map lookup and one append, both `O(1)` amortised. |
 
+</details>
 <details>
 <summary><h2>Approach</h2></summary>
 
@@ -78,8 +82,9 @@ The naive approach builds an explicit character-to-character map while walking b
 Apply the `generatePattern` function we built above to both strings; compare the resulting keys. The first-occurrence-index encoding *is* the canonical shape of a string, so two strings are homomorphic iff their patterns match exactly.
 
 </details>
+<details>
+<summary><h2>Approach in Words</h2></summary>
 
-## Approach in Words
 
 Encode each string's shape, then compare.
 
@@ -88,6 +93,7 @@ Encode each string's shape, then compare.
 3. **Key the second string.** Run the identical scan on `t`, building `t`'s pattern string.
 4. **Compare the keys.** Return whether the two pattern strings are byte-identical.
 
+</details>
 <details>
 <summary><h2>Solution</h2></summary>
 
@@ -188,8 +194,9 @@ public class Main {
 ```
 
 </details>
+<details>
+<summary><h2>Dry Run</h2></summary>
 
-## Dry Run
 
 Walk Example 1 — `s = "add"`, `t = "qpp"`. Both have equal length, so the keys are built and compared.
 
@@ -209,7 +216,10 @@ key(s) = "0,1,1,"  ==  key(t) = "0,1,1,"  →  return True
 
 The result `true` matches the expected output.
 
-## Complexity Analysis
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
+
 
 | Measure | Value | Why |
 |---|---|---|
@@ -218,7 +228,10 @@ The result `true` matches the expected output.
 
 `K` ranges from `1` (all characters identical) to `N` (all distinct), but the scan length is fixed by `N`, so the time stays `O(N)` in every case.
 
-## Edge Cases
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
+
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -229,6 +242,11 @@ The result `true` matches the expected output.
 | All distinct, equal length | `s = "abc"`, `t = "xyz"` | `true` | Both key to `"0,1,2,"` — three distinct characters in order. |
 | Length mismatch | `s = "ab"`, `t = "a"` | `false` | Different lengths fail the early check before any keying. |
 
-## Key Takeaway
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
 
 This is the canonical first-occurrence-index problem: key each string by its repeat structure and compare. What is new versus the row-specific filter is that the key is a *derived order*, not a fixed categorical label, and the answer is a single equality between two keys.
+
+</details>

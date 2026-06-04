@@ -15,7 +15,7 @@ It's the workhorse behind plagiarism "longest verbatim quote," DNA "longest exac
 
 `dp[i][j]` = length of the longest common substring *ending exactly at* `a[i-1]` and `b[j-1]`. A match extends the diagonal run; a mismatch resets to 0. The answer is the largest value anywhere in the table.
 
-```python run
+```python run viz=grid
 def lcsubstr(a, b):
     m, n = len(a), len(b)
     dp = [[0] * (n + 1) for _ in range(m + 1)]
@@ -32,7 +32,7 @@ def lcsubstr(a, b):
 print(lcsubstr("abcdxyz", "xyzabcd"))             # 4  ("abcd")
 ```
 
-```java run
+```java run viz=grid
 public class Main {
     static int lcsubstr(String a, String b) {
         int m = a.length(), n = b.length();
@@ -91,7 +91,7 @@ The substring/subsequence distinction is the whole lesson. Run *both* DPs on the
 
 **Predict before you run:** for `"abcde"` and `"abfce"` (they share `a, b, c, e` but `"abcde"` has `d` where `"abfce"` has `f`), what's the longest common *subsequence* vs the longest common *substring*?
 
-```python run
+```python run viz=grid
 def lcs(a, b):                                    # subsequence — gaps OK
     m, n = len(a), len(b); dp = [[0]*(n+1) for _ in range(m+1)]
     for i in range(1, m+1):
@@ -124,7 +124,7 @@ Subsequence is `4` (`"abce"` — skip the `d`/`f` mismatch and keep going); subs
 
 **Maximum Length of Repeated Subarray** ([LeetCode 718](https://leetcode.com/problems/maximum-length-of-repeated-subarray/)) — the longest *contiguous* subarray common to two integer arrays. It's longest-common-substring on numbers instead of characters: identical recurrence, reset-on-mismatch, answer in the best cell.
 
-```python run
+```python run viz=grid
 def find_length(a, b):
     m, n = len(a), len(b)
     dp = [[0] * (n + 1) for _ in range(m + 1)]
@@ -140,7 +140,7 @@ print(find_length([1, 2, 3, 2, 1], [3, 2, 1, 4, 7]))     # 3   ([3, 2, 1])
 print(find_length([0, 0, 0, 0, 0], [0, 0, 0, 0, 0]))     # 5
 ```
 
-```java run
+```java run viz=grid
 public class Main {
     static int findLength(int[] a, int[] b) {
         int m = a.length, n = b.length;

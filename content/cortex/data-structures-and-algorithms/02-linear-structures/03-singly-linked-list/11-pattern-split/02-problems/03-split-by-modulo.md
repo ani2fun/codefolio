@@ -12,8 +12,7 @@ difficulty: medium
 
 Given the **head** of a singly linked list and a positive integer **k**, write a function to split the list into `k` separate lists. Each node should be placed into one of the `k` lists according to the remainder when its value is divided by `k`. Your function should return the heads of all `k` lists in order from remainder `0` to `k - 1`.
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1:**
 ```
@@ -38,11 +37,12 @@ Output: [[0, 0, 0], [], []]
 Explanation: 0 % 3 = 0 for every node — the entire list collapses into bucket 0.
 ```
 
-</details>
 
 ---
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The **structural property** that makes this a split problem is that every node carries its destination on its sleeve — `current.val % k` is the bucket index, no look-around required. With `k` possible buckets instead of two, the only generalisation is to use *arrays* of dummies and tails rather than two separate variables. The skeleton scales from `k = 2` to any `k`; the classifier scales from one boolean to one modulo.
 
@@ -50,9 +50,10 @@ The **bucket placement** uses two parallel arrays. Allocate `dummy_heads = [List
 
 What **breaks if you reach for a naive approach**? The two-pass-per-bucket version walks the list `k` times — `O(n * k)` time, and every node is re-classified `k - 1` times for nothing. The other naive option — build `k` separate result-list builders (`if group == 0: append to L0 else if group == 1: append to L1 …`) — works for tiny `k` but the cascade of `if/else if` explodes as `k` grows, and the routing code stops being uniform. Arrays-of-dummies keeps the routing core to two lines regardless of `k`.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | Check | Answer for Split by Modulo |
 |---|---|
@@ -61,9 +62,10 @@ What **breaks if you reach for a naive approach**? The two-pass-per-bucket versi
 | **Q3.** Is the work at each step `O(1)`? | **Yes** — one modulo, one array indexing, one tail-append, one pointer advance per node. The `k` doesn't appear in per-node cost. |
 | **Q4.** Can output lists share original nodes (re-linked, not copied)? | **Yes** — the original nodes are re-threaded into `k` independent chains; no allocations beyond the `k` dummies. |
 
----
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
 
-## Approach
 
 Walk the original list once. Route each node to one of `k` pre-anchored output chains by `value % k`.
 
@@ -75,8 +77,9 @@ Walk the original list once. Route each node to one of `k` pre-anchored output c
 6. **Seal every bucket after the walk.** Loop `i` over `0..k-1` and set `tails[i].next = null` so no output chain inherits a stray edge into another bucket.
 7. **Extract the real heads.** Build `result = [dummy_heads[i].next for i in range(k)]` to skip past every placeholder. Return `result`.
 
+</details>
 <details>
-<summary><strong>Solution &amp; Analysis</strong></summary>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
 ### Solution
 
@@ -333,7 +336,10 @@ Return [d0.next, d1.next, d2.next] = [[3, 6], [10], [5, 2, 8]]. ✓
 | Large `k` (`k > n`) | At most `n` buckets fill; the remaining `k - n` buckets stay empty. Time stays `O(n + k)`; space `O(k)`. |
 
 </details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 When the bucket count grows past 2, the split template scales by promoting `dummy`/`tail` from two scalars to two arrays. The routing core is still two lines (`tails[idx].next = current; tails[idx] = current`); only the indexing changed.
+
+</details>

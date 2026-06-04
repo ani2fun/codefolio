@@ -15,7 +15,7 @@ This is **the** canonical split-point interval DP — the problem CLRS uses to t
 
 A matrix chain is given by a dimensions array `p`: matrix `i` is `p[i-1] × p[i]`. `dp[i][j]` is the minimum cost to multiply matrices `i..j`. For each split `k`, the two halves cost `dp[i][k]` and `dp[k+1][j]`, and joining their results — a `p[i-1] × p[k]` matrix by a `p[k] × p[j]` matrix — costs `p[i-1]·p[k]·p[j]`.
 
-```python run
+```python run viz=grid
 def matrix_chain(p):
     n = len(p) - 1                                   # number of matrices
     dp = [[0] * (n + 1) for _ in range(n + 1)]       # 1-indexed; dp[i][i] = 0
@@ -30,7 +30,7 @@ print(matrix_chain([10, 30, 5, 60, 8]))    # 4300   (A·B·C·D)
 print(matrix_chain([40, 20, 30, 10, 30]))  # 26000
 ```
 
-```java run
+```java run viz=grid
 public class Main {
     static int matrixChain(int[] p) {
         int n = p.length - 1;
@@ -83,7 +83,7 @@ The reason this DP earns its `O(n³)` is that parenthesization order matters far
 
 **Predict before you run:** three matrices — `A` is 10×100, `B` is 100×5, `C` is 5×50. The two groupings `(A·B)·C` and `A·(B·C)` give the same result matrix. How far apart are their costs — a few percent, or much more?
 
-```python run
+```python run viz=grid
 # A: 10x100, B: 100x5, C: 5x50
 ab_then_c = 10 * 100 * 5 + 10 * 5 * 50               # (A·B) is 10x5, then x C
 a_then_bc = 100 * 5 * 50 + 10 * 100 * 50             # (B·C) is 100x50, then A x it
@@ -113,7 +113,7 @@ print("DP optimum:", matrix_chain([10, 100, 5, 50]))
 
 Knowing the *cost* is half the answer; you usually want the *grouping*. Record the best split for each interval, then recurse to print the parenthesization — the same backtrace you used for LCS, edit distance, and palindrome partitioning, now over a 2D split table.
 
-```python run
+```python run viz=grid
 def matrix_chain_order(p):
     n = len(p) - 1
     dp = [[0] * (n + 1) for _ in range(n + 1)]
@@ -137,7 +137,7 @@ print(matrix_chain_order([10, 100, 5, 50]))    # ('((AB)C)', 7500)
 print(matrix_chain_order([10, 30, 5, 60, 8]))  # ('((AB)(CD))', 4300)
 ```
 
-```java run
+```java run viz=grid
 public class Main {
     static int[][] split;
     static String build(int i, int j) {

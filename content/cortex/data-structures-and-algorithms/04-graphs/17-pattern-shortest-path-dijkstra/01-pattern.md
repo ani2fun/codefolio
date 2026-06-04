@@ -47,7 +47,7 @@ dij: "Dijkstra — minimum cumulative weight" {
 
 Single-source shortest weighted distances. Note the cheapest route to node 1 is the *two-hop* `0 → 2 → 1` (cost 3), not the direct edge `0 → 1` (cost 4) — exactly the case BFS would get wrong.
 
-```python run
+```python run viz=graph viz-kind=graph
 import heapq
 
 def dijkstra(adj, n, src):
@@ -69,7 +69,7 @@ adj = {0: [(1, 4), (2, 1)], 1: [(3, 1)], 2: [(1, 2), (3, 5)], 3: []}
 print("distances:", dijkstra(adj, 4, 0))                # [0, 3, 1, 4]
 ```
 
-```java run
+```java run viz=graph viz-kind=graph
 import java.util.*;
 
 public class Main {
@@ -137,7 +137,7 @@ The min-heap's *ordering key* is the whole point. Take a graph with an expensive
 
 **Predict before you run:** Dijkstra orders its frontier by cumulative *cost*; BFS orders by *hop count*. What cost-to-target does each report?
 
-```python run
+```python run viz=graph viz-kind=graph
 import heapq
 from collections import deque
 
@@ -177,7 +177,7 @@ Dijkstra reports `2`; BFS reports `10`. BFS reaches node 2 in *one hop* via the 
 
 The canonical drill: **Network Delay Time** ([LeetCode 743](https://leetcode.com/problems/network-delay-time/)). A signal starts at node `k`; each directed edge `(u, v, w)` takes `w` time. Return the time for *all* `n` nodes to receive it — the maximum of the shortest distances — or `-1` if some node is unreachable.
 
-```python run
+```python run viz=graph viz-kind=graph
 import heapq
 
 def network_delay_time(times, n, k):
@@ -196,7 +196,7 @@ print(network_delay_time([[2,1,1],[2,3,1],[3,4,1]], 4, 2))   # 2
 print(network_delay_time([[1,2,1]], 2, 2))                   # -1
 ```
 
-```java run
+```java run viz=graph viz-kind=graph
 import java.util.*;
 
 public class Main {

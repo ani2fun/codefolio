@@ -80,7 +80,7 @@ Because with a shared mutable accumulator you must **manually undo** your change
 
 The top-down template — path-sum and depth, both threading context down:
 
-```python run
+```python run viz=binary-tree viz-root=root
 class TreeNode:
     def __init__(self, val, left=None, right=None):
         self.val = val; self.left = left; self.right = right
@@ -101,7 +101,7 @@ print(has_path_sum(root, 8), has_path_sum(root, 10), has_path_sum(root, 100))   
 print(max_depth(root))   # 3
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 public class Main {
   static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } TreeNode(int v, TreeNode l, TreeNode r){ val=v; left=l; right=r; } }
 

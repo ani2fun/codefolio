@@ -15,7 +15,7 @@ It's the [LCS](/cortex/data-structures-and-algorithms/algorithms-by-strategy-dyn
 
 `dp[i][j]` = edit distance between the first `i` chars of `a` and first `j` of `b`. Match → take the diagonal free; mismatch → 1 + the cheapest of the three operations.
 
-```python run
+```python run viz=grid
 def edit_distance(a, b):
     m, n = len(a), len(b)
     dp = [[0] * (n + 1) for _ in range(m + 1)]
@@ -34,7 +34,7 @@ def edit_distance(a, b):
 print(edit_distance("horse", "ros"))                 # 3
 ```
 
-```java run
+```java run viz=grid
 public class Main {
     static int editDistance(String a, String b) {
         int m = a.length(), n = b.length();
@@ -83,7 +83,7 @@ Those non-zero base cases look like boilerplate. They are not — they're where 
 
 **Predict before you run:** with `dp[i][0]` and `dp[0][j]` left at 0, what is `edit_distance("abc", "")` — the true answer is `3` (delete all three characters)?
 
-```python run
+```python run viz=grid
 def edit_distance_buggy(a, b):
     m, n = len(a), len(b)
     dp = [[0] * (n + 1) for _ in range(m + 1)]       # BUG: base row/col left at 0
@@ -117,7 +117,7 @@ The correct answer is `3` (delete `a`, `b`, `c`); the zero-base version returns 
 
 Back to the hook: a tiny **spell-checker**. Given a misspelt query and a dictionary, return the word with the smallest edit distance.
 
-```python run
+```python run viz=grid
 def edit_distance(a, b):
     m, n = len(a), len(b); dp = [[0]*(n+1) for _ in range(m+1)]
     for i in range(m+1): dp[i][0] = i
@@ -133,7 +133,7 @@ def closest_word(query, dictionary):
 print(closest_word("speling", ["spelling", "ceiling", "spell", "sapling"]))   # spelling (distance 1)
 ```
 
-```java run
+```java run viz=grid
 public class Main {
     static int editDistance(String a, String b) {
         int m=a.length(), n=b.length(); int[][] dp=new int[m+1][n+1];

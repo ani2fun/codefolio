@@ -31,6 +31,18 @@ Picture assembling a flat-pack bookshelf from a numbered instruction sheet, with
 
 ## Visual Summary
 
+```mermaid
+flowchart TD
+  tok{"token"} -->|"operand"| push["push value"]
+  tok -->|"operator"| apply["pop two, apply, push result"]
+  push --> tok
+  apply --> tok
+  apply --> done["last value on the stack = answer"]
+  style done fill:#bbf7d0,stroke:#16a34a
+```
+
+<p align="center"><strong>Evaluate a linear expression with a stack: push operands, and when an operator (or closing bracket) arrives, pop its operands, compute, and push the result back. One pass — O(n).</strong></p>
+
 ---
 
 ## Pattern Recognition Triggers

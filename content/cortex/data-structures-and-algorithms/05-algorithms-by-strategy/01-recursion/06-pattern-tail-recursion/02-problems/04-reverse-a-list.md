@@ -314,7 +314,7 @@ You came in with the timing flip — work first, ask later — as a fragile conc
 <details>
 <summary><strong>Answer — open after you've written it</strong></summary>
 
-```python run
+```python run viz=array
 class Solution:
     def gcd(self, a: int, b: int) -> int:
         if b == 0:

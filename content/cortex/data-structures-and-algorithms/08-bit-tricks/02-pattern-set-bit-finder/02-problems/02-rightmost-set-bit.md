@@ -53,7 +53,7 @@ return index
 
 ### The Solution
 
-```python run
+```python run viz=array
 class Solution:
     def rightmost_set_bit(self, num: int) -> int:
 
@@ -94,7 +94,7 @@ print(Solution().rightmost_set_bit(8))     # 4
 print(Solution().rightmost_set_bit(12))    # 3
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static class Solution {
         public int rightmostSetBit(int num) {

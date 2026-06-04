@@ -12,8 +12,7 @@ difficulty: medium
 
 Given **heads** of two non-empty singly linked lists **headA** and **headB**, representing two non-negative integers where the value in every node represents a single digit. The numbers stored in the lists are in **reverse order** — that is, the head of each list holds the least-significant digit. Write a function to return the head of a new list that contains the sum of the two given lists.
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1:**
 ```
@@ -36,11 +35,12 @@ Output: [0]
 Explanation: 0 + 0 = 0. Single-digit inputs, single-digit output.
 ```
 
-</details>
 
 ---
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The **structural property** that makes this a merge problem is that the output is built by walking both inputs in lockstep and emitting one output node per step, with the selector deciding what value the new node holds. Unlike alternate fusion or sorted merge, the selector here is *arithmetic* — it sums the two current digits plus a running `carry`, emits a node holding `sum mod 10`, and updates `carry = sum / 10` for the next iteration. Because the digits are stored least-significant-first, the walk naturally aligns columns in the same order a paper-and-pencil addition would: ones column, tens column, hundreds column, and so on.
 
@@ -48,9 +48,10 @@ The **pointer placement** follows directly. Create a `dummy` node and set `tail 
 
 What **breaks if you reach for a naive approach**? Converting both lists into integers, adding them, and converting back to a linked list works for short numbers but overflows for inputs longer than 18 digits (signed 64-bit limit) — and competitive problems often hand you 100-digit inputs precisely to break this approach. The digit-by-digit merge with a running carry handles arbitrary lengths in `O(max(n, m))` time using only constant per-step state. It also avoids the back-and-forth between linked-list and integer representations, which is itself `O(n + m)` work.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | Check | Answer for List Addition |
 |---|---|
@@ -59,9 +60,10 @@ What **breaks if you reach for a naive approach**? Converting both lists into in
 | **Q3.** Are the input nodes rewirable into the output? | **No** — this variant *allocates* fresh output nodes because the output digits do not exist in either input. The merge skeleton still applies; only the splice line changes from `tail.next = winner` to `tail.next = ListNode(sum % 10)`. |
 | **Q4.** Is `O(1)` extra space sufficient? | **`O(1)` auxiliary**, `O(max(n, m))` for the output. The locals (`dummy`, `tail`, `currentA`, `currentB`, `carry`, `sum_value`) are constant; only the emitted output nodes scale with input. |
 
----
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
 
-## Approach
 
 Run the dummy-head splice loop with an arithmetic selector that emits a new node per tick.
 
@@ -73,8 +75,9 @@ Run the dummy-head splice loop with an arithmetic selector that emits a new node
 6. **Emit one final node if a carry remains.** After both inputs are exhausted, if `carry > 0`, append `ListNode(carry)`. This is how `99 + 1 = 100` gains a third digit.
 7. **Return `dummy.next`.** This skips the throwaway dummy and returns the real head of the sum list.
 
+</details>
 <details>
-<summary><strong>Solution &amp; Analysis</strong></summary>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
 ### Solution
 
@@ -360,11 +363,13 @@ The output has `max(n, m)` digits if the final carry is zero, otherwise `max(n, 
 | One input is `[0]` (`A = [0]`, `B = [1, 2, 3]`) | Iter 1: `sum = 0 + 0 + 1 = 1`, emit `1`, `carry = 0`. Drain B: emit `2`, `3`. Output `[1, 2, 3]` (represents 321). |
 
 </details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 List addition is the merge variant where the selector emits a brand-new node per tick instead of splicing an input node, and the `O(1)` per-step state grows to include a running `carry`. The skeleton is unchanged — dummy head, main loop on both cursors, drain step on the longer input, then one final flourish for the tail carry.
 
+</details>
 <details>
 <summary><h2>Key Takeaway</h2></summary>
 

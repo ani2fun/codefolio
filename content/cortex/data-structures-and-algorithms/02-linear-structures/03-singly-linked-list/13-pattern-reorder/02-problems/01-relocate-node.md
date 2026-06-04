@@ -12,8 +12,7 @@ difficulty: easy
 
 Given the **head** of a singly linked list, write a function to move the last node of the list to the start and return the head of the reordered list.
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1:**
 ```
@@ -36,11 +35,12 @@ Output: [5]
 Explanation: A single-node list is unchanged — the first and last node are the same object, so detach-and-prepend is a no-op.
 ```
 
-</details>
 
 ---
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The **structural property** that makes this a reorder problem is that the output reuses every input node, only with their `.next` fields rewired. No values are read or compared — the work is purely structural. That puts it squarely in the reorder family even though the rearrangement is small: detach the last node, prepend it to the head. The split-and-merge pipeline applies in its most degenerate form, where the split sub-lists are the singleton `[last_node]` and the prefix `[head, …, second-to-last]`, and the merge step is a one-line splice.
 
@@ -48,9 +48,10 @@ The **pointer placement** follows directly. Walk the input with two cursors: `cu
 
 What **breaks if you reach for a naive approach**? Copying every value into an array, popping the last element, prepending it, and rebuilding a fresh linked list works in `O(n)` time but pays `O(n)` extra memory and allocates `n` new nodes — for a problem whose answer requires rewriting exactly two `.next` fields. Walking the list twice (once to find the second-to-last node, once more to splice) is correct but adds an unnecessary second traversal. The two-cursor walk does the job in one pass and `O(1)` space.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | Check | Answer for Relocate Node |
 |---|---|
@@ -59,9 +60,10 @@ What **breaks if you reach for a naive approach**? Copying every value into an a
 | **Q3.** Are the sub-lists bounded in count and walkable in one pass? | **Yes** — exactly two sub-lists (the singleton last node and the prefix); the merge step is one pointer update. |
 | **Q4.** Is `O(1)` extra space sufficient? | **Yes** — two cursors (`current`, `previous`) regardless of input size. |
 
----
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
 
-## Approach
 
 Run the reorder pipeline with a single-node split and a prepend merge.
 
@@ -71,8 +73,9 @@ Run the reorder pipeline with a single-node split and a prepend merge.
 4. **Prepend the severed node onto the prefix.** Set `current.next = head` (the original head). The relocated last node now points at the original first node, and the prefix dangles behind it.
 5. **Return the relocated last node as the new head.** `current` is now the head of the output. The output's length equals the input's length; only two `.next` writes occurred.
 
+</details>
 <details>
-<summary><strong>Solution &amp; Analysis</strong></summary>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
 ### Solution
 
@@ -313,7 +316,10 @@ The output contains the same `n` nodes as the input — no nodes are added or dr
 | Long list (`head = [1, 2, 3, 4, 5]`) | Walk reaches `current = 5`, `previous = 4`. Sever → `[1, 2, 3, 4]`. Prepend `5` → `5 → 1 → 2 → 3 → 4`. Output `[5, 1, 2, 3, 4]`. |
 
 </details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 Relocate-node is the reorder pattern in its smallest form — the split sub-lists are a singleton and a prefix, and the merge step is one `.next` rewrite. The two-cursor walk turns "find the second-to-last node" into a single pass.
+
+</details>

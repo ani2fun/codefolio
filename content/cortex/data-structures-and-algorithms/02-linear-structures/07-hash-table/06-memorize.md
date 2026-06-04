@@ -29,6 +29,17 @@ Picture a coat-check counter at a theatre. You hand over your coat and get a num
 
 ## Visual Summary
 
+```mermaid
+flowchart LR
+  key(["key"]) -->|"hash(key) % m"| idx{"bucket index"}
+  idx --> b0["0 | —"]
+  idx --> b1["1 | → (k₁,v₁) → (k₄,v₄)"]
+  idx --> b2["2 | → (k₂,v₂)"]
+  style b1 fill:#c7d2fe,stroke:#4f5bd5
+```
+
+<p align="center"><strong>A hash function maps each key to a bucket in O(1) average. Collisions chain inside a bucket; a good hash keeps chains short, so lookup, insert, and delete stay ~O(1).</strong></p>
+
 ---
 
 ## Key Operations

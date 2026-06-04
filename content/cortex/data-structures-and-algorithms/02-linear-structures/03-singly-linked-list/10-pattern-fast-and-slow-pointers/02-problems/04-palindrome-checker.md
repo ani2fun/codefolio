@@ -12,8 +12,7 @@ difficulty: medium
 
 Given the **head** of a singly linked list, write a function to check if the given list is a palindrome or not. Your function should return `true` if it is a palindrome and `false` if it's not. 
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1:**
 ```
@@ -36,11 +35,12 @@ Output: true
 Explanation: Odd-length palindrome — the middle node (3) is its own mirror; the surrounding pairs (1↔1, 2↔2) match.
 ```
 
-</details>
 
 ---
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The **structural property** that makes this a fast-and-slow problem is that a palindrome's definition is positional — node `i` must match node `n - 1 - i`. A singly linked list has no backward pointers, so reading the list "from the right" requires either an auxiliary copy (`O(n)` extra space) or in-place reversal of the back half (`O(1)` extra space). Once the back half is reversed in place, the comparison becomes a parallel forward walk from both halves' heads — at every tick, the front-half cursor and the reversed-back-half cursor should match in value.
 
@@ -48,9 +48,10 @@ The **pointer placement** combines two patterns from this chapter. First, the 2:
 
 What **breaks if you reach for a naive approach**? Copying all values into an array and using two-pointer index comparison works in `O(n)` time but uses `O(n)` extra space. Stack-based comparison (push the first half onto a stack, then pop while walking the second half) is also `O(n)` space. Recursive comparison (recurse to the tail, then bubble back comparing values) costs `O(n)` stack space and overflows on long lists. The 2:1 walk plus in-place reversal hits `O(n)` time and `O(1)` space — the optimal envelope for this problem, but it does mutate the input list. If preserving the original structure matters, a second reversal pass after the comparison restores it.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | Check | Answer for Palindrome Checker |
 |---|---|
@@ -59,9 +60,10 @@ What **breaks if you reach for a naive approach**? Copying all values into an ar
 | **Q3.** Is the work at each step `O(1)`? | **Yes** — each tick of the boundary walk, reversal loop, and comparison loop performs a constant number of pointer/value operations. |
 | **Q4.** Is `O(1)` extra space required? | **Yes** — boundary walk uses two cursors, reversal uses three, comparison uses two; the in-place rewrite of the back half is what keeps space constant. |
 
----
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
 
-## Approach
 
 Compose three small walks: find the middle, reverse the back half, then compare front and reversed-back in parallel.
 
@@ -73,8 +75,9 @@ Compose three small walks: find the middle, reverse the back half, then compare 
 
 The loop stops on `head_b == null` (not `head_a`) so that on odd-length lists, the front-half cursor naturally walks past the middle node without comparing it against anything. The middle is its own mirror by definition.
 
+</details>
 <details>
-<summary><strong>Solution &amp; Analysis</strong></summary>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
 ### Solution
 
@@ -300,9 +303,13 @@ Return True. ✓
 | Odd-length palindrome (`[1, 2, 1]`) | Middle = `2` (second node). Reverse back half = `2 → 1 → null` reversed = `1 → 2 → null`. Compare first front node `1` vs first reversed-back `1` → match. Advance. `head_b` becomes the former `2`; compare `2` vs `2` → match. `head_b` becomes `null`. Return `true`. Middle is never compared against itself. |
 | Mutates the input list | After the call, the back half of the original list is reversed — the original structure is lost. If preservation matters, run the reversal helper a second time on the back half to restore it. |
 
-## Key Takeaway
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
 
 Palindrome checking composes three small walks: middle-finding (this pattern), back-half reversal (pattern 07), and a parallel comparison walk. None of the three is novel on its own — the contribution is recognising that "read the list backwards" can be reduced to an in-place reversal of the back half, keeping the whole job in `O(1)` extra space.
+
+</details>
 
 </details>
 <details>

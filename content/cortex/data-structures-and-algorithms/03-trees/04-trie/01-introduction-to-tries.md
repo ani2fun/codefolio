@@ -20,7 +20,7 @@ The **trie** (pronounced "try," from re*trie*val) makes a prefix query cost only
 
 A trie over `apple, app, apt, ant, ants, and`. `search` asks "is this a *stored word*?"; `starts_with` asks "is this a *prefix* of one?"; `words_with_prefix` is autocomplete. Run it.
 
-```python run
+```python run viz=trie viz-root=root viz-kind=trie
 class TrieNode:
     __slots__ = ("children", "is_end")
     def __init__(self):
@@ -125,7 +125,7 @@ Before you read on: the walk for both reaches the exact same node (the one spell
 
 The trie in both languages — `insert` / `search` / `starts_with`, the LeetCode-208 core:
 
-```python run
+```python run viz=trie viz-root=root viz-kind=trie
 class TrieNode:
     __slots__ = ("children", "is_end")
     def __init__(self):
@@ -155,7 +155,7 @@ for w in ["apple", "app", "apt"]: t.insert(w)
 print(t.search("app"), t.search("ap"), t.starts_with("ap"))   # True False True
 ```
 
-```java run
+```java run viz=trie viz-root=root viz-kind=trie
 import java.util.*;
 public class Main {
   static class TrieNode {

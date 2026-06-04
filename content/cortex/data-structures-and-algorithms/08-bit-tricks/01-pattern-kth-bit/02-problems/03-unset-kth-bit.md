@@ -43,7 +43,7 @@ Without the `~`, you'd be ANDing `num` against a mask that's 0 everywhere except
 
 
 
-```python run
+```python run viz=array
 class Solution:
     def unset_kth_bit(self, num: int, k: int) -> int:
 
@@ -68,7 +68,7 @@ print(Solution().unset_kth_bit(15, 4))   # 7
 print(Solution().unset_kth_bit(8, 4))    # 0
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static class Solution {
         public int unsetKthBit(int num, int k) {

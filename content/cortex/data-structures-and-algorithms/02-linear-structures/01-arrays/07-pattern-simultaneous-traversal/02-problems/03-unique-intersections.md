@@ -21,8 +21,7 @@ arr1 = [1, 2, 3, 4, 5],   arr2 = [1, 3, 5, 7]   →  [1, 3, 5]
 
 ---
 
-<details>
-<summary><h2>Examples</h2></summary>
+## Examples
 
 **Example 1**
 ```
@@ -46,7 +45,6 @@ Output: [2]
 Explanation: 2 is common, but unique intersections means it appears once.
 ```
 
-</details>
 <details>
 <summary><h2>Intuition &amp; Brute Force</h2></summary>
 

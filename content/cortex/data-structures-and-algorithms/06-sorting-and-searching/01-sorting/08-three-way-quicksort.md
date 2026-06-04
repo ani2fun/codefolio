@@ -86,7 +86,7 @@ Three-way quicksort sorts an all-equal array in **`O(n)`**: the very first parti
 
 The reusable three-way quicksort:
 
-```python run
+```python run viz=array
 def quicksort3(arr, lo=0, hi=None):
     if hi is None:
         hi = len(arr) - 1
@@ -109,7 +109,7 @@ print(quicksort3([5, 2, 8, 1, 9, 3]))   # [1, 2, 3, 5, 8, 9]
 print(quicksort3([7, 7, 7, 7]))         # [7, 7, 7, 7]  (one O(n) pass)
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {

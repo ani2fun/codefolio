@@ -16,7 +16,7 @@ The idea fuses two structures you already know. Put all patterns in a [trie](/co
 
 Build the automaton from the classic dictionary `{he, she, his, hers}`, then scan `"ushers"` — every pattern occurrence falls out of one pass.
 
-```python run
+```python run viz=array
 from collections import deque
 class AhoCorasick:
     def __init__(self, patterns):
@@ -52,7 +52,7 @@ class AhoCorasick:
 print(AhoCorasick(["he", "she", "his", "hers"]).search("ushers"))   # she@1, he@2, hers@2
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static List<Map<Character,Integer>> go = new ArrayList<>();
@@ -135,7 +135,7 @@ The failure links handle *mismatches*; the **output links** handle *overlaps* �
 
 **Predict before you run:** dictionary `{she, he}`, text `"she"`. After reading all three characters you're sitting at the `she` node and report `she`. But `he` is a suffix of `she`. Does the algorithm also report `he` — or do you have to ask for it?
 
-```python run
+```python run viz=array
 from collections import deque
 class AhoCorasick:
     def __init__(self, patterns, output_links=True):
@@ -184,7 +184,7 @@ With output links you get both `[('he', 1), ('she', 0)]`; without them you get o
 
 **Count all dictionary occurrences** in a text — the multi-pattern workload Aho-Corasick was built for. One pass tallies every pattern, overlaps included.
 
-```python run
+```python run viz=array
 from collections import deque
 class AhoCorasick:
     def __init__(self, patterns):
@@ -220,7 +220,7 @@ print(AhoCorasick(["is", "si", "ssi"]).count("mississippi"))   # 6
 print(AhoCorasick(["ab", "bc", "ca"]).count("abcab"))          # 4
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static List<Map<Character,Integer>> go = new ArrayList<>();

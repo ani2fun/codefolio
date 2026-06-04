@@ -17,7 +17,7 @@ Double hashing removes that root cause. The step size comes from a **second hash
 
 Three keys — `1, 8, 15` — all hash to home slot `1` (capacity `7`). But their second hash gives each a different step (`4, 2, 5`), so they scatter to slots `1, 3, 6` along *different* paths. Run it.
 
-```python run
+```python run viz=array
 EMPTY = None
 DELETED = object()
 R = 5                                   # a prime < capacity, for the second hash
@@ -103,7 +103,7 @@ Because the step size comes from **the key itself**, not the home slot. Keys `1`
 
 The reusable double-hashing table:
 
-```python run
+```python run viz=array
 EMPTY = None
 DELETED = object()
 R = 5
@@ -138,7 +138,7 @@ t.put(2, "p"); t.put(9, "q")            # both home slot 2, different steps
 print(t.get(2), t.get(9), t.get(99))    # p q None
 ```
 
-```java run
+```java run viz=array
 public class Main {
   static final int[] DELETED = new int[0];
   static final int R = 5;

@@ -18,7 +18,7 @@ That order is a **topological sort**. `npm`/`pip`/`cargo` use it to install depe
 
 DFS topological sort on `0→1, 2→3, 4→1`: run DFS, **append each node when it finishes**, then **reverse**. The result is an order where every edge points forward. Run it.
 
-```python run
+```python run viz=graph viz-kind=graph
 def topo_dfs(graph):
     visited, result = set(), []
     def dfs(node):
@@ -74,7 +74,7 @@ Appending on **entry** is wrong because at the moment DFS *enters* a node, **not
 
 Both methods in both languages — DFS finish-order, and Kahn's (which returns `None`/empty on a cycle):
 
-```python run
+```python run viz=graph viz-kind=graph
 from collections import deque
 
 def topo_dfs(graph):
@@ -107,7 +107,7 @@ print(topo_kahn(g))               # [0, 2, 4, 3, 1] — different but valid
 print(topo_kahn([[1], [2], [0]])) # None — cycle 0→1→2→0
 ```
 
-```java run
+```java run viz=graph viz-kind=graph
 import java.util.*;
 public class Main {
   static List<Integer> kahn(List<List<Integer>> g) {

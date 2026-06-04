@@ -27,8 +27,7 @@ Given a string `s`, find and return the index of the first non-repeating charact
 > -   **Output:** `-1`
 > -   **Explanation:** No character appears exactly once.
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -59,9 +58,10 @@ Output: -1
 Explanation: each of a, b, c appears twice → no non-repeating character.
 ```
 
-</details>
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The structural property that makes this a **counting** problem is the word *non-repeating* — the answer depends only on how often each character appears, never on order or position. "Appears exactly once" is a pure frequency test, the exact signal the counting pattern fires on.
 
@@ -69,7 +69,10 @@ The frequency map is the right structure because it records every character's co
 
 The naive approach breaks the time budget. For each character it re-scans the whole string to check for a repeat, costing `O(N²)` time for `O(1)` space. That re-derives the same per-character count `N` times over. Counting computes every count once in `O(N)`, so each uniqueness check drops to an `O(1)` lookup.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for First Non-Repeating Character |
 |---|---|
@@ -78,7 +81,10 @@ The naive approach breaks the time budget. For each character it re-scans the wh
 | **Q3.** Can the answer be read off the counts after one pass? | **Yes** — build the map first, then re-scan and read each count. |
 | **Q4.** Is the per-item work `O(1)` amortised? | **Yes** — one hash-map increment per character, then one lookup per index. |
 
-## Approach
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
+
 
 Build the counts first, then re-scan for the earliest unique character.
 
@@ -87,6 +93,7 @@ Build the counts first, then re-scan for the earliest unique character.
 3. **Return the first unique index.** The first character whose count is `1` is the answer — return its index.
 4. **Handle the empty case.** If the re-scan finds no count-1 character, return `-1`.
 
+</details>
 <details>
 <summary><h2>Solution</h2></summary>
 
@@ -94,7 +101,7 @@ Build the counts first, then re-scan for the earliest unique character.
 Two passes: build the frequency map, then re-walk to find the first frequency-1 character.
 
 
-```python run
+```python run viz=array
 from collections import defaultdict
 from typing import Dict
 
@@ -137,7 +144,7 @@ print(Solution().first_non_repeating_character("abcabc"))         # -1
 print(Solution().first_non_repeating_character("abcd"))           # 0
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {
@@ -189,8 +196,9 @@ public class Main {
 ```
 
 </details>
+<details>
+<summary><h2>Dry Run</h2></summary>
 
-## Dry Run
 
 Walk Example 1 — `s = "codeintuition"`. Pass 1 builds the counts; pass 2 returns the first count-1 index:
 
@@ -207,7 +215,10 @@ result = 0
 
 The result `0` matches the expected output — `'c'` appears once and is the earliest such character.
 
-## Complexity Analysis
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
+
 
 | Measure | Value | Why |
 |---|---|---|
@@ -216,7 +227,10 @@ The result `0` matches the expected output — `'c'` appears once and is the ear
 
 For a fixed alphabet (e.g. 26 lowercase letters), the space is bounded by the alphabet size — `O(1)` — but the general bound is `O(N)` distinct characters.
 
-## Edge Cases
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
+
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -227,6 +241,11 @@ For a fixed alphabet (e.g. 26 lowercase letters), the space is bounded by the al
 | All distinct | `s = "abcd"` | `0` | Every count is `1`, so the first index wins. |
 | Repeats then unique | `s = "abcabc"` | `-1` | Each of `a`, `b`, `c` appears twice → no answer. |
 
-## Key Takeaway
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
 
 This is the base case of the counting pattern: tally every character once, then re-scan in order and return the first index with count `1`. The second pass over the original string — not the map — is what preserves "first" by position.
+
+</details>

@@ -31,6 +31,15 @@ Picture a two-way conga line where every dancer is holding the shoulders of both
 
 ## Visual Summary
 
+```mermaid
+flowchart LR
+  node["each node: swap prev ↔ next"] --> ends["then swap the list's head ↔ tail"]
+  style node fill:#c7d2fe,stroke:#4f5bd5
+  style ends fill:#bbf7d0,stroke:#16a34a
+```
+
+<p align="center"><strong>A doubly list reverses with one swap per node — exchange each node's prev and next — because the backward link means no forward pointer is ever lost. Finish by swapping head and tail. O(n).</strong></p>
+
 ---
 
 ## Pattern Recognition Triggers

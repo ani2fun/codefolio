@@ -17,7 +17,7 @@ The key observation: split at the midpoint and **at least one half is always ful
 
 Find `0` in the rotated array `[4, 5, 6, 7, 0, 1, 2]`. Run it.
 
-```python run
+```python run viz=array
 def search(arr, target):
     lo, hi = 0, len(arr) - 1
     while lo <= hi:
@@ -88,7 +88,7 @@ The rotation introduces exactly *one* "drop" point (where the larger pre-rotatio
 
 The reusable rotated-array search:
 
-```python run
+```python run viz=array
 def search(arr, target):
     lo, hi = 0, len(arr) - 1
     while lo <= hi:
@@ -111,7 +111,7 @@ a = [4, 5, 6, 7, 0, 1, 2]
 print(search(a, 4), search(a, 2), search(a, 8))   # 0 6 -1
 ```
 
-```java run
+```java run viz=array
 public class Main {
   static int search(int[] arr, int target) {
     int lo = 0, hi = arr.length - 1;

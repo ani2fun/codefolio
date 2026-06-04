@@ -79,7 +79,7 @@ Before you read on: for an **even** list `1→2→3→4→5→6`, where does `sl
 
 The reusable midpoint finder:
 
-```python run
+```python run viz=linked-list viz-root=head viz-kind=list-single
 class ListNode:
     def __init__(self, val, next=None):
         self.val = val
@@ -96,7 +96,7 @@ head = ListNode(1, ListNode(2, ListNode(3, ListNode(4, ListNode(5)))))
 print(middle(head).val)             # 3
 ```
 
-```java run
+```java run viz=linked-list viz-root=head viz-kind=list-single
 public class Main {
   static class ListNode { int val; ListNode next; ListNode(int v){ val = v; } ListNode(int v, ListNode n){ val = v; next = n; } }
 

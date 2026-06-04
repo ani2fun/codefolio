@@ -133,11 +133,21 @@ const RENDERERS: Record<string, RendererFn> = {
  * pointer carets + an index row) instead of the generic circle layout — arrays are the
  * book's most common shape, so they get the cell treatment by default with no per-fence
  * opt-in. `array` is the legacy hand-curated `layoutHint` alias for the same kind.
+ *
+ * Linked lists get the same default treatment. The chapters annotate runnable blocks with
+ * `viz=linked-list` (a KnownLayoutKind, so HeapToGraph stamps every node's layoutKind =
+ * `linked-list`) but usually omit `viz-kind=list-single`, leaving structureType empty. Without
+ * an entry here those cards fell through to the generic circle/force graph (scattered nodes,
+ * crossing `next` arrows). Route every linked-list layout alias to the bespoke LinkedListRenderer
+ * — it auto-detects singly vs doubly from the step's `prev` edges, so one entry covers both.
  */
 const LAYOUT_RENDERERS: Record<string, RendererFn> = {
   "array-1d": arrayRenderer,
   array: arrayRenderer,
   "array-2d": gridRenderer,
+  "linked-list": linkedListRenderer,
+  "list-single": linkedListRenderer,
+  "list-double": linkedListRenderer,
 };
 
 /**

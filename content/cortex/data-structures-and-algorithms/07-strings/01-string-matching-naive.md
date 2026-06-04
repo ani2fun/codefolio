@@ -15,7 +15,7 @@ This naive scan is the **floor** every string algorithm is measured against. It'
 
 Slide the pattern across every start position; at each, compare until a mismatch or a full match.
 
-```python run
+```python run viz=array
 def naive_search(text, pattern):
     n, m = len(text), len(pattern)
     hits = []
@@ -31,7 +31,7 @@ print(naive_search("abxabcabcaby", "abcaby"))   # [6]
 print(naive_search("aaaaa", "aa"))              # [0, 1, 2, 3]
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static List<Integer> naiveSearch(String text, String pattern) {
@@ -83,7 +83,7 @@ People often quote naive matching as "basically linear" — true for random text
 
 **Predict before you run:** on text `"aaaaaaaaaaaaaaaaaaaa"` (twenty `a`s) searching for `"aaaab"` (four `a`s then a `b`), roughly how many character comparisons — about 20 (one per position), or far more?
 
-```python run
+```python run viz=array
 def count_comparisons(text, pattern):
     n, m = len(text), len(pattern)
     cmps = 0
@@ -112,7 +112,7 @@ The adversarial case does **80** comparisons — exactly the `(n − m + 1)·m =
 
 **Implement strStr()** ([LeetCode 28](https://leetcode.com/problems/find-the-index-of-the-first-occurrence-in-a-string/)) — return the index of the *first* occurrence of `needle` in `haystack`, or `-1`. It's the naive scan with an early return on the first full match.
 
-```python run
+```python run viz=array
 def str_str(haystack, needle):
     n, m = len(haystack), len(needle)
     for i in range(n - m + 1):
@@ -127,7 +127,7 @@ print(str_str("sadbutsad", "sad"))     # 0
 print(str_str("leetcode", "leeto"))    # -1
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static int strStr(String haystack, String needle) {
         int n = haystack.length(), m = needle.length();

@@ -20,7 +20,7 @@ Both problems — find all bridges, find all articulation points — are solved 
 
 One DFS computes both. The graph: a chain `A–B–C` and `B–D`, plus a triangle `D–E–F`.
 
-```python run
+```python run viz=graph viz-kind=graph
 import sys
 sys.setrecursionlimit(10**6)
 
@@ -62,7 +62,7 @@ print("Bridges:       ", bridges)
 print("Articulations: ", arts)
 ```
 
-```java run
+```java run viz=graph viz-kind=graph
 import java.util.*;
 
 public class Main {
@@ -160,7 +160,7 @@ That `if v == parent: continue` line looks like a trivial guard, but it is load-
 
 **Predict before you run:** delete that guard and re-run on the same graph. How many bridges does it report (true answer: 3)?
 
-```python run
+```python run viz=graph viz-kind=graph
 import sys
 sys.setrecursionlimit(10**6)
 
@@ -198,7 +198,7 @@ It prints `bridges found: []` — **zero bridges**, even though three exist. Eve
 
 The canonical bridge problem: **Critical Connections in a Network** ([LeetCode 1192](https://leetcode.com/problems/critical-connections-in-a-network/)) — return every connection (edge) whose removal disconnects the network. That's exactly "find all bridges."
 
-```python run
+```python run viz=graph viz-kind=graph
 import sys
 sys.setrecursionlimit(10**6)
 
@@ -224,7 +224,7 @@ print(critical_connections(4, [[0,1],[1,2],[2,0],[1,3]]))   # [[1, 3]]
 print(critical_connections(3, [[0,1],[1,2]]))               # [[0, 1], [1, 2]]
 ```
 
-```java run
+```java run viz=graph viz-kind=graph
 import java.util.*;
 
 public class Main {

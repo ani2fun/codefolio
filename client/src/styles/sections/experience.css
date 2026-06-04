@@ -16,11 +16,11 @@
          __role-body         — expanded content
          __role-position     — full position + company link line
          __role-link         — link to company URL
-         __primary-tags      — promoted 2–3 tech chips (terracotta tinted)
+         __primary-tags      — promoted 2–3 tech chips (indigo tinted)
          __primary-tag       — single chip
          __summary           — one-paragraph blurb
          __bullets / __bullet — main bullets
-         __results           — results pull-quote with terracotta left rail
+         __results           — results pull-quote with indigo left rail
          __results-title     — "RESULTS" mono caption
          __results-list / __results-item
          __secondary-row     — demoted "ALSO" stack
@@ -128,7 +128,7 @@
     .experience__summary {
         @apply text-base leading-relaxed text-foreground/90 mb-4;
     }
-    /* Bullets use a 6px terracotta dash via ::before — matches the
+    /* Bullets use a 6px indigo dash via ::before — matches the
        prototype's flat editorial accent rather than a rounded disc. */
     .experience__bullets {
         @apply list-none p-0 m-0 mb-6 flex flex-col gap-2.5 text-foreground/85;
@@ -156,7 +156,7 @@
         @apply text-[10px] font-mono tracking-widest text-primary uppercase mb-2;
     }
     .experience__results-list {
-        @apply list-none p-0 m-0 space-y-2 text-sm text-foreground/85;
+        @apply list-none p-0 m-0 space-y-2 text-[14.5px] text-foreground/85;
     }
     .experience__results-item {
         @apply leading-relaxed;

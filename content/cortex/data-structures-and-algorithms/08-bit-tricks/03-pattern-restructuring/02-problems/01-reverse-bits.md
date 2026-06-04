@@ -68,7 +68,7 @@ Because the integer has 32 bits — every position must be processed for the rev
 
 ### The Solution
 
-```python run
+```python run viz=array
 class Solution:
     def reverse_bits(self, num: int) -> int:
 
@@ -106,7 +106,7 @@ print(Solution().reverse_bits(4))       # 536870912
 print(Solution().reverse_bits(2147483648))  # 1
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static class Solution {
         public int reverseBits(int num) {

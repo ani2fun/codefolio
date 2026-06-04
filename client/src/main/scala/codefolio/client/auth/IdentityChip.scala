@@ -9,7 +9,7 @@ import japgolly.scalajs.react.vdom.html_<^.*
  * `@handle`, and a small sign-out ✕.
  *
  * Initial-letter avatar by design decision (D9) — no GitHub picture URL, so no Keycloak attribute-mapper
- * dependency. The avatar's terracotta gradient is set in CSS (`.identity-chip__avatar`).
+ * dependency. The avatar's indigo gradient is set in CSS (`.identity-chip__avatar`).
  */
 object IdentityChip:
 

@@ -17,7 +17,7 @@ The **Fenwick tree** (or **Binary Indexed Tree**, BIT) does exactly that case in
 
 A Fenwick tree over `[1..8]`. Query any prefix or range sum, do a point update, and re-query — all in `O(log n)` with a single `bit[]` array. Run it.
 
-```python run
+```python run viz=array viz-root=tree viz-kind=fenwick
 class Fenwick:
     def __init__(self, n):
         self.n = n
@@ -156,7 +156,7 @@ Before you read on: that asymmetry looks like a quirk — why not make both walk
 
 Fenwick build, range sum, and point update in both languages:
 
-```python run
+```python run viz=array viz-root=tree viz-kind=fenwick
 class Fenwick:
     def __init__(self, n):
         self.n = n; self.bit = [0]*(n+1)
@@ -175,7 +175,7 @@ bit.update(5, 100)
 print(bit.range_sum(1,8), bit.range_sum(3,6))     # 136 118
 ```
 
-```java run
+```java run viz=array viz-root=tree viz-kind=fenwick
 public class Main {
   static int n; static long[] bit;
   static void update(int i, long d) { while (i <= n) { bit[i] += d; i += i & -i; } }

@@ -20,9 +20,7 @@ Input:  s = "bcdf"       →   Output: "bcdf"
 
 ---
 
-<details>
-<summary><h2>Examples</h2></summary>
-
+## Examples
 
 **Example 1**
 ```
@@ -55,7 +53,6 @@ Output: "uoiea"
 Explanation: Every position is a vowel, so the swap reduces to a full reversal.
 ```
 
-</details>
 <details>
 <summary><h2>Intuition</h2></summary>
 

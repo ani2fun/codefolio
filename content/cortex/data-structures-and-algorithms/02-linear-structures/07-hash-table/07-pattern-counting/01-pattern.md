@@ -75,7 +75,7 @@ Because the map has **no reliable order** for "first". The question asks for the
 
 The reusable frequency-count solution:
 
-```python run
+```python run viz=array
 def first_unique(s):
     counts = {}
     for ch in s:
@@ -89,7 +89,7 @@ print(first_unique("loveleetcode"))   # v
 print(first_unique("aabb"))            # None
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {

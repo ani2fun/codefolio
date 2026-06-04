@@ -44,11 +44,21 @@ import "monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution"
 };
 
 // Custom dark theme that matches the existing `.rcb__editor` (#2d2d2d) card
-// surround so the editor doesn't look like a transplanted VS Code window.
+// surround so the editor doesn't look like a transplanted VS Code window. The
+// token rules mirror the static-fence palette (indigo keyword, teal function/type,
+// green string, amber number, muted-italic comment) so runnable + rendered code match.
 monaco.editor.defineTheme("codefolio-dark", {
   base: "vs-dark",
   inherit: true,
-  rules: [],
+  rules: [
+    { token: "keyword", foreground: "7E88E6" },
+    { token: "type", foreground: "54B3A1" },
+    { token: "function", foreground: "54B3A1" },
+    { token: "string", foreground: "84B87D" },
+    { token: "number", foreground: "D59A55" },
+    { token: "regexp", foreground: "84B87D" },
+    { token: "comment", foreground: "8A857C", fontStyle: "italic" },
+  ],
   colors: {
     "editor.background": "#2d2d2d",
     "editor.lineHighlightBackground": "#3a3a3a40",

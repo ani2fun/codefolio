@@ -16,7 +16,7 @@ A **bloom filter** is that trade. It's a bit array plus `k` hash functions, usin
 
 A bloom filter hashes each item to `k` bit positions. `add` sets those bits; `contains` checks whether *all* of them are set.
 
-```python run
+```python run viz=array
 MOD = (1 << 31) - 1
 def _h(s, base):                                      # deterministic polynomial hash
     h = 0
@@ -45,7 +45,7 @@ print(bf.contains("banana"))    # True
 print(bf.contains("grape"))     # False
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static final long MOD = (1L << 31) - 1;
     static long h(String s, long base) {
@@ -109,7 +109,7 @@ The one-sided error is the whole point — and it's easy to half-remember as "bl
 
 **Predict before you run:** a small filter (10 bits, 2 hashes) has had `cat`, `dog`, `fox`, `owl` added. Query a word that was **never** added. Can `contains` return `True` for it — and can it ever return `False` for `cat`?
 
-```python run
+```python run viz=array
 MOD = (1 << 31) - 1
 def _h(s, base):
     h = 0
@@ -148,7 +148,7 @@ print("any added item ever tests absent?:", not all(bf.contains(w) for w in ["ca
 
 **Measure the false-positive rate** and watch it track the theory. Fill a filter with `n` items, query a large set of never-added items, and count how many falsely test present — then compare to `(1 − e^{−kn/m})^k`.
 
-```python run
+```python run viz=array
 import math
 MOD = (1 << 31) - 1
 def _h(s, base):
@@ -179,7 +179,7 @@ print(f"empirical FP rate : {empirical_fp(m, k, n, q):.4f}")          # ~0.0219
 print(f"theoretical       : {(1 - math.exp(-k*n/m))**k:.4f}")          # ~0.0174
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static final long MOD = (1L << 31) - 1;
     static long h(String s, long base) {

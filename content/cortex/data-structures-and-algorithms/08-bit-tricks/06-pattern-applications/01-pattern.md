@@ -17,7 +17,7 @@ The headline application is **fast exponentiation**. Computing `base^exp` by mul
 
 Compute `2^10 = 1024` by reading the bits of the exponent — squaring the base and multiplying in on set bits. Run it.
 
-```python run
+```python run viz=array
 def fast_pow(base, exp):
     result = 1
     while exp > 0:
@@ -81,7 +81,7 @@ Because `exp` in binary is a sum of distinct powers of two: `5 = 4 + 1 = 2^2 + 2
 
 Fast exponentiation plus the one-line companions:
 
-```python run
+```python run viz=array
 def fast_pow(base, exp):
     result = 1
     while exp > 0:
@@ -97,7 +97,7 @@ def is_odd(n):          return (n & 1) == 1
 print(fast_pow(2, 16), is_power_of_two(64), is_odd(7))   # 65536 True True
 ```
 
-```java run
+```java run viz=array
 public class Main {
   static long fastPow(long base, long exp) {
     long result = 1;

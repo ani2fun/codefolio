@@ -20,7 +20,7 @@ The fix: make the tree **rebalance itself** on every insert and delete, holding 
 
 The cliff, measured. The *same 31 keys* inserted sorted versus in bisection order. Height is the longest root-to-leaf path in edges. Run it.
 
-```python run
+```python run viz=binary-tree viz-root=root
 class Node:
     __slots__ = ("key", "left", "right")
     def __init__(self, k): self.key, self.left, self.right = k, None, None
@@ -98,7 +98,7 @@ Because **the decision is about write cost and per-node overhead, not asymptotic
 
 The cliff is language-independent — the same experiment in both, measuring height after a sorted versus bisection-ordered build:
 
-```python run
+```python run viz=binary-tree viz-root=root
 class Node:
     __slots__ = ("key", "left", "right")
     def __init__(self, k): self.key, self.left, self.right = k, None, None
@@ -122,7 +122,7 @@ for x in range(1, 32): root = insert(root, x)       # sorted 1..31
 print("sorted height:", height(root))               # 30
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 public class Main {
   static class Node { int key; Node left, right; Node(int k){ key = k; } }

@@ -31,6 +31,19 @@ Picture a train car with exactly four seats moving along a track. As the train i
 
 ## Visual Summary
 
+```mermaid
+flowchart LR
+  a0["3"] --- a1["1"] --- a2["4"] --- a3["1"] --- a4["5"]
+  win(["window k = 3"]) --> a1
+  a3 --> nxt(["slide →<br/>sum − a[left] + a[right]"])
+  style a1 fill:#fde68a,stroke:#d97706
+  style a2 fill:#fde68a,stroke:#d97706
+  style a3 fill:#fde68a,stroke:#d97706
+  style nxt fill:#c7d2fe,stroke:#4f5bd5
+```
+
+<p align="center"><strong>A window of fixed size k slides one step at a time; each move drops the leftmost value and adds the new rightmost — O(1) per step — so the whole scan is O(n), not O(n·k).</strong></p>
+
 ---
 
 ## Pattern Recognition Triggers

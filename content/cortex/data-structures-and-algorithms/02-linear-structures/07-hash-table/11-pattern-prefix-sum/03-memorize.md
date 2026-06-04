@@ -31,6 +31,16 @@ Picture a bank statement with a running balance printed after every transaction.
 
 ## Visual Summary
 
+```mermaid
+flowchart LR
+  arr["array"] --> run["running prefix sum P"]
+  run --> map["map: prefix value → times seen"]
+  map --> q["subarray sums to k<br/>⇔ P − k was seen before"]
+  style q fill:#bbf7d0,stroke:#16a34a
+```
+
+<p align="center"><strong>Keep a running prefix sum and a hash map of how often each sum has appeared. A subarray totals k exactly when current_sum − k was seen before — counting target subarrays in one O(n) pass.</strong></p>
+
 ---
 
 ## Pattern Recognition Triggers

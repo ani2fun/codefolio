@@ -460,8 +460,7 @@ Result: [1, 2, 2, 4, 3, 5] ✓
 | Duplicates of `X` | `[1,3,3,2], X=3` | `[1,2,3,3]` | The two 3's go to greater (since `≥`), order preserved. |
 
 </details>
-<details>
-<summary><h2>Examples</h2></summary>
+## Examples
 
 **Example 1**
 ```
@@ -491,7 +490,6 @@ Output: [5, 6, 7]
 Explanation: Every value is ≥ X, so the less stripe is empty. The merge returns the greater stripe directly — equal to the input.
 ```
 
-</details>
 <details>
 <summary><h2>Intuition</h2></summary>
 

@@ -101,7 +101,7 @@ The guard `while n >= k` is exactly it: a chunk is only reversed when a *full* `
 
 The reusable reverse-in-groups-of-`k` (with `k = 2`, it's a pairwise swap):
 
-```python run
+```python run viz=linked-list viz-root=head viz-kind=list-single
 class ListNode:
     def __init__(self, val, next=None):
         self.val = val
@@ -132,7 +132,7 @@ while node:
 print(out)                           # [3, 2, 1, 4, 5]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head viz-kind=list-single
 public class Main {
   static class ListNode { int val; ListNode next; ListNode(int v){ val = v; } ListNode(int v, ListNode n){ val = v; next = n; } }
 

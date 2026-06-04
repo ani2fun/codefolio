@@ -30,7 +30,7 @@ Output: 6
 The count of elements `≤ k` is exactly `upper_bound(arr, k)` — that's the first index strictly greater than `k`, which equals the number of elements `≤ k`.
 
 
-```python run
+```python run viz=array
 from typing import List
 
 class Solution:
@@ -87,7 +87,7 @@ print(Solution().limit_count([5], 7))                    # 1 — single element 
 print(Solution().limit_count([1, 2, 2, 2, 3, 4], 0))    # 0 — none qualify
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {

@@ -17,7 +17,7 @@ Number the nodes in **level order** — root is index 0, then its children 1 and
 
 No `Node` class, no `.left`/`.right` — just an array and three formulas. Here's a complete tree stored flat, navigated by arithmetic:
 
-```python run
+```python run viz=binary-tree viz-root=root
 tree = [1, 2, 3, 4, 5, 6, 7]     # complete binary tree, level order, no pointers
 def left(i):   return 2 * i + 1
 def right(i):  return 2 * i + 2
@@ -30,7 +30,7 @@ print(f"  right child: index {right(i)} = {tree[right(i)]}")
 print(f"  parent:      index {parent(i)} = {tree[parent(i)]}")
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 public class Main {
     static int left(int i)   { return 2 * i + 1; }
     static int right(int i)  { return 2 * i + 2; }
@@ -76,7 +76,7 @@ The "only complete trees" caveat sounds mild until you compute what an incomplet
 
 **Predict before you run:** a complete binary tree of `n` nodes needs an array of `n` slots. A *degenerate* tree — `n` nodes in a right-leaning chain — needs how many slots? Linear in `n`, double `n`, or something far worse?
 
-```python run
+```python run viz=binary-tree viz-root=root
 def complete_slots(n):   return n           # complete tree: exactly n slots, no gaps
 def degenerate_slots(n): return 2 ** n - 1  # right-chain: deepest node at index 2^n - 2 -> array size 2^n - 1
 for n in [4, 10, 20]:
@@ -96,7 +96,7 @@ The array layout makes one operation almost free that's awkward with pointers: *
 
 **Predict:** for a complete tree stored as the array `[10, 20, 30, 40, 50, 60, 70]`, how do you produce a level-order (BFS) traversal — and how do the levels map to index ranges?
 
-```python run
+```python run viz=binary-tree viz-root=root
 tree = [10, 20, 30, 40, 50, 60, 70]     # complete tree, level order
 # level-order (BFS) of a complete tree stored in an array = just read left-to-right
 print("level-order:", list(tree))
@@ -109,7 +109,7 @@ while start < len(tree):
 print("by level:", levels)
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 public class Main {
     public static void main(String[] x) {

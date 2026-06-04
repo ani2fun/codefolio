@@ -21,8 +21,7 @@ Given `arr`, return an array `product` where `product[i]` equals the product of 
 ### Example 3
 > -   **Input:** `[3, 4]` → **Output:** `[4, 3]`
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -55,7 +54,6 @@ Explanation: the three 1s leave the product of the others unchanged, so every sl
 except index 0 picks up the 5.
 ```
 
-</details>
 <details>
 <summary><h2>Approach</h2></summary>
 
@@ -208,8 +206,9 @@ public class Main {
 ```
 
 </details>
+<details>
+<summary><h2>Intuition</h2></summary>
 
-## Intuition
 
 Each output slot needs the product of every element *except* the one at that index. The brute-force read is a double loop: for each index, multiply all the others. That is `O(N²)` time. The tempting shortcut — multiply everything once, then divide out `arr[i]` per slot — is `O(N)` but illegal here (division is banned) and broken anyway, because a single `0` makes the total product `0` and division by the other zeros is undefined.
 
@@ -217,7 +216,10 @@ The prefix-sum idea generalises from addition to multiplication. Split the answe
 
 This is the multiplicative cousin of prefix sums, and it needs no hash map — two precomputed arrays carry the running products. What breaks if you reach for the division trick is correctness on zeros: with one zero the answer is defined (every other slot is `0`, the zero's slot is the product of the rest), and with two zeros every slot is `0`. The diagnostic signal is "combine a left-running aggregate with a right-running aggregate", which the prefix/suffix pass handles in `O(N)` regardless of zeros or negatives.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for Self Excluded Array Product |
 |---|---|
@@ -226,7 +228,10 @@ This is the multiplicative cousin of prefix sums, and it needs no hash map — t
 | **Q3.** Is the matching slice found by a hash-map lookup? | **No** — the query is positional, so two prefix/suffix arrays suffice; no hash map of values is needed. |
 | **Q4.** Does the rule survive negatives and zeros? | **Yes** — products of signed values and zeros are correct, which is exactly why the division shortcut is banned. |
 
-## Approach
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
+
 
 1. Allocate `prefix_product`, `suffix_product`, and `result`, each of length `n`.
 2. Fill `prefix_product` left to right: `prefix_product[0] = arr[0]`, then `prefix_product[i] = prefix_product[i - 1] · arr[i]` — the product of `arr[0..i]`.
@@ -235,7 +240,10 @@ This is the multiplicative cousin of prefix sums, and it needs no hash map — t
 5. For each interior index `i`, set `result[i] = prefix_product[i - 1] · suffix_product[i + 1]` — everything strictly before times everything strictly after.
 6. Return `result`.
 
-## Dry Run
+</details>
+<details>
+<summary><h2>Dry Run</h2></summary>
+
 
 Walk Example 1: `arr = [1, 2, 3, 4]`, expected output `[24, 12, 8, 6]`. Build both running-product arrays, then combine:
 
@@ -253,14 +261,20 @@ result = [24, 12, 8, 6]
 
 The result `[24, 12, 8, 6]` matches the expected output — each slot is the product of every element except its own.
 
-## Complexity Analysis
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
+
 
 | | Cost | Why |
 |---|---|---|
 | **Time** | **O(N)** | Two linear passes build the product arrays, one more combines them; each step is `O(1)`. |
 | **Space** | **O(N)** | The `prefix_product` and `suffix_product` arrays hold `N` entries each. The output is `O(N)`, and the auxiliary space can be cut to `O(1)` by folding the suffix pass into the result array. |
 
-## Edge Cases
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
+
 
 | Input | Output | Why |
 |---|---|---|
@@ -271,6 +285,11 @@ The result `[24, 12, 8, 6]` matches the expected output — each slot is the pro
 | `[0, 0]` | `[0, 0]` | Two zeros — each slot's "others" product still contains a zero. |
 | `[5, 1, 1, 1]` | `[1, 5, 5, 5]` | The three `1`s leave the others' product unchanged, so every slot except index `0` picks up the `5`. |
 
-## Key Takeaway
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
 
 The prefix-sum idea is not limited to sums — split each answer into a prefix aggregate and a suffix aggregate, and "the product of all other elements" falls out in `O(N)` without division, correct even when the array holds zeros.
+
+</details>

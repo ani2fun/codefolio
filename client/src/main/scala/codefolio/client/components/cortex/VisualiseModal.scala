@@ -5,7 +5,7 @@ import codefolio.client.components.cortex.widgets.Stepper
 import codefolio.client.components.icons.LucideIcons
 import codefolio.shared.api.Endpoints.RunRequest
 import codefolio.shared.viz.VizGraph.given
-import codefolio.shared.viz.{Annotation, HeapToGraph, VizCases, VizFrame, VizGraphStep, VizLocal}
+import codefolio.shared.viz.{HeapToGraph, VizCases, VizFrame, VizGraphStep, VizLocal}
 import io.circe.syntax.*
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
@@ -137,7 +137,7 @@ object VisualiseModal:
   ): js.Array[js.Object] =
     val out = js.Array[js.Object]()
     phase match
-      case Ready(cases, _) =>
+      case Ready(cases, _, _) =>
         cases.cases.lift(caseIdx).flatMap(_.steps.lift(stepIdx)).foreach { step =>
           step.cardCursor.foreach { c =>
             if c.target.nonEmpty then
@@ -153,10 +153,17 @@ object VisualiseModal:
     out
 
   sealed private trait Phase
-  private case object Idle                                      extends Phase
-  private case object Tracing                                   extends Phase
-  final private case class Failed(message: String)              extends Phase
-  final private case class Ready(cases: VizCases, json: String) extends Phase
+  private case object Idle                                                             extends Phase
+  private case object Tracing                                                          extends Phase
+  final private case class Failed(message: String)                                     extends Phase
+  final private case class Ready(cases: VizCases, json: String, programStdout: String) extends Phase
+
+  /** The source line the prev / current / next trace step runs (1-based line number + trimmed text). */
+  final private case class LineContext(
+      prev: Option[(Int, String)],
+      current: Option[(Int, String)],
+      next: Option[(Int, String)]
+  )
 
   /**
    * Slice 6 — Translate a *filtered* Stepper index to the corresponding real step index.
@@ -170,7 +177,7 @@ object VisualiseModal:
     if !diffMode then filteredIdx
     else
       phase match
-        case Ready(cases, _) =>
+        case Ready(cases, _, _) =>
           cases.cases
             .lift(caseIdx)
             .flatMap(g => g.steps.zipWithIndex.filter(!_._1.unchanged).map(_._2).lift(filteredIdx))
@@ -252,7 +259,7 @@ object VisualiseModal:
                 props.vizKind
               ) match
                 case Right(vc) =>
-                  val ready = Ready(vc, vc.asJson.noSpaces)
+                  val ready = Ready(vc, vc.asJson.noSpaces, parsed.programStdout)
                   traceCache.update(key, ready)
                   setPhase(ready)
                 case Left(msg) =>
@@ -293,13 +300,13 @@ object VisualiseModal:
       // Total params into customBy: props(0) + 13 hooks = 14.
       .customBy { (_, phaseS, caseS, _, _, _, _, _, _, _, _, _, _, diffModeS) =>
         val totalSteps = phaseS.value match
-          case Ready(cases, _) => cases.cases.lift(caseS.value).fold(0)(_.steps.size)
-          case _               => 0
+          case Ready(cases, _, _) => cases.cases.lift(caseS.value).fold(0)(_.steps.size)
+          case _                  => 0
         val stepCount =
           if !diffModeS.value then totalSteps
           else
             phaseS.value match
-              case Ready(cases, _) =>
+              case Ready(cases, _, _) =>
                 cases.cases.lift(caseS.value).fold(0)(g => g.steps.count(!_.unchanged))
               case _ => 0
         Stepper.hook(Stepper.Input(stepCount, StepDelayMs))
@@ -409,10 +416,6 @@ object VisualiseModal:
                         // Jump to final step by jumping to a large index (Stepper clamps)
                         s.jumpTo(Int.MaxValue).runNow()
                       }
-                    case "d" | "D" =>
-                      e.preventDefault()
-                      diffModeS.modState(!_).runNow()
-                      stepperRef.value.foreach(_.reset.runNow())
                     case "t" | "T" =>
                       e.preventDefault()
                       val next = !timelineOpenRef.value
@@ -478,8 +481,8 @@ object VisualiseModal:
       // empty string from the cursor-mark's mouseleave into `None`.
       .useEffectWithDepsBy { (_, phaseS, caseS, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) =>
         phaseS.value match
-          case Ready(_, json) => (json, caseS.value)
-          case _              => ("", 0)
+          case Ready(_, json, _) => (json, caseS.value)
+          case _                 => ("", 0)
       } {
         (_, _, _, _, _, hostId, _, _, _, controllerRef, _, _, hoveredS, _, _, _, _, _, _, _, _) =>
           (json, caseIdx) =>
@@ -519,8 +522,8 @@ object VisualiseModal:
       .useEffectWithDepsBy {
         (_, phaseS, caseS, zoomS, _, _, _, _, _, _, _, _, _, diffModeS, stepper, _, _, _, _, _, _) =>
           val phaseTag = phaseS.value match
-            case Ready(_, _) => 1
-            case _           => 0
+            case Ready(_, _, _) => 1
+            case _              => 0
           val zoomBp = math.round(zoomS.value * 100).toInt
           (phaseTag, caseS.value, stepper.index, zoomBp)
       } {
@@ -554,8 +557,8 @@ object VisualiseModal:
       .useEffectWithDepsBy {
         (_, phaseS, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) =>
           phaseS.value match
-            case Ready(_, _) => 1
-            case _           => 0
+            case Ready(_, _, _) => 1
+            case _              => 0
       } {
         (_, _, caseS, _, _, _, _, _, _, _, stepperRef, _, _, _, _, _, _, _, _, _, _) => phaseTag =>
           if phaseTag != 1 then Callback.empty
@@ -588,8 +591,8 @@ object VisualiseModal:
       .useEffectWithDepsBy {
         (_, phaseS, caseS, _, _, _, _, _, _, _, _, _, _, _, stepper, _, _, _, _, _, _) =>
           val phaseTag = phaseS.value match
-            case Ready(_, _) => 1
-            case _           => 0
+            case Ready(_, _, _) => 1
+            case _              => 0
           (phaseTag, stepper.index, caseS.value)
       } {
         (_, phaseS, caseS, _, _, _, _, _, _, _, _, _, _, diffModeS, stepper, _, _, _, _, _, _) =>
@@ -650,12 +653,6 @@ object VisualiseModal:
             val onHoverName: String => Callback = name => hoveredS.setState(Some(name))
             val onHoverLeave: Callback          = hoveredS.setState(None)
 
-            // Slice 6 — diff-mode toggle: resets Stepper to step 0 on each flip so
-            // the filtered and unfiltered index spaces don't cross-contaminate.
-            val onDiffToggle: Callback =
-              diffModeS.modState(!_) >>
-                Callback(stepperRef.value.foreach(_.reset.runNow()))
-
             // Slice 7 — timeline drawer and shortcuts overlay open/close helpers.
             // Each setter syncs both the state hook and the mutable ref so the
             // keyboard handler (installed once in Effect A) can read current state.
@@ -667,8 +664,8 @@ object VisualiseModal:
             // Unfiltered steps list — the timeline always shows all steps, with
             // unchanged ones greyed out so the user can see the full execution.
             val currentSteps: List[VizGraphStep] = phase match
-              case Ready(cases, _) => cases.cases.lift(caseIdx).fold(List.empty)(_.steps)
-              case _               => List.empty
+              case Ready(cases, _, _) => cases.cases.lift(caseIdx).fold(List.empty)(_.steps)
+              case _                  => List.empty
 
             // Jump from a real step index (timeline row click) to its filtered
             // position. Closing the drawer on jump is intentional UX: user clicked
@@ -710,8 +707,8 @@ object VisualiseModal:
 
             // Total step count (used for "of N" annotation in diff mode).
             val stepCount = phase match
-              case Ready(cases, _) => cases.cases.lift(caseIdx).fold(0)(_.steps.size)
-              case _               => 0
+              case Ready(cases, _, _) => cases.cases.lift(caseIdx).fold(0)(_.steps.size)
+              case _                  => 0
 
             // Slice 6 — In diff mode the Stepper operates on filtered (non-`unchanged`)
             // steps; translate the visible index to the real step index before reading
@@ -722,13 +719,13 @@ object VisualiseModal:
             val visibleStepCount =
               if diffMode then
                 phase match
-                  case Ready(cases, _) =>
+                  case Ready(cases, _, _) =>
                     cases.cases.lift(caseIdx).fold(0)(g => g.steps.count(!_.unchanged))
                   case _ => 0
               else stepCount
 
             val currentLine: Option[Int] = phase match
-              case Ready(cases, _) =>
+              case Ready(cases, _, _) =>
                 cases.cases.lift(caseIdx).flatMap(_.steps.lift(realStepIdx)).map(_.line)
               case _ => None
 
@@ -738,7 +735,7 @@ object VisualiseModal:
             // no next step (last step of the run) or the next step lands on the same
             // line (no point underlining the same row in two colours).
             val nextLine: Option[Int] = phase match
-              case Ready(cases, _) =>
+              case Ready(cases, _, _) =>
                 cases.cases
                   .lift(caseIdx)
                   .flatMap(_.steps.lift(realStepIdx + 1))
@@ -747,14 +744,21 @@ object VisualiseModal:
               case _ => None
 
             val currentFrames: List[VizFrame] = phase match
-              case Ready(cases, _) =>
+              case Ready(cases, _, _) =>
                 cases.cases.lift(caseIdx).flatMap(_.steps.lift(realStepIdx)).fold(List.empty)(_.frames)
               case _ => List.empty
 
-            val currentAnnotation: Option[Annotation] = phase match
-              case Ready(cases, _) =>
-                cases.cases.lift(caseIdx).flatMap(_.steps.lift(realStepIdx)).map(_.annotation)
-              case _ => None
+            // Prev / current / next source lines for the canvas footer — the line each
+            // adjacent trace step runs, paired with its trimmed source text.
+            val lineContext: LineContext =
+              val sourceLines = props.source.split("\n", -1)
+              def lineAt(stepIdx: Int): Option[(Int, String)] =
+                val ln: Option[Int] = phase match
+                  case Ready(cases, _, _) =>
+                    cases.cases.lift(caseIdx).flatMap(_.steps.lift(stepIdx)).map(_.line)
+                  case _ => None
+                ln.flatMap(n => sourceLines.lift(n - 1).map(t => (n, t.trim)))
+              LineContext(lineAt(realStepIdx - 1), lineAt(realStepIdx), lineAt(realStepIdx + 1))
 
             val modalRoot: VdomElement =
               <.div(
@@ -797,7 +801,7 @@ object VisualiseModal:
                         MonacoSourcePane.Component(
                           MonacoSourcePane.Props(props.source, props.language, currentLine, nextLine)
                         ),
-                        renderCanvasPane(phase, hostId.value, zoom, currentAnnotation),
+                        renderCanvasPane(phase, hostId.value, zoom, lineContext),
                         renderFramesPane(currentFrames, hovered, onHoverName, onHoverLeave),
                         // Slice 4 — overlay host for the ArrowLayer. SVG mounted
                         // by mountArrowLayer; absolute-positioned over the 3 panes.
@@ -810,15 +814,13 @@ object VisualiseModal:
                       renderControlsBar(
                         stepper,
                         visibleStepCount,
-                        currentLine,
-                        stepCount,
-                        diffMode,
-                        onDiffToggle
+                        currentLine
                       ),
                       // ── Row 4: Output panel ───────────────────────────────
                       renderOutputPanel(
                         outputCollapsedS.value,
-                        outputCollapsedS.modState(!_)
+                        outputCollapsedS.modState(!_),
+                        phase match { case Ready(_, _, out) => out; case _ => "" }
                       )
                     )
                   )
@@ -964,7 +966,7 @@ object VisualiseModal:
 
   private def renderCaseStrip(phase: Phase, caseIdx: Int, selectCase: Int => Callback): VdomNode =
     phase match
-      case Ready(cases, _) if cases.cases.sizeIs > 1 =>
+      case Ready(cases, _, _) if cases.cases.sizeIs > 1 =>
         <.nav(
           ^.className  := "algolens__topbar-cases",
           ^.aria.label := "Test case",
@@ -1049,7 +1051,6 @@ object VisualiseModal:
           helpShortcut("← →", "Step backward / forward"),
           helpShortcut("R", "Restart"),
           helpShortcut("F", "Jump to final step"),
-          helpShortcut("D", "Diff mode — hide unchanged steps"),
           helpShortcut("T", "Open execution timeline"),
           helpShortcut("?", "Open shortcuts overlay"),
           helpShortcut("+ −", "Zoom in / out"),
@@ -1079,7 +1080,7 @@ object VisualiseModal:
       phase: Phase,
       hostId: String,
       zoom: Double,
-      annotation: Option[Annotation]
+      lineCtx: LineContext
   ): VdomElement =
     <.div(
       ^.className := "algolens__pane algolens__pane--canvas",
@@ -1096,55 +1097,51 @@ object VisualiseModal:
             <.p(^.className   := "algolens__status-title", "Couldn't visualise this code"),
             <.pre(^.className := "algolens__status-detail", msg)
           )
-        case Ready(_, _) =>
-          // Annotation lives outside the zoom-scaled wrapper so it stays at base
-          // typography regardless of canvas zoom.
+        case Ready(_, _, _) =>
           React.Fragment(
+            // The diagram occupies (and centres in) the pane; the source-line
+            // footer is pinned at the bottom.
             <.div(
-              ^.style := js.Dynamic
-                .literal(
-                  transform = s"scale($zoom)",
-                  transformOrigin = "top left"
-                )
-                .asInstanceOf[js.Object],
-              <.div(^.id := hostId, ^.className := "viz-modal__host")
+              ^.className := "algolens-canvas-stage",
+              <.div(
+                ^.style := js.Dynamic
+                  .literal(
+                    transform = s"scale($zoom)",
+                    transformOrigin = "top left"
+                  )
+                  .asInstanceOf[js.Object],
+                <.div(^.id := hostId, ^.className := "viz-modal__host")
+              )
             ),
-            annotation.fold(EmptyVdom: VdomNode)(renderCanvasAnnotation)
+            renderCanvasLines(lineCtx)
           )
     )
 
   /**
-   * The rich, editorial annotation block beside the heap card — eyebrow (call / line / return / exception),
-   * italic title (the diff summary from `narrate`), and a body line with the source code that this step is
-   * executing. Hidden when `body` equals `title` so identical text doesn't render twice.
+   * Source-line footer under the diagram: the line the previous / current / next trace step runs. The
+   * human-friendly "what changed" sentence stays on the diagram itself, so these are complementary, not
+   * duplicate, views — and they put the otherwise-empty lower pane to use.
    */
-  private def renderCanvasAnnotation(a: Annotation): VdomElement =
-    val eyebrowCls = s"canvas__annotation-eyebrow canvas__annotation-eyebrow--${a.eyebrow}"
-    val showBody   = a.body.nonEmpty && a.body != a.title
+  private def renderCanvasLines(ctx: LineContext): VdomElement =
+    def row(label: String, info: Option[(Int, String)], modifier: String): VdomElement =
+      <.div(
+        ^.className := s"algolens-canvas-line $modifier",
+        <.span(^.className := "algolens-canvas-line__label", label),
+        info.fold[VdomNode](
+          <.span(^.className := "algolens-canvas-line__code algolens-canvas-line__code--none", "—")
+        ) { case (n, text) =>
+          <.code(
+            ^.className := "algolens-canvas-line__code",
+            <.span(^.className := "algolens-canvas-line__num", s"L$n"),
+            text
+          )
+        }
+      )
     <.div(
-      ^.className := "canvas__annotation canvas__annotation--rich",
-      <.header(
-        ^.className := "canvas__annotation-head",
-        <.span(^.className := eyebrowCls, s"EVENT · ${a.eyebrow.toUpperCase}"),
-        if a.title.nonEmpty then
-          <.h4(^.className := "canvas__annotation-title", <.em(a.title))
-        else EmptyVdom
-      ),
-      if showBody then
-        <.p(^.className := "canvas__annotation-body", <.code(a.body))
-      else EmptyVdom,
-      a.link.fold(EmptyVdom: VdomNode) { href =>
-        <.a(
-          ^.className := "canvas__annotation-link",
-          ^.href      := href,
-          ^.target    := "_blank",
-          ^.rel       := "noopener noreferrer",
-          "Open source",
-          // Inline arrow icon matches the design's 10×10 stroke arrow without
-          // pulling in a new Lucide import for a single use site.
-          <.span(^.className := "canvas__annotation-link-arrow", "↗")
-        )
-      }
+      ^.className := "algolens-canvas-lines",
+      row("Prev line", ctx.prev, "algolens-canvas-line--prev"),
+      row("Current line", ctx.current, "algolens-canvas-line--current"),
+      row("Next line", ctx.next, "algolens-canvas-line--next")
     )
 
   // ─── Frames pane — StackFramesPanel (Slice 2) ────────────────────────────────
@@ -1244,11 +1241,8 @@ object VisualiseModal:
 
   private def renderControlsBar(
       stepper: Stepper.Output,
-      stepCount: Int, // visible (filtered) count when diff mode on, else total
-      currentLine: Option[Int],
-      totalStepCount: Int, // total steps — same as stepCount when diff mode off
-      diffMode: Boolean,
-      onDiffToggle: Callback
+      stepCount: Int,
+      currentLine: Option[Int]
   ): VdomElement =
     val pct     = if stepCount <= 1 then 0.0 else stepper.index.toDouble / (stepCount - 1) * 100.0
     val lineStr = currentLine.fold("—")(_.toString)
@@ -1336,15 +1330,7 @@ object VisualiseModal:
           <.span(
             ^.className := "algolens-controls__step-counter",
             <.b(s"Step ${stepper.index + 1}"),
-            if diffMode then
-              <.span(
-                s" / $stepCount",
-                <.span(^.className := "algolens-controls__sep", " ·"),
-                <.span(^.className := "algolens-controls__meta-label", s" OF "),
-                <.b(totalStepCount.toString)
-              )
-            else
-              <.span(s" / $stepCount")
+            <.span(s" / $stepCount")
           ),
           <.span(^.className := "algolens-controls__sep", "·"),
           <.span(
@@ -1352,26 +1338,12 @@ object VisualiseModal:
             <.b(lineStr)
           )
         )
-      ),
-      // Slice 6 — Diff-mode toggle chip (third grid column)
-      <.div(
-        ^.className := "algolens-controls__filters",
-        <.label(
-          ^.className := "algolens-controls__diff",
-          ^.title     := "Hide steps with no visual change (D)",
-          <.input(
-            ^.tpe     := "checkbox",
-            ^.checked := diffMode,
-            ^.onChange --> onDiffToggle
-          ),
-          <.span("Diff")
-        )
       )
     )
 
   // ─── Output panel (collapsible) ───────────────────────────────────────────────
 
-  private def renderOutputPanel(collapsed: Boolean, toggle: Callback): VdomElement =
+  private def renderOutputPanel(collapsed: Boolean, toggle: Callback, stdout: String): VdomElement =
     <.div(
       ^.className := (if collapsed then "algolens-output algolens-output--collapsed"
                       else "algolens-output"),
@@ -1383,8 +1355,7 @@ object VisualiseModal:
             ^.tpe       := "button",
             ^.className := "algolens-output__tab algolens-output__tab--active",
             "OUTPUT"
-          ),
-          <.span(^.className := "algolens-output__hint", "stdout · stderr")
+          )
         ),
         <.button(
           ^.tpe        := "button",
@@ -1400,30 +1371,14 @@ object VisualiseModal:
       if !collapsed then
         <.div(
           ^.className := "algolens-output__body",
-          // Optional stdin — fed to the user's program on the next Re-trace. Uncontrolled
-          // textarea read on demand via `readStdin()` so each keystroke doesn't bounce
-          // through React state. Empty value → request omits stdin (current behaviour).
-          <.div(
-            ^.className := "algolens-output__stdin",
-            <.label(
-              ^.className := "algolens-output__stdin-label",
-              ^.htmlFor   := StdinInputId,
-              "STDIN"
-            ),
-            <.textarea(
-              ^.id          := StdinInputId,
-              ^.className   := "algolens-output__stdin-input",
-              ^.rows        := 2,
-              ^.placeholder := "Type input here, then click Re-trace…",
-              ^.spellCheck  := false
-            )
-          ),
           <.pre(
             ^.className := "algolens-output__pre",
-            <.span(
-              ^.className := "algolens-output__placeholder",
-              "// run output will appear here"
-            )
+            if stdout.nonEmpty then <.span(stdout)
+            else
+              <.span(
+                ^.className := "algolens-output__placeholder",
+                "// run output will appear here"
+              )
           )
         )
       else EmptyVdom
@@ -1441,7 +1396,7 @@ object VisualiseModal:
     if !diffMode then realIdx
     else
       phase match
-        case Ready(cases, _) =>
+        case Ready(cases, _, _) =>
           cases.cases
             .lift(caseIdx)
             .flatMap(g =>
@@ -1550,7 +1505,6 @@ object VisualiseModal:
             shortcutRow("Space", "Play / Pause"),
             shortcutRow("R", "Reset to step 0"),
             shortcutRow("F", "Jump to final step"),
-            shortcutRow("D", "Toggle diff (skip unchanged) mode"),
             shortcutRow("T", "Open execution timeline"),
             shortcutRow("?", "Open this panel"),
             shortcutRow("+ −", "Zoom in / out"),

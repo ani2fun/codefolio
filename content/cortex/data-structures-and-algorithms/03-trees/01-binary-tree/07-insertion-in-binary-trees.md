@@ -133,7 +133,7 @@ The "first empty slot" isn't always where intuition points. Take a tree where th
 
 **Predict before you run:** insert `9`. Does it attach under `2` (shallower, scanned earlier) or near `6` (deeper)?
 
-```python run
+```python run viz=binary-tree viz-root=root
 from collections import deque
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
@@ -168,7 +168,7 @@ The payoff of BFS-insertion: do it repeatedly into an empty tree and you *build*
 
 **Predict:** insert `1, 2, 3, 4, 5, 6, 7` one at a time into an empty tree with BFS-insertion. What is the final level-order?
 
-```python run
+```python run viz=binary-tree viz-root=root
 from collections import deque
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
@@ -200,7 +200,7 @@ for v in [1, 2, 3, 4, 5, 6, 7]:
 print("level-order:", level_order(root))   # [1, 2, 3, 4, 5, 6, 7]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 public class Main {
     static class TreeNode {

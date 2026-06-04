@@ -350,8 +350,7 @@ Result: [8, 5, 7, 3, 10, 6] ✓
 | Two nodes | `[5, 7]` | `[7, 5]` | Just swap; `previous` stops at the first node. |
 
 </details>
-<details>
-<summary><h2>Examples</h2></summary>
+## Examples
 
 **Example 1**
 ```
@@ -381,7 +380,6 @@ Output: []
 Explanation: An empty list has nothing to relocate. Return null.
 ```
 
-</details>
 <details>
 <summary><h2>Intuition</h2></summary>
 

@@ -27,8 +27,7 @@ Output: [1]
 
 ---
 
-<details>
-<summary><h2>Examples</h2></summary>
+## Examples
 
 **Example 1** — `arr1 = [1, 2, 3, 0, 0]`, `m = 3`, `arr2 = [4, 5]`, `n = 2` → `[1, 2, 3, 4, 5]`. All `arr2` elements are larger than every valid `arr1` element, so they fill the trailing slots in order.
 
@@ -36,7 +35,6 @@ Output: [1]
 
 **Example 3** — `arr1 = [1]`, `m = 1`, `arr2 = []`, `n = 0` → `[1]`. `arr2` is empty, so `arr1` is already merged — the algorithm exits immediately.
 
-</details>
 <details>
 <summary><h2>Intuition &amp; Brute Force</h2></summary>
 

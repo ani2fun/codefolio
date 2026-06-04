@@ -100,7 +100,7 @@ Because the cost is bounded *across the whole sequence*, not per call. Every nod
 
 The reusable BST iterator:
 
-```python run
+```python run viz=binary-tree viz-root=root
 class TreeNode:
     def __init__(self, val):
         self.val = val
@@ -135,7 +135,7 @@ it = BSTIterator(root)
 print([it.next() for _ in range(3)], it.has_next())   # [1, 3, 4] True
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

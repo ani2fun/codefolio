@@ -16,7 +16,7 @@ HyperLogLog estimates the same number in a **fixed few kilobytes**, whatever the
 
 Hash each item; the first `p` bits choose a bucket (register), and the leading-zero count of the rest updates that register's max. The cardinality estimate combines all registers via a bias-corrected harmonic mean.
 
-```python run
+```python run viz=array
 import math, hashlib
 def _hash32(x):                                        # deterministic, well-mixed: top 32 bits of MD5
     return int.from_bytes(hashlib.md5(x.encode()).digest()[:4], "big")
@@ -50,7 +50,7 @@ for i in range(10000):
 print(round(hll.count()))                               # ~10482 — duplicates don't change cardinality
 ```
 
-```java run
+```java run viz=array
 import java.security.MessageDigest;
 public class Main {
     static long hash32(String x) {
@@ -122,7 +122,7 @@ The leading-zero intuition is the soul of the algorithm, and it's worth seeing t
 
 **Predict before you run:** you hash a stream of distinct items and track the maximum number of leading zeros any hash has had. After a stream of `1000` distinct items, roughly what's that maximum — about `3`, about `10`, or about `100`?
 
-```python run
+```python run viz=array
 import hashlib, math
 def _hash32(x):
     return int.from_bytes(hashlib.md5(x.encode()).digest()[:4], "big")
@@ -151,7 +151,7 @@ After `1000` distinct items the maximum is about **11** — close to `log₂(100
 
 **Merge two sketches into a union count.** HyperLogLog's superpower for distributed systems: combine per-stream sketches by taking the element-wise *max* of their registers, and read off the cardinality of the union — no access to the original items needed.
 
-```python run
+```python run viz=array
 import hashlib, math
 def _hash32(x):
     return int.from_bytes(hashlib.md5(x.encode()).digest()[:4], "big")
@@ -185,7 +185,7 @@ print(round(A.count()), round(B.count()))              # ~1004, ~945  (each true
 print(round(A.merge(B).count()))                       # ~1465  (true union 1500)
 ```
 
-```java run
+```java run viz=array
 import java.security.MessageDigest;
 public class Main {
     static long hash32(String x) {

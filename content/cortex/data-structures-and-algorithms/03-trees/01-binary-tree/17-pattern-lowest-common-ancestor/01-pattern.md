@@ -88,7 +88,7 @@ It's correct because of an **assumed precondition: both `p` and `q` exist in the
 
 LCA on a general tree, plus **distance between two nodes** built on top of it (depth of `p` + depth of `q` − 2·depth of their LCA):
 
-```python run
+```python run viz=binary-tree viz-root=root
 class TreeNode:
     def __init__(self, val, left=None, right=None):
         self.val = val; self.left = left; self.right = right
@@ -120,7 +120,7 @@ print(lca(root, n5, n4).val)     # 5   (5 is an ancestor of 4)
 print(distance(root, n7, n4))    # 2   (7 → 2 → 4)
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 public class Main {
   static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } TreeNode(int v, TreeNode l, TreeNode r){ val=v; left=l; right=r; } }
 

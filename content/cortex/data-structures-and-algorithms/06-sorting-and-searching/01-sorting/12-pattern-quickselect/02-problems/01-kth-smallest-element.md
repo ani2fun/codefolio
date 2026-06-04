@@ -36,7 +36,7 @@ Output: 9
 
 Run quickselect with `k` interpreted as a 1-based rank, so the target sorted position is index `k - 1`. The `partition` helper picks a random pivot, swaps it to the end, scans `[left, right)` routing every value smaller than the pivot to a sliding `next_smaller_index`, then drops the pivot at that index — its final sorted position. The `quickselect` driver compares the returned pivot index against `k - 1`: equal means we're done, larger means recurse on the left half, smaller means recurse on the right half. Once it returns, `arr[k - 1]` holds the k-th smallest element.
 
-```python run
+```python run viz=array
 import random
 from typing import List
 
@@ -119,7 +119,7 @@ print(Solution().kth_smallest_elements([4, 4, 4], 2))          # 4
 print(Solution().kth_smallest_elements([10, 5, 3, 8, 1], 3))   # 5
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {

@@ -17,7 +17,7 @@ The naive route ignores the gift you were given: dump every value into an array,
 
 Merge `1→3→5` with `2→4→6`. At each step, take the smaller of the two heads. Run it.
 
-```python run
+```python run viz=linked-list viz-root=head viz-kind=list-single
 class ListNode:
     def __init__(self, val, next=None):
         self.val = val
@@ -90,7 +90,7 @@ Because `b` is sorted and every node still in it is `≥` everything already pla
 
 The reusable merge of two sorted lists:
 
-```python run
+```python run viz=linked-list viz-root=head viz-kind=list-single
 class ListNode:
     def __init__(self, val, next=None):
         self.val = val
@@ -119,7 +119,7 @@ b = ListNode(3, ListNode(4))
 print(to_list(merge_two(a, b)))      # [1, 2, 3, 4, 7, 8]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head viz-kind=list-single
 public class Main {
   static class ListNode { int val; ListNode next; ListNode(int v){ val = v; } ListNode(int v, ListNode n){ val = v; next = n; } }
 

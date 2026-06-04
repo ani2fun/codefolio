@@ -49,7 +49,7 @@
     }
     .array-traversal__cell-label {
         @apply text-sm font-semibold;
-        fill: var(--color-fg-default, #0a0f25);
+        fill: var(--color-foreground);
         font-size: 16px;
     }
     .array-traversal__cell-index {
@@ -101,7 +101,7 @@
         font-weight: 600;
     }
     .array-traversal__empty-placeholder {
-        fill: var(--color-fg-muted, #94a3b8);
+        fill: var(--color-muted-foreground);
         font-size: 50px;
         font-style: italic;
     }
@@ -113,11 +113,11 @@
     /* Inline markdown rendered from `msg`: `**bold**` and `` `code` ``. */
     .array-traversal__caption strong {
         font-weight: 700;
-        color: var(--color-fg-default, #0a0f25);
+        color: var(--color-foreground);
     }
     .array-traversal__caption code {
         @apply rounded bg-muted px-1.5 py-0.5 font-mono text-sm;
-        color: var(--color-fg-default, #0a0f25);
+        color: var(--color-foreground);
     }
     /* Size bracket above the cell row — horizontal line + perpendicular end-
        ticks + centered label. Used by chapters that introduce arrays with a
@@ -197,7 +197,7 @@
     }
     .stack-queue__cell-label {
         @apply text-sm font-semibold;
-        fill: var(--color-fg-default, #0a0f25);
+        fill: var(--color-foreground);
         font-size: 16px;
     }
     .stack-queue__marker-label {
@@ -206,7 +206,7 @@
         font-family: ui-monospace, SFMono-Regular, monospace;
     }
     .stack-queue__empty {
-        fill: var(--color-fg-muted, #94a3b8);
+        fill: var(--color-muted-foreground);
         font-size: 16px;
         font-style: italic;
     }
@@ -267,7 +267,7 @@
         transition: fill 220ms ease, stroke 220ms ease;
     }
     .linked-list__node--new .linked-list__node-rect {
-        stroke: rgba(200, 105, 62, 0.72);
+        stroke: rgba(79, 91, 213, 0.72);
         stroke-width: 2;
     }
     .linked-list__node--removed .linked-list__node-rect {
@@ -285,28 +285,28 @@
         @apply text-sm font-semibold;
         /* `currentColor` fallback so SVG text stays visible if the
            CSS custom property is unset in some dark-mode contexts. */
-        fill: var(--color-fg-default, currentColor);
+        fill: var(--color-foreground);
         font-size: 16px;
     }
     /* Arrows. D3 sets each path's `d` attribute per step; CSS only
        defines stroke, dash, and colour. */
     .linked-list__arrow {
-        stroke: var(--color-fg-muted, #a13e3e);
+        stroke: var(--color-muted-foreground);
         stroke-width: 2;
         fill: none;
         transition: stroke 250ms ease;
     }
     .linked-list__arrowhead {
-        fill: var(--color-fg-muted, #a13e3e);
+        fill: var(--color-muted-foreground);
         transition: fill 250ms ease;
     }
     .linked-list__arrow-group--back .linked-list__arrow {
-        stroke: var(--color-fg-muted, #94a3b8);
+        stroke: var(--color-muted-foreground);
         stroke-dasharray: 3 3;
         opacity: 0.85;
     }
     .linked-list__arrow-group--back .linked-list__arrowhead {
-        fill: var(--color-fg-muted, #94a3b8);
+        fill: var(--color-muted-foreground);
         opacity: 0.85;
     }
     .linked-list__arrow-group--broken .linked-list__arrow {
@@ -337,7 +337,7 @@
         font-weight: 700;
     }
     .linked-list__empty-placeholder {
-        fill: var(--color-fg-muted, #94a3b8);
+        fill: var(--color-muted-foreground);
         font-size: 44px;
         font-style: italic;
     }
@@ -460,7 +460,7 @@
     }
     .binary-tree__node-label {
         @apply text-sm font-semibold;
-        fill: var(--color-fg-default, currentColor);
+        fill: var(--color-foreground);
         font-size: 14px;
     }
     .binary-tree__node-bf {
@@ -479,9 +479,9 @@
        node in a tree reads the same colour family as a `new` node in
        a list. */
     .binary-tree__node-group--new .binary-tree__node-circle {
-        stroke: rgba(200, 105, 62, 0.85);
+        stroke: rgba(79, 91, 213, 0.85);
         stroke-width: 2.25;
-        fill: rgba(200, 105, 62, 0.08);
+        fill: rgba(79, 91, 213, 0.08);
     }
     .binary-tree__node-group--removed .binary-tree__node-circle {
         stroke: rgba(161, 62, 62, 0.7);
@@ -503,8 +503,8 @@
         fill: var(--color-muted-foreground, #a13e3e);
     }
     .binary-tree__node-group--match .binary-tree__node-circle {
-        fill: rgba(200, 105, 62, 0.15);
-        stroke: rgba(200, 105, 62, 0.7);
+        fill: rgba(79, 91, 213, 0.15);
+        stroke: rgba(79, 91, 213, 0.7);
         stroke-width: 2;
     }
     /* RBT mode — red and black node fills. Label fill flips to high-
@@ -530,7 +530,7 @@
        path `d` per step; CSS keeps only the stroke styling and the
        transition smoothing for non-`d` attributes. */
     .binary-tree__edge {
-        stroke: var(--color-fg-muted, #94a3b8);
+        stroke: var(--color-muted-foreground);
         stroke-width: 1.75;
         fill: none;
         transition: stroke 220ms ease;
@@ -571,12 +571,12 @@
     .binary-tree__sidebar-frame-label {
         font-size: 12px;
         font-weight: 500;
-        fill: var(--color-fg-default, currentColor);
+        fill: var(--color-foreground);
         font-family: ui-monospace, SFMono-Regular, monospace;
     }
     .binary-tree__sidebar-group--active .binary-tree__sidebar-frame {
-        fill: rgba(200, 105, 62, 0.12);
-        stroke: rgba(200, 105, 62, 0.6);
+        fill: rgba(79, 91, 213, 0.12);
+        stroke: rgba(79, 91, 213, 0.6);
         stroke-width: 1.75;
     }
     .binary-tree__sidebar-group--returned .binary-tree__sidebar-frame {
@@ -602,18 +602,18 @@
         /* D3 owns the group's transform; no CSS transition. */
     }
     .binary-tree__output-cell {
-        fill: rgba(200, 105, 62, 0.10);
-        stroke: rgba(200, 105, 62, 0.45);
+        fill: rgba(79, 91, 213, 0.10);
+        stroke: rgba(79, 91, 213, 0.45);
         stroke-width: 1.25;
     }
     .binary-tree__output-text {
         font-size: 13px;
         font-weight: 600;
-        fill: var(--color-fg-default, currentColor);
+        fill: var(--color-foreground);
         font-family: ui-monospace, SFMono-Regular, monospace;
     }
     .binary-tree__empty-placeholder {
-        fill: var(--color-fg-muted, #94a3b8);
+        fill: var(--color-muted-foreground);
         font-size: 16px;
         font-style: italic;
     }
@@ -662,7 +662,7 @@
        default (muted, thin); colour is reserved for pointers. The stroke / width
        transitions ease the brief cursor-traversal tint in and back out. */
     .viz-graph__edge {
-        stroke: var(--color-fg-muted, #94a3b8);
+        stroke: var(--color-muted-foreground);
         stroke-width: 1.75;
         fill: none;
         transition: opacity 200ms ease, stroke 260ms ease, stroke-width 260ms ease;
@@ -675,7 +675,7 @@
     /* Arrowhead — `context-stroke` makes it follow its edge's stroke, so a
        traversal-tinted edge gets a tinted head too; muted fallback otherwise. */
     .viz-graph__arrowhead path {
-        fill: var(--color-fg-muted, #94a3b8);
+        fill: var(--color-muted-foreground);
         fill: context-stroke;
     }
     /* Pointer-name label sitting on an edge (left / right / next / …). A card-
@@ -684,7 +684,7 @@
     .viz-graph__edge-label {
         font-family: var(--font-mono, ui-monospace, monospace);
         font-size: 9.5px;
-        fill: var(--color-fg-muted, #a13e3e);
+        fill: var(--color-muted-foreground);
         stroke: var(--color-card, #ffffff);
         stroke-width: 3px;
         paint-order: stroke fill;
@@ -700,7 +700,7 @@
     }
     .viz-graph__value {
         @apply font-semibold;
-        fill: var(--color-fg-default, currentColor);
+        fill: var(--color-foreground);
         font-size: 14px;
     }
     /* Per-node class label (e.g. `TreeNode`) — sits just under the circle so the
@@ -711,7 +711,7 @@
         font-size: 10px;
         font-weight: 600;
         font-style: italic;
-        fill: var(--color-fg-muted, #a13e3e);
+        fill: var(--color-muted-foreground);
         letter-spacing: 0.02em;
     }
     /* Per-node field meta (e.g. an AVL `height=2`) — a small mono sub-label below
@@ -720,7 +720,7 @@
         font-family: var(--font-mono, ui-monospace, monospace);
         font-size: 10px;
         font-weight: 500;
-        fill: var(--color-fg-muted, #a13e3e);
+        fill: var(--color-muted-foreground);
     }
     /* The cursor — the node the algorithm is currently at. */
     .viz-graph__node--cursor .viz-graph__circle {
@@ -754,8 +754,8 @@
     }
     /* The freshly inserted leaf — green family, mirrors binary-tree `--new`. */
     .viz-graph__node--new .viz-graph__circle {
-        fill: rgba(200, 105, 62, 0.12);
-        stroke: rgba(200, 105, 62, 0.85);
+        fill: rgba(79, 91, 213, 0.12);
+        stroke: rgba(79, 91, 213, 0.85);
         stroke-width: 2.25;
     }
     /* Transient-state adornment ring — a halo just outside the node circle, on its
@@ -788,13 +788,13 @@
        stopping. Set every step from `kind`; only the linked-list renderer emits it. */
     .viz-graph__node--null .viz-graph__circle {
         fill: none;
-        stroke: var(--color-fg-muted, #a13e3e);
+        stroke: var(--color-muted-foreground);
         stroke-width: 1.5;
         stroke-dasharray: 3 3;
         opacity: 0.55;
     }
     .viz-graph__node--null .viz-graph__value {
-        fill: var(--color-fg-muted, #a13e3e);
+        fill: var(--color-muted-foreground);
         font-weight: 500;
         opacity: 0.75;
     }
@@ -827,7 +827,7 @@
         border-top: 1px solid var(--color-border, #cbd5e1);
         font-size: 11px;
         line-height: 1.3;
-        color: var(--color-fg-muted, #a13e3e);
+        color: var(--color-muted-foreground);
     }
     .viz-graph__legend-item {
         display: inline-flex;
@@ -849,8 +849,8 @@
     }
     .viz-graph__legend-swatch--new {
         border-radius: 50%;
-        background: rgba(200, 105, 62, 0.12);
-        border: 1.5px solid rgba(200, 105, 62, 0.85);
+        background: rgba(79, 91, 213, 0.12);
+        border: 1.5px solid rgba(79, 91, 213, 0.85);
     }
     .viz-graph__legend-swatch--changed {
         border-radius: 50%;
@@ -1261,7 +1261,7 @@
         fill: #14b8a6; /* teal-500 */
     }
     .handshake-timeline__phase--request {
-        fill: #c8693e; /* emerald-500 */
+        fill: #10b981; /* emerald-500 */
     }
     .handshake-timeline__phase--processing {
         fill: #f43f5e; /* rose-500 */
@@ -1462,7 +1462,7 @@
         opacity: 0.85;
     }
     .cache-stampede__bar--with {
-        fill: #c8693e; /* emerald-500 — the good case is green */
+        fill: #10b981; /* emerald-500 — the good case is green */
         opacity: 0.9;
     }
     .cache-stampede__bar-label {
@@ -1895,13 +1895,13 @@
            arrowhead fills, and below in `.graph-explorer__edge--<state>`
            rules for line strokes. */
         --ge-edge-default: #94a3b8;
-        --ge-edge-tree: #c8693e;
+        --ge-edge-tree: #4f5bd5;
         --ge-edge-back: #a13e3e;
         --ge-edge-cross: #8a4f7d;
         --ge-edge-forward: #8b5cf6;
         --ge-edge-relaxed: #3a5a8c;
-        --ge-edge-tight: #c8693e;
-        --ge-edge-on-path: #c8693e;
+        --ge-edge-tight: #4f5bd5;
+        --ge-edge-on-path: #4f5bd5;
         --ge-edge-considered: #8a4f7d;
         --ge-edge-rejected: #a13e3e;
         --ge-edge-failure: #a13e3e;
@@ -1936,7 +1936,7 @@
     }
     .graph-explorer__node-label {
         @apply text-sm font-semibold;
-        fill: var(--color-fg-default, currentColor);
+        fill: var(--color-foreground);
         font-size: 13px;
     }
     /* Per-state modifiers — closed catalog mirrored from
@@ -1956,8 +1956,8 @@
         stroke-width: 2.5;
     }
     .graph-explorer__node--settled .graph-explorer__node-circle {
-        fill: rgba(200, 105, 62, 0.18);
-        stroke: rgba(200, 105, 62, 0.7);
+        fill: rgba(79, 91, 213, 0.18);
+        stroke: rgba(79, 91, 213, 0.7);
         stroke-width: 2;
     }
     /* Directed-cycle-detection colours: white / gray / black. White is
@@ -2011,8 +2011,8 @@
         stroke: rgba(90, 138, 90, 0.7);
     }
     .graph-explorer__node--component3 .graph-explorer__node-circle {
-        fill: rgba(200, 105, 62, 0.18);
-        stroke: rgba(200, 105, 62, 0.7);
+        fill: rgba(79, 91, 213, 0.18);
+        stroke: rgba(79, 91, 213, 0.7);
     }
     .graph-explorer__node--component4 .graph-explorer__node-circle {
         fill: rgba(161, 62, 62, 0.18);
@@ -2087,7 +2087,7 @@
         font-size: 11px;
         font-weight: 600;
         font-family: ui-monospace, SFMono-Regular, monospace;
-        fill: var(--color-fg-muted, #a13e3e);
+        fill: var(--color-muted-foreground);
         paint-order: stroke;
         stroke: var(--color-card, #ffffff);
         stroke-width: 3.5;
@@ -2128,7 +2128,7 @@
         font-size: 13px;
         font-weight: 600;
         font-family: ui-monospace, SFMono-Regular, monospace;
-        fill: var(--color-fg-default, currentColor);
+        fill: var(--color-foreground);
     }
     .graph-explorer__panel-pill-rect {
         fill: rgba(58, 90, 140, 0.12);
@@ -2139,7 +2139,7 @@
         font-size: 12px;
         font-weight: 600;
         font-family: ui-monospace, SFMono-Regular, monospace;
-        fill: var(--color-fg-default, currentColor);
+        fill: var(--color-foreground);
     }
     .graph-explorer__caption {
         @apply mt-3 text-center text-sm text-foreground min-h-[1.25rem];
@@ -2232,8 +2232,8 @@
         stroke-dasharray: 4 3;
     }
     .hash-table__highlight--match {
-        fill: rgba(200, 105, 62, 0.22);
-        stroke: rgba(200, 105, 62, 0.8);
+        fill: rgba(79, 91, 213, 0.22);
+        stroke: rgba(79, 91, 213, 0.8);
         stroke-width: 2;
     }
     .hash-table__highlight--collision {
@@ -2253,7 +2253,7 @@
         font-size: 12px;
         font-weight: 600;
         font-family: ui-monospace, SFMono-Regular, monospace;
-        fill: var(--color-fg-default, currentColor);
+        fill: var(--color-foreground);
     }
     /* Tombstone: open-addressing delete marker. Faded fill + dashed
        border + strikethrough on the label. The key stays visible so
@@ -2277,10 +2277,10 @@
         fill: none;
     }
     /* Chain cursor (chaining mode) — small downward triangle above
-       the entry at the cursor position. Emerald to match the
+       the entry at the cursor position. Indigo to match the
        `current` family in MarkerCanon. */
     .hash-table__chain-cursor-arrow {
-        fill: #c8693e;
+        fill: #4f5bd5;
     }
     /* Probe trail dots (probing modes) — small muted dots at each
        earlier probe step. The active cursor is rendered separately
@@ -2299,7 +2299,7 @@
         font-size: 11px;
         font-weight: 600;
         font-family: ui-monospace, SFMono-Regular, monospace;
-        fill: var(--color-fg-default, currentColor);
+        fill: var(--color-foreground);
     }
     .hash-table__caption {
         @apply mt-3 text-center text-sm text-foreground min-h-[1.25rem];
@@ -2380,7 +2380,7 @@
         fill: var(--color-muted-foreground, #a13e3e);
     }
     .heap-tree__compare--true {
-        fill: rgba(200, 105, 62, 0.95);
+        fill: rgba(79, 91, 213, 0.95);
     }
     .heap-tree__compare--false {
         fill: rgba(161, 62, 62, 0.9);
@@ -2401,16 +2401,16 @@
     .heap-tree__input-text {
         font-size: 12px;
         font-weight: 600;
-        fill: var(--color-fg-default, currentColor);
+        fill: var(--color-foreground);
         font-family: ui-monospace, SFMono-Regular, monospace;
     }
     .heap-tree__input-cursor {
-        fill: rgba(200, 105, 62, 0.85);
+        fill: rgba(79, 91, 213, 0.85);
     }
     /* Tree edges — straight lines from parent to child, trimmed to meet
        the circle edges. */
     .heap-tree__tree-edge {
-        stroke: var(--color-fg-muted, #94a3b8);
+        stroke: var(--color-muted-foreground);
         stroke-width: 1.75;
         fill: none;
         /* `d` transitions are best-effort — modern Chromium / Firefox
@@ -2442,7 +2442,7 @@
     .heap-tree__tree-value {
         font-size: 14px;
         font-weight: 600;
-        fill: var(--color-fg-default, currentColor);
+        fill: var(--color-foreground);
     }
     .heap-tree__tree-sortkey {
         font-size: 10px;
@@ -2478,7 +2478,7 @@
     .heap-tree__array-text {
         font-size: 13px;
         font-weight: 600;
-        fill: var(--color-fg-default, currentColor);
+        fill: var(--color-foreground);
         font-family: ui-monospace, SFMono-Regular, monospace;
     }
     .heap-tree__array-index {
@@ -2496,14 +2496,14 @@
         fill: var(--color-muted-foreground, #a13e3e);
     }
     .heap-tree__output-rect {
-        fill: rgba(200, 105, 62, 0.10);
-        stroke: rgba(200, 105, 62, 0.45);
+        fill: rgba(79, 91, 213, 0.10);
+        stroke: rgba(79, 91, 213, 0.45);
         stroke-width: 1.25;
     }
     .heap-tree__output-text {
         font-size: 12px;
         font-weight: 600;
-        fill: var(--color-fg-default, currentColor);
+        fill: var(--color-foreground);
         font-family: ui-monospace, SFMono-Regular, monospace;
     }
     .heap-tree__caption {
@@ -2609,9 +2609,9 @@
         stroke-width: 1.5;
     }
     .call-stack__frame--active .call-stack__frame-rect {
-        stroke: rgba(200, 105, 62, 0.85);
+        stroke: rgba(79, 91, 213, 0.85);
         stroke-width: 2;
-        fill: rgba(200, 105, 62, 0.06);
+        fill: rgba(79, 91, 213, 0.06);
     }
     .call-stack__frame--returning .call-stack__frame-rect {
         stroke: rgba(90, 138, 90, 0.85);
@@ -2628,7 +2628,7 @@
         font-size: 13px;
         font-weight: 600;
         font-family: ui-monospace, SFMono-Regular, monospace;
-        fill: var(--color-fg-default, currentColor);
+        fill: var(--color-foreground);
     }
     .call-stack__frame--overflow .call-stack__frame-name {
         fill: #b91c1c;
@@ -2648,8 +2648,8 @@
     /* Stack pointer — emerald (the `top`/`current` family). Drawn as a ▶
        triangle to the right of the active frame. */
     .call-stack__pointer {
-        fill: rgba(200, 105, 62, 0.85);
-        stroke: rgba(200, 105, 62, 0.95);
+        fill: rgba(79, 91, 213, 0.85);
+        stroke: rgba(79, 91, 213, 0.95);
         stroke-width: 1;
     }
     /* Recursion-tree-mode node — base is "pending" (frame defined but not
@@ -2668,9 +2668,9 @@
         fill: rgba(105, 96, 87, 0.6);
     }
     .call-stack__tree-node--active .call-stack__tree-rect {
-        stroke: rgba(200, 105, 62, 0.9);
+        stroke: rgba(79, 91, 213, 0.9);
         stroke-width: 2;
-        fill: rgba(200, 105, 62, 0.08);
+        fill: rgba(79, 91, 213, 0.08);
     }
     .call-stack__tree-node--waiting .call-stack__tree-rect {
         stroke: rgba(58, 90, 140, 0.7);
@@ -2695,10 +2695,10 @@
         font-size: 12px;
         font-weight: 600;
         font-family: ui-monospace, SFMono-Regular, monospace;
-        fill: var(--color-fg-default, currentColor);
+        fill: var(--color-foreground);
     }
     .call-stack__tree-edge {
-        stroke: var(--color-fg-muted, #94a3b8);
+        stroke: var(--color-muted-foreground);
         stroke-width: 1.5;
         fill: none;
     }
@@ -2709,7 +2709,7 @@
         fill: rgba(90, 138, 90, 0.95);
     }
     .call-stack__tree-return--fresh {
-        fill: rgba(200, 105, 62, 0.95);
+        fill: rgba(79, 91, 213, 0.95);
     }
     .call-stack__caption {
         @apply mt-3 text-center text-sm text-foreground min-h-[1.25rem];
@@ -2759,9 +2759,9 @@
         background: rgba(58, 90, 140, 0.08);
     }
     .decision-tree__kind-badge--search {
-        border-color: rgba(200, 105, 62, 0.55);
+        border-color: rgba(79, 91, 213, 0.55);
         color: #047857;
-        background: rgba(200, 105, 62, 0.08);
+        background: rgba(79, 91, 213, 0.08);
     }
     .decision-tree__canvas-row {
         @apply mt-2 flex flex-wrap items-start justify-center gap-4;
@@ -2813,17 +2813,17 @@
        the CHILD node's status: active/accepted brighten; pruned dashes
        grey; popped dims. */
     .decision-tree__edge {
-        stroke: var(--color-fg-muted, #94a3b8);
+        stroke: var(--color-muted-foreground);
         stroke-width: 1.5;
         fill: none;
         transition: stroke 250ms ease, opacity 250ms ease;
     }
     .decision-tree__edge--active {
-        stroke: rgba(200, 105, 62, 0.9);
+        stroke: rgba(79, 91, 213, 0.9);
         stroke-width: 2;
     }
     .decision-tree__edge--accepted {
-        stroke: rgba(200, 105, 62, 0.85);
+        stroke: rgba(79, 91, 213, 0.85);
         stroke-width: 2;
     }
     .decision-tree__edge--rejected {
@@ -2894,9 +2894,9 @@
         stroke-dasharray: 3 3;
     }
     .decision-tree__node--active .decision-tree__node-rect {
-        stroke: rgba(200, 105, 62, 0.9);
+        stroke: rgba(79, 91, 213, 0.9);
         stroke-width: 2.25;
-        fill: rgba(200, 105, 62, 0.08);
+        fill: rgba(79, 91, 213, 0.08);
     }
     .decision-tree__node--visited .decision-tree__node-rect {
         stroke: rgba(58, 90, 140, 0.7);
@@ -2904,9 +2904,9 @@
         fill: rgba(58, 90, 140, 0.05);
     }
     .decision-tree__node--accepted .decision-tree__node-rect {
-        stroke: rgba(200, 105, 62, 0.95);
+        stroke: rgba(79, 91, 213, 0.95);
         stroke-width: 2.25;
-        fill: rgba(200, 105, 62, 0.16);
+        fill: rgba(79, 91, 213, 0.16);
     }
     .decision-tree__node--rejected .decision-tree__node-rect {
         stroke: rgba(105, 96, 87, 0.7);
@@ -2931,7 +2931,7 @@
         font-size: 11px;
         font-weight: 600;
         font-family: ui-monospace, SFMono-Regular, monospace;
-        fill: var(--color-fg-default, currentColor);
+        fill: var(--color-foreground);
     }
     .decision-tree__node--unseen .decision-tree__node-text {
         fill: rgba(105, 96, 87, 0.7);
@@ -3044,9 +3044,9 @@
         background: rgba(58, 90, 140, 0.08);
     }
     .dp-table__solver-badge--top-down {
-        border-color: rgba(200, 105, 62, 0.55);
+        border-color: rgba(79, 91, 213, 0.55);
         color: #047857;
-        background: rgba(200, 105, 62, 0.08);
+        background: rgba(79, 91, 213, 0.08);
     }
     /* Single-canvas widget — no flanking panels — so the simpler
        overflow-x-auto + max-w-full pair from call-stack / heap-tree fits.
@@ -3096,8 +3096,8 @@
         stroke: rgba(58, 90, 140, 0.55);
     }
     .dp-table__cell--on-path .dp-table__cell-rect {
-        fill: rgba(200, 105, 62, 0.16);
-        stroke: rgba(200, 105, 62, 0.95);
+        fill: rgba(79, 91, 213, 0.16);
+        stroke: rgba(79, 91, 213, 0.95);
         stroke-width: 2;
     }
     /* Adornment: --filling = the cell being computed RIGHT NOW. Emerald halo
@@ -3105,9 +3105,9 @@
        transitions from empty → filled this same step, so paint reads as
        emerald-over-blue mid-step). */
     .dp-table__cell--filling .dp-table__cell-rect {
-        stroke: rgba(200, 105, 62, 0.95);
+        stroke: rgba(79, 91, 213, 0.95);
         stroke-width: 2.25;
-        fill: rgba(200, 105, 62, 0.18);
+        fill: rgba(79, 91, 213, 0.18);
     }
     /* Adornment: --depends-on = a predecessor of the filling cell.
        Amber outline so it reads distinct from `--filling` (the active
@@ -3130,7 +3130,7 @@
         font-size: 12px;
         font-weight: 600;
         font-family: ui-monospace, SFMono-Regular, monospace;
-        fill: var(--color-fg-default, currentColor);
+        fill: var(--color-foreground);
     }
     .dp-table__cell--empty .dp-table__cell-text {
         fill: rgba(105, 96, 87, 0.55);
@@ -3160,7 +3160,7 @@
        child node — active brightens, returned dims slightly to read as
        "done". */
     .dp-table__tree-edge {
-        stroke: var(--color-fg-muted, #94a3b8);
+        stroke: var(--color-muted-foreground);
         stroke-width: 1.5;
         fill: none;
         transition: stroke 250ms ease, opacity 250ms ease;
@@ -3170,7 +3170,7 @@
         stroke-width: 1.25;
     }
     .dp-table__tree-edge--active {
-        stroke: rgba(200, 105, 62, 0.9);
+        stroke: rgba(79, 91, 213, 0.9);
         stroke-width: 2;
     }
     .dp-table__tree-edge--returned {
@@ -3192,9 +3192,9 @@
         stroke-dasharray: 3 3;
     }
     .dp-table__tree-node--active .dp-table__tree-node-rect {
-        stroke: rgba(200, 105, 62, 0.9);
+        stroke: rgba(79, 91, 213, 0.9);
         stroke-width: 2.25;
-        fill: rgba(200, 105, 62, 0.08);
+        fill: rgba(79, 91, 213, 0.08);
     }
     .dp-table__tree-node--returned .dp-table__tree-node-rect {
         stroke: rgba(105, 96, 87, 0.6);
@@ -3205,7 +3205,7 @@
         font-size: 11px;
         font-weight: 600;
         font-family: ui-monospace, SFMono-Regular, monospace;
-        fill: var(--color-fg-default, currentColor);
+        fill: var(--color-foreground);
     }
     .dp-table__tree-node--unseen .dp-table__tree-node-text {
         fill: rgba(105, 96, 87, 0.7);
@@ -3230,7 +3230,7 @@
         visibility: hidden;
     }
     .dp-table__path-marker {
-        color: rgba(200, 105, 62, 0.95);
+        color: rgba(79, 91, 213, 0.95);
         margin-right: 0.15rem;
     }
     .dp-table__caption {
@@ -3280,9 +3280,9 @@
         background: rgba(105, 96, 87, 0.06);
     }
     .trie__operation-badge--insert {
-        border-color: rgba(200, 105, 62, 0.55);
+        border-color: rgba(79, 91, 213, 0.55);
         color: #047857;
-        background: rgba(200, 105, 62, 0.08);
+        background: rgba(79, 91, 213, 0.08);
     }
     .trie__operation-badge--search {
         border-color: rgba(58, 90, 140, 0.55);
@@ -3320,7 +3320,7 @@
        walk (`--active`) or layer a violet halo for prefix-walk subtrees
        (`--in-prefix`). */
     .trie__edge {
-        stroke: var(--color-fg-muted, #94a3b8);
+        stroke: var(--color-muted-foreground);
         stroke-width: 1.5;
         fill: none;
         transition: stroke 250ms ease, stroke-width 250ms ease, opacity 250ms ease;
@@ -3330,7 +3330,7 @@
         stroke-width: 1.5;
     }
     .trie__edge--active {
-        stroke: rgba(200, 105, 62, 0.9);
+        stroke: rgba(79, 91, 213, 0.9);
         stroke-width: 2.25;
     }
     .trie__edge--in-prefix {
@@ -3378,15 +3378,15 @@
     }
     /* Active = cursor here this step. Emerald halo. */
     .trie__node--active .trie__node-circle {
-        fill: rgba(200, 105, 62, 0.16);
-        stroke: rgba(200, 105, 62, 0.95);
+        fill: rgba(79, 91, 213, 0.16);
+        stroke: rgba(79, 91, 213, 0.95);
         stroke-width: 2.25;
     }
     /* Just-created this step. Slightly stronger emerald to read as "I'm
        brand new" alongside `--active` (which fires on the same step). */
     .trie__node--new .trie__node-circle {
-        fill: rgba(200, 105, 62, 0.22);
-        stroke: rgba(200, 105, 62, 1);
+        fill: rgba(79, 91, 213, 0.22);
+        stroke: rgba(79, 91, 213, 1);
         stroke-width: 2.5;
     }
     /* Hit flash — search success. Emerald with a slightly different tint

@@ -17,7 +17,7 @@ The triggers: "**first index `>` x**", "**just past the last** occurrence", "**h
 
 In `[1, 3, 3, 5, 7]`, find the first index `> 3` and use the pair to count the 3s. Run it.
 
-```python run
+```python run viz=array
 def lower_bound(arr, t):
     lo, hi = 0, len(arr)
     while lo < hi:
@@ -84,7 +84,7 @@ Because you want everything `≥ 3` **and** `≤ 5`. `lower_bound(3)` is the fir
 
 The reusable upper bound + range count:
 
-```python run
+```python run viz=array
 def lower_bound(arr, t):
     lo, hi = 0, len(arr)
     while lo < hi:
@@ -108,7 +108,7 @@ a = [1, 3, 3, 5, 7, 7, 7]
 print(upper_bound(a, 7), count_in_range(a, 3, 5), count_in_range(a, 7, 7))   # 7 3 3
 ```
 
-```java run
+```java run viz=array
 public class Main {
   static int lowerBound(int[] a, int t) {
     int lo = 0, hi = a.length;

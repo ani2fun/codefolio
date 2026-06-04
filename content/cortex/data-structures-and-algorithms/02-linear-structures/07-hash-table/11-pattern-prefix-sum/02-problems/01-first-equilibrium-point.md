@@ -21,8 +21,7 @@ Given an array `arr`, return the first index `i` such that `sum(arr[0..i-1]) == 
 ### Example 3
 > -   **Input:** `arr = [1, 3, 5, 10]` → **Output:** `-1`
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -55,7 +54,6 @@ Explanation: a single element has empty sides — both sum to 0 — so index 0 i
 equilibrium point.
 ```
 
-</details>
 <details>
 <summary><h2>Approach</h2></summary>
 
@@ -158,8 +156,9 @@ public class Main {
 ```
 
 </details>
+<details>
+<summary><h2>Intuition</h2></summary>
 
-## Intuition
 
 An equilibrium point splits the array so the elements strictly to its left sum to the same value as the elements strictly to its right. The brute-force read of that definition is a double loop: for each candidate index, sum everything to its left and everything to its right, then compare. Each candidate costs an `O(N)` re-sum, and there are `N` candidates, so the work is `O(N²)` time — and most of it re-adds the same elements the previous candidate already summed.
 
@@ -167,7 +166,10 @@ The prefix sum collapses both side-sums into constant-time lookups. Build `prefi
 
 This is the no-map flavour of prefix sums: a precomputed prefix *array*, not a hash map, because the query is positional rather than value-based. What breaks if you skip the prefix array is the quadratic re-summing — recomputing each side from scratch turns an `O(N)` scan back into `O(N²)`. The diagnostic signal is "compare a left-of-`i` total to a right-of-`i` total at every index", which is exactly what one prefix-sum pass answers in linear time.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for First Equilibrium Point |
 |---|---|
@@ -176,7 +178,10 @@ This is the no-map flavour of prefix sums: a precomputed prefix *array*, not a h
 | **Q3.** Is the matching slice found by a hash-map lookup? | **No** — the query is positional, so a prefix *array* suffices; no hash map of values is needed. |
 | **Q4.** Does the rule survive negatives and zeros? | **Yes** — subtraction of prefix sums is correct regardless of sign, so negatives and zeros are fine. |
 
-## Approach
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
+
 
 1. Allocate `prefix_sum` of length `n + 1` and set `prefix_sum[0] = 0`.
 2. Fill it left to right so `prefix_sum[i] = prefix_sum[i - 1] + arr[i - 1]` — the total of the first `i` elements.
@@ -184,7 +189,10 @@ This is the no-map flavour of prefix sums: a precomputed prefix *array*, not a h
 4. If `left_sum == right_sum`, the candidate index `i − 1` is an equilibrium point — return it immediately, which guarantees the *first* one.
 5. If the scan finishes with no match, return `-1`.
 
-## Dry Run
+</details>
+<details>
+<summary><h2>Dry Run</h2></summary>
+
 
 Walk Example 1: `arr = [1, 3, 5, 2, 2]`, expected output `2`. First the prefix array, then the scan:
 
@@ -201,14 +209,20 @@ result = 2
 
 The result `2` matches the expected output — at index `2` the left side `[1, 3]` and the right side `[2, 2]` both sum to `4`.
 
-## Complexity Analysis
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
+
 
 | | Cost | Why |
 |---|---|---|
 | **Time** | **O(N)** | One pass builds `prefix_sum`, a second scans for the split; each step is `O(1)`. |
 | **Space** | **O(N)** | The auxiliary `prefix_sum` array holds `N + 1` entries. Can be reduced to `O(1)` by tracking running left and right sums instead. |
 
-## Edge Cases
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
+
 
 | Input | Output | Why |
 |---|---|---|
@@ -219,6 +233,11 @@ The result `2` matches the expected output — at index `2` the left side `[1, 3
 | `arr = [1, 2, 3]` | `-1` | No split balances the two sides, so the scan returns `-1`. |
 | `arr = [1, 3, 5, 10]` | `-1` | A strictly growing array has no equilibrium point. |
 
-## Key Takeaway
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
 
 When a problem compares a left-of-index total to a right-of-index total, a precomputed prefix-sum array turns each `O(N)` side-sum into an `O(1)` subtraction, collapsing the whole scan from `O(N²)` to `O(N)`.
+
+</details>

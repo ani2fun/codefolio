@@ -17,7 +17,7 @@ The tell-tale phrasing is **"maximize the minimum"** (or "minimize the maximum")
 
 Aggressive cows: place `c = 3` cows in stalls at positions `[1, 2, 4, 8, 9]` to **maximize the minimum** distance between any two. Run it.
 
-```python run
+```python run viz=array
 def max_min_distance(stalls, c):
     stalls = sorted(stalls)
     def feasible(d):                        # can we place all c cows with min gap >= d?
@@ -89,7 +89,7 @@ Because of *where the loop lands relative to the answer*. The minimum version fi
 
 The reusable maximum-feasible search:
 
-```python run
+```python run viz=array
 def max_min_distance(stalls, c):
     stalls = sorted(stalls)
     def feasible(d):
@@ -113,7 +113,7 @@ print(max_min_distance([1, 2, 8, 4, 9], 3))   # 3
 print(max_min_distance([5, 1, 9], 2))         # 8
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {

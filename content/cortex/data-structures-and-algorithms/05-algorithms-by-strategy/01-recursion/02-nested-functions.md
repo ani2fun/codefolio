@@ -15,7 +15,7 @@ This lesson is the bridge between the [memory model](/cortex/data-structures-and
 
 Four functions, one call each. At the deepest moment, *all four frames are alive* — three paused, one running. Pass a "trail" down so the deepest call can show the live chain:
 
-```python run
+```python run viz=array
 def function_c(trail): print(" -> ".join(trail + ["function_c"]))
 def function_b(trail): function_c(trail + ["function_b"])
 def function_a(trail): function_b(trail + ["function_a"])
@@ -23,7 +23,7 @@ def main():           function_a(["main"])
 main()
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static void functionC(String trail) { System.out.println(trail + " -> functionC"); }
     static void functionB(String trail) { functionC(trail + " -> functionB"); }
@@ -91,7 +91,7 @@ If the stack is finite, then a function that calls itself forever can't run fore
 
 **Predict before you run:** with no base case, how deep does Python recurse before it stops — unbounded, or a specific ceiling?
 
-```python run
+```python run viz=array
 import sys
 print("recursion limit:", sys.getrecursionlimit())
 
@@ -118,7 +118,7 @@ It stops just short of `sys.getrecursionlimit()` — `1000` by default — print
 
 The standard fix when recursion would nest too deep: **don't recurse — iterate.** A loop reuses a single frame, so it never grows the stack. Sum `1..n` for an `n` that would blow the recursion limit many times over:
 
-```python run
+```python run viz=array
 def sum_to_iter(n):
     total = 0
     for i in range(1, n + 1):    # one frame, reused n times — stack stays flat
@@ -128,7 +128,7 @@ def sum_to_iter(n):
 print(sum_to_iter(1_000_000))    # 500000500000 — a recursive version would overflow long before here
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static long sumToIter(int n) {
         long total = 0;

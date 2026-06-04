@@ -17,7 +17,7 @@ A plain shift won't do it, because shifting *loses* the bits that drop off the e
 
 Reverse an 8-bit number and rotate one left. `0b00001011` reversed is `0b11010000`; rotating `0b10000001` left by 1 wraps the top bit down to give `0b00000011`. Run it.
 
-```python run
+```python run viz=array
 WIDTH = 8
 
 def reverse_bits(n, width=WIDTH):
@@ -82,7 +82,7 @@ The left shift `n << k` produces bits *above* position `width` — for an 8-bit 
 
 The reusable reverse and rotate:
 
-```python run
+```python run viz=array
 def reverse_bits(n, width=8):
     result = 0
     for _ in range(width):
@@ -99,7 +99,7 @@ print(reverse_bits(0b00000001))        # 128
 print(rotate_left(0b00001111, 2))      # 60  (0b00111100)
 ```
 
-```java run
+```java run viz=array
 public class Main {
   static final int WIDTH = 8;
 

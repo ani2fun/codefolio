@@ -21,8 +21,7 @@ Given two strings `s1` and `s2`, return `true` if `s2` contains a permutation of
 ### Example 3
 > -   **Input:** `s1 = "abc", s2 = "defghiab"` → **Output:** `false`
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -52,9 +51,10 @@ Output: true
 Explanation: the window "aa" matches s1's map {a:2} → match found.
 ```
 
-</details>
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The structural property that makes this a **fixed-sized sliding window** problem is the window width: a permutation of `s1` has exactly `len(s1)` characters, so every candidate window in `s2` is exactly that size. A permutation is a multiset of characters, and a frequency map is precisely a multiset, so the window's map is the summary to maintain.
 
@@ -62,7 +62,10 @@ The window's two pointers each carry a fixed job. The `end` pointer adds the ent
 
 The naive approach breaks the time budget. For each of the `len(s2) − len(s1) + 1` windows it builds a fresh map and compares, costing `O(N·K)` time for `O(K)` space where `K = len(s1)`. That re-counts the `K − 1` shared characters on every slide. The sliding window edits the map in `O(1)` per step, so only the equality check remains per window.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for Contains Variation |
 |---|---|
@@ -71,7 +74,10 @@ The naive approach breaks the time budget. For each of the `len(s2) − len(s1) 
 | **Q3.** Is the per-window answer read from an `O(1)`-updatable map? | **Yes** — the window's frequency map is compared against `s1`'s; the map itself updates in `O(1)`. |
 | **Q4.** Is the per-step work `O(1)` amortised? | **Yes** — one increment on expand and one decrement on contract; the equality check is bounded by the alphabet. |
 
-## Approach
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
+
 
 Pre-count `s1`, then slide a window of size `len(s1)` over `s2`, comparing maps each time the window is full.
 
@@ -83,6 +89,7 @@ Pre-count `s1`, then slide a window of size `len(s1)` over `s2`, comparing maps 
 
 > *Optimisation* — to avoid an `O(K)` map comparison each step, track a counter of how many distinct characters hold *exactly* the right count. The solution below uses the clearer `map == map` check; the counter only matters for large `K`.
 
+</details>
 <details>
 <summary><h2>Solution</h2></summary>
 
@@ -223,8 +230,9 @@ public class Main {
 ```
 
 </details>
+<details>
+<summary><h2>Dry Run</h2></summary>
 
-## Dry Run
 
 Walk Example 1 — `s1 = "abc"`, `s2 = "edbaclm"`, window size `3`. The target map is `{a:1, b:1, c:1}`:
 
@@ -245,7 +253,10 @@ result = true
 
 The result `true` matches the expected output — the window `"bac"` at `start=2` has map `{a:1, b:1, c:1}`, equal to `s1`'s map.
 
-## Complexity Analysis
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
+
 
 | Measure | Value | Why |
 |---|---|---|
@@ -254,7 +265,10 @@ The result `true` matches the expected output — the window `"bac"` at `start=2
 
 The counter optimisation in the Approach note collapses the per-window check to `O(1)`, giving a strict `O(N)` time bound.
 
-## Edge Cases
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
+
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -265,6 +279,11 @@ The counter optimisation in the Approach note collapses the per-window check to 
 | Repeated letters | `s1 = "aa", s2 = "aab"` | `true` | The window `"aa"` matches `s1`'s map `{a:2}`. |
 | No permutation | `s1 = "abc", s2 = "defghiab"` | `false` | No length-`3` window equals `{a:1, b:1, c:1}`. |
 
-## Key Takeaway
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
 
 This is a pattern-match shape of the fixed window: the size is `len(s1)`, and a window matches when its frequency map equals `s1`'s. Returning on the first match makes it the single-answer cousin of Anagram Finder, which appends every matching index instead.
+
+</details>

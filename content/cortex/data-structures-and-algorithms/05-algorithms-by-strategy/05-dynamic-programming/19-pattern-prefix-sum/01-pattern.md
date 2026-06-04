@@ -15,7 +15,7 @@ In 1-D, `prefix[i]` = sum of the first `i` elements, and `sum(l..r) = prefix[r+1
 
 **Range Sum Query 2D** ([LeetCode 304](https://leetcode.com/problems/range-sum-query-2d-immutable/)) — build a prefix matrix once (`O(m·n)`), then answer any rectangle sum in `O(1)`. The `+1` padding row and column let every cell read its neighbours without boundary checks.
 
-```python run
+```python run viz=grid
 def build_2d(matrix):
     m, n = len(matrix), len(matrix[0])
     P = [[0] * (n + 1) for _ in range(m + 1)]            # padded so row 0 / col 0 are zero
@@ -33,7 +33,7 @@ print(sum_region(P, 2, 1, 4, 3))   # 8
 print(sum_region(P, 1, 1, 2, 2))   # 11
 ```
 
-```java run
+```java run viz=grid
 public class Main {
     static int[][] build2D(int[][] matrix) {
         int m = matrix.length, n = matrix[0].length;
@@ -89,7 +89,7 @@ The 2-D query has *four* terms, and the easy mistake is to write three — subtr
 
 **Predict before you run:** you compute a rectangle sum as `P[r2+1][c2+1] − P[r1][c2+1] − P[r2+1][c1]` and forget the final `+ P[r1][c1]`. Is the result too big or too small — and by exactly how much?
 
-```python run
+```python run viz=grid
 def build_2d(matrix):
     m, n = len(matrix), len(matrix[0])
     P = [[0] * (n + 1) for _ in range(m + 1)]
@@ -122,7 +122,7 @@ Correct is `8`; the buggy three-term version returns `0` — too small by exactl
 
 **Subarray Sum Equals K** ([LeetCode 560](https://leetcode.com/problems/subarray-sum-equals-k/)) — count the contiguous subarrays summing to exactly `K`. The 1-D prefix sum fused with a hashmap: a subarray `(l..r)` sums to `K` iff `prefix[r] − prefix[l-1] = K`, i.e. `prefix[l-1] = prefix[r] − K`. So as you sweep, count how many earlier prefixes equal `currentPrefix − K`.
 
-```python run
+```python run viz=array
 from collections import defaultdict
 
 def subarray_sum(nums, k):
@@ -139,7 +139,7 @@ print(subarray_sum([1, 1, 1], 2))   # 2
 print(subarray_sum([1, 2, 3], 3))   # 2
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static int subarraySum(int[] nums, int k) {

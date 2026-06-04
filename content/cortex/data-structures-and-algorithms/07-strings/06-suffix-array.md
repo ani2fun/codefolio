@@ -16,7 +16,7 @@ A **suffix array** is just the list of start indices of every suffix, sorted by 
 
 Build the array by sorting suffix indices; search a pattern by binary-searching for the block of suffixes that start with it.
 
-```python run
+```python run viz=array
 def suffix_array(s):
     return sorted(range(len(s)), key=lambda i: s[i:])     # naive O(n^2 log n) build
 
@@ -36,7 +36,7 @@ print(sa_contains("banana", "ana"))       # True
 print(sa_contains("banana", "xyz"))       # False
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static Integer[] suffixArray(String s) {
@@ -101,7 +101,7 @@ The LCP array turns "find the longest repeated substring" — which sounds like 
 
 **Predict before you run:** the longest *repeated* substring of `"banana"` (a substring that appears at least twice). Is it `"an"` (length 2), `"ana"` (length 3), or `"nana"` (length 4)?
 
-```python run
+```python run viz=array
 def suffix_array(s):
     return sorted(range(len(s)), key=lambda i: s[i:])
 
@@ -138,7 +138,7 @@ The longest repeated substring of `"banana"` is `"ana"` (length 3), not `"nana"`
 
 **Count distinct substrings** — a classic suffix-array-plus-LCP result. A length-`n` string has `n(n+1)/2` substrings counting duplicates; every adjacent LCP value counts substrings that are *repeats* of an earlier suffix's prefixes, so the distinct count is `n(n+1)/2 − Σ lcp`.
 
-```python run
+```python run viz=array
 def suffix_array(s):
     return sorted(range(len(s)), key=lambda i: s[i:])
 
@@ -159,7 +159,7 @@ print(distinct_substrings("banana"))    # 15
 print(distinct_substrings("aaa"))       # 3
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static Integer[] suffixArray(String s) {

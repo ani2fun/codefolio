@@ -16,7 +16,7 @@ The catch is that it's only sometimes *correct*. Change `14` from denominations 
 
 **Activity selection** — pick the most non-overlapping activities. The greedy rule: **sort by *end* time, then take each activity that starts after the last one taken ended.**
 
-```python run
+```python run viz=array
 def activity_selection(acts):
     acts = sorted(acts, key=lambda a: a[1])     # sort by END time (not start!)
     selected, last_end = [], float('-inf')
@@ -28,7 +28,7 @@ def activity_selection(acts):
 print(activity_selection([(1,4), (3,5), (0,6), (5,7), (8,9), (5,9), (6,10)]))
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static List<int[]> activitySelection(int[][] acts) {
@@ -99,7 +99,7 @@ Greedy *feels* safe because each step is locally optimal. The coin-change proble
 
 **Predict before you run:** greedy takes the biggest coin ≤ remaining at each step. How many coins does it use, versus the true minimum?
 
-```python run
+```python run viz=array
 def greedy_coins(amount, coins):
     coins = sorted(coins, reverse=True); n, rem = 0, amount
     for c in coins:
@@ -128,7 +128,7 @@ Greedy uses **5** coins (`10 + 1 + 1 + 1 + 1`); the optimum is **2** (`7 + 7`). 
 
 A greedy that genuinely works: **Minimum Number of Arrows to Burst Balloons** ([LeetCode 452](https://leetcode.com/problems/minimum-number-of-arrows-to-burst-balloons/)). Balloons are intervals; one arrow at position `x` bursts every interval covering `x`. Minimise arrows. Same shape as activity selection — sort by end, fire at each end you can't skip.
 
-```python run
+```python run viz=array
 def min_arrows(points):
     points.sort(key=lambda p: p[1])             # sort by END
     arrows, last = 0, float('-inf')
@@ -141,7 +141,7 @@ print(min_arrows([[10,16], [2,8], [1,6], [7,12]]))   # 2
 print(min_arrows([[1,2], [3,4], [5,6], [7,8]]))      # 4
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static int minArrows(int[][] pts) {

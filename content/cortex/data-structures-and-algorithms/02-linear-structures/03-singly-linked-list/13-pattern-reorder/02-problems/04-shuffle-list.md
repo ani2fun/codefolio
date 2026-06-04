@@ -14,8 +14,7 @@ Given the **head** of a singly linked list that can be represented as **L0 -> L1
 
 **L0 -> Ln -> L1 -> Ln - 1 -> L2 -> Ln - 2 -> ...**
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1:**
 ```
@@ -38,11 +37,12 @@ Output: [1]
 Explanation: A single-node list is already in the target shape; the reorder is a no-op.
 ```
 
-</details>
 
 ---
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The **structural property** that makes this a reorder problem is that the output is a deterministic permutation of the input nodes — same nodes, new `.next` wiring. The target pattern `L0, Ln, L1, Ln-1, ...` is exactly what you get if you split the list at the middle, reverse the second half, and alternate-fuse the two halves. That decomposition uses three patterns you've already built: the **fast-and-slow** pattern to find the middle, the **reversal** pattern to flip the second half, and the **merge** pattern (alternate-fuse selector) to weave them back together. The reorder pipeline is the wrapper that names which `f1` and `f2` apply.
 
@@ -50,9 +50,10 @@ The **pointer placement** follows directly. `f1` is now itself a small pipeline:
 
 What **breaks if you reach for a naive approach**? Trying to materialise the index permutation `[L0, Ln, L1, Ln-1, ...]` directly requires random access — you'd walk to `Ln`, then to `L1`, then to `Ln-1`, and so on. Each lookup is `O(n)`, giving total cost `O(n^2)`. Copying every value into an array and rebuilding works in `O(n)` time but spends `O(n)` extra memory and allocates `n` new nodes. The split-reverse-merge pipeline does the job in `O(n)` time with `O(1)` extra space — three single-pass walks over disjoint halves, no allocations beyond a few dummy heads.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | Check | Answer for Shuffle List |
 |---|---|
@@ -61,9 +62,10 @@ What **breaks if you reach for a naive approach**? Trying to materialise the ind
 | **Q3.** Are the sub-lists bounded in count and walkable in one pass? | **Yes** — exactly two halves; the merge pass alternates between them in one walk. |
 | **Q4.** Is `O(1)` extra space sufficient? | **Yes** — a constant number of pointers (slow, fast, prev_to_slow, current, previous, next_node, dummy, tail, mergeFirst) regardless of input size. |
 
----
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
 
-## Approach
 
 Run the reorder pipeline with a composite `f1` and a boolean-flip `f2`.
 
@@ -76,8 +78,9 @@ Run the reorder pipeline with a composite `f1` and a boolean-flip `f2`.
 7. **Drain the non-empty half.** When the loop exits, at most one half still has nodes. Splice it onto `tail.next` in a single splice — the suffix is already correctly chained.
 8. **Return implicit via head mutation.** Because the algorithm mutates `head`'s `.next` chain in place, the caller's `head` reference still points at the original `L0`, which is now `dummy.next`. The function returns `void` / `None`.
 
+</details>
 <details>
-<summary><strong>Solution &amp; Analysis</strong></summary>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
 ### Solution
 
@@ -457,7 +460,7 @@ The output contains exactly `n` nodes — every input node appears in the output
 
 </details>
 <details>
-<summary><strong>Key Takeaway</strong></summary>
+<summary><h2>Key Takeaway</h2></summary>
 
 Reorder is the composition of two patterns you already know:
 
@@ -499,7 +502,10 @@ When you next see "rearrange in place", "reorder by pattern", "zig-zag", "partit
 > </details>
 
 </details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 Shuffle-list is the composite reorder — `f1` itself uses two earlier patterns (fast-and-slow to find the middle, reversal to flip the second half), then `f2` is the alternate-fuse selector from the merge pattern. One problem, four patterns chained: the payoff for learning the primitives in isolation.
+
+</details>

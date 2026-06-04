@@ -93,7 +93,7 @@ Last of all. It sits at the bottom the entire time, reachable only after everyth
 
 The classic use: checking whether brackets are balanced. Every opener gets pushed; every closer must pop its matching opener. If the stack ends empty, the brackets matched.
 
-```python run
+```python run viz=array viz-kind=stack
 def balanced(s):
     stack = []
     pairs = {')': '(', ']': '[', '}': '{'}
@@ -109,7 +109,7 @@ print(balanced("a(b[c]{d})"))   # True
 print(balanced("(]"))           # False — '(' can't close with ']'
 ```
 
-```java run
+```java run viz=array viz-kind=stack
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Map;

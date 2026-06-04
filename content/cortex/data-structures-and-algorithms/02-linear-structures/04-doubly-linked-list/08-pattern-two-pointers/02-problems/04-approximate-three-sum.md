@@ -28,8 +28,7 @@ Explanation: 0 + 0 + 0 = 0.
 
 ---
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -59,11 +58,12 @@ Output: 6
 Explanation: An exact match exists — the inner two-pointer pass returns the sum the moment `sum == target`, saving the rest of the scan.
 ```
 
-</details>
 
 ---
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The **structural property** is that 3-Sum collapses to 2-Sum the moment you fix the first value. For every choice of `indexNode`, the remaining problem is "find the pair in the sublist `(indexNode.next, tail)` whose sum is closest to `target - indexNode.val`" — that is a sorted-list pair-search, exactly the previous variant. Iterate the choice of `indexNode` over every node in the list and keep the best triple seen so far. The sorted assumption survives across the outer loop: the inner range `(indexNode.next, tail)` is itself sorted, so the inner two-pointer pass works without re-sorting.
 
@@ -71,9 +71,10 @@ The **pointer placement** uses three references — one fixed, two converging. T
 
 What **breaks if you reach for the naive approach**? The brute-force `O(n³)` triple-nested loop enumerates every ordered triple — correct, but cubic. Sorting + hashing for the inner pair lookup gets to `O(n²)` time but pays `O(n)` extra space for the hash set and discards the sorted-order gift. The fix-one-reduce approach hits the same `O(n²)` time at `O(1)` extra space, with the bonus that an exact `sum == target` triggers an early return out of the inner loop.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | Check | Answer for Approximate Three Sum |
 |---|---|
@@ -82,9 +83,10 @@ What **breaks if you reach for the naive approach**? The brute-force `O(n³)` tr
 | **Q3.** Do both pointers move strictly inward? | **Yes** — the inner `left` advances via `.next`, the inner `right` retreats via `.prev`; the outer `indexNode` also walks forward only. |
 | **Q4.** Is the per-step work `O(1)`? | **Yes** — one addition, one absolute-distance check, one comparison, one pointer step. Total cost is `O(n)` per outer iteration, `O(n²)` overall. |
 
----
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
 
-## Approach
 
 Run an outer loop that fixes a node, an inner converging-walkers pass that tracks the closest pair-sum, and a global tracker that survives every outer iteration.
 
@@ -97,6 +99,7 @@ Run an outer loop that fixes a node, an inner converging-walkers pass that track
 7. **Advance the outer cursor and repeat.** Set `currentNode = currentNode.next` and re-enter step 3.
 8. **Return `closestSum`.** When the outer loop ends, `closestSum` holds the reachable triple sum closest to `target`.
 
+</details>
 <details>
 <summary><h2>What Does "Fix One, Two-Pointer the Rest" Mean?</h2></summary>
 
@@ -462,7 +465,10 @@ You didn't just learn four problems. You learned a *recognition reflex*: wheneve
 Next up — **lesson 08: Pattern — Sliding Window**, where the two pointers stop converging and start chasing each other in the same direction. Same DLL, brand-new geometry.
 
 </details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 What is *new* here vs Two Sum is the outer loop pinning one node — the inner pass is unchanged in shape, only the running sum gains a third term. A global tracker survives across outer iterations because the closest triple may sit in any slice; an exact match short-circuits the whole search.
+
+</details>

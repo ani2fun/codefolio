@@ -112,7 +112,7 @@ state: "Step 2 — i = 2 — MATCH" {
 
 ### The Solution
 
-```python run
+```python run viz=array
 from typing import List
 
 class Solution:
@@ -146,7 +146,7 @@ print(Solution().search_element([7], 1))               # -1
 print(Solution().search_element([1, 2, 3], 1))         # 0
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static class Solution {
         private int helper(int[] arr, int target, int index) {

@@ -16,7 +16,7 @@ The obvious fix is a **visited set**: walk the list, remember every node you've 
 
 Build one list whose tail loops back into the middle and one that ends normally, then run the two pointers on each:
 
-```python run
+```python run viz=linked-list viz-root=head viz-kind=list-single
 class Node:
     def __init__(self, val): self.val = val; self.next = None
 
@@ -40,7 +40,7 @@ print("list with cycle ->", has_cycle(cyclic))
 print("straight list   ->", has_cycle(straight))
 ```
 
-```java run
+```java run viz=linked-list viz-root=head viz-kind=list-single
 public class Main {
     static class Node { int val; Node next; Node(int v) { val = v; } }
     static Node build(int[] values, int cycleTo) {
@@ -93,7 +93,7 @@ The claim that fast "must land on" slow rather than jump over it is the crux of 
 
 **Predict before you run:** both pointers are in a loop of length 5, and fast is currently 3 nodes ahead of slow (equivalently, 3 nodes *behind*, going forward around the loop). Since fast moves 2 and slow moves 1, fast closes that gap by 1 each step. What does the gap do over successive steps — does it hit 0 exactly, or can it skip from 1 straight past 0?
 
-```python run
+```python run viz=linked-list viz-root=head viz-kind=list-single
 # Once both pointers are in a cycle of length L, track the forward gap from fast to slow.
 # fast moves 2, slow moves 1 -> fast closes the gap by EXACTLY 1 each step, so it reaches 0
 # (a meeting) and can never leap past slow.
@@ -122,7 +122,7 @@ Detection gives a yes/no. The richer question — *where does the cycle begin?* 
 
 **Predict:** after the pointers meet inside the loop, you reset one pointer to the head and advance *both* one node at a time. For the list `[10, 20, 30, 40, 50, 60]` whose tail loops back to index 2, which node do they meet at?
 
-```python run
+```python run viz=linked-list viz-root=head viz-kind=list-single
 class Node:
     def __init__(self, val): self.val = val; self.next = None
 def build(values, cycle_to=-1):
@@ -147,7 +147,7 @@ start = cycle_start(head)
 print("cycle start value:", start.val, "| node index:", nodes.index(start))
 ```
 
-```java run
+```java run viz=linked-list viz-root=head viz-kind=list-single
 public class Main {
     static class Node { int val; Node next; Node(int v) { val = v; } }
     static Node[] nodesRef;

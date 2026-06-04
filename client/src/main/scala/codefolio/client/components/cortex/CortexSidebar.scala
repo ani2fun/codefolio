@@ -17,8 +17,8 @@ import scala.scalajs.js
  *
  *   - **Search** — top-of-rail input that filters the chapter list by title (case-insensitive substring
  *     match). ⌘K / Ctrl+K focuses; Esc clears.
- *   - **Reading-progress rail** — 3px terracotta fill on the left edge of each row, height proportional to
- *     the last-saved scroll position for that chapter.
+ *   - **Reading-progress rail** — 3px indigo fill on the left edge of each row, height proportional to the
+ *     last-saved scroll position for that chapter.
  *   - **Collapsible rail** — 280px ↔ 64px transition driven by the parent layout's `data-side` attribute.
  *     When collapsed (and not peeking), an alternate compact "rail" renders numbered chapter tiles + section
  *     icon tiles with hover tooltips.

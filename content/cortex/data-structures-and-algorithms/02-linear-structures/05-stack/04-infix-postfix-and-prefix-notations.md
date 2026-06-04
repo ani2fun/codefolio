@@ -16,7 +16,7 @@ What if the written order *were* the evaluation order? **Postfix** (operator *af
 
 The three notations aren't three unrelated conventions — they're one expression tree read three ways. Build the tree for `(2 + 3) * 4` and traverse it in pre-, in-, and post-order:
 
-```python run
+```python run viz=array viz-kind=stack
 class Node:
     def __init__(self, val, left=None, right=None):
         self.val, self.left, self.right = val, left, right
@@ -33,7 +33,7 @@ print("infix   (inorder):  ", " ".join(inorder(tree)))
 print("postfix (postorder):", " ".join(postorder(tree)))
 ```
 
-```java run
+```java run viz=array viz-kind=stack
 import java.util.*;
 public class Main {
     static class Node {
@@ -87,7 +87,7 @@ The claim that postfix needs no parentheses is best felt by evaluating two expre
 
 **Predict before you run:** here are two postfix expressions, both using the operands `2, 3, 4` and the operators `+, *`: `2 3 + 4 *` and `2 3 4 * +`. With no parentheses anywhere, do they evaluate to the same number — and if not, what does each give?
 
-```python run
+```python run viz=array viz-kind=stack
 def eval_postfix(tokens):
     st = []
     for t in tokens:
@@ -115,7 +115,7 @@ Postfix is postorder evaluated left-to-right. Prefix is preorder — the mirror 
 
 **Predict:** `* + 2 3 4` is the *preorder* (prefix) of the `(2+3)*4` tree. Scanning it right-to-left with a stack, what does it evaluate to? And `+ 2 * 3 4` (the prefix of `2+(3*4)`)?
 
-```python run
+```python run viz=array viz-kind=stack
 def eval_prefix(tokens):
     st = []
     for t in reversed(tokens):                             # scan RIGHT to left
@@ -130,7 +130,7 @@ print("'* + 2 3 4' =", eval_prefix("* + 2 3 4".split()))   # preorder of (2+3)*4
 print("'+ 2 * 3 4' =", eval_prefix("+ 2 * 3 4".split()))   # 2+(3*4)
 ```
 
-```java run
+```java run viz=array viz-kind=stack
 import java.util.*;
 public class Main {
     static int evalPrefix(String[] tokens) {

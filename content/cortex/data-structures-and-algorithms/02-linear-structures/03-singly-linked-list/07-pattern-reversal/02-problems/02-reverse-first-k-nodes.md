@@ -14,8 +14,7 @@ Given the **head** of a singly linked list and a non-negative integer **k**, wri
 
 You need to reverse the list in place.
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1:**
 ```
@@ -35,11 +34,12 @@ Input:  head = [1, 2, 3, 4, 5], k = 0
 Output: [1, 2, 3, 4, 5]
 ```
 
-</details>
 
 ---
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The **structural property** is that the first `k` nodes form a contiguous prefix segment that needs to flip direction, while the tail (everything from position `k + 1` onward) stays in place. After the flip, the original `head` becomes the new tail of the reversed prefix, and the original `k`-th node becomes the new head. The two halves are then stitched together: the new tail (the original head) must point to whatever node currently sits at position `k + 1`.
 
@@ -47,9 +47,10 @@ The **pointer placement** mirrors the full-list reversal with one extra knob —
 
 What **breaks if you reach for a single sweep without saving the original head**? The original head — which is the node you need to stitch to `current` after the loop — gets lost the moment the loop advances `previous` past it. The trick is to keep `head` as a stable reference throughout (it is never reassigned during the loop). After the loop, the line `head.next = current` performs the stitch: the original head (now the new tail of the reversed prefix) points to the first un-flipped node. Without this stitch, the reversed prefix's tail would still point to the second-to-last flipped node, producing a malformed list.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | Check | Answer for Reverse First K Nodes |
 |---|---|
@@ -58,21 +59,26 @@ What **breaks if you reach for a single sweep without saving the original head**
 | **Q3.** Is the work strictly structural (only `next` pointers change)? | **Yes** — values are never read; only `current.next` and the final stitch `head.next = current` change. |
 | **Q4.** Is `O(1)` extra space required? | **Yes** — three references (`previous`, `current`, `next_node`) plus an integer counter, regardless of `n` or `k`. |
 
----
+</details>
+<details>
+<summary><h2>Brute Force: Slice and Splice</h2></summary>
 
-## Brute Force: Slice and Splice
 
 Walk the list to collect the first `k` values into an array, reverse the array, and write the reversed values back into the first `k` nodes' `val` fields. The structural chain is left untouched.
 
 This is correct but costs `O(k)` extra space and conflates value movement with list reversal. The pattern's whole point is that the `next` pointers carry the order — flip them and the order flips for free, with no auxiliary storage.
 
-## Key Insight: Same Loop, Add a Counter and a Stitch
+</details>
+<details>
+<summary><h2>Key Insight: Same Loop, Add a Counter and a Stitch</h2></summary>
+
 
 The three-pointer loop body is byte-identical to full-list reversal. The only differences are at the boundaries: a `count < k` guard on the loop condition (so the loop stops after `k` flips instead of running to the end), and a single stitching line after the loop (`head.next = current`) that reconnects the reversed prefix's new tail (the original head) to the first un-flipped node. The original `head` reference is the anchor — it never moves during the loop, so it is still available as the new tail when the stitch is needed.
 
----
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
 
-## Approach
 
 Run the prefix-bounded three-pointer loop, then stitch.
 
@@ -82,8 +88,9 @@ Run the prefix-bounded three-pointer loop, then stitch.
 4. **Stitch the reversed prefix to the unreversed remainder.** If `head` is not `null`, set `head.next = current`. After the loop, `current` is the first un-flipped node (or `null` if the loop ran past the end), and the original `head` is the reversed prefix's new tail.
 5. **Return the new head.** `previous` holds the new head of the reversed prefix. Return it.
 
+</details>
 <details>
-<summary><strong>Solution &amp; Analysis</strong></summary>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
 ### Solution
 
@@ -305,7 +312,10 @@ Reversed-first-2 list: 7 → 5 → 3 → 10 → null ✓
 | Single-node list, `k = 1` | One iteration (no-op flip), stitch writes `head.next = current = null` (already `null`). Return the single node. |
 
 </details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 Prefix reversal is full-list reversal plus a counter and a single stitching line. The original `head` reference is the anchor — it is never reassigned during the loop, so it remains available as the new tail when the stitch reconnects the prefix to the unreversed remainder.
+
+</details>

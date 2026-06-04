@@ -22,9 +22,7 @@ intervals = [[1, 5], [6, 7], [8, 9]]            →  [[1, 5], [6, 7], [8, 9]]
 
 ---
 
-<details>
-<summary><h2>Examples</h2></summary>
-
+## Examples
 
 **Example 1**
 ```
@@ -48,7 +46,6 @@ Output: [[1, 5], [6, 7], [8, 9]]
 Explanation: The intervals are already pairwise non-overlapping; nothing merges.
 ```
 
-</details>
 <details>
 <summary><h2>Intuition</h2></summary>
 

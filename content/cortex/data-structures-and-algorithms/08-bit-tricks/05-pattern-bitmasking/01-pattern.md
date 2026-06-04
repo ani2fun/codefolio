@@ -17,7 +17,7 @@ The second, and the star of this lesson, is **a subset encoded as bits**. With `
 
 Enumerate every subset of `['a', 'b', 'c']` by counting masks `0..7` and decoding each. Run it.
 
-```python run
+```python run viz=array
 def all_subsets(items):
     n = len(items)
     result = []
@@ -95,7 +95,7 @@ Because `2^n` grows explosively: at `n = 30` you're already near a billion masks
 
 The reusable power-set enumerator:
 
-```python run
+```python run viz=array
 def all_subsets(items):
     n = len(items)
     result = []
@@ -107,7 +107,7 @@ def all_subsets(items):
 print(all_subsets([1, 2]))   # [[], [1], [2], [1, 2]]
 ```
 
-```java run
+```java run viz=graph viz-kind=graph
 import java.util.*;
 
 public class Main {

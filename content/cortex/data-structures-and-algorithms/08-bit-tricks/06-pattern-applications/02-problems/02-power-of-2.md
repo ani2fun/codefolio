@@ -38,7 +38,7 @@ In two's complement, `0 - 1 = -1` (all bits 1). `0 & -1 = 0`. Without the `n > 0
 
 
 
-```python run
+```python run viz=array
 class Solution:
     def power_of2(self, num: int) -> bool:
 
@@ -61,7 +61,7 @@ print(Solution().power_of2(16))     # True
 print(Solution().power_of2(6))      # False
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static class Solution {
         public boolean powerOf2(int num) {

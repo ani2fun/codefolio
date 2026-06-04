@@ -16,7 +16,7 @@ The gap isn't in the algorithm — it's in the **memory hierarchy**, the layered
 
 You can't measure cache effects with a wall clock reliably, but you can *count misses* with a tiny LRU cache simulator. Here it sums the same 8×8 matrix two ways — walking rows (contiguous) vs walking columns (stride 8) — through a cache that holds 4 lines of 8 elements:
 
-```python run
+```python run viz=array
 from collections import OrderedDict
 def count_misses(access_order, line_size, capacity_lines):   # fully-associative LRU cache; count misses
     cache = OrderedDict(); misses = 0
@@ -39,7 +39,7 @@ print(f"column-major misses: {c}")
 print(f"ratio: {c // r}x  (= elements per cache line)")
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static int countMisses(int[] order, int lineSize, int cap) {   // fully-associative LRU; count misses
@@ -99,7 +99,7 @@ The 8× column-major penalty came from a cache too small to hold the matrix. Tha
 
 **Predict before you run:** the same row-major vs column-major traversal, but run it twice — once with a cache big enough to hold the whole matrix (8 lines), once with a cache that holds only half (4 lines). Does column-major lose in *both* cases, or only one?
 
-```python run
+```python run viz=array
 from collections import OrderedDict
 def count_misses(order, line_size, cap):
     cache = OrderedDict(); misses = 0
@@ -132,7 +132,7 @@ The "arrays beat linked lists by 10×" claim is a cache claim, not an algorithm 
 
 **Predict:** summing 64 values, with 8 elements per cache line. The array packs them contiguously; the linked list spreads each node onto a fresh line. How many cache misses does each pay?
 
-```python run
+```python run viz=array
 from collections import OrderedDict
 def count_misses(order, line_size, cap):
     cache = OrderedDict(); misses = 0
@@ -151,7 +151,7 @@ print("contiguous (array) misses:     ", count_misses(contiguous, LINE, CAP))
 print("scattered (linked-list) misses:", count_misses(scattered, LINE, CAP))
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static int countMisses(int[] order, int lineSize, int cap) {

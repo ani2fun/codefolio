@@ -31,6 +31,16 @@ Picture seating guests at a long banquet table to satisfy a budget rule — ever
 
 ## Visual Summary
 
+```mermaid
+flowchart LR
+  fix["fix a[i]<br/>outer loop · O(n)"] --> sub["two-pointer the rest<br/>for target − a[i] · O(n)"]
+  sub --> out["all triples<br/>O(n²)"]
+  style fix fill:#c7d2fe,stroke:#4f5bd5
+  style out fill:#bbf7d0,stroke:#16a34a
+```
+
+<p align="center"><strong>k-sum reduces to (k−1)-sum: pin one element with an outer loop, then run the converging two-pointer scan on the remainder. 3Sum becomes O(n²) instead of O(n³).</strong></p>
+
 ---
 
 ## Pattern Recognition Triggers

@@ -12,7 +12,7 @@
          __intro-link        — anchor styled inline
          __rows              — vertical list of 1px-divider rows
          __row               — clickable row anchor
-         __row-rail          — terracotta hover rail (left edge, scaleY 0→1)
+         __row-rail          — indigo hover rail (left edge, scaleY 0→1)
          __row-company       — italic display company name
          __row-meta          — mono dates · location · role
          __row-blurb         — body sentence
@@ -100,7 +100,7 @@
         @apply text-[11px] font-mono tracking-wide text-muted-foreground uppercase;
     }
     .selected-work__row-blurb {
-        @apply text-sm leading-relaxed text-foreground/85;
+        @apply text-[14.5px] leading-relaxed text-foreground/85;
     }
     .selected-work__row-tags {
         @apply flex flex-wrap gap-x-3 gap-y-1 justify-end text-right;

@@ -93,7 +93,7 @@ Still zero. That's the whole point — the cost of a head insert doesn't depend 
 
 Build a list by pushing onto the front — each push is the `O(1)` two-write splice you just traced — then walk it:
 
-```python run
+```python run viz=linked-list viz-root=head viz-kind=list-single
 class Node:
     def __init__(self, val, nxt=None):
         self.val = val
@@ -113,7 +113,7 @@ while node:                      # traverse to collect the values in order
 print(out)                       # [10, 20, 30]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head viz-kind=list-single
 public class Main {
   static class Node {
     int val; Node next;

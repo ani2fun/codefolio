@@ -12,8 +12,7 @@ difficulty: easy
 
 Given an integer array `arr`, reverse its elements **in place** using a stack. Don't return a new array — mutate the input.
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1:**
 ```
@@ -33,11 +32,12 @@ Input:  arr = [7]
 Output: arr = [7]
 ```
 
-</details>
 
 ---
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The **structural property** that makes this a reversal problem is that an array is a flat indexed sequence and the task is to put its elements in the opposite order. A stack supplies that order: push the elements front to back, and they pop back-to-front. The extra constraint here is "in place" — the result must land back in the same array object, not in a fresh one.
 
@@ -45,7 +45,10 @@ The **placement** of the data is one stack plus a write cursor over the original
 
 What **breaks if you reach for a naive approach**? The classic in-place reversal swaps `arr[i]` with `arr[n-1-i]` for the first half, using `O(1)` extra space — strictly better than this stack version on a real array. The stack solution deliberately trades that `O(N)` space to demonstrate the pattern on indexable data. The danger to avoid is reading from the stack *and* indexing the source in the same pass; here the load pass fully fills the stack first, so the overwrite pass never races the reads.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for Reverse an Array |
 |---|---|
@@ -54,7 +57,10 @@ What **breaks if you reach for a naive approach**? The classic in-place reversal
 | **Q3.** Are two linear passes (load, unload) enough with no comparison? | **Yes** — push every element, then pop every element into ascending indices; no comparison. |
 | **Q4.** Is `O(N)` auxiliary space acceptable? | **Yes** — the stack holds all `N` elements; `O(N)` time, `O(N)` space (the result reuses the input array). |
 
-## Approach
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
+
 
 Load the stack with every element, then overwrite the array's indices in order with the pops.
 
@@ -64,6 +70,7 @@ Load the stack with every element, then overwrite the array's indices in order w
 4. **Unload pass.** While the stack is not empty, pop the top element, write it to `arr[counter]`, and increment `counter`.
 5. **Return nothing.** The array `arr` has been reversed in place.
 
+</details>
 <details>
 <summary><h2>Solution</h2></summary>
 
@@ -216,7 +223,10 @@ The first pop (`6`, the old last element) lands at index `0`; the last pop (`1`,
 | Caller keeps the reference | The function returns `None`/`void`; the caller observes the reversal through the same `arr` object it passed in. |
 
 </details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 Reversing an array in place is the integer-unit instance of the pattern: the unload pass writes pops into ascending indices `0..n-1` of the original array. Here "in place" means no second *result* array, but the stack still costs `O(N)` space.
+
+</details>

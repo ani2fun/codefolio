@@ -31,6 +31,18 @@ Picture reading a sentence through a cardboard slot that you can widen or narrow
 
 ## Visual Summary
 
+```mermaid
+flowchart TD
+  grow["expand right: add a[right] to the map"] --> chk{"map breaks the rule?<br/>(too many distinct · a dup)"}
+  chk -->|"yes"| shrink["shrink left: decrement / drop from map"]
+  chk -->|"no"| upd["update best"]
+  shrink --> chk
+  upd --> grow
+  style upd fill:#bbf7d0,stroke:#16a34a
+```
+
+<p align="center"><strong>A condition-driven window backed by a hash map: grow right and record counts; when the map breaks the rule (too many distinct, a repeat), shrink left until it holds. Each index enters/leaves once — O(n).</strong></p>
+
 ---
 
 ## Pattern Recognition Triggers

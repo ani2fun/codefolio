@@ -28,9 +28,7 @@ Output: "bacdfeghji"
 
 ---
 
-<details>
-<summary><h2>Examples</h2></summary>
-
+## Examples
 
 **Example 1 — full groups plus a trailing chunk of exactly `k`**
 ```
@@ -63,7 +61,6 @@ Output: "bacdfeg"
 ```
 - Groups are `abcd` and `efg`. In `abcd`, reverse `ab` → `ba`. `efg` has 3 characters (≥ `k`, < `2k`), so reverse the first `k` — `ef` → `fe` — and leave `g`.
 
-</details>
 <details>
 <summary><h2>Intuition</h2></summary>
 

@@ -42,7 +42,7 @@ For `num = 0`, `num - 1` wraps to `-1` (or all-1s in two's-complement), so `num 
 
 ### The Solution
 
-```python run
+```python run viz=array
 import math
 
 class Solution:
@@ -72,7 +72,7 @@ print(Solution().only_set_bit(7))     # -1
 print(Solution().only_set_bit(3))     # -1
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static class Solution {
         public int onlySetBit(int num) {

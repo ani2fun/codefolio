@@ -43,7 +43,7 @@ XOR's truth table: `0 ^ 0 = 0`, `1 ^ 0 = 1`, `0 ^ 1 = 1`, `1 ^ 1 = 0`. XORing wi
 
 
 
-```python run
+```python run viz=array
 class Solution:
     def toggle_kth_bit(self, num: int, k: int) -> int:
 
@@ -68,7 +68,7 @@ print(Solution().toggle_kth_bit(7, 3))    # 3
 print(Solution().toggle_kth_bit(8, 4))    # 0
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static class Solution {
         public int toggleKthBit(int num, int k) {

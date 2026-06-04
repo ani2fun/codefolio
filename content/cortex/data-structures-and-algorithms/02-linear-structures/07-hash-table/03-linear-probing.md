@@ -17,7 +17,7 @@ Separate chaining resolved collisions in side-lists — but every entry then car
 
 A capacity-8 table where `1`, `9`, `17` all hash to slot `1` (`% 8`), so they probe to slots 1, 2, 3. Then delete `9` and confirm `17` is still findable — that's what the tombstone protects. Run it.
 
-```python run
+```python run viz=array
 EMPTY = None
 DELETED = object()                  # tombstone sentinel
 
@@ -104,7 +104,7 @@ It hashes to slot `2`, which is taken, so it probes `2 → 3` (both taken) → s
 
 The reusable open-addressing table (with tombstone delete):
 
-```python run
+```python run viz=array
 EMPTY = None
 DELETED = object()
 
@@ -136,7 +136,7 @@ t.put(2, "x"); t.put(10, "y")          # collide at slot 2 → 2, 3
 print(t.get(2), t.get(10), t.get(99))  # x y None
 ```
 
-```java run
+```java run viz=array
 public class Main {
   static final int[] DELETED = new int[0];
   static class LinearProbing {

@@ -12,8 +12,7 @@ difficulty: easy
 
 Given the **head** of a singly linked list and a non-negative integer **N**, write a function to remove the Nth node from the end of the list and return the head of the updated list.
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1:**
 ```
@@ -36,11 +35,12 @@ Output: [2, 3, 4, 5]
 ```
 `N` equals the length, so the victim is the head itself — return `head.next`.
 
-</details>
 
 ---
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The **structural property** that makes this a sliding-window-traversal problem is that the victim is identified by a fixed offset from the tail — the `N`-th-from-end node — and a singly linked list cannot be walked backwards. The naive answer walks the list once to count its length, then walks again from the head for `length − N` steps to reach the victim's predecessor. A single-pass alternative exists because a fixed gap between two pointers turns "the tail" into a moving boundary that the trailing pointer can ride.
 
@@ -48,9 +48,10 @@ The **pointer placement** follows directly. Two pointers `start` and `end` are i
 
 What **breaks if you reach for a naive approach**? Two passes work — count, then walk — but require either a known finite list or the ability to rewind a stream. A recursive solution that "unwinds" on the way back from the tail uses `O(n)` stack space and overflows on long lists. Only the lockstep two-pointer walk with a `prev_to_start` carry-along delivers `O(n)` time and `O(1)` extra space in a single forward pass.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | Check | Answer for Trim Nth Node |
 |---|---|
@@ -59,19 +60,24 @@ What **breaks if you reach for a naive approach**? Two passes work — count, th
 | **Q3.** Is the work at each tick `O(1)`? | **Yes** — three pointer assignments per tick; one splice at the end. |
 | **Q4.** Is `O(1)` extra space required? | **Yes** — three local references (`start`, `prev_to_start`, `end`) regardless of list length. |
 
----
+</details>
+<details>
+<summary><h2>Brute Force: Count, Then Walk</h2></summary>
 
-## Brute Force: Count, Then Walk
 
 Walk the list once to compute its length `length`. If `N == length`, the victim IS the head — return `head.next`. Otherwise, walk from `head` for `length − N − 1` steps to land on the predecessor of the victim; splice with `prev.next = prev.next.next` and return the head. This is correct but requires two passes; on a streaming source where the list cannot be rewound, the first pass also consumes the only forward walk available.
 
-## Key Insight: Trail the Victim by `N − 1` Hops
+</details>
+<details>
+<summary><h2>Key Insight: Trail the Victim by `N − 1` Hops</h2></summary>
+
 
 Initialise `end` at the head and walk it `N − 1` hops alone. The gap between `start` (still at the head) and `end` is now `N − 1`. As both pointers slide together, the gap is preserved — so when `end` reaches the tail (`end.next is None`), `start` is exactly `N − 1` hops before the tail, which is the `N`-th-from-end node. A third reference `prev_to_start` shadows `start` one node behind it, ready for the splice.
 
----
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
 
-## Approach
 
 Maintain three pointers (`start`, `prev_to_start`, `end`). Walk the list once.
 
@@ -81,8 +87,9 @@ Maintain three pointers (`start`, `prev_to_start`, `end`). Walk the list once.
 4. **Slide together.** Initialise `start = head` and `prev_to_start = null`. While `current.next` is not `null`, advance `prev_to_start = start`, `start = start.next`, and `current = current.next`. The gap is preserved; `prev_to_start` shadows `start`.
 5. **Splice.** When the loop exits, `start` is the victim and `prev_to_start` is its predecessor. Set `prev_to_start.next = start.next` and return `head`.
 
+</details>
 <details>
-<summary><strong>Solution &amp; Analysis</strong></summary>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
 ### Solution
 
@@ -308,7 +315,10 @@ Return head = 1 → 2 → 3 → 5. ✓
 | `N = 1` (trim last node) | Priming runs zero iterations; slide advances `prev_to_start` to the second-to-last node; splice removes the tail. |
 
 </details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 `Trim Nth Node` is the trim variant of sliding-window traversal: the gap of `N − 1` parks `start` on the victim when `end` reaches the tail, and a `prev_to_start` shadow lets the splice happen in `O(1)` without a backward walk.
+
+</details>

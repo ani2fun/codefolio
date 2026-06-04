@@ -17,7 +17,7 @@ That reframes the search. Instead of trying every start, keep a **running prefix
 
 Count the subarrays of `[1, 1, 1]` that sum to `k = 2` (there are two: indices `0..1` and `1..2`). Run it.
 
-```python run
+```python run viz=array
 def subarray_sum_count(nums, k):
     count = {0: 1}        # one "empty" prefix of sum 0 (see the trace for why)
     running = 0
@@ -75,7 +75,7 @@ It represents the subarray `[1, 1]` covering indices `0..1` — the *whole prefi
 
 The reusable count-subarrays-summing-to-`k`:
 
-```python run
+```python run viz=array
 def subarray_sum_count(nums, k):
     count = {0: 1}
     running = 0
@@ -90,7 +90,7 @@ print(subarray_sum_count([1, 2, 3], 3))      # 2  ([1,2] and [3])
 print(subarray_sum_count([1, -1, 0], 0))     # 3  (handles negatives)
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {

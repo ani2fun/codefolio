@@ -7,8 +7,8 @@ import scala.util.Try
 /**
  * localStorage-backed persistence for two pieces of per-chapter UX state surfaced in the Cortex sidebar:
  *
- *   - **progress** — 0..100 percent, written on scroll while reading, replayed as a 3px terracotta rail next
- *     to each chapter row in the sidebar.
+ *   - **progress** — 0..100 percent, written on scroll while reading, replayed as a 3px indigo rail next to
+ *     each chapter row in the sidebar.
  *   - **minutes** — words-per-minute estimate computed once from a chapter's raw markdown body, replayed as a
  *     small mono-stamp ("12m") at the right of each chapter row.
  *

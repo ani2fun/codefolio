@@ -18,7 +18,7 @@ A **graph** drops the shape constraint. It's just two things: **vertices** (the 
 
 Six cities, six weighted flights. Store it as an **adjacency list** (each vertex → its neighbours), then answer "fewest flights from A to F?" with a breadth-first ripple. Run it.
 
-```python run
+```python run viz=graph viz-kind=graph
 from collections import deque
 
 # undirected weighted "flights" graph (fares in $)
@@ -93,7 +93,7 @@ The hand-trace missed that **`D` has more edges to explore**. From `A→C→D` (
 
 Both queries in both languages — BFS for fewest hops, DFS-with-backtracking for the most affordable flights:
 
-```python run
+```python run viz=graph viz-kind=graph
 from collections import deque
 
 edges = [("A","B",100), ("A","C",200), ("B","D",150),
@@ -122,7 +122,7 @@ print(min_hops("A", "F"))                            # 3
 print(max_flights("A", 600, {"A"}))                  # 3  (A→C→D→B = exactly $600)
 ```
 
-```java run
+```java run viz=graph viz-kind=graph
 import java.util.*;
 public class Main {
   static Map<String,List<String[]>> adj = new HashMap<>();

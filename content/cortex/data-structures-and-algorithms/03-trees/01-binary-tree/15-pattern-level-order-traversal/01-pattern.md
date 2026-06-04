@@ -88,7 +88,7 @@ You'd get a **single flat level holding every node** — `[[3, 9, 20, 15, 7]]` �
 
 Level groups, plus **right-side view** (last node per level) and **zigzag** (alternating direction) — all the same drain-`n` skeleton:
 
-```python run
+```python run viz=binary-tree viz-root=root
 from collections import deque
 
 class TreeNode:
@@ -139,7 +139,7 @@ print(right_side_view(root))    # [3, 20, 7]
 print(zigzag(root))             # [[3], [20, 9], [15, 7]]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 public class Main {
   static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } TreeNode(int v, TreeNode l, TreeNode r){ val=v; left=l; right=r; } }

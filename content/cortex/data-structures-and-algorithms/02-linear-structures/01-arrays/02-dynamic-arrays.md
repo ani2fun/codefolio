@@ -99,14 +99,14 @@ Only push 5. The jump to capacity `8` at push 5 buys room for pushes 6, 7, and 8
 
 You just watched the machinery. In real code it's invisible — `list.append` *is* this dynamic array, resizing itself only a couple dozen times for a thousand items, never once telling you:
 
-```python run
+```python run viz=array
 nums = []
 for i in range(1000):
     nums.append(i)          # amortized O(1) — a couple dozen hidden resizes, not 1000
 print(len(nums), "items; first", nums[0], "last", nums[-1])
 ```
 
-```java run
+```java run viz=array
 import java.util.ArrayList;
 
 public class Main {

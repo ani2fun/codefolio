@@ -78,7 +78,7 @@ flowchart LR
 
 
 
-```python run
+```python run viz=array
 class Solution:
     def power_function(self, num: int, n: int) -> int:
 
@@ -115,7 +115,7 @@ print(Solution().power_function(3, 4))     # 81
 print(Solution().power_function(0, 5))     # 0
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static class Solution {
         public long powerFunction(int num, int n) {

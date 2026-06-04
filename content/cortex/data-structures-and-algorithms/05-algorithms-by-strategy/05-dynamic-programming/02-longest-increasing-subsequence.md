@@ -15,7 +15,7 @@ LIS is the [linear-DP](/cortex/data-structures-and-algorithms/algorithms-by-stra
 
 `lis(i) = 1 + max(lis(j))` over all `j < i` with `arr[j] < arr[i]` (or just `1` if no such `j`). The answer is the max over all `i`.
 
-```python run
+```python run viz=array
 def lis(arr):
     if not arr: return 0
     dp = [1] * len(arr)                              # dp[i] = LIS ending at i (at least itself)
@@ -28,7 +28,7 @@ def lis(arr):
 print(lis([10, 9, 2, 5, 3, 7, 101, 18]))             # 4  e.g. [2, 3, 7, 101]
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static int lis(int[] a) {
@@ -78,7 +78,7 @@ The word *subsequence* is the whole subtlety. It's tempting to scan once and tra
 
 **Predict before you run:** for `[10, 9, 2, 5, 3, 7, 101, 18]`, the longest *contiguous* ascending run is `[3, 7, 101]`. Does the single-pass run-length match the true LIS, or fall short?
 
-```python run
+```python run viz=array
 def longest_run(arr):                                # longest CONTIGUOUS ascending run
     best = cur = 1
     for i in range(1, len(arr)):
@@ -109,7 +109,7 @@ The contiguous run is `3` (`[3, 7, 101]`); the true LIS is `4` (`[2, 3, 7, 101]`
 
 **Maximum Sum Increasing Subsequence** — same DP, one operator changed. Instead of *counting* elements, *sum* their values: `dp[i] = arr[i] + max(dp[j] for j<i, arr[j]<arr[i])`. The longest isn't always the heaviest.
 
-```python run
+```python run viz=array
 def max_sum_increasing(arr):
     dp = arr[:]                                      # dp[i] = best sum of an increasing subseq ending at i
     for i in range(len(arr)):
@@ -122,7 +122,7 @@ print(max_sum_increasing([1, 101, 2, 3, 100, 4, 5]))   # 106  ([1,2,3,100])
 print(max_sum_increasing([3, 4, 5, 10]))               # 22   (whole array)
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static int maxSumIncreasing(int[] a) {

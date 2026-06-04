@@ -12,8 +12,7 @@ difficulty: medium
 
 Given the heads of two sorted linked lists, **headA** and **headB**, write a function to merge the two lists into one sorted list by splicing together the nodes of each list in **descending order** and return the head of the merged linked list.
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1:**
 ```
@@ -36,11 +35,12 @@ Output: [7, 6, 5, 4, 3, 2, 1]
 Explanation: Reversed inputs are A'=[7,6,5,3,1] and B'=[4,2]. Descending merge produces [7,6,5,4,3,2,1].
 ```
 
-</details>
 
 ---
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The **structural property** that makes this a merge problem is the same as ascending sorted merge — two sorted inputs collapse into one sorted output, with each output node chosen by an `O(1)` selector on the current heads. The twist is that the *direction* is flipped: the output must be descending, and the inputs are given in ascending order. Two equivalent solutions exist, and both reuse the merge skeleton. One is to compose two patterns — reverse both inputs first (so their cursors expose the largest unmerged value), then run an ascending-style merge with `>=` instead of `<=`. The other is to keep the inputs ascending, merge ascending, then reverse the result. The first is what this problem demonstrates because it shows how merge composes cleanly with reversal.
 
@@ -48,9 +48,10 @@ The **pointer placement** follows directly. First, run the reversal pattern on `
 
 What **breaks if you reach for a naive approach**? Concatenating both lists, copying values into an array, sorting descending, and rebuilding a fresh chain works but costs `O((n + m) log(n + m))` time and `O(n + m)` extra space — the sort throws away the sortedness of the inputs. Alternatively, doing an ascending merge first and then reversing the merged list works in `O(n + m)` time and `O(1)` space, but composes two passes over the same nodes. The reverse-then-merge approach is cleaner because each composed pattern operates on a smaller list (the inputs), and the merge runs only once over the final output.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | Check | Answer for Merge Sorted Lists II |
 |---|---|
@@ -59,9 +60,10 @@ What **breaks if you reach for a naive approach**? Concatenating both lists, cop
 | **Q3.** Are the input nodes rewirable into the output? | **Yes** — both reversal and merge operate in place by rewriting `.next` pointers; no node is allocated. |
 | **Q4.** Is `O(1)` extra space sufficient? | **Yes** — reversal uses three locals (`current`, `previous`, `next_node`); merge uses four. No auxiliary data structures across either pass. |
 
----
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
 
-## Approach
 
 Compose two patterns: reversal first, then descending merge.
 
@@ -74,8 +76,9 @@ Compose two patterns: reversal first, then descending merge.
 7. **Drain the non-empty input.** Identical to ascending merge — one splice attaches the entire remaining suffix.
 8. **Return `dummy.next`.** The merged list is now in descending order.
 
+</details>
 <details>
-<summary><strong>Solution &amp; Analysis</strong></summary>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
 ### Solution
 
@@ -351,7 +354,10 @@ The output contains every node from both inputs — `n + m` nodes total. The rev
 | Identical inputs (`A = [1, 2]`, `B = [1, 2]`) | Reversed: both become `[2, 1]`. Iter 1: A wins (2 >= 2). Iter 2: B wins (1 >= 2 no, so... wait — actually `currentA = 1`, `currentB = 2`; 1 >= 2 no, so B wins). After iters, output is `[2(A), 2(B), 1(A), 1(B)]`. |
 
 </details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 Merge sorted lists II is a composition example — reverse, then merge with a flipped comparator. The two patterns operate on disjoint passes over the same nodes, so the total cost stays `O(n + m)` time and `O(1)` space. Reversing the inputs is the cleanest way to flip merge's output direction without rewriting the loop body.
+
+</details>

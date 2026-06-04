@@ -16,7 +16,7 @@ The fix is to lock *less of the map at once*. **Lock striping** partitions the t
 
 A striped map routes each key to `stripe = hash(key) % N`; operations on different stripes are independent. (We simulate single-threaded for determinism — a real implementation gives each stripe its own lock and runs them in parallel. Python's built-in `hash` is per-process salted, so we use a fixed polynomial hash.)
 
-```python run
+```python run viz=array
 def _hash(key):                                        # deterministic polynomial hash
     h = 0
     for c in str(key):
@@ -42,7 +42,7 @@ print(m.get("grape"))                                  # None
 print({k: m.stripe_of(k) for k in ["apple", "banana", "cherry", "date"]})   # which stripe each lands in
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static final long MOD = (1L << 31) - 1;
@@ -104,7 +104,7 @@ The selling point — "writes don't block each other" — has an asterisk, and t
 
 **Predict before you run:** a synchronized map serialises *all* writes. With `N = 4` stripes, two threads write two different keys. Are they *always* able to proceed concurrently, or does it depend on something?
 
-```python run
+```python run viz=graph viz-kind=graph
 from collections import defaultdict
 def _hash(key):
     h = 0
@@ -137,7 +137,7 @@ It **depends on whether the two keys hash to the same stripe.** With 4 stripes a
 
 **Profile the concurrency** as you add stripes. Spread the same keys over `1`, `4`, and `16` stripes and watch the per-stripe load fall and the achievable parallelism rise.
 
-```python run
+```python run viz=array
 def _hash(key):
     h = 0
     for c in str(key):
@@ -164,7 +164,7 @@ for n in (1, 4, 16):
     print(f"{n:>2} stripes: busiest stripe holds {max_load} keys, {distinct} stripes used -> up to {distinct}-way concurrency")
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static final long MOD = (1L << 31) - 1;

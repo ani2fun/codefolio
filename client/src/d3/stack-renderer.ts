@@ -31,7 +31,7 @@ import type { RendererFn } from "./index";
 // Canonical `top` pointer-canon colour from MarkerColors — used when the
 // step's cursors don't include a `top` (most stack traces: `top` is an int
 // holding the value, not a ref pointer the tracer can colour).
-const TOP_CANON_COLOR = "#c8693e";
+const TOP_CANON_COLOR = "#4f5bd5";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 

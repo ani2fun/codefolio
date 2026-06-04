@@ -21,7 +21,7 @@ Every "connect everything as cheaply as possible" problem has this shape: power 
 
 Both algorithms on the same 4-vertex graph. They may pick different edges when weights tie, but the *total* is identical — that's the theorem at the heart of MSTs.
 
-```python run
+```python run viz=graph viz-kind=graph
 import heapq
 
 class DSU:                                              # union-find: "same component?"
@@ -66,7 +66,7 @@ print("Kruskal MST total =", kruskal(n, edges))
 print("Prim MST total    =", prim(n, adj))
 ```
 
-```java run
+```java run viz=graph viz-kind=graph
 import java.util.*;
 
 public class Main {
@@ -183,7 +183,7 @@ Look again at Prim's `if seen[u]: continue` line. We push a vertex onto the heap
 
 **Predict before you run:** delete that guard and re-run Prim on the same graph. Does it still print `7`?
 
-```python run
+```python run viz=graph viz-kind=graph
 import heapq
 
 def prim_no_guard(n, adj, start=0):
@@ -219,7 +219,7 @@ It prints `total = 20 from 7 pops`. Without the guard, every stale heap copy get
 
 The classic MST application: **Min Cost to Connect All Points** ([LeetCode 1584](https://leetcode.com/problems/min-cost-to-connect-all-points/)). Given 2D points, the cost to connect two of them is their Manhattan distance. Build the complete graph and run Kruskal.
 
-```python run
+```python run viz=array
 class DSU:
     def __init__(self, n): self.parent = list(range(n)); self.rank = [0] * n
     def find(self, x):
@@ -251,7 +251,7 @@ print(min_cost_connect([[0, 0], [2, 2], [3, 10], [5, 2], [7, 0]]))   # 20
 print(min_cost_connect([[0, 0], [1, 1], [2, 2]]))                    # 4
 ```
 
-```java run
+```java run viz=graph viz-kind=graph
 import java.util.*;
 
 public class Main {

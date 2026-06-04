@@ -78,7 +78,7 @@ Because the naive version **recomputes heights redundantly**. `is_balanced(node)
 
 Height plus the single-pass balanced check (tuple/sentinel return):
 
-```python run
+```python run viz=binary-tree viz-root=root
 class TreeNode:
     def __init__(self, val, left=None, right=None):
         self.val = val; self.left = left; self.right = right
@@ -102,7 +102,7 @@ skew = TreeNode(1, TreeNode(2, TreeNode(3)))
 print(height(root), is_balanced(root), is_balanced(skew))   # 3 True False
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 public class Main {
   static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } TreeNode(int v, TreeNode l, TreeNode r){ val=v; left=l; right=r; } }
 

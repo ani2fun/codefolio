@@ -33,7 +33,7 @@ Output: -1   (no shared element)
 Iterate over the elements of the first row (left to right, ascending). For each, binary-search every other row. The first element that's found in all rows is the answer (smallest because the first row is sorted).
 
 
-```python run
+```python run viz=array
 from typing import List
 
 class Solution:
@@ -113,7 +113,7 @@ print(Solution().minimum_shared_element([[5], [6]]))                          # 
 print(Solution().minimum_shared_element([[1, 2, 3], [1, 2, 3]]))              # 1  — identical rows
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {

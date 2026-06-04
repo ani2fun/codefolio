@@ -8,7 +8,7 @@
          __eyebrow           — "ABOUT" mono caption
          __title             — italic display heading
          __paragraph         — body paragraphs
-         __emphasis          — terracotta inline accent
+         __emphasis          — indigo inline accent
          __sidecard          — sticky right column (portrait + fact list)
          __portrait          — square photo
          __facts             — dl wrapper
@@ -51,7 +51,7 @@
 
     /* Editorial epigraph at the top of the prose column. Uses the display
        serif italic so it reads like a typeset quote, not a Tailwind blockquote
-       plate. The left rule is the same terracotta primary used elsewhere for
+       plate. The left rule is the same indigo primary used elsewhere for
        inline accent. */
     .about__quote {
         @apply mb-8 pl-5 border-l-2 border-primary/40;
@@ -71,7 +71,7 @@
         font-style: normal;
     }
 
-    /* Bullet list — terracotta hairline lead-in instead of a glyph; matches
+    /* Bullet list — indigo hairline lead-in instead of a glyph; matches
        the Experience section's bullet treatment. */
     .about__list {
         @apply list-none p-0 mb-6 max-w-prose flex flex-col gap-3;

@@ -25,8 +25,7 @@ Output: [[4, 5]]
 
 ---
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -56,11 +55,12 @@ Output: [[1, 2]]
 Explanation: The minimum-length valid case — one pair, one iteration, one match.
 ```
 
-</details>
 
 ---
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The **structural property** that makes this a two-pointer problem is the *sorted* assumption. On a sorted DLL, the smallest unvisited value sits at `left` and the largest sits at `right`. The running sum `left.val + right.val` is a monotonic dial: advancing `left` can only raise it, retreating `right` can only lower it. That monotonicity is exactly the signal the converging-walkers pattern needs to make a single deterministic decision per iteration.
 
@@ -68,9 +68,10 @@ The **pointer placement** is `left = head`, `right = tail`. Per iteration, compu
 
 What **breaks if you reach for the naive approach**? The brute-force `O(n²)` pass nests two walks of the list and checks every pair — correct, but quadratic for no good reason. A hash-set lookup would solve `O(n)` time but pays `O(n)` extra space and discards the sorted-order gift the input handed you. The converging two-pointer pass uses the ordering for free and lands at `O(n)` time, `O(1)` extra space, single pass.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | Check | Answer for Two Sum |
 |---|---|
@@ -79,9 +80,10 @@ What **breaks if you reach for the naive approach**? The brute-force `O(n²)` pa
 | **Q3.** Do both pointers move strictly inward? | **Yes** — `left` advances via `.next`, `right` retreats via `.prev`; neither ever reverses. |
 | **Q4.** Is the per-step work `O(1)`? | **Yes** — one addition, one comparison, one append at most, then a single pointer step. |
 
----
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
 
-## Approach
 
 Run the converging two-pointer loop, steering by the running sum.
 
@@ -92,6 +94,7 @@ Run the converging two-pointer loop, steering by the running sum.
 5. **Branch on the sum's relation to the target.** If `sum == target`, append `[left.val, right.val]` to `result`, then set `left = left.next` and `right = right.prev`. If `sum < target`, advance `left = left.next`. If `sum > target`, retreat `right = right.prev`.
 6. **Return the result.** When the loop exits, `result` holds every distinct pair summing to `target`, listed outermost-first.
 
+</details>
 <details>
 <summary><h2>What Does "Decisive Direction" Mean?</h2></summary>
 
@@ -401,7 +404,10 @@ Result: [1, 5] ✓  (returns on the first matching pair — no further scanning)
 The sorted, no-duplicate Two Sum is clean. But what if the list contains repeats? That's where the same algorithm sprouts an awkward little subroutine.
 
 </details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 Two Sum on a sorted DLL is the canonical pair-search variant — the *direction of motion* on every iteration is decided by `sum vs target`, not by node identity. Sorting is what makes the move-decision deterministic; without it, the running sum is no longer a monotonic dial.
+
+</details>

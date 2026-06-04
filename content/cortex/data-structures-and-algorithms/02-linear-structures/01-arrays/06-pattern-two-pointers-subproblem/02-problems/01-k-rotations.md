@@ -36,7 +36,9 @@ Output: [1, 2, 3, 4, 5]
 
 ---
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 Right rotation has a clean **structural property**: the array splits into two halves — `[HEAD | TAIL]`. `HEAD` is the first `n − k` elements; `TAIL` is the last `k`. A right rotation by `k` produces `[TAIL | HEAD]`, preserving the internal order of each half. That preserved internal order is what makes the three-reversal trick work; without it we would need actual element shifting. The pattern fit is the two-pointer **subproblem** decomposition. The whole rotation is the composition of three independent in-place reversals on segments of the same array.
 
@@ -44,8 +46,7 @@ The **pointer placement** follows directly. Each reversal subproblem is a textbo
 
 What **breaks if you reach for a single two-pointer pass**? Two pointers at the ends of the full array only swap mirror pairs. That produces a full reversal `[5, 4, 3, 2, 1]`, not the rotation `[3, 4, 5, 1, 2]`. The naive shift-one-position approach moves `n` elements per rotation and costs `O(n · k)` time — the worst case. The temp-array brute force costs `O(n)` time but `O(n)` extra space. Only the three-reversal decomposition delivers both `O(n)` time AND `O(1)` space.
 
----
-
+</details>
 <details>
 <summary><h2>What Does "Rotate Right" Mean?</h2></summary>
 

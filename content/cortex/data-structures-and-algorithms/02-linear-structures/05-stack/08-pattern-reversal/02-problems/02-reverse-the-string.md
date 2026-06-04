@@ -12,8 +12,7 @@ difficulty: easy
 
 Given a string `s`, return its reverse using a stack.
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1:**
 ```
@@ -33,11 +32,12 @@ Input:  s = ""
 Output: ""
 ```
 
-</details>
 
 ---
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The **structural property** that makes this a reversal problem is that a string is a flat sequence of characters and the task asks for those characters in the opposite order. A stack delivers reverse order for free: push the characters left to right, and the last one pushed is the first one popped. Routing the string through a stack converts "reverse the order" into "load, then unload", with no index math.
 
@@ -45,7 +45,10 @@ The **placement** of the data is two distinct containers. The stack is the tempo
 
 What **breaks if you reach for a naive approach**? Nothing breaks for a plain string — reading `s` back-to-front with an index is `O(N)` time and arguably simpler. The stack version is the teaching vehicle: it uses pop-only reads, so the exact same code reverses a true stack ADT, a linked-list-backed stack, or any source that refuses random access. The transferable skill is the load-then-unload shape, not this specific string.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for Reverse the String |
 |---|---|
@@ -54,7 +57,10 @@ What **breaks if you reach for a naive approach**? Nothing breaks for a plain st
 | **Q3.** Are two linear passes (load, unload) enough with no comparison? | **Yes** — push every character, then pop every character; no character is ever compared. |
 | **Q4.** Is `O(N)` auxiliary space acceptable? | **Yes** — the stack holds all `N` characters; `O(N)` time, `O(N)` space. |
 
-## Approach
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
+
 
 Load the stack with characters, then unload it into a result string.
 
@@ -63,6 +69,7 @@ Load the stack with characters, then unload it into a result string.
 3. **Unload pass.** While the stack is not empty, pop the top character and append it to the result string.
 4. **Return the result string.** It now holds the characters of `s` in reverse order.
 
+</details>
 <details>
 <summary><h2>Solution</h2></summary>
 
@@ -192,7 +199,10 @@ The last character pushed (`'c'`) is the first popped, so it leads the result; t
 | Digits (`"12345"`) | Digit characters reverse like any others; result `"54321"`. |
 
 </details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 Reversing a string is the character-unit instance of the pattern — load every character, unload into a result — and it is the canonical example precisely because the pop-only read pattern survives unchanged on any index-free source.
+
+</details>

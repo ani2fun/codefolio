@@ -20,9 +20,7 @@ arr = [1, 2, 3, 5],    k = 4   →  [[1, 3]]
 
 ---
 
-<details>
-<summary><h2>Examples</h2></summary>
-
+## Examples
 
 **Example 1**
 ```
@@ -49,9 +47,10 @@ Output: [[1, 3]]
 Explanation: One window — the whole array — has 1 even (2) and 3 odd (1, 3, 5).
 ```
 
-</details>
 
-## Applying the Diagnostic Questions
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Question | Answer for Even Odd Count |
 |---|---|
@@ -60,6 +59,7 @@ Explanation: One window — the whole array — has 1 even (2) and 3 odd (1, 3, 
 | **Q3.** Per-window report or single best? | **Per-window report** — the answer is a list of `[evenCount, oddCount]` pairs, one per window. The `process` step appends a tuple to `result`. |
 | **Q4.** Edge cases defined? | **Yes** — for `n < k`, `result` is empty; `k == n` produces one pair; `k == 1` produces one pair per element, always `[1, 0]` or `[0, 1]`. |
 
+</details>
 <details>
 <summary><h2>Intuition</h2></summary>
 

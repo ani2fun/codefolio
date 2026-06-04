@@ -31,6 +31,17 @@ Picture two runners on a one-way track without distance markers. The slow runner
 
 ## Visual Summary
 
+```mermaid
+flowchart LR
+  n1["•"] --> n2["•"] --> n3["•"] --> n4["•"] --> n5["•"]
+  slow(["slow +1"]) --> n2
+  fast(["fast +2"]) --> n4
+  style slow fill:#c7d2fe,stroke:#4f5bd5
+  style fast fill:#fde68a,stroke:#d97706
+```
+
+<p align="center"><strong>Two pointers at different speeds — slow moves one node, fast moves two. When fast reaches the end, slow is at the middle; in a looped list they collide, exposing the cycle. One pass, O(1) space.</strong></p>
+
 ---
 
 ## Pattern Recognition Triggers

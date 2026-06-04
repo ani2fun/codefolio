@@ -17,7 +17,7 @@ The trigger is any of these phrasings: "the **first** index where…", "the **le
 
 "Search insert position": where would `5` go in `[1, 3, 6, 8]` to keep it sorted? That's the first index whose value is `≥ 5`. Run it.
 
-```python run
+```python run viz=array
 def lower_bound(arr, target):
     lo, hi = 0, len(arr)                 # half-open [lo, hi)
     while lo < hi:
@@ -75,7 +75,7 @@ Because the boundary index *partitions* the array: everything at indices `[0, lo
 
 The reusable lower bound (recognition: first-true / insert / count):
 
-```python run
+```python run viz=array
 def lower_bound(arr, target):
     lo, hi = 0, len(arr)
     while lo < hi:
@@ -90,7 +90,7 @@ a = [1, 3, 6, 8, 8, 10]
 print(lower_bound(a, 8), lower_bound(a, 7), lower_bound(a, 0), lower_bound(a, 99))   # 3 3 0 6
 ```
 
-```java run
+```java run viz=array
 public class Main {
   static int lowerBound(int[] arr, int target) {
     int lo = 0, hi = arr.length;

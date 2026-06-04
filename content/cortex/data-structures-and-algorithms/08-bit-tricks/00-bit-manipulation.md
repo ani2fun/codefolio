@@ -92,7 +92,7 @@ Before you read on: from that result `1110`, what does `x & ~(1 << 1)` give?
 
 The four moves, on a value with bits 2 and 5 already set (`0b00100100` = 36):
 
-```python run
+```python run viz=array
 def show(x): return f"{x:08b}"
 
 x = 0b00100100               # bits 2 and 5 set
@@ -102,7 +102,7 @@ print(show(x ^ (1 << 5)))    # TOGGLE bit 5 → 00000100
 print((x >> 2) & 1)          # TEST bit 2   → 1
 ```
 
-```java run
+```java run viz=array
 public class Main {
   static String show(int x) { return String.format("%8s", Integer.toBinaryString(x)).replace(' ', '0'); }
   public static void main(String[] args) {

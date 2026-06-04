@@ -18,7 +18,7 @@ import scala.scalajs.js.JSConverters.*
  *     `ListTree` icon for `X`, so it reads as "press again to close".
  *   - **Popover** anchored above the FAB stack with the heading list. Each row is a tick + label indented per
  *     heading depth, matching the look of the previous right-rail rule (active row's tick widens + tints
- *     terracotta).
+ *     indigo).
  *   - **Active section** tracked via IntersectionObserver — same logic as the prior right-rail
  *     implementation; an additional ancestor walk lights the parent section's tick when the reader is inside
  *     a sub-heading, so two rows can read as active at once (sub + its parent l1 anchor).

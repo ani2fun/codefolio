@@ -12,8 +12,7 @@ difficulty: easy
 
 Given the **head** of a singly linked list and a positive integer **k**, write a function to find and return the maximum sum of any contiguous k nodes. If the list contains fewer than `k` nodes, return `-1`.
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1:**
 ```
@@ -36,11 +35,12 @@ Output: -3
 ```
 Every window sum is negative; the maximum is the least-negative pair `(-1) + (-2) = -3`.
 
-</details>
 
 ---
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The **structural property** that makes this a sliding-window-traversal problem is that the answer is the maximum over all contiguous `k`-node windows — every candidate window is a `k`-node prefix of the suffix starting at some node. The list exposes only forward links, so re-traversing each window from scratch would require an outer walk over every starting position and an inner walk of `k` nodes from there. The single-pass alternative recognises that consecutive windows differ by exactly one node added on the right and one node dropped on the left.
 
@@ -48,9 +48,10 @@ The **pointer placement** follows directly. Two pointers `start` and `end` mark 
 
 What **breaks if you reach for a naive approach**? Recomputing each window sum from scratch by walking `k` nodes for every starting position costs `O(n · k)` time, which collapses to `O(n²)` when `k` is `Θ(n)`. Storing the values into an array and sliding the window in the array costs `O(n)` time but `O(n)` extra space — fine for a small in-memory list, fatal for a streaming source. Only the lockstep two-pointer walk hits `O(n)` time and `O(1)` extra space simultaneously.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | Check | Answer for K Maximum Sum |
 |---|---|
@@ -59,19 +60,24 @@ What **breaks if you reach for a naive approach**? Recomputing each window sum f
 | **Q3.** Is the work at each tick `O(1)`? | **Yes** — one subtraction, one addition, one comparison, two pointer advances per tick. |
 | **Q4.** Is `O(1)` extra space required? | **Yes** — four local variables (`start`, `end`, `current_sum`, `max_sum`) regardless of list length. |
 
----
+</details>
+<details>
+<summary><h2>Brute Force: Recompute Every Window</h2></summary>
 
-## Brute Force: Recompute Every Window
 
 For each possible starting node, walk `k` steps and add the values to compute the window sum. Keep the largest. This is correct but costs `O(n · k)` time — for `k = n / 2` the work degrades to `O(n²)`. It also discards the obvious observation that two consecutive windows share `k − 1` nodes, so any sum recomputed from scratch repeats `k − 1` additions that the previous iteration already did.
 
-## Key Insight: Slide the Window with an Incremental Sum
+</details>
+<details>
+<summary><h2>Key Insight: Slide the Window with an Incremental Sum</h2></summary>
+
 
 Build the first window's sum by walking the first `k` nodes once. After that, sliding the window one step right is `subtract the leftmost value, add the new rightmost value` — an `O(1)` update. The trailing pointer `start` and the leading pointer `end` advance together; the running sum is the invariant they preserve.
 
----
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
 
-## Approach
 
 Maintain two pointers (`start` and `end`) and a running window sum (`current_sum`). Walk the list once.
 
@@ -81,8 +87,9 @@ Maintain two pointers (`start` and `end`) and a running window sum (`current_sum
 4. **Slide the window.** While `end` is not `null`, update `current_sum` by subtracting `start.val` and adding `end.val` (the new rightmost node). Update `max_sum` if `current_sum` exceeds it. Advance both `start` and `end` by one node.
 5. **Return the running maximum.** When `end` becomes `null`, every window has been considered; `max_sum` is the answer.
 
+</details>
 <details>
-<summary><strong>Solution &amp; Analysis</strong></summary>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
 ### Solution
 
@@ -338,7 +345,10 @@ end is null → loop ends. Return max_sum = 9. ✓
 | All equal values | Every window has the same sum; `max_sum` is set on the first iteration and never overwritten. |
 
 </details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 `K Maximum Sum` is the find-with-aggregation variant of sliding-window traversal: the gap (`k − 1`) and the lockstep walk are unchanged from the find-only case — only the per-tick work upgrades from "read" to "subtract the left value, add the right value, compare to the running max."
+
+</details>

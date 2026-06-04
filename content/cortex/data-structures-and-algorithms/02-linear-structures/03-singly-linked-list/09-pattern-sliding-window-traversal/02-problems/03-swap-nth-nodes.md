@@ -14,8 +14,7 @@ Given the **head** of a singly linked list and a non-negative integer **N**, wri
 
 Swapping of data is not allowed. Only references should be changed. You can assume that `N` will always be less than or equal to the size of the linked list.
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1:**
 ```
@@ -38,11 +37,12 @@ Output: [5, 2, 3, 4, 1]
 ```
 `N` equals the length, so the swap exchanges the head and the tail.
 
-</details>
 
 ---
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The **structural property** that makes this a sliding-window-traversal problem is that the two nodes to be swapped sit at symmetric offsets — `N` from the start and `N` from the end — which is two fixed offsets in one problem. The naive answer walks the list once to compute its length and then walks twice more to find each of the two nodes (and their predecessors). The single-pass alternative recognises that the `N`-th-from-end can be tracked by trailing a pointer behind a leading cursor that already walked `N − 1` hops past the head.
 
@@ -50,9 +50,10 @@ The **pointer placement** follows directly. One pointer `nth_from_start` is park
 
 What **breaks if you reach for a naive approach**? Three passes (length, then two lookups) work but waste a full traversal. Copying values into an array, swapping at indices `N − 1` and `length − N`, and writing back uses `O(n)` extra space — and the problem explicitly forbids value-swapping; only references may move. Only the lockstep two-pointer walk with predecessor tracking delivers a single pass with `O(1)` extra space.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | Check | Answer for Swap Nth Nodes |
 |---|---|
@@ -61,19 +62,24 @@ What **breaks if you reach for a naive approach**? Three passes (length, then tw
 | **Q3.** Is the work at each tick `O(1)`? | **Yes** — three pointer assignments per tick; constant-work splice at the end. |
 | **Q4.** Is `O(1)` extra space required? | **Yes** — five local references regardless of list length. |
 
----
+</details>
+<details>
+<summary><h2>Brute Force: Length Lookup + Two Walks</h2></summary>
 
-## Brute Force: Length Lookup + Two Walks
 
 Walk the list once to compute its length `length`. Compute the `N`-th-from-start at index `N − 1` and the `N`-th-from-end at index `length − N`. Walk from the head twice — once to find each target and its predecessor. Rewire the four `next` pointers. This is correct but costs three full traversals, and it does no better on space than the single-pass approach. The extra walks are pure overhead.
 
-## Key Insight: One Priming Walk Pins Both Symmetric Targets
+</details>
+<details>
+<summary><h2>Key Insight: One Priming Walk Pins Both Symmetric Targets</h2></summary>
+
 
 Advancing a cursor `current` from `head` by `N − 1` hops parks it on the `N`-th-from-start node. From that position, the gap between `current` (the leading reference) and a fresh `nth_from_end` pointer at the head is exactly `N − 1`. As both advance together until `current.next` is `null`, the gap is preserved — so `nth_from_end` lands on the `N`-th-from-end node. Predecessor pointers (`prev_to_nth_from_start`, `prev_to_nth_from_end`) are captured during the walks so the final swap rewires `next` pointers without losing references.
 
----
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
 
-## Approach
 
 Run the lockstep walk in two phases — prime to find the `N`-th-from-start, then slide to find the `N`-th-from-end. Capture predecessors during both walks.
 
@@ -83,8 +89,9 @@ Run the lockstep walk in two phases — prime to find the `N`-th-from-start, the
 4. **Detect the same-node case.** If `nth_from_start` and `nth_from_end` are the same node, no swap is needed — return the head. (The code handles this implicitly via the predecessor logic, but the case must be acknowledged.)
 5. **Rewire the four `next` pointers.** Update the predecessor of each target to point at the other target, then swap the two `next` references. If either predecessor is `null`, the swap involves the head — promote the other target to the new head.
 
+</details>
 <details>
-<summary><strong>Solution &amp; Analysis</strong></summary>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
 ### Solution
 
@@ -393,7 +400,10 @@ Return head = 1 → 4 → 3 → 2 → 5. ✓
 | `N == length / 2 + 1` (adjacent targets, even length) | Rewires handle the adjacency correctly because each target's predecessor is captured before the swap. |
 
 </details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 `Swap Nth Nodes` is the symmetric-swap variant of sliding-window traversal: one priming walk pins the `N`-th-from-start, then a single lockstep slide with `N − 1` gap pins the `N`-th-from-end — both predecessors captured along the way for an `O(1)` four-pointer rewire.
+
+</details>

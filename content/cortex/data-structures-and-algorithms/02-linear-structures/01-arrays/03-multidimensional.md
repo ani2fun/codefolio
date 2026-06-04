@@ -17,7 +17,7 @@ Here's the thing the `[r][c]` syntax hides: a 2D array is **not** stored as a gr
 
 A 2D matrix, built by hand on top of a flat buffer — so you can see the `[r][c]` sugar dissolve into `r * cols + c`:
 
-```python run
+```python run viz=array
 class Matrix:
     def __init__(self, rows, cols):
         self.rows, self.cols = rows, cols
@@ -35,7 +35,7 @@ print("element (1,2):", m.get(1, 2), "at flat index", m._idx(1, 2))
 print("flat buffer:", m.buf)                      # row-major: row 0 then row 1
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static class Matrix {
@@ -81,7 +81,7 @@ flowchart TB
 
 **Predict before you run:** in a 2×3 grid, where does element `(1, 0)` live — at the same flat index under row-major and column-major, or different ones? And which layout stores a full *row* in consecutive slots?
 
-```python run
+```python run viz=array
 R, C = 2, 3
 def row_major(r, c): return r * C + c             # rows stored consecutively
 def col_major(r, c): return c * R + r             # columns stored consecutively
@@ -107,7 +107,7 @@ Element `(1, 0)` lives at flat index **3** under row-major (`1·3 + 0`) but **1*
 
 **Predict:** in a 3×3 grid, using 4-directional moves (up/down/left/right), how many valid neighbours does a **corner** cell have? An **edge** cell? An **interior** cell?
 
-```python run
+```python run viz=array
 def neighbours(R, C, r, c):                       # 4-directional, bounds-checked (grid edges are implicit)
     out = []
     for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
@@ -122,7 +122,7 @@ print("edge     (0,1):", len(neighbours(R, C, 0, 1)), "neighbours")
 print("interior (1,1):", len(neighbours(R, C, 1, 1)), "neighbours")
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static int neighbours(int R, int C, int r, int c) {     // 4-directional, bounds-checked
         int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};

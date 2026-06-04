@@ -15,7 +15,7 @@ The shape is new. Every interval DP so far either matched two ends ([palindromes
 
 Operands (`T`/`F`) sit at even positions, operators (`&`, `|`, `^`) at odd. `T[i][j]` / `F[i][j]` count the parenthesizations of operands `i..j` that evaluate True / False. For each operator `k` as the *last* one applied, combine the two sides with that operator's truth table — a sum of products over how each side lands.
 
-```python run
+```python run viz=array
 def count_true(expr):
     symbols, ops = expr[::2], expr[1::2]             # operands at even idx, operators at odd
     n = len(symbols)
@@ -45,7 +45,7 @@ print(count_true("T^F&T"))     # 2
 print(count_true("T|T&F^T"))   # 4
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static int countTrue(String expr) {
         StringBuilder sym = new StringBuilder(), ops = new StringBuilder();
@@ -112,7 +112,7 @@ It's tempting to track only the True-counts — the answer is a True-count, afte
 
 **Predict before you run:** with OR's True-count computed as `Tl·Tr` (mirroring AND), how many ways does `"F|T"` evaluate True — the correct `1`, or something else?
 
-```python run
+```python run viz=array
 def count_true(expr, or_bug=False):
     symbols, ops = expr[::2], expr[1::2]
     n = len(symbols)
@@ -153,7 +153,7 @@ Correct is `1`; the buggy version returns `0`. `F | T` evaluates to `True` — t
 
 **Different Ways to Add Parentheses** ([LeetCode 241](https://leetcode.com/problems/different-ways-to-add-parentheses/)) — the same split-at-the-operator idea, generalized from booleans to arithmetic: return *every* result obtainable by parenthesizing an expression of numbers and `+ - *`. Split at each operator, combine every left result with every right result.
 
-```python run
+```python run viz=array
 def diff_ways(expr):
     if expr.isdigit():
         return [int(expr)]                           # base: a bare number
@@ -169,7 +169,7 @@ print(sorted(diff_ways("2-1-1")))      # [0, 2]
 print(sorted(diff_ways("2*3-4*5")))    # [-34, -14, -10, -10, 10]
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static List<Integer> diffWays(String e) {

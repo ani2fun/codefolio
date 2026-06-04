@@ -38,8 +38,7 @@ Output: [[3, 5], [6, 10], [12, 15]]    (slots cleanly between)
 
 ---
 
-<details>
-<summary><h2>Examples</h2></summary>
+## Examples
 
 **Example 1**
 ```
@@ -65,7 +64,6 @@ Output: [[5, 7]]
 Explanation: Empty input — only the push-the-new-interval step runs.
 ```
 
-</details>
 <details>
 <summary><h2>Intuition</h2></summary>
 

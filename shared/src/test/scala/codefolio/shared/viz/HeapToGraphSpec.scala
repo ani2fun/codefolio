@@ -82,6 +82,28 @@ object HeapToGraphSpec extends ZIOSpecDefault:
   private val src = "line one\nline two\nline three"
 
   override def spec: Spec[Any, Any] = suite("HeapToGraph")(
+    test("viz=array auto-detects a function-scoped Arr even when the final step holds only a dict") {
+      // Step 1 (inside the function) binds `arr` to a list; the final step (after the
+      // function returns) holds only a higher-reachability dict — mirroring
+      // `def solve(self, arr): … return count`. A final-heap-only scan would miss `arr`
+      // and the dict would win, rendering an empty canvas; the all-steps Arr scan picks
+      // the list.
+      val inFn = step(1, List("arr" -> ref("L")), "L" -> lst(int(5), int(2)))
+      val afterReturn = step(
+        2,
+        List("seen" -> ref("D")),
+        "D"  -> dict(str("a") -> ref("E1"), str("b") -> ref("E2")),
+        "E1" -> instance("Entry", "v" -> int(1)),
+        "E2" -> instance("Entry", "v" -> int(2))
+      )
+      val result =
+        adaptSingle(HeapTrace(List(inFn, afterReturn), truncated = false), "x = 1\ny = 2", "array", None, "t")
+      assertTrue(
+        result.isRight,
+        result.exists(_.steps.exists(_.nodes.exists(_.label == "5"))),
+        result.exists(_.steps.exists(_.nodes.exists(_.label == "2")))
+      )
+    },
     test("reconstructs the tree, highlights the inserted node, labels edges") {
       val result = adaptSingle(
         HeapTrace(List(before, after), truncated = false),
@@ -101,7 +123,7 @@ object HeapToGraphSpec extends ZIOSpecDefault:
         result.exists(_.steps.last.edges.contains(VizEdge("A", "B", "left"))),
         result.exists(_.steps.last.cursor.size == 2),
         result.exists(_.steps.last.cursor.exists(c => c.name == "node" && c.target == "B")),
-        result.exists(_.steps.last.cursor.exists(c => c.name == "node" && c.color == "#c8693e")),
+        result.exists(_.steps.last.cursor.exists(c => c.name == "node" && c.color == "#4f5bd5")),
         result.exists(_.steps.last.cursor.exists(c => c.name == "tree" && c.color == "#3a5a8c")),
         result.exists(_.steps.last.annotation.title == "inserted 9 as 2.right"),
         result.exists(_.layoutHint == "binary-tree")
@@ -482,7 +504,7 @@ object HeapToGraphSpec extends ZIOSpecDefault:
         result.isRight,
         cur.exists(c => c.name == "lo" && c.target == "L#0" && c.color == "#3a5a8c"),
         cur.exists(c => c.name == "hi" && c.target == "L#4" && c.color == "#a13e3e"),
-        cur.exists(c => c.name == "mid" && c.target == "L#2" && c.color == "#c8693e")
+        cur.exists(c => c.name == "mid" && c.target == "L#2" && c.color == "#4f5bd5")
       )
     },
     test("draws no integer index cursors when the root is not an array") {

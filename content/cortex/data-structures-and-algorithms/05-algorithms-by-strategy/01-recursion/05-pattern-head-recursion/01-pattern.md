@@ -42,7 +42,7 @@ flowchart TB
 
 Sum the digits of an integer: `sum(n) = sum(n // 10) + (n % 10)`, base `sum(0) = 0`. The recursive call comes first; the `+ n % 10` combine runs on the ascent.
 
-```python run
+```python run viz=array
 def sum_of_digits(n):
     if n == 0:                                  # base case
         return 0
@@ -51,7 +51,7 @@ def sum_of_digits(n):
 print("sum_of_digits(523):", sum_of_digits(523))
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static int sumOfDigits(int n) {
         if (n == 0) return 0;                       // base case
@@ -118,7 +118,7 @@ If the work happens on the ascent, the *order* in which frames contribute is the
 
 **Predict before you run:** `523` is peeled right-to-left (`3`, then `2`, then `5`). With the print placed *after* the recursive call, do the digits come out `3 2 5` or `5 2 3`?
 
-```python run
+```python run viz=array
 def show_head(n):
     if n == 0: return
     show_head(n // 10)        # recurse FIRST
@@ -144,7 +144,7 @@ The head version prints `5 2 3` — **natural left-to-right order** — while pr
 
 Factorial is head recursion too: `fact(n) = n · fact(n−1)`, base `fact(1) = 1`. The multiply can't happen until `fact(n−1)` returns, so the work — like sum-of-digits — lands on the ascent.
 
-```python run
+```python run viz=array
 def factorial(n):
     if n <= 1:                          # base case (reachable from 0 and 1)
         return 1
@@ -153,7 +153,7 @@ def factorial(n):
 print("factorial(5):", factorial(5))    # 120
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static long factorial(int n) {
         if (n <= 1) return 1;               // base case

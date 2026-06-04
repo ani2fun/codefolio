@@ -31,6 +31,18 @@ Picture people queuing and each wanting to know the nearest *taller* person who 
 
 ## Visual Summary
 
+```mermaid
+flowchart TD
+  scan["scan left → right"] --> chk{"top < current?"}
+  chk -->|"yes"| res["current is top's next-greater<br/>→ pop, repeat"]
+  chk -->|"no"| push["push current index"]
+  res --> chk
+  push --> scan
+  style res fill:#bbf7d0,stroke:#16a34a
+```
+
+<p align="center"><strong>A monotonic stack resolves next-greater-to-the-right: each new element pops every smaller index still waiting and becomes their answer. Every element is pushed and popped once — O(n).</strong></p>
+
 ---
 
 ## Pattern Recognition Triggers

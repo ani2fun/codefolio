@@ -89,7 +89,7 @@ Because each key is placed *relative to the keys already there*, and "always att
 
 The reusable insert — note how order changes the shape:
 
-```python run
+```python run viz=binary-tree viz-root=root
 class TreeNode:
     def __init__(self, val):
         self.val = val
@@ -115,7 +115,7 @@ for v in [1, 2, 3, 4, 5, 6, 7]:        # sorted order → degenerate
 print(height(balanced), height(chain))   # 2 6  (same 7 keys, very different height)
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 public class Main {
   static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } }
   static TreeNode insert(TreeNode r, int v) {

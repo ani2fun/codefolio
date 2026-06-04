@@ -99,7 +99,7 @@ Because nothing in the reorder phase ever *reads* `prev` — it only follows and
 
 The reusable doubly odd/even-position reorder:
 
-```python run
+```python run viz=linked-list viz-root=head viz-kind=list-double
 class Node:
     def __init__(self, val):
         self.val = val
@@ -132,7 +132,7 @@ while node:
 print(out)                           # [1, 3, 5, 2, 4, 6]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head viz-kind=list-double
 public class Main {
   static class Node { int val; Node prev, next; Node(int v){ val = v; } }
 

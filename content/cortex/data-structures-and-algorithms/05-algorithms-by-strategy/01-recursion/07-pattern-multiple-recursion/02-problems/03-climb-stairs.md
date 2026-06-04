@@ -109,7 +109,7 @@ flowchart TB
 
 ### The Solution
 
-```python run
+```python run viz=array
 from typing import List
 
 class Solution:
@@ -153,7 +153,7 @@ print(Solution().climb_stairs(4, [1, 2]))          # 5
 print(Solution().climb_stairs(5, [1, 2, 3]))       # 13
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {

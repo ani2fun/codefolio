@@ -21,8 +21,7 @@ Given a string `s` and integer `k`, return the length of the longest substring w
 ### Example 3
 > -   **Input:** `s = "abcdefgh", k = 3` → **Output:** `3` (`"abc"`, `"bcd"`, etc.)
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -56,7 +55,6 @@ Explanation: zero distinct characters allowed means no character fits. Every add
 character forces immediate contraction → length 0.
 ```
 
-</details>
 <details>
 <summary><h2>Approach</h2></summary>
 
@@ -194,8 +192,9 @@ public class Main {
 ```
 
 </details>
+<details>
+<summary><h2>Intuition</h2></summary>
 
-## Intuition
 
 This is a **longest contiguous subsequence** problem whose rule — "at most `k` distinct characters" — reads off a frequency map as `len(map) ≤ k`. The window holds the characters under consideration; the map's *size* is the distinct-count. Because the answer is a contiguous run and the rule is a single map-size check, the variable-sized sliding window fits. Only the rule has changed from the unique-character-span problem; the skeleton is identical.
 
@@ -203,7 +202,10 @@ The pointers keep their asymmetric roles. The `end` pointer admits one new chara
 
 The naive approach is correct but quadratic. Fixing a start and re-scanning forward, rebuilding the distinct-set each time, costs **O(N²)** time. The window approach never rewinds `start`: once a window has too many distinct characters, every window sharing that left edge and extending further is also too wide, so those are skipped. Each character is admitted once and evicted at most once — **O(N)** total.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for K Characters Span |
 |---|---|
@@ -212,7 +214,10 @@ The naive approach is correct but quadratic. Fixing a start and re-scanning forw
 | **Q3.** Can you add `s[end]` and remove `s[start]` in `O(1)`? | **Yes** — increment on expand; decrement and delete-on-zero on contract. |
 | **Q4.** Is the rule monotonic as the window grows? | **Yes** — adding a character can only raise the distinct-count; removing one can only lower it. |
 
-## Approach
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
+
 
 1. Initialise `start = 0`, an empty `frequency` map, and `maxLength = 0`.
 2. Advance `end` across the string. For each `end`, increment `frequency[s[end]]`.
@@ -220,7 +225,10 @@ The naive approach is correct but quadratic. Fixing a start and re-scanning forw
 4. The window `s[start..end]` now holds at most `k` distinct characters. Record `maxLength = max(maxLength, end − start + 1)`.
 5. After the loop, return `maxLength`.
 
-## Dry Run
+</details>
+<details>
+<summary><h2>Dry Run</h2></summary>
+
 
 Walk Example 1: `s = "abcbed"`, `k = 2`, expected output `3`. The rule is `len(freq) ≤ 2`:
 
@@ -241,14 +249,20 @@ return maxLength = 3
 
 The result `3` matches the expected output — `"bcb"` is the longest substring with at most `2` distinct characters.
 
-## Complexity Analysis
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
+
 
 | | Cost | Why |
 |---|---|---|
 | **Time** | **O(N)** | `end` advances `N` times; `start` advances at most `N` times. Each character enters and leaves the map once, so the inner `while` is amortised `O(1)`. |
 | **Space** | **O(K)** | The map holds at most `k + 1` entries during a contraction — bounded by the alphabet size, `O(1)` for a fixed alphabet. |
 
-## Edge Cases
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
+
 
 | Input | Output | Why |
 |---|---|---|
@@ -259,6 +273,11 @@ The result `3` matches the expected output — `"bcb"` is the longest substring 
 | `s = "aab", k = 2` | `3` | Exactly `2` distinct (`a`, `b`) — the whole string is valid. |
 | `s = "abaccc", k = 2` | `4` | `"accc"` holds `2` distinct (`a`, `c`) → length `4`. |
 
-## Key Takeaway
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
 
 The only change from unique-character span is the rule — contract while `len(map) > k` instead of while a single count exceeds `1`. Tracking distinct-count means deleting map keys the moment they hit zero, or `len(map)` overcounts.
+
+</details>

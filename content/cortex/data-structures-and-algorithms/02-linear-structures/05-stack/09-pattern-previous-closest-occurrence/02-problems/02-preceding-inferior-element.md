@@ -20,8 +20,7 @@ Same as above but **inferior** = strictly smaller. Maintain an *increasing* mono
 > -   **Input:** `arr1 = [5, 9, 7, 8, 1]`, `arr2 = [5, 9, 7]`
 > -   **Output:** `[-1, 5, 5]`
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -52,9 +51,10 @@ Output: [-1]
 Explanation: A single element has no predecessor.
 ```
 
-</details>
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The structural property is identical to the superior version, with the comparison reversed — each value wants the nearest strictly-**smaller** value to its left. That "nearest qualifying predecessor" shape is still the previous-closest pattern; only the test that disqualifies a candidate flips from greater-than to less-than.
 
@@ -62,7 +62,10 @@ The stack now holds an un-disqualified chain of **previous-smaller candidates** 
 
 The naive approach breaks the time budget the same way as before. Scanning `arr1` afresh for every `arr2` query is `O(N × M)` time, quadratic when the arrays are comparable in length. One increasing-stack pass computes every previous-smaller in `arr1`, turning each query into an `O(1)` index-map lookup.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for Preceding Inferior Element |
 |---|---|
@@ -71,7 +74,10 @@ The naive approach breaks the time budget the same way as before. Scanning `arr1
 | **Q3.** Is the comparison monotone — strictly greater or smaller? | **Yes** — a strict less-than test drives the survivor choice (increasing stack). |
 | **Q4.** Is the per-element work `O(1)` amortised? | **Yes** — each value is pushed once, popped at most once; the index-map read is `O(1)`. |
 
-## Approach
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
+
 
 Mirror the superior version with the comparison flipped to build an *increasing* stack.
 
@@ -82,6 +88,7 @@ Mirror the superior version with the comparison flipped to build an *increasing*
 5. **Answer the queries.** For each value in `arr2`, look up its index and append `previousSmaller[index]`, using `-1` when the value is absent.
 6. **Return the result.** One previous-smaller answer per query, in `arr2` order.
 
+</details>
 <details>
 <summary><h2>Solution</h2></summary>
 
@@ -234,8 +241,9 @@ public class Main {
 ```
 
 </details>
+<details>
+<summary><h2>Dry Run</h2></summary>
 
-## Dry Run
 
 Walk Example 1 — `arr1 = [3, 5, 1, 6, 8, 2]`, `arr2 = [3, 1, 8, 2]`. The stack stays strictly increasing; pop while the top `≥ num`:
 
@@ -256,7 +264,10 @@ result = [-1, -1, 6, 1]
 
 The result `[-1, -1, 6, 1]` matches the expected output.
 
-## Complexity Analysis
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
+
 
 | Measure | Value | Why |
 |---|---|---|
@@ -265,7 +276,10 @@ The result `[-1, -1, 6, 1]` matches the expected output.
 
 The flip from greater to smaller changes neither bound — the stack still admits each value once and evicts it at most once.
 
-## Edge Cases
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
+
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -275,6 +289,11 @@ The flip from greater to smaller changes neither bound — the stack still admit
 | Shared predecessor | `arr1 = [2, 5, 3]`, `arr2 = [5, 3]` | `[2, 2]` | `2` precedes and stays below both queries. |
 | Query in the middle | `arr1 = [4, 1, 3]`, `arr2 = [1, 3]` | `[-1, 1]` | `1` is the running minimum → -1; `3` sees `1` as its nearest smaller. |
 
-## Key Takeaway
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
 
 What is new here is a single operator flip: the stack becomes *increasing* and pops while the top is `≥` the current value, returning the nearest strictly-smaller predecessor instead of the greater one. Everything else — the two-pass structure, the index map, the `O(N + M)` cost — is unchanged from the superior variant.
+
+</details>

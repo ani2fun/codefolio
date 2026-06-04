@@ -20,9 +20,7 @@ arr = [-1, -2, 3, -5],    k = 4  →  [3]
 
 ---
 
-<details>
-<summary><h2>Examples</h2></summary>
-
+## Examples
 
 **Example 1**
 ```
@@ -47,9 +45,10 @@ Output: [3]
 Explanation: One window — the whole array — with 3 negatives.
 ```
 
-</details>
 
-## Applying the Diagnostic Questions
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Question | Answer for Negative Window |
 |---|---|
@@ -58,6 +57,7 @@ Explanation: One window — the whole array — with 3 negatives.
 | **Q3.** Per-window report or single best? | **Per-window report** — the answer is a list of `n − k + 1` counts, one per window. The `process` step appends `negative_count` to `result`. |
 | **Q4.** Edge cases defined? | **Yes** — for `n < k`, no full window exists so `result` is empty; `k == n` produces one entry; `k == 1` produces one count per element (0 or 1). |
 
+</details>
 <details>
 <summary><h2>Intuition</h2></summary>
 

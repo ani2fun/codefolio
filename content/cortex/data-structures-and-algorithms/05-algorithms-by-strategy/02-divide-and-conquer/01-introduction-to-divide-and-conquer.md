@@ -16,7 +16,7 @@ That one move — **split the input, recurse on the pieces, recombine** — is *
 
 **Maximum subarray** — the largest-sum contiguous slice. Its D&C version is the canonical "you can't *just* recurse on halves" example: the best slice might straddle the midpoint, so a third case scans outward from `mid`.
 
-```python run
+```python run viz=array
 def max_crossing(A, lo, mid, hi):           # best slice that MUST include mid and mid+1
     left = float('-inf'); s = 0
     for i in range(mid, lo - 1, -1):
@@ -37,7 +37,7 @@ A = [-2, 1, -3, 4, -1, 2, 1, -5, 4]
 print("max subarray sum =", max_subarray(A, 0, len(A) - 1))   # 6, from [4, -1, 2, 1]
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static int maxCrossing(int[] A, int lo, int mid, int hi) {
         int left = Integer.MIN_VALUE, s = 0;
@@ -104,7 +104,7 @@ The cross-midpoint case feels like an optional extra — surely recursing on bot
 
 **Predict before you run:** delete the crossing case (keep only the left and right recursions). On `[-2, 1, -3, 4, -1, 2, 1, -5, 4]` (true answer 6, from `[4, -1, 2, 1]`), what does it return?
 
-```python run
+```python run viz=array
 def max_subarray_nocross(A, lo, hi):
     if lo == hi: return A[lo]
     mid = (lo + hi) // 2
@@ -126,7 +126,7 @@ It returns `4`, not `6` — and worse, `4` is just the largest *single element*.
 
 D&C does more than sort. **Count inversions** — pairs `(i, j)` with `i < j` but `A[i] > A[j]` — by piggy-backing on merge sort: when the merge step takes an element from the *right* half, every element still waiting in the *left* half forms an inversion with it.
 
-```python run
+```python run viz=array
 def count_inversions(A):
     def sort_count(a):
         if len(a) <= 1: return a, 0
@@ -147,7 +147,7 @@ print("inversions [2,4,1,3,5]:", count_inversions([2, 4, 1, 3, 5]))   # 3
 print("inversions [5,4,3,2,1]:", count_inversions([5, 4, 3, 2, 1]))   # 10
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static long sortCount(int[] a, int lo, int hi) {

@@ -18,7 +18,7 @@ The naive options both fail. Re-run BFS per query? `O(n + m)` each — fatal. Gi
 
 A DSU over 10 elements. Union some pairs, count the components, and ask connectivity questions — all near-instant. Run it.
 
-```python run
+```python run viz=array viz-root=parent viz-kind=union-find
 class DSU:
     def __init__(self, n):
         self.parent = list(range(n))      # everyone starts as their own root
@@ -173,7 +173,7 @@ It's correct because **`find` never changes which root a node belongs to — onl
 
 DSU with path compression + union by rank in both languages — union edges, then query connectivity and component count:
 
-```python run
+```python run viz=array viz-root=parent viz-kind=union-find
 class DSU:
     def __init__(self, n):
         self.parent = list(range(n)); self.rank = [0]*n; self.num_sets = n
@@ -194,7 +194,7 @@ for u, v in [(0,1), (2,3), (3,4)]: dsu.union(u, v)
 print(dsu.num_sets, dsu.same_set(2,4), dsu.same_set(0,5))   # 3 True False
 ```
 
-```java run
+```java run viz=array viz-root=parent viz-kind=union-find
 public class Main {
   static int[] parent, rnk;
   static int find(int x) { if (parent[x] != x) parent[x] = find(parent[x]); return parent[x]; }

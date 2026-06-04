@@ -17,7 +17,7 @@ Its idea is the purest divide-and-conquer: a single element is already sorted, a
 
 Sort `[5, 2, 8, 1, 9, 3]` by splitting, sorting halves, and merging. Run it.
 
-```python run
+```python run viz=array
 def merge(a, b):
     out, i, j = [], 0, 0
     while i < len(a) and j < len(b):
@@ -86,7 +86,7 @@ It's *where the work lives* and *who controls the split*. Quicksort splits via a
 
 The reusable merge sort:
 
-```python run
+```python run viz=array
 def merge(a, b):
     out, i, j = [], 0, 0
     while i < len(a) and j < len(b):
@@ -107,7 +107,7 @@ print(merge_sort([5, 2, 8, 1, 9, 3]))   # [1, 2, 3, 5, 8, 9]
 print(merge_sort([3, 1, 2]))            # [1, 2, 3]
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {

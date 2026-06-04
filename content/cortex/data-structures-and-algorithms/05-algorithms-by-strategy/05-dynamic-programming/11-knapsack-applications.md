@@ -15,7 +15,7 @@ The transferable skill isn't four algorithms — it's *recognising the shape* an
 
 **Coin Change** ([LeetCode 322](https://leetcode.com/problems/coin-change/)) — the minimum number of coins to make `amount`, with unlimited copies of each coin. Coins are reusable, so this is *unbounded* knapsack (the ascending capacity sweep from last lesson), and the aggregator is **min**: `dp[a] = 1 + min(dp[a - c])` over coins `c` that fit.
 
-```python run
+```python run viz=array
 def coin_change(coins, amount):
     INF = float('inf')
     dp = [0] + [INF] * amount                     # dp[a] = fewest coins to make a; dp[0] = 0
@@ -29,7 +29,7 @@ print(coin_change([1, 2, 5], 11))   # 3   (5 + 5 + 1)
 print(coin_change([2], 3))          # -1  (odd amount, only even coins)
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static int coinChange(int[] coins, int amount) {
@@ -83,7 +83,7 @@ Counting introduces a trap that optimising doesn't. To *count the distinct ways*
 
 **Predict before you run:** with coins `{1, 2, 5}` and amount `5`, the standard "coins outer, amount inner" loop counts **4** ways. If you swap the nesting to "amount outer, coins inner" — same `dp[a] += dp[a-c]`, same arrays — does it still print `4`?
 
-```python run
+```python run viz=array
 def count_combinations(coins, amount):            # coins OUTER -> unordered combinations
     dp = [1] + [0] * amount
     for c in coins:                               # fix coin c, then sweep amounts
@@ -116,7 +116,7 @@ Why the loop order decides this: with **coins outer**, by the time you start usi
 
 **Rod Cutting** (CLRS §15.1) — given prices for each length, cut a length-`n` rod to maximise total revenue. The "items" are cut-lengths, reusable (you can make many length-2 pieces), so it's unbounded knapsack with a **max** aggregator: `dp[L] = max(price[cut] + dp[L - cut])` over every first-cut length.
 
-```python run
+```python run viz=array
 def rod_cutting(prices, n):                       # prices[i] = price of a length-(i+1) piece
     dp = [0] * (n + 1)                            # dp[L] = max revenue from a length-L rod
     for L in range(1, n + 1):
@@ -129,7 +129,7 @@ print(rod_cutting(prices, 8))   # 22   (cut 2 + 6 -> 5 + 17)
 print(rod_cutting(prices, 4))   # 10   (cut 2 + 2 -> 5 + 5)
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static int rodCutting(int[] prices, int n) {
         int[] dp = new int[n + 1];

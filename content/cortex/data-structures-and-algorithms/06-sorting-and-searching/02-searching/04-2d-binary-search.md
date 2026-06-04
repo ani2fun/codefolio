@@ -17,7 +17,7 @@ So you don't need a 2D algorithm at all: binary-search the matrix as if it were 
 
 Search a 3×3 fully-sorted matrix for `9`. Run it — note the matrix is never copied; only the index is mapped to a cell.
 
-```python run
+```python run viz=array
 def search_matrix(matrix, target):
     if not matrix or not matrix[0]:
         return False
@@ -79,7 +79,7 @@ They're the **same** asymptotic cost: `log(m·n) = log m + log n`, so one binary
 
 The reusable 2D binary search:
 
-```python run
+```python run viz=array
 def search_matrix(matrix, target):
     if not matrix or not matrix[0]:
         return False
@@ -100,7 +100,7 @@ m = [[1, 4, 7, 11], [12, 15, 20, 23], [30, 34, 50, 60]]
 print(search_matrix(m, 20), search_matrix(m, 13))   # True False
 ```
 
-```java run
+```java run viz=array
 public class Main {
   static boolean searchMatrix(int[][] m, int target) {
     if (m.length == 0 || m[0].length == 0) return false;

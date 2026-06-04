@@ -21,8 +21,7 @@ Given a string of letters and `[`/`]` brackets, **reverse the substring inside e
 ### Example 3
 > -   **Input:** `s = "abcdefghij"` → **Output:** `"abcdefghij"`
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -57,9 +56,10 @@ Explanation: the inner "[ab]" reverses to "ba", then the outer pair
 reverses "ba" back to "ab" — a double reversal cancels out.
 ```
 
-</details>
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 This is a **linear-evaluation** problem because the string is scanned once and each `]` folds the substring built since its matching `[`. Brackets nest, so an inner group must be fully reversed before the outer group sees it — the classic "evaluate the freshest pending chunk first" shape. The stack parks each outer context while the inner group resolves.
 
@@ -67,7 +67,10 @@ The stack holds **the characters and `[` markers not yet folded**, with the fres
 
 A naive approach scans for each `[...]` pair, reverses it in place, and rescans for nested brackets — re-reading inner groups on every outer pass, which costs `O(N²)` time. The stack avoids that: an inner `]` folds and pushes its reversed string back as one token, so the outer `]` reverses across that already-reversed unit without re-reading its characters. One pass replaces the repeated rescans.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for Bracketed Reversal |
 |---|---|
@@ -76,7 +79,10 @@ A naive approach scans for each `[...]` pair, reverses it in place, and rescans 
 | **Q3.** Does a trigger fold only the *most recent* pending chunk? | **Yes** — `]` reverses the run back to the nearest `[`, which is always on top. |
 | **Q4.** Is the answer read off the stack at end-of-input? | **Yes** — the surviving tokens, concatenated bottom-to-top, are the result. |
 
-## Approach in Words
+</details>
+<details>
+<summary><h2>Approach in Words</h2></summary>
+
 
 Push letters and `[`; on `]`, pop-while-appending to reverse the inner substring, then push it back.
 
@@ -88,6 +94,7 @@ Push letters and `[`; on `]`, pop-while-appending to reverse the inner substring
 6. **Push the reversed substring back** as a single token, so the next `]` can reverse across it.
 7. **After the pass, concatenate the stack** bottom-to-top and return it.
 
+</details>
 <details>
 <summary><h2>Approach</h2></summary>
 
@@ -248,8 +255,9 @@ public class Main {
 ```
 
 </details>
+<details>
+<summary><h2>Dry Run</h2></summary>
 
-## Dry Run
 
 Walk Example 1 — `s = "a[bcd]e"`. The stack holds characters and `[`; on `]`, pop-while-appending builds the reversed substring:
 
@@ -278,7 +286,10 @@ A trace on `s = "x[y[z]]"` shows nesting — the inner `]` folds before the oute
 end of input → "x" + "zy" = "xzy" ✓
 ```
 
-## Complexity Analysis
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
+
 
 | Measure | Value | Why |
 |---|---|---|
@@ -287,7 +298,10 @@ end of input → "x" + "zy" = "xzy" ✓
 
 The time is `O(N)` where `N` is the string length: each character is pushed once and contributes to at most one fold when its enclosing `]` arrives, so total push/pop work is linear. The space is `O(N)`: the stack stores every character not yet folded, and a string with no brackets (or one giant group) holds the whole input before the final concatenation. Building each reversed substring reuses characters already on the stack, so it adds no extra order of space.
 
-## Edge Cases
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
+
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -298,6 +312,11 @@ The time is `O(N)` where `N` is the string length: each character is pushed once
 | Nested with prefix | `x[y[z]]` | `xzy` | `z` folds to `z`, then `y z` folds to `zy`; `x` prefixes it. |
 | No brackets | `abcdefghij` | `abcdefghij` | Every letter pushes and none folds, so the join is the original string. |
 
-## Key Takeaway
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
 
 Push characters and `[` markers; on `]`, pop the run back to the marker *while appending*, which yields the reversed substring with no separate reverse step. The new idea over path canonicalisation is that the fold *transforms* the popped chunk — pop order doubles as reversal — and the combined token is pushed back so nesting composes automatically.
+
+</details>

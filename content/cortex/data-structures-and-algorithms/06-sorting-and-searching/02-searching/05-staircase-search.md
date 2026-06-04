@@ -17,7 +17,7 @@ The staircase search exploits a special vantage point: the **top-right corner**.
 
 Search a row/column-sorted matrix for `5`, starting from the top-right corner. Run it.
 
-```python run
+```python run viz=array
 def search_matrix(matrix, target):
     if not matrix or not matrix[0]:
         return False
@@ -88,7 +88,7 @@ The top-left cell is the *minimum* of the entire matrix — it's the smallest in
 
 The reusable staircase search:
 
-```python run
+```python run viz=array
 def search_matrix(matrix, target):
     if not matrix or not matrix[0]:
         return False
@@ -107,7 +107,7 @@ m = [[1, 4, 7, 11], [2, 5, 8, 12], [3, 6, 9, 16], [10, 13, 14, 17]]
 print(search_matrix(m, 9), search_matrix(m, 13), search_matrix(m, 0))   # True True False
 ```
 
-```java run
+```java run viz=array
 public class Main {
   static boolean searchMatrix(int[][] m, int target) {
     if (m.length == 0 || m[0].length == 0) return false;

@@ -38,8 +38,12 @@ Thumbs.db
 
 # Claude / agent context (not committed)
 .claude/
+CLAUDE.md
+CONTEXT.md
+DEEPENING.md
+INTERFACE-DESIGN.md
+LANGUAGE.md
 docs/*
-!docs/adr/
 !docs/perf-baselines.md
 tools
 .codegraph

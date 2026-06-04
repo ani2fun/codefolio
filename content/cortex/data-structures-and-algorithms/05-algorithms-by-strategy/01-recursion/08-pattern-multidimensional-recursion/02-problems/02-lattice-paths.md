@@ -101,7 +101,7 @@ table: "Cells of paths(r, c) — number of paths from (0,0) to (r,c)" {
 
 ### The Solution
 
-```python run
+```python run viz=grid
 class Solution:
     def lattice_paths(self, rows: int, cols: int) -> int:
 
@@ -130,7 +130,7 @@ print(Solution().lattice_paths(5, 0))   # 1
 print(Solution().lattice_paths(2, 3))   # 10
 ```
 
-```java run
+```java run viz=grid
 public class Main {
     static class Solution {
         public int latticePaths(int rows, int cols) {

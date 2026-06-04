@@ -20,9 +20,7 @@ arr = [1]                                →  1
 
 ---
 
-<details>
-<summary><h2>Examples</h2></summary>
-
+## Examples
 
 **Example 1**
 ```
@@ -45,7 +43,6 @@ Output: 1
 Explanation: The subarray [1] has the largest sum of 1.
 ```
 
-</details>
 <details>
 <summary><h2>Intuition</h2></summary>
 

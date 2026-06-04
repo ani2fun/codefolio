@@ -90,7 +90,7 @@ It would become a completely **right-leaning chain** — `1 → 3 → 4 → 5 �
 
 The reusable BST — insert, search, in-order:
 
-```python run
+```python run viz=binary-tree viz-root=root
 class TreeNode:
     def __init__(self, val):
         self.val = val
@@ -123,7 +123,7 @@ print(inorder(root))                 # [1, 3, 4, 5, 7, 8, 9]
 print(search(root, 7), search(root, 6))   # True False
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 public class Main {
   static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } }
 

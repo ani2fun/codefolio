@@ -29,6 +29,17 @@ Picture the checkout line at a supermarket. A new customer joins at the back of 
 
 ## Visual Summary
 
+```mermaid
+flowchart LR
+  deq(["dequeue<br/>O(1)"]) --> front
+  front["10 ← front"] --- q1["20"] --- q2["30"] --- rear["40 ← rear"]
+  rear --> enq(["enqueue<br/>O(1)"])
+  style front fill:#c7d2fe,stroke:#4f5bd5
+  style rear fill:#c7d2fe,stroke:#4f5bd5
+```
+
+<p align="center"><strong>Items join at the rear and leave from the front — first in, first out. Both ends are O(1), and the oldest element is always the next one out.</strong></p>
+
 ---
 
 ## Key Operations

@@ -31,6 +31,18 @@ Imagine two readers standing at opposite ends of a long shelf of books, walking 
 
 ## Visual Summary
 
+```mermaid
+flowchart LR
+  a0["5"] --- a1["3"] --- a2["8"] --- a3["1"] --- a4["9"]
+  lft(["left →"]) --> a0
+  rgt(["← right"]) --> a4
+  lft -. "swap, then both step inward" .-> rgt
+  style lft fill:#c7d2fe,stroke:#4f5bd5
+  style rgt fill:#c7d2fe,stroke:#4f5bd5
+```
+
+<p align="center"><strong>Two pointers start at opposite ends and move inward in one pass — reverse, palindrome test, walk-to-meet — O(n) time and O(1) space, with no second array.</strong></p>
+
 ---
 
 ## Pattern Recognition Triggers

@@ -19,7 +19,7 @@ Postgres's answer is two production ideas layered onto the B-tree. The **Write-A
 
 The write path in miniature: an insert appends to the WAL first, *then* applies to the in-memory page. Crash the process — the page buffer evaporates — and replaying the WAL reconstructs it exactly.
 
-```python run
+```python run viz=array
 class Database:
     def __init__(self):
         self.wal = []            # durable, append-only log (survives a crash)
@@ -41,7 +41,7 @@ db.recover()                          # replay the WAL from the last checkpoint
 print("after WAL replay:", sorted(db.page))
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static class Record { int key; String tid; Record(int k, String t) { key = k; tid = t; } }
@@ -102,7 +102,7 @@ The order "log, *then* page" looks like bookkeeping until you ask what a crash c
 
 **Predict before you run:** two engines take the same three inserts, then crash and lose the in-memory page buffer. Engine A writes straight to the page (no log). Engine B logs each change first, then applies it. After recovery, what does each engine have — all three keys, or none?
 
-```python run
+```python run viz=array
 class NoWAL:                          # applies straight to the buffer, no log
     def __init__(self): self.page = {}
     def insert(self, k, v): self.page[k] = v
@@ -139,7 +139,7 @@ The no-WAL engine prints `[]` — **everything is gone**. Its only record of the
 
 **Predict:** does the reader find `30`, or wrongly report "not found"?
 
-```python run
+```python run viz=array
 class Leaf:
     def __init__(self, keys): self.keys = keys; self.right = None
 
@@ -162,7 +162,7 @@ print("found 30 via B-link?", search(left, 30))
 print("found 99 (absent)?", search(left, 99))
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static class Leaf {

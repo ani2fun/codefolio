@@ -31,6 +31,16 @@ Picture a security desk watching a corridor exactly `k` people long. As the queu
 
 ## Visual Summary
 
+```mermaid
+flowchart LR
+  win["window of size k"] --> map["hash map of counts inside the window"]
+  map --> slide["slide → : drop a[left], add a[right]"]
+  slide --> q["query the map<br/>(all distinct? anagram match?)"]
+  style q fill:#bbf7d0,stroke:#16a34a
+```
+
+<p align="center"><strong>The fixed window, but its contents live in a hash map of counts: each slide decrements the leaving element and increments the entering one, so window questions stay O(1) per step.</strong></p>
+
 ---
 
 ## Pattern Recognition Triggers

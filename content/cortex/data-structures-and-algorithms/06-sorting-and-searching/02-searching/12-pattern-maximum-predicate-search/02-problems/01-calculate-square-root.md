@@ -30,7 +30,7 @@ Output: 7
 Binary-search `x` in `[1, num]`. Predicate: `x * x <= num` (use `x <= num / x` to avoid overflow).
 
 
-```python run
+```python run viz=array
 class Solution:
 
     # Predicate: checks if square of mid is less than or equal to num
@@ -83,7 +83,7 @@ print(Solution().calculate_square_root(100))  # 10  (perfect square)
 print(Solution().calculate_square_root(99))   # 9   (just below perfect square)
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static class Solution {
 

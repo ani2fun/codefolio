@@ -21,8 +21,7 @@ Given a balanced expression `s` (containing operators, operands, and parentheses
 ### Example 3
 > -   **Input:** `s = "((2+3)+7)"` → **Output:** `false`
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -57,9 +56,10 @@ Explanation: the inner "()" wraps nothing at all. When its ')' arrives,
 the top is '(' immediately → redundant empty pair.
 ```
 
-</details>
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 This is a **sequence-validation** problem with a twist: the input is already balanced, so the question is not *whether* brackets match but *whether a pair carries meaning*. A pair of parentheses is redundant when it wraps either nothing or a single operand — no operator lives between its `(` and `)`. The stack tracks the context between each opener and its closer.
 
@@ -67,7 +67,10 @@ The stack holds **every character not yet resolved by a closer** — operators a
 
 A naive approach re-parses each parenthesised span to recount its operators, re-reading nested groups repeatedly. The stack avoids that. Meaningful inner groups are popped and discarded the moment their `)` is seen. So when an outer `)` arrives, a `(` directly on top signals that this pair added nothing the inner group had not already enclosed. One pass replaces the repeated re-scanning.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for Redundant Parentheses |
 |---|---|
@@ -76,7 +79,10 @@ A naive approach re-parses each parenthesised span to recount its operators, re-
 | **Q3.** Is one pass with `O(1)` work per token enough? | **Mostly** — each character is pushed once and popped once, so the work is `O(1)` amortised per token. |
 | **Q4.** Is the answer decided by what the stack holds between a pair? | **Yes** — a `(` directly on top when `)` arrives means an empty/single-token group → redundant. |
 
-## Approach in Words
+</details>
+<details>
+<summary><h2>Approach in Words</h2></summary>
+
 
 Push everything except `)`; on `)`, ask whether the pair wrapped anything meaningful.
 
@@ -87,6 +93,7 @@ Push everything except `)`; on `)`, ask whether the pair wrapped anything meanin
 5. **Otherwise discard the inner run.** Pop characters until the matching `(`, then pop the `(` itself — that grouping was meaningful, so move on.
 6. **After the pass, return `false`.** No redundant pair was ever found.
 
+</details>
 <details>
 <summary><h2>Approach</h2></summary>
 
@@ -221,8 +228,9 @@ public class Main {
 ```
 
 </details>
+<details>
+<summary><h2>Dry Run</h2></summary>
 
-## Dry Run
 
 Walk Example 1 — `s = "((2+3))+7"`. Push everything except `)`; on `)`, a `(` directly on top means redundant:
 
@@ -240,7 +248,10 @@ s = "((2+3))+7"
 
 The first `)` clears a meaningful group (`2+3` had operators between the parens). The second `)` finds `(` already on top — the outer pair wrapped only the already-grouped inner expression, so it is redundant.
 
-## Complexity Analysis
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
+
 
 | Measure | Value | Why |
 |---|---|---|
@@ -249,7 +260,10 @@ The first `)` clears a meaningful group (`2+3` had operators between the parens)
 
 The runtime is `O(N)` time amortised: the inner `while` that pops to the matching `(` looks nested, but each character is pushed exactly once and popped exactly once over the entire scan, capping total stack operations at `2N`. The space is `O(N)`: a deeply nested or operator-heavy prefix pushes every character before the first closer pops anything.
 
-## Edge Cases
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
+
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -260,6 +274,11 @@ The runtime is `O(N)` time amortised: the inner `while` that pops to the matchin
 | Properly nested | `s = "(a+(b+c))"` | `false` | Each pair encloses at least one operator; none is redundant. |
 | Redundant then tail | `s = "((2+3))+7"` | `true` | The outer pair around `(2+3)` is redundant; the `+7` tail does not affect it. |
 
-## Key Takeaway
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
 
 A pair of parentheses is redundant when its `)` finds the matching `(` directly on top of the stack — nothing meaningful was pushed between them. The new idea over the bracket checker is reading the *content between* a matched pair, not just confirming the pair exists.
+
+</details>

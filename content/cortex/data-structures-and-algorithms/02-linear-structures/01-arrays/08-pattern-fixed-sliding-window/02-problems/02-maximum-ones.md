@@ -20,9 +20,7 @@ arr = [0, 0, 0],                          k = 2  →  0
 
 ---
 
-<details>
-<summary><h2>Examples</h2></summary>
-
+## Examples
 
 **Example 1**
 ```
@@ -47,9 +45,10 @@ Output: 0
 Explanation: There are no 1s anywhere, so every size-2 window has zero.
 ```
 
-</details>
 
-## Applying the Diagnostic Questions
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Question | Answer for Maximum Ones |
 |---|---|
@@ -58,6 +57,7 @@ Explanation: There are no 1s anywhere, so every size-2 window has zero.
 | **Q3.** Per-window report or single best? | **Single best** — only the maximum count across all windows is returned, so `process` updates a running `max_ones`. |
 | **Q4.** Edge cases defined? | **Yes** — `k > n` is not specified by the problem, so the loop never produces a full window and returns `0`; `k == n` is one window over the whole array; `k == 1` returns `1` if any element is `1`. |
 
+</details>
 <details>
 <summary><h2>Intuition &amp; Brute Force</h2></summary>
 
@@ -105,7 +105,7 @@ w1 -> w2: "remove arr[0]=1 (-1), add arr[4]=0 (+0) → ones=2"
 
 ### Brute Force: Nested Loops, O(N × k)
 
-```python run
+```python run viz=array
 from typing import List
 
 def max_ones_brute(arr: List[int], k: int) -> int:
@@ -124,7 +124,7 @@ print(max_ones_brute([1, 1, 0, 1, 0, 1, 1, 0, 1, 0], 4))     # 3
 print(max_ones_brute([0, 0, 0], 2))                           # 0
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static int maxOnesBrute(int[] arr, int k) {
         int n = arr.length, maxOnes = 0;
@@ -160,7 +160,7 @@ public class Main {
 
 ### Solution
 
-```python run
+```python run viz=array
 from typing import List
 
 class Solution:
@@ -220,7 +220,7 @@ print(Solution().maximum_ones([0, 0, 0, 0], 3))                          # 0  �
 print(Solution().maximum_ones([1, 0, 1, 0, 1], 2))                       # 1  — alternating
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static class Solution {
         public int maximumOnes(int[] arr, int k) {

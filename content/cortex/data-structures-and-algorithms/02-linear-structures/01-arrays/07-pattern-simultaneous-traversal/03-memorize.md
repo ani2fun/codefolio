@@ -31,6 +31,20 @@ Picture two cashier lines at a grocery store, each holding sorted receipts by cu
 
 ## Visual Summary
 
+```mermaid
+flowchart LR
+  pi(["i →"]) --> a0
+  a0["A: 1"] --- a1["4"] --- a2["7"]
+  pj(["j →"]) --> b0
+  b0["B: 2"] --- b1["5"]
+  a0 --> cmp{"A[i] ≤ B[j]?"}
+  b0 --> cmp
+  cmp --> take["emit the smaller,<br/>advance only its pointer"]
+  style take fill:#bbf7d0,stroke:#16a34a
+```
+
+<p align="center"><strong>Two sequences walked with their own pointers: compare the fronts, take the smaller, advance only that one. A single linear pass merges, intersects, or diffs — no nested loop.</strong></p>
+
 ---
 
 ## Pattern Recognition Triggers

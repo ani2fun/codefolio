@@ -19,7 +19,7 @@ The one subtlety, when `n` doesn't divide evenly by `k`: the parts can't all be 
 
 Split `1→2→3→4→5` into `k = 2` parts. With `5 = 2·2 + 1`, the first part gets the extra node: `[1,2,3]` and `[4,5]`. Run it.
 
-```python run
+```python run viz=linked-list viz-root=head viz-kind=list-single
 class ListNode:
     def __init__(self, val, next=None):
         self.val = val
@@ -94,7 +94,7 @@ Before you read on: what happens if you ask for **more parts than nodes** — sa
 
 The reusable `k`-way split — returns `k` heads (some possibly empty):
 
-```python run
+```python run viz=linked-list viz-root=head viz-kind=list-single
 class ListNode:
     def __init__(self, val, next=None):
         self.val = val
@@ -128,7 +128,7 @@ head = ListNode(1, ListNode(2, ListNode(3, ListNode(4, ListNode(5)))))
 print([to_list(p) for p in split_into_k(head, 3)])   # [[1, 2], [3, 4], [5]]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head viz-kind=list-single
 import java.util.*;
 
 public class Main {

@@ -21,8 +21,7 @@ Given `arr` and a positive integer `k`, return an array containing the count of 
 ### Example 3
 > -   **Input:** `arr = [1,2,3,4], k = 1` → **Output:** `[1, 1, 1, 1]`
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -53,9 +52,10 @@ Output: [1]
 Explanation: the only window [5,5,5] holds one distinct value → [1].
 ```
 
-</details>
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The structural property that makes this a **fixed-sized sliding window** problem is the phrase *every contiguous subarray of size `k`* — the answer is one number per window, and the window width is pinned at `k`. The number of distinct elements in a window is exactly the number of keys in its frequency map, so the map is the running summary the pattern maintains.
 
@@ -63,7 +63,10 @@ The window's two pointers each carry a fixed job. The `end` pointer adds the ent
 
 The naive approach breaks the time budget. For each of the `n − k + 1` windows it rebuilds a fresh set or map by scanning all `k` elements, costing `O(N·k)` time for `O(k)` space. That re-counts the `k − 1` shared elements every slide. The sliding window edits the map in `O(1)` per step, so each window's distinct count is read directly from `len(map)`.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for Subarray Distinctness |
 |---|---|
@@ -72,7 +75,10 @@ The naive approach breaks the time budget. For each of the `n − k + 1` windows
 | **Q3.** Is the per-window answer read from an `O(1)`-updatable map? | **Yes** — the distinct count is `len(map)`, read in `O(1)` once the window is full. |
 | **Q4.** Is the per-step work `O(1)` amortised? | **Yes** — one increment on expand, one decrement (plus an optional key delete) on contract. |
 
-## Approach
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
+
 
 Slide a window of size `k`, and report the map's key count each time the window is full.
 
@@ -82,6 +88,7 @@ Slide a window of size `k`, and report the map's key count each time the window 
 4. **Advance the right edge.** Increment `end` and continue until the sweep ends.
 5. **Return the result.** The list holds one distinct count per window, `n − k + 1` entries in total.
 
+</details>
 <details>
 <summary><strong>How the distinct count is maintained</strong></summary>
 
@@ -249,8 +256,9 @@ public class Main {
 ```
 
 </details>
+<details>
+<summary><h2>Dry Run</h2></summary>
 
-## Dry Run
 
 Walk Example 1 — `arr = [2, 1, 2, 3, 2, 1, 4, 5]`, `k = 5`. The map fills for four steps, then reports and contracts on each full window:
 
@@ -275,14 +283,20 @@ result = [3, 3, 4, 5]
 
 The result `[3, 3, 4, 5]` matches the expected output — note the append uses `len(map)` *before* the contraction, so each report reflects the full size-`5` window.
 
-## Complexity Analysis
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
+
 
 | Measure | Value | Why |
 |---|---|---|
 | Time  | **O(N)** | `end` sweeps the array once; each step is one insert, at most one decrement-and-delete, and one `len` read — all amortised `O(1)`. |
 | Space | **O(k)** | The map holds at most `k` distinct values; the result list adds `O(n − k + 1)` for the per-window output. |
 
-## Edge Cases
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
+
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -293,6 +307,11 @@ The result `[3, 3, 4, 5]` matches the expected output — note the append uses `
 | Repeats within window | `arr = [1, 1, 1, 1], k = 2` | `[1, 1, 1]` | Each size-`2` window is `[1, 1]` → one distinct value, three windows. |
 | Mixed counts | `arr = [1, 1, 2, 4], k = 3` | `[2, 3]` | `[1,1,2]`→`{1,2}`=2, `[1,2,4]`→`{1,2,4}`=3. |
 
-## Key Takeaway
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
 
 This is the per-window-report shape of the fixed window: append `len(map)` once each window reaches size `k`. The result holds exactly `n − k + 1` values, and deleting zero-count keys is what keeps `len(map)` an honest distinct count.
+
+</details>

@@ -17,7 +17,7 @@ The trick is a **mask**: a number that is `1` at position `k` and `0` everywhere
 
 Take `n = 0b1010` (decimal `10`) and operate on bit `k = 3` (1-indexed from the least-significant end, which is currently `0`). Run it.
 
-```python run
+```python run viz=array
 n = 0b1010                    # 10; bits 1-indexed from LSB: b1=0, b2=1, b3=0, b4=1
 k = 3
 mask = 1 << (k - 1)           # 0b0100 â€” a single 1 at position 3
@@ -93,7 +93,7 @@ Before you read on: what does `1 << (k - 1)` evaluate to for `k = 1, 2, 3, 8` â€
 
 The four reusable primitives:
 
-```python run
+```python run viz=array
 def check(n, k):  return (n & (1 << (k - 1))) != 0
 def set_bit(n, k):  return n | (1 << (k - 1))
 def clear(n, k):  return n & ~(1 << (k - 1))
@@ -103,7 +103,7 @@ n = 0b1010
 print(check(n, 2), set_bit(n, 1), clear(n, 2), toggle(n, 4))   # True 11 8 2
 ```
 
-```java run
+```java run viz=array
 public class Main {
   static boolean check(int n, int k) { return (n & (1 << (k - 1))) != 0; }
   static int setBit(int n, int k)    { return n | (1 << (k - 1)); }

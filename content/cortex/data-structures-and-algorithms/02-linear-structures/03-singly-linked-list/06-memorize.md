@@ -31,6 +31,14 @@ Picture a treasure hunt where each clue points to the location of the next clue.
 
 ## Visual Summary
 
+```mermaid
+flowchart LR
+  head(["head"]) --> n1["10 | •"] --> n2["20 | •"] --> n3["30 | •"] --> nul["null"]
+  style head fill:#c7d2fe,stroke:#4f5bd5
+```
+
+<p align="center"><strong>Each node holds a value and one forward pointer. You can only walk left-to-right from head, so reaching index i costs O(i) hops — but splicing a node you already hold is O(1).</strong></p>
+
 ---
 
 ## Key Operations

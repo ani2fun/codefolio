@@ -17,7 +17,7 @@ The power is that *any* ordering reduces to "given two elements, which is smalle
 
 Arrange numbers to form the **largest** possible concatenation. `[3, 30, 34, 5, 9]` → `"9534330"`. Naive descending sort fails (it puts `3` before `30`, giving `…3030…`); the right comparator asks "does `a+b` or `b+a` read larger?". Run it.
 
-```python run
+```python run viz=array
 import functools
 
 def largest_number(nums):
@@ -75,7 +75,7 @@ Because the goal isn't "biggest number first" — it's "biggest *concatenation*,
 
 The reusable largest-number (a comparator) plus a multi-key sort (a key):
 
-```python run
+```python run viz=array
 import functools
 
 def largest_number(nums):
@@ -92,7 +92,7 @@ print(largest_number([3, 30, 34, 5, 9]))   # 9534330
 print(people)                               # [('amy', 180), ('bob', 175), ('cy', 175)]
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {

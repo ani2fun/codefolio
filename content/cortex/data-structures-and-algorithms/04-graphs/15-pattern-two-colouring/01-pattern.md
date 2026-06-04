@@ -45,7 +45,7 @@ flowchart LR
 
 Walk the graph (DFS here), painting each node and giving every neighbour the opposite colour. The decisive line is the *check*: when you meet an already-coloured neighbour, it had better be the opposite colour.
 
-```python run
+```python run viz=graph viz-kind=graph
 def colour(graph, node, col, value):
     col[node] = value
     for nb in graph[node]:
@@ -67,7 +67,7 @@ print(is_two_colourable([[1, 3], [0, 2], [1, 3], [0, 2]]))   # True  — 4-cycle
 print(is_two_colourable([[1, 2], [0, 2], [0, 1]]))           # False — triangle (odd cycle)
 ```
 
-```java run
+```java run viz=graph viz-kind=graph
 import java.util.*;
 
 public class Main {
@@ -120,7 +120,7 @@ The colour-propagation half (paint neighbours `1 - value`) feels like the heart 
 
 **Predict before you run:** delete that conflict check (keep only the "recurse into uncoloured neighbours" branch) and run it on the triangle. Does it correctly report `False`?
 
-```python run
+```python run viz=graph viz-kind=graph
 def colour_no_check(graph, node, col, value):
     col[node] = value
     for nb in graph[node]:
@@ -151,7 +151,7 @@ It prints `True` — but the triangle is **not** 2-colourable. Without the check
 
 Back to the opening puzzle: **Possible Bipartition** ([LeetCode 886](https://leetcode.com/problems/possible-bipartition/)). Given `n` people (1-indexed) and a list of dislike pairs, can you split them into two groups with no enemies together? Build the dislike graph and ask: is it 2-colourable?
 
-```python run
+```python run viz=graph viz-kind=graph
 def colour(graph, node, col, value):
     col[node] = value
     for nb in graph[node]:
@@ -175,7 +175,7 @@ print(possible_bipartition(4, [[1, 2], [1, 3], [2, 4]]))   # True
 print(possible_bipartition(3, [[1, 2], [1, 3], [2, 3]]))   # False — mutual triangle of enemies
 ```
 
-```java run
+```java run viz=graph viz-kind=graph
 import java.util.*;
 
 public class Main {

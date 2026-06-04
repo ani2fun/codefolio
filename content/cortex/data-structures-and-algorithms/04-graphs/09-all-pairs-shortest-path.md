@@ -17,7 +17,7 @@ The obvious approach — run Dijkstra `N` times, once per source — costs `O(N�
 
 Floyd-Warshall on a 5-node weighted graph: build a distance matrix, then relax through every intermediate. The result is the full all-pairs matrix (`-1` = unreachable). Run it.
 
-```python run
+```python run viz=graph viz-kind=graph
 INF = float('inf')
 
 def floyd_warshall(graph):                  # graph[u] = list of (neighbour, weight)
@@ -79,7 +79,7 @@ Because `k` isn't just a loop variable — it's the **DP dimension**, and the re
 
 Floyd-Warshall in both languages (`-1` = unreachable):
 
-```python run
+```python run viz=graph viz-kind=graph
 INF = float('inf')
 
 def floyd_warshall(graph):
@@ -100,7 +100,7 @@ print(floyd_warshall([[(1,3),(3,7)], [(2,1)], [(3,2)], [(0,6)]]))
 # [[0,3,4,6],[9,0,1,3],[8,11,0,2],[6,9,10,0]]
 ```
 
-```java run
+```java run viz=graph viz-kind=graph
 import java.util.*;
 public class Main {
   static final int INF = Integer.MAX_VALUE / 2;     // /2 avoids overflow on add

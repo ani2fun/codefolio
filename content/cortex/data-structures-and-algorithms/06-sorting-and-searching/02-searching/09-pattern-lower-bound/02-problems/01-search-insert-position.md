@@ -32,7 +32,7 @@ Output: 3
 Just lower bound.
 
 
-```python run
+```python run viz=array
 from typing import List
 
 class Solution:
@@ -86,7 +86,7 @@ print(Solution().search_insert_position([5], 7))                   # 1 — inser
 print(Solution().search_insert_position([1, 2, 3, 4, 5, 6], 7))   # 6 — insert at end
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {

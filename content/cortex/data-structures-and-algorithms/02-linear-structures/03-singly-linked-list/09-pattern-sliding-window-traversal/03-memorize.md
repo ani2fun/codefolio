@@ -31,6 +31,17 @@ Picture two cars on a single-lane straight road, the front car towing the back c
 
 ## Visual Summary
 
+```mermaid
+flowchart LR
+  n1["•"] --> n2["•"] --> n3["•"] --> n4["•"] --> n5["•"] --> nul["null"]
+  trail(["trail"]) --> n1
+  lead(["lead, k ahead"]) --> n3
+  style trail fill:#c7d2fe,stroke:#4f5bd5
+  style lead fill:#c7d2fe,stroke:#4f5bd5
+```
+
+<p align="center"><strong>Open a fixed gap of k between two pointers, then advance both together. When the lead falls off the end, the trail sits exactly k-from-end — one pass instead of measure-then-walk.</strong></p>
+
 ---
 
 ## Pattern Recognition Triggers

@@ -15,7 +15,7 @@ Every DP so far indexed its state by a *prefix*: "the first `i` characters." Pal
 
 `dp[i][j]` = length of the longest palindromic subsequence of the substring `s[i..j]`. If the two ends match they contribute 2 and we recurse on the inside; otherwise we drop one end and keep the better side. Fill by **increasing length** so the inner range `dp[i+1][j-1]` is already done.
 
-```python run
+```python run viz=grid
 def lps(s):
     n = len(s)
     if n == 0:
@@ -37,7 +37,7 @@ print(lps("bbbab"))   # 4   ("bbbb")
 print(lps("cbbd"))    # 2   ("bb")
 ```
 
-```java run
+```java run viz=grid
 public class Main {
     static int lps(String s) {
         int n = s.length();
@@ -93,7 +93,7 @@ The LPS ↔ LCS connection is the kind of identity that sounds too neat to be tr
 
 **Predict before you run:** for `"character"`, will the interval-DP `lps(s)` and the prefix-DP `lcs(s, reverse(s))` give the *same* number — or can they drift apart?
 
-```python run
+```python run viz=grid
 def lps(s):                                          # interval DP
     n = len(s)
     dp = [[0] * n for _ in range(n)]
@@ -131,7 +131,7 @@ They match every time — `character` gives `5` from both (`"carac"`, or `"cabac
 
 **Minimum Insertions to Make a String Palindrome** ([LeetCode 1312](https://leetcode.com/problems/minimum-insertion-steps-to-make-a-string-palindrome/)). The characters *already* in the longest palindromic subsequence can stay put; every *other* character needs a mirror inserted. So the answer is `n − LPS(s)` — one subtraction on top of the same table.
 
-```python run
+```python run viz=grid
 def lps(s):
     n = len(s)
     if n == 0:
@@ -155,7 +155,7 @@ print(min_insertions("mbadm"))   # 2   (LPS "mam"/"mbm" = 3, so 5 - 3)
 print(min_insertions("zzazz"))   # 0   (already a palindrome)
 ```
 
-```java run
+```java run viz=grid
 public class Main {
     static int lps(String s) {
         int n = s.length();

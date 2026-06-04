@@ -91,7 +91,7 @@ It breaks the moment the traversal **moves to a sibling**. After recording `[1,2
 
 The reusable all-paths collector:
 
-```python run
+```python run viz=binary-tree viz-root=root
 class TreeNode:
     def __init__(self, val, left=None, right=None):
         self.val = val; self.left = left; self.right = right
@@ -113,7 +113,7 @@ root = TreeNode(1, TreeNode(2, TreeNode(4), TreeNode(5)), TreeNode(3, None, Tree
 print(all_paths(root))   # [[1, 2, 4], [1, 2, 5], [1, 3, 6]]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

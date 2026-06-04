@@ -17,7 +17,7 @@ Two algorithms cover the cases. **Dijkstra** generalises BFS by replacing the qu
 
 Dijkstra from source 0: a min-heap of `(distance, node)`, popping the closest node and relaxing its neighbours. Run it.
 
-```python run
+```python run viz=graph viz-kind=graph
 import heapq
 
 def dijkstra(graph, src):              # graph[u] = list of (neighbour, weight)
@@ -79,7 +79,7 @@ It breaks at node `1`. Dijkstra pops in increasing distance, so it reaches `1` w
 
 Both algorithms in both languages — Dijkstra for the non-negative graph, Bellman-Ford for the negative one (and its `−1` negative-cycle signal):
 
-```python run
+```python run viz=graph viz-kind=graph
 import heapq
 
 def dijkstra(graph, src):
@@ -110,7 +110,7 @@ print(bellman_ford([[(1,4),(2,5)], [(2,-3),(3,6)], [(3,4)], []], 0))       # [0,
 print(bellman_ford([[(1,1)], [(2,-3)], [(0,1)]], 0))                       # [-1,-1,-1] cycle
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
   static int[] bellmanFord(int[][][] g, int src) {

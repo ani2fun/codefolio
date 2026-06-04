@@ -81,7 +81,7 @@ Just one step — append `a`'s leftover tail `[7]`. The pointers never revisit a
 
 The reusable merge — one pointer per array, then drain the tail:
 
-```python run
+```python run viz=array
 def merge(a, b):
     out, i, j = [], 0, 0
     while i < len(a) and j < len(b):
@@ -95,7 +95,7 @@ def merge(a, b):
 print(merge([1, 4, 7, 10], [2, 5, 8]))   # [1, 2, 4, 5, 7, 8, 10]
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {

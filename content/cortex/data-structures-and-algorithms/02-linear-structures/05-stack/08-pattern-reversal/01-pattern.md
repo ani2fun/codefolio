@@ -74,7 +74,7 @@ The original fourth `l` (pushed later, higher on the stack) pops out *first*, so
 
 The reusable stack reversal:
 
-```python run
+```python run viz=array viz-kind=stack
 def reverse(seq):
     stack = []
     for x in seq:
@@ -88,7 +88,7 @@ print("".join(reverse("hello")))   # olleh
 print(reverse([1, 2, 3, 4, 5]))    # [5, 4, 3, 2, 1]
 ```
 
-```java run
+```java run viz=array viz-kind=stack
 import java.util.*;
 
 public class Main {

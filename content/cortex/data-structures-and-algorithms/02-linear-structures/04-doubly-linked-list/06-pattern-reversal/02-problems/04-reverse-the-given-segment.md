@@ -14,8 +14,7 @@ Given the **head** of a doubly linked list and two integers **left** and **right
 
 You need to reverse the segment in place.
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1:**
 ```
@@ -41,11 +40,12 @@ Output: [5, 4, 3, 2, 1]
 Explanation: left = 1, right = n is the full-list reversal special case.
 ```
 
-</details>
 
 ---
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The **structural property** is the generic case of the pattern: a contiguous interior segment `[left, right]` needs both pointer fields swapped on every node, while the prefix (positions `1..left − 1`) and the suffix (positions `right + 1..n`) stay in place. Four stitches are needed at the boundaries — the prefix's last node points forward to the reversed segment's new head (and the new head points back), and the reversed segment's new tail points forward to the suffix's first node (and the suffix's first node points back). The segment-reversal primitive from the pattern lesson handles all four stitches internally because it captures `leftBound = start.prev` and `rightBound = end.next` before swapping.
 
@@ -53,9 +53,10 @@ The **pointer placement** requires two positional walks. Walk to position `left`
 
 What **breaks if you reach for a naive iterate-and-reverse without capturing endpoints first**? A single-pass solution that swaps pointers as it walks loses access to the prefix's last node and the suffix's first node the moment it advances past them. Because the segment-reversal primitive depends on `leftBound` and `rightBound` being captured *before* any swap (the swaps overwrite `start.prev` and `end.next`), folding the position walk into the swap loop forces a different — and harder to get right — algorithm. The explicit endpoint-then-reverse approach reuses the pattern's primitive without modification.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | Check | Answer for Reverse the Given Segment |
 |---|---|
@@ -64,19 +65,24 @@ What **breaks if you reach for a naive iterate-and-reverse without capturing end
 | **Q3.** Is the work strictly structural (only `prev`/`next` pointers change)? | **Yes** — values are never inspected; only the two pointer fields swap inside the segment, plus four boundary writes from the primitive. |
 | **Q4.** Is `O(1)` extra space required? | **Yes** — a constant number of references (`start`, `end`, plus the primitive's `leftBound`, `rightBound`, and `current`) regardless of `n`, `left`, or `right`. |
 
----
+</details>
+<details>
+<summary><h2>Brute Force: Two-Pass Value Shuffle</h2></summary>
 
-## Brute Force: Two-Pass Value Shuffle
 
 Walk the list and copy positions `left..right` into an array. Reverse the array. Walk the list a second time and write the reversed values back into those positions. `O(n)` time, `O(right − left + 1)` extra space — and once again misses the pattern's lesson that order is encoded in `prev`/`next` pointers, not in values.
 
-## Key Insight: Capture Endpoints, Call the Segment-Reversal Primitive, Adjust the Head
+</details>
+<details>
+<summary><h2>Key Insight: Capture Endpoints, Call the Segment-Reversal Primitive, Adjust the Head</h2></summary>
+
 
 The segment-reversal primitive (from the pattern lesson) takes `start` and `end` and stitches all four boundary pointers internally — it captures `leftBound = start.prev` and `rightBound = end.next` *before* swapping, then writes both halves of the `leftBound ↔ end` and `start ↔ rightBound` connections at the end. The caller only needs to (a) locate `start` and `end`, (b) call the primitive, and (c) decide whether the head of the whole list shifted. The head shifts only when `left == 1`, because that's the case where the original `head` was inside the reversed segment; in that case the new head of the list is `end`.
 
----
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
 
-## Approach
 
 Capture endpoints, reverse, adjust the head reference.
 
@@ -86,8 +92,9 @@ Capture endpoints, reverse, adjust the head reference.
 4. **Call the segment-reversal primitive.** Invoke `reverse(start, end)`. The primitive captures `leftBound` and `rightBound` before any swap, runs the per-node swap loop until `current == rightBound`, then writes the four boundary stitches with null guards for `leftBound` and `rightBound`.
 5. **Return the appropriate head.** If `left == 1`, the original head was inside the reversed segment — the new head of the whole list is `end` (the segment's new head). Otherwise the prefix is intact and `head` is unchanged.
 
+</details>
 <details>
-<summary><strong>Solution &amp; Analysis</strong></summary>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
 ### Solution
 
@@ -416,7 +423,10 @@ The only new thing here is the *bookkeeping*, not the reversal itself — you've
 Next time you see a problem that asks you to flip a chunk of a linked list — any chunk, anywhere — you won't reach for three pointers and a stack of temporary variables. You'll reach for one swap, one walk, and four boundary stitches. The reversal pattern stops being a trick and becomes a reflex.
 
 </details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 Positional segment reversal composes two positional walks with the segment-reversal primitive. The primitive's `leftBound = start.prev` / `rightBound = end.next` capture (before any swap) handles all four boundary stitches for free; the caller only writes the position walks and adjusts the head reference when `left == 1`.
+
+</details>

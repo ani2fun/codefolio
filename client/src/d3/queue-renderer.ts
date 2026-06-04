@@ -22,7 +22,7 @@ const TAIL_COLOR = "#a13e3e"; // canon bordeaux (MarkerColors `tail`) — the en
 // A deque's two ends are SYMMETRIC (add + remove at both), so it colours both ends the
 // SAME (the design's single --end-color) and labels them front / back — visually distinct
 // from the queue's asymmetric dequeue-head / enqueue-tail.
-const DEQUE_END_COLOR = "#c8693e"; // canon terracotta
+const DEQUE_END_COLOR = "#4f5bd5"; // canon indigo (the brand accent)
 
 export const queueRenderer: RendererFn = defineRenderer({
   className: "queue-renderer",

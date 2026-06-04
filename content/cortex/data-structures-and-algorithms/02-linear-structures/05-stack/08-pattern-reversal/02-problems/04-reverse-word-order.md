@@ -12,8 +12,7 @@ difficulty: medium
 
 Given a string `s` containing multiple space-separated words, reverse the **order of words** without reversing the letters within each word.
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1:**
 ```
@@ -33,11 +32,12 @@ Input:  s = "hello world"
 Output: "world hello"
 ```
 
-</details>
 
 ---
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The **structural property** that makes this a reversal problem is hidden behind a tokenisation step. The raw input is a flat character sequence, but the task reverses *words*, not characters. Once you split `"This is a string"` into the list `[This, is, a, string]`, it becomes an ordinary reverse-the-sequence problem — and a stack reverses any sequence by load-then-unload.
 
@@ -45,7 +45,10 @@ The **placement** of the data shifts the unit from a character to a whole word. 
 
 What **breaks if you reach for a naive approach**? Two traps appear. First, pushing characters instead of words would reverse the letters too, producing `"gnirts a si sihT"` — wrong unit. Second, the join introduces a trailing space: appending `word + " "` after every pop leaves one space dangling at the end, so the result needs an `rstrip` (or a length trim) before returning. Forgetting that cleanup is the only real bug surface in an otherwise textbook reversal.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for Reverse Word Order |
 |---|---|
@@ -54,6 +57,7 @@ What **breaks if you reach for a naive approach**? Two traps appear. First, push
 | **Q3.** Are two linear passes (load, unload) enough with no comparison? | **Yes** — tokenise-and-push, then pop-and-join; words are never compared. |
 | **Q4.** Is `O(N)` auxiliary space acceptable? | **Yes** — the stack holds every word and the result string grows to length `N`; `O(N)` time, `O(N)` space. |
 
+</details>
 <details>
 <summary><h2>Approach</h2></summary>
 
@@ -284,7 +288,10 @@ Three lessons:
 > *Coming up — the reversal pattern was the gentlest stack pattern. The next four progressively get harder by combining "remember the most recent thing not yet resolved" with one or two extra constraints. Lesson 8 — **previous closest occurrence** — uses a stack to find, for each element, the nearest earlier element that satisfies some condition (e.g. the previous greater element). It's the canonical "monotonic stack" problem and powers stock-span calculations, histogram problems, and a hundred interview questions.*
 
 </details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 This is the word-unit instance of the pattern: tokenise first, then reverse the *words* with the same load-then-unload loop. The two new ideas versus the earlier problems are that the reversal unit is coarser than a character and the join needs a trailing-space trim.
+
+</details>

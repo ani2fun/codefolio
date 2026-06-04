@@ -19,9 +19,7 @@ Output: 2
 
 ---
 
-<details>
-<summary><h2>Examples</h2></summary>
-
+## Examples
 
 **Example 1**
 ```
@@ -44,7 +42,6 @@ Output: 0
 Explanation: 0 + 0 + 0 = 0 is the closest sum to 1.
 ```
 
-</details>
 <details>
 <summary><h2>Intuition</h2></summary>
 

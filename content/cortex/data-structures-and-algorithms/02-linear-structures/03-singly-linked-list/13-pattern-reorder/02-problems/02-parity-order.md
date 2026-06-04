@@ -14,8 +14,7 @@ Given the **head** of a singly linked list, write a function to group all the no
 
 The indices start with `1`.
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1:**
 ```
@@ -38,11 +37,12 @@ Output: [1, 3, 2, 4]
 Explanation: Odd-indexed values [1, 3] come first, then even-indexed values [2, 4].
 ```
 
-</details>
 
 ---
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The **structural property** that makes this a reorder problem is that the output reuses every input node in a different order — the work is purely structural, with no value comparison. The reorder is decided by each node's position in the input, which is an `O(1)` classifier you can evaluate while you walk the list. That makes the split-and-merge pipeline a clean fit: route nodes into two buckets by index parity, then concatenate the buckets.
 
@@ -50,9 +50,10 @@ The **pointer placement** follows directly. Maintain four cursors plus a counter
 
 What **breaks if you reach for a naive approach**? Copying every value into two arrays (one for odd indices, one for even), concatenating, and rebuilding a fresh linked list works in `O(n)` time but pays `O(n)` extra memory and allocates `n` new nodes. Trying to do it with in-place pointer swaps on a single list is fiddly — every swap risks corrupting the chain because there's no direct way to "move" a node forward without splicing through the rest of the list. The two-bucket split sidesteps both problems: each node is touched exactly once, and the chain is never partially broken.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | Check | Answer for Parity Order |
 |---|---|
@@ -61,9 +62,10 @@ What **breaks if you reach for a naive approach**? Copying every value into two 
 | **Q3.** Are the sub-lists bounded in count and walkable in one pass? | **Yes** — exactly two buckets; the merge step is a single `odd_tail.next = even_head` splice. |
 | **Q4.** Is `O(1)` extra space sufficient? | **Yes** — two dummy heads plus five cursors (`odd_tail`, `even_tail`, `current`, `counter`, and the dummy refs) regardless of input size. |
 
----
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
 
-## Approach
 
 Run the reorder pipeline with `f1 = counter % 2` and `f2 = concatenate`.
 
@@ -76,8 +78,9 @@ Run the reorder pipeline with `f1 = counter % 2` and `f2 = concatenate`.
 7. **Concatenate the buckets.** Walk `odd_dummy.next`'s suffix to its tail (the loop's `odd_tail` already holds this reference), then set `odd_tail.next = even_dummy.next`. The merged list now starts at `odd_dummy.next` and ends at the last even-indexed node.
 8. **Return the head of the merged list.** Skip the throwaway `odd_dummy` and return `odd_dummy.next`.
 
+</details>
 <details>
-<summary><strong>Solution &amp; Analysis</strong></summary>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
 ### Solution
 
@@ -408,7 +411,10 @@ The output contains exactly `n` nodes — every input node appears in the output
 | Odd length list (`head = [a, b, c, d, e]`) | Odd bucket has `ceil(5/2) = 3` nodes; even bucket has `floor(5/2) = 2` nodes. |
 
 </details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 Parity-order is the canonical reorder example — the classifier reads a counter, not a value, and the merge step is plain concatenation. Master this one and every other concatenate-after-split variant (value-partition, even-odd-split) is a one-line swap of the classifier.
+
+</details>

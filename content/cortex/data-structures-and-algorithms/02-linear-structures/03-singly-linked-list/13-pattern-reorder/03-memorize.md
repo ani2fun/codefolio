@@ -31,6 +31,15 @@ Picture a postal sorting room with one input belt and two outgoing slots. A cler
 
 ## Visual Summary
 
+```mermaid
+flowchart LR
+  before["1 → 2 → 3 → 4 → 5"] --> rule["regroup by a rule<br/>(odd positions first · < x ahead · zig-zag)"]
+  rule --> after["1 → 3 → 5 → 2 → 4"]
+  style after fill:#bbf7d0,stroke:#16a34a
+```
+
+<p align="center"><strong>Rearrange a list by a rule rather than by value — odd-position nodes first, every node < x ahead, front-back zig-zag — by splitting into chains and relinking. O(n) time, O(1) space.</strong></p>
+
 ---
 
 ## Pattern Recognition Triggers

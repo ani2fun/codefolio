@@ -91,7 +91,7 @@ Because by the time the loop ends, the original `head.next` link has been **over
 
 The reusable odd/even-position reorder:
 
-```python run
+```python run viz=linked-list viz-root=head viz-kind=list-single
 class ListNode:
     def __init__(self, val, next=None):
         self.val = val
@@ -118,7 +118,7 @@ while node:
 print(out)                           # [1, 3, 5, 2, 4]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head viz-kind=list-single
 public class Main {
   static class ListNode { int val; ListNode next; ListNode(int v){ val = v; } ListNode(int v, ListNode n){ val = v; next = n; } }
 

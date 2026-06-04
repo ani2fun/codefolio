@@ -79,7 +79,7 @@ Use **stateless** when you only need a *summary* of the paths — their sum, whe
 
 Sum-of-numbers plus a root-to-leaf sum check, both carrying state down:
 
-```python run
+```python run viz=binary-tree viz-root=root
 class TreeNode:
     def __init__(self, val, left=None, right=None):
         self.val = val; self.left = left; self.right = right
@@ -103,7 +103,7 @@ print(sum_numbers(root))            # 1026  (495 + 491 + 40)
 print(has_path_sum(root, 18))       # True   (4 + 9 + 5)
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 public class Main {
   static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } TreeNode(int v, TreeNode l, TreeNode r){ val=v; left=l; right=r; } }
 

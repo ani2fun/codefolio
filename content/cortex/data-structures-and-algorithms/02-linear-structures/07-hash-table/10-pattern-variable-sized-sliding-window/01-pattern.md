@@ -77,7 +77,7 @@ Because the total work of the inner loop is bounded by *how far `start` can trav
 
 The reusable longest-substring-without-repeats:
 
-```python run
+```python run viz=array
 def longest_unique(s):
     count = {}
     start = best = 0
@@ -94,7 +94,7 @@ print(longest_unique("pwwkew"))           # 3  ("wke")
 print(longest_unique("bbbbb"))            # 1
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {

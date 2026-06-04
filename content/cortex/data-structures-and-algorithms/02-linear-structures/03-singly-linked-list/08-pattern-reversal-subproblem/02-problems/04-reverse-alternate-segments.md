@@ -16,8 +16,7 @@ If, at the end, the length of the remaining list is less than k, do not reverse 
 
 ---
 
-<details>
-<summary><h2>Examples</h2></summary>
+## Examples
 
 **Example 1**
 ```
@@ -47,7 +46,6 @@ Output: [2, 1, 3, 4, 6, 5, 7, 8]
 Explanation: Four chunks of size 2. Reverse chunks 1 and 3 ((1, 2) → (2, 1) and (5, 6) → (6, 5)); skip chunks 2 and 4 ((3, 4) and (7, 8) stay).
 ```
 
-</details>
 <details>
 <summary><h2>Intuition</h2></summary>
 

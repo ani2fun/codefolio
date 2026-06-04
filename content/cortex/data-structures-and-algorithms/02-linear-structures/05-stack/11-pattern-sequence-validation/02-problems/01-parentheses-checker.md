@@ -21,8 +21,7 @@ Given a string `s` containing only `(`, `)`, `[`, `]`, `{`, `}`, return `true` i
 ### Example 3
 > -   **Input:** `s = "({{)[]"` → **Output:** `false`
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -56,9 +55,10 @@ Explanation: counts balance — one of each bracket — but ')' tries to
 close while '[' is the freshest opener. Order, not count, decides validity.
 ```
 
-</details>
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 This is a **sequence-validation** problem because the brackets pair up: every closer demands an opener of the same type earlier in the string, and the pairing must respect order. A closer is legal only against the *most recent* unmatched opener — that "newest-first" requirement is the signal the stack pattern fires on. Counting brackets alone cannot decide validity.
 
@@ -66,7 +66,10 @@ The stack holds the **openers seen so far that have not yet been matched**, with
 
 The naive approach — counting openers and closers — passes strings it should reject. `"([)]"` has one opener and one closer of each kind, so the totals balance, yet it is invalid: `)` closes against an open `[`. A single running depth counter fails the same way, since `"([)]"` and `"()[]"` share the depth trace `1, 2, 1, 0`. Only a structure that remembers opener *types* in newest-on-top order distinguishes them, and that is exactly the stack.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for Parentheses Checker |
 |---|---|
@@ -75,7 +78,10 @@ The naive approach — counting openers and closers — passes strings it should
 | **Q3.** Is one pass with `O(1)` work per token enough? | **Yes** — each character drives a single push, peek, or pop; no re-scanning. |
 | **Q4.** Is validity decided by the stack's contents and final emptiness? | **Yes** — a mismatch fails mid-scan; a non-empty stack at the end means leftover openers. |
 
-## Approach
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
+
 
 Push openers; match-and-pop closers; demand an empty stack at the end.
 
@@ -85,6 +91,7 @@ Push openers; match-and-pop closers; demand an empty stack at the end.
 4. **Closer → check then pop.** If the stack is empty or its top is not the matching opener for this closer, return `false` immediately. Otherwise pop the matched opener.
 5. **After the pass, return `stack` is empty.** A non-empty stack means openers were left unmatched, so the string is invalid.
 
+</details>
 <details>
 <summary><h2>Solution</h2></summary>
 
@@ -217,8 +224,9 @@ public class Main {
 ```
 
 </details>
+<details>
+<summary><h2>Dry Run</h2></summary>
 
-## Dry Run
 
 Walk Example 1 — `s = "()"`. The stack holds unmatched openers; push on an opener, match-and-pop on a closer:
 
@@ -246,7 +254,10 @@ A longer trace on `s = "(({}))[]"` shows the nesting clearly — openers stack u
 end of input, stack empty → return true ✓
 ```
 
-## Complexity Analysis
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
+
 
 | Measure | Value | Why |
 |---|---|---|
@@ -255,7 +266,10 @@ end of input, stack empty → return true ✓
 
 The worst case is `O(N)` time and `O(N)` space: when every character is an opener, the single pass pushes all `N` and the stack grows to `N`. The best case is `O(1)` time and `O(1)` space: a string starting with a closer (`")"`) hits the empty-stack check on the first token and returns `false` before pushing anything.
 
-## Edge Cases
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
+
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -266,6 +280,11 @@ The worst case is `O(N)` time and `O(N)` space: when every character is an opene
 | Trailing extra opener | `s = "(({}))[]{"` | `false` | All pairs match, but the final `{` is left unmatched on the stack. |
 | Deeply nested | `s = "{[()]}"` | `true` | Each closer matches its freshest opener top-down; the stack drains to empty. |
 
-## Key Takeaway
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
 
 The stack is a matching register: push openers, pop on a matching closer, and return whether it ends empty. The new idea over the generic pattern is the *type-matching* check on the top — a closer must match not just any opener but the correct kind, which a plain depth counter cannot enforce.
+
+</details>

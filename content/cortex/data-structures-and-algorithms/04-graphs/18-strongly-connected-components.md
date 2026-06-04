@@ -25,7 +25,7 @@ Two `O(V + E)` algorithms find all SCCs. **Kosaraju** runs two DFS passes — ea
 
 The same directed graph, both algorithms. They emit SCCs in different orders, but the *set* of SCCs is identical — that uniqueness is the whole point.
 
-```python run
+```python run viz=graph viz-kind=graph
 import sys
 sys.setrecursionlimit(10**6)
 
@@ -86,7 +86,7 @@ print("Kosaraju:", [sorted(s) for s in kosaraju(n, adj)])
 print("Tarjan:  ", [sorted(s) for s in tarjan(n, adj)])
 ```
 
-```java run
+```java run viz=graph viz-kind=graph
 import java.util.*;
 
 public class Main {
@@ -215,7 +215,7 @@ Kosaraju's correctness hinges on that second DFS running on the **transpose**, n
 
 **Predict before you run:** what if pass 2 forgets to transpose and just DFS-es the *original* graph in reverse-finish order? How many SCCs come back for our 6-vertex graph (true answer: 3)?
 
-```python run
+```python run viz=graph viz-kind=graph
 import sys
 sys.setrecursionlimit(10**6)
 
@@ -259,7 +259,7 @@ It prints `[[0, 1, 2, 3, 4, 5]]` — **one giant SCC** instead of three. Startin
 
 The most common interview use of SCCs: **detect a cycle in a directed graph and count its components.** A directed graph has a cycle iff some SCC has size ≥ 2 (or a vertex has a self-loop).
 
-```python run
+```python run viz=graph viz-kind=graph
 import sys
 sys.setrecursionlimit(10**6)
 
@@ -296,7 +296,7 @@ for u, v in [(0,1),(1,2),(0,2)]: dag[u].append(v)
 print(count_and_cycle(3, dag))                          # (3, False)
 ```
 
-```java run
+```java run viz=graph viz-kind=graph
 import java.util.*;
 
 public class Main {

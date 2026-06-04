@@ -17,7 +17,7 @@ The trigger is simple. If the data is **sorted** (or you can decide, in `O(1)`, 
 
 The classic template, finding a target's index in a sorted array. Run it.
 
-```python run
+```python run viz=array
 def binary_search(arr, target):
     lo, hi = 0, len(arr) - 1
     while lo <= hi:
@@ -81,7 +81,7 @@ Because binary search doesn't require *one array* — it requires an ordered sea
 
 The reusable binary-search template:
 
-```python run
+```python run viz=array
 def binary_search(arr, target):
     lo, hi = 0, len(arr) - 1
     while lo <= hi:
@@ -98,7 +98,7 @@ a = [2, 4, 6, 8, 10, 12]
 print(binary_search(a, 2), binary_search(a, 12), binary_search(a, 5))   # 0 5 -1
 ```
 
-```java run
+```java run viz=array
 public class Main {
   static int binarySearch(int[] arr, int target) {
     int lo = 0, hi = arr.length - 1;

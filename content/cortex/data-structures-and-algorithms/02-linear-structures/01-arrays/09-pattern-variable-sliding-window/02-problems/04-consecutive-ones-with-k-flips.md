@@ -20,9 +20,7 @@ arr = [0, 0, 0, 0],                        k = 2   →  2    (flip any 2 consecu
 
 ---
 
-<details>
-<summary><h2>Examples</h2></summary>
-
+## Examples
 
 **Example 1**
 ```
@@ -48,7 +46,6 @@ Explanation: The maximum number of consecutive 1s is 2 if we flip any 2
              consecutive 0s.
 ```
 
-</details>
 <details>
 <summary><h2>Intuition</h2></summary>
 

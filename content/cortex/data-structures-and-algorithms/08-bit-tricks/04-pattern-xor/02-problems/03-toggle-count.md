@@ -35,7 +35,7 @@ It runs in **O(set-bit count)** rather than O(bit-width). For sparse integers (f
 
 
 
-```python run
+```python run viz=array
 class Solution:
     def toggle_count(self, num1: int, num2: int) -> int:
 
@@ -68,7 +68,7 @@ print(Solution().toggle_count(15, 0))     # 4
 print(Solution().toggle_count(7, 1))      # 2
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static class Solution {
         public int toggleCount(int num1, int num2) {

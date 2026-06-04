@@ -83,7 +83,7 @@ Because each pass guarantees the largest element of the still-unsorted region re
 
 The reusable adaptive bubble sort:
 
-```python run
+```python run viz=array
 def bubble_sort(arr):
     n = len(arr)
     for i in range(n - 1):
@@ -100,7 +100,7 @@ print(bubble_sort([5, 2, 8, 1, 9, 3]))   # [1, 2, 3, 5, 8, 9]
 print(bubble_sort([1, 2, 3, 4]))          # [1, 2, 3, 4] (one pass, early exit)
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {

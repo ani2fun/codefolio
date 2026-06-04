@@ -14,8 +14,7 @@ Given the **head** of a singly linked list, write a function to find and return 
 
 If there are two middle nodes, return the reference of the second one.
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1:**
 ```
@@ -38,11 +37,12 @@ Output: 42
 Explanation: A one-node list — head is both the start and the middle.
 ```
 
-</details>
 
 ---
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The **structural property** that makes this a fast-and-slow problem is that the answer is at a fixed proportional position — the `1/2` point of the list's length. A singly linked list exposes no length field and no random access by index, but it does support a uniform forward walk. When two pointers walk forward at different speeds, their relative position encodes a proportion of however much ground has been covered. Set the ratio at 2:1 and the slower pointer is at the halfway mark the moment the faster one runs out of room.
 
@@ -50,9 +50,10 @@ The **pointer placement** follows directly. Both pointers start at `head` so the
 
 What **breaks if you reach for a naive approach**? Walking the list once to count `n` nodes, then walking again `n / 2` steps from the head, gives the right answer in `O(n)` time and `O(1)` space — same asymptotic cost. The penalty is constant-factor (the first half is walked twice) and structural — the caller must keep `head` reachable across both passes. The moment the problem composes with structural work (splitting at the middle, reversing the back half), the two-pass approach forces a redundant length recomputation. Fast-and-slow does the same job in one walk.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | Check | Answer for Middle Node Search |
 |---|---|
@@ -61,9 +62,10 @@ What **breaks if you reach for a naive approach**? Walking the list once to coun
 | **Q3.** Is the work at each step `O(1)`? | **Yes** — every tick performs one comparison and three pointer hops (one for `slow`, two for `fast`), independent of `n`. |
 | **Q4.** Is `O(1)` extra space required? | **Yes** — two local references (`slow`, `fast`) regardless of list length. |
 
----
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
 
-## Approach
 
 Run the 2:1 two-speed walk from the head until `fast` runs out of room.
 
@@ -73,8 +75,9 @@ Run the 2:1 two-speed walk from the head until `fast` runs out of room.
 4. **Advance `fast` by two hops.** Set `fast = fast.next.next`. After tick `t`, `fast` is at index `2 * t`.
 5. **Return `slow` when the loop exits.** `fast` has either reached the tail (odd length — guard fails on `fast.next == null`) or stepped one past it (even length — guard fails on `fast == null`). Either way, `slow` is parked at the middle (second middle on even-length lists, by convention).
 
+</details>
 <details>
-<summary><strong>Solution &amp; Analysis</strong></summary>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
 ### Solution
 
@@ -250,7 +253,10 @@ Return slow = 3. ✓
 | All equal values (`[7, 7, 7, 7, 7]`) | Values are never inspected; the same three ticks run and return the middle node by identity (the third `7`). |
 
 </details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 The 2:1 two-speed walk is the canonical instance of fast-and-slow — `slow = fast = head`, advance until `fast` or `fast.next` is `null`, return `slow`. Every other problem in this section reuses this loop verbatim, then layers additional work on top.
+
+</details>

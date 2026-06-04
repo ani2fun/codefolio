@@ -23,9 +23,7 @@ This differs from basic Two Sum in two ways:
 
 ---
 
-<details>
-<summary><h2>Examples</h2></summary>
-
+## Examples
 
 **Example 1**
 ```
@@ -48,7 +46,6 @@ Output: []
 Explanation: Can't form a pair from one element.
 ```
 
-</details>
 <details>
 <summary><h2>Intuition</h2></summary>
 

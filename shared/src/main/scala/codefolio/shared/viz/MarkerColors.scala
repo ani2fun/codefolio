@@ -4,13 +4,13 @@ package codefolio.shared.viz
  * Role-based colour canon for cursor pointers (ADR-0016 / ADR-0018).
  *
  * A pointer's colour is decided by its *role*, not the author: `head` / `root` / `i` are deep blue (entry
- * point), `current` / `mid` terracotta (the active cursor), `fast` / `right` bordeaux (the contentious
- * second), `previous` / `j` mulberry, `next` / `successor` moss-green, `tail` / `parent` bordeaux — so a
- * reader who has seen one chapter recognises a pointer's colour everywhere.
+ * point), `current` / `mid` indigo (the active cursor), `fast` / `right` bordeaux (the contentious second),
+ * `previous` / `j` mulberry, `next` / `successor` moss-green, `tail` / `parent` bordeaux — so a reader who
+ * has seen one chapter recognises a pointer's colour everywhere.
  *
- * Palette is brand-aligned with the codefolio editorial identity (terracotta-on-cream); ported verbatim from
- * the Claude Design handoff's `window.POINTER_COLORS` in `ui_kits/visualise/steps.js`. Same shape as the
- * previous Tailwind-default palette; only the hexes change.
+ * Palette is brand-aligned with the codefolio editorial identity (indigo-on-cream); ported verbatim from the
+ * Claude Design handoff's `window.POINTER_COLORS` in `ui_kits/visualise/steps.js`. Same shape as the previous
+ * Tailwind-default palette; only the hexes change.
  *
  * The trace-driven Visualise reads *real* Python variable names which it cannot rename, so this canon adds an
  * `aliases` layer mapping common real-code names (`cur`, `nxt`, `prev`, `lo`, …) onto canonical roles, and a
@@ -35,14 +35,14 @@ object MarkerColors:
     "front" -> "#3a5a8c",
     "read"  -> "#3a5a8c",
     "base"  -> "#3a5a8c",
-    // ── Terracotta #c8693e — active position / cursor of activity ──
-    "current" -> "#c8693e",
-    "mid"     -> "#c8693e",
-    "top"     -> "#c8693e",
-    "write"   -> "#c8693e",
-    "found"   -> "#c8693e",
-    "ptr"     -> "#c8693e",
-    "end"     -> "#c8693e",
+    // ── Indigo #4f5bd5 — active position / cursor of activity (the brand accent) ──
+    "current" -> "#4f5bd5",
+    "mid"     -> "#4f5bd5",
+    "top"     -> "#4f5bd5",
+    "write"   -> "#4f5bd5",
+    "found"   -> "#4f5bd5",
+    "ptr"     -> "#4f5bd5",
+    "end"     -> "#4f5bd5",
     // ── Mulberry #8a4f7d — trailing pointer / inner loop ──
     "j"        -> "#8a4f7d",
     "previous" -> "#8a4f7d",
@@ -78,13 +78,13 @@ object MarkerColors:
   val markers: Map[String, String] = Map(
     "changed"         -> "#6a9656", // moss green   — new / modified this step
     "removed"         -> "#a13e3e", // bordeaux     — out of scope this step
-    "returned"        -> "#c8693e", // terracotta   — frame's return value
+    "returned"        -> "#4f5bd5", // indigo   — frame's return value
     "returnedDarker"  -> "#4a6a3c", // dark moss    — canvas annotation eyebrow on light theme
     "returnedLighter" -> "#9bbf86", // light moss   — canvas annotation eyebrow on dark theme
     "ref"             -> "#3a5a8c", // deep blue    — REF arrow from frame row to heap card
     "exception"       -> "#a13e3e", // bordeaux     — exception eyebrow on canvas annotation
     "visited"         -> "#6a9656", // moss green   — graph: visited node
-    "frontier"        -> "#c8693e"  // terracotta   — graph: frontier node
+    "frontier"        -> "#4f5bd5"  // indigo   — graph: frontier node
   )
 
   /** Real-code variable name → a canonical name. The trace aliases liberally; the bespoke widgets reject. */
@@ -113,7 +113,7 @@ object MarkerColors:
 
   /** Distinct hues for names with no canonical role — assigned by order of first appearance. */
   val fallback: Vector[String] =
-    Vector("#3a5a8c", "#c8693e", "#a13e3e", "#8a4f7d", "#5a8a5a", "#c5a572", "#91b5c2")
+    Vector("#3a5a8c", "#4f5bd5", "#a13e3e", "#8a4f7d", "#5a8a5a", "#c5a572", "#91b5c2")
 
   /** The role colour for `name`, if it has one — a direct canon hit, then an alias → canon hit. */
   def roleColor(name: String): Option[String] =

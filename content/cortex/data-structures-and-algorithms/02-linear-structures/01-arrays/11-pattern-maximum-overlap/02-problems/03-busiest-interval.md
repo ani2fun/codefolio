@@ -22,9 +22,7 @@ Two intervals `[s1, e1]` and `[s2, e2]` are considered overlapping if `e1 > s2`.
 
 ---
 
-<details>
-<summary><h2>Examples</h2></summary>
-
+## Examples
 
 **Example 1**
 ```
@@ -51,7 +49,6 @@ Explanation: Meetings only touch at endpoints so there are no
              overlapping meetings.
 ```
 
-</details>
 <details>
 <summary><h2>Intuition</h2></summary>
 

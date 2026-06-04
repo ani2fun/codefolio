@@ -107,7 +107,7 @@ flowchart TB
 
 ### The Solution
 
-```python run
+```python run viz=array
 class Solution:
     def sum_of_digits(self, n: int) -> int:
 
@@ -136,7 +136,7 @@ print(Solution().sum_of_digits(1000))  # 1
 print(Solution().sum_of_digits(999))   # 27
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static class Solution {
         public int sumOfDigits(int N) {

@@ -24,8 +24,7 @@ Given an array of strings `strs`, group all anagrams together. Return the groups
 > -   **Input:** `[]`
 > -   **Output:** `[]`
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -56,9 +55,10 @@ Output: [["ate", "eat", "tea"], ["nat", "tan"], ["bat"]]
 Explanation: eat/tea/ate collide on one signature; tan/nat on another; bat alone.
 ```
 
-</details>
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The structural property that makes this a **counting** problem is that two strings are anagrams exactly when their letter-frequency maps match. So a string's *frequency signature* is a grouping key — any two anagrams produce the same signature, the collision the counting pattern exploits.
 
@@ -66,7 +66,10 @@ The hash map keys on that signature and values a list of the strings sharing it.
 
 The naive approach breaks the time budget. Comparing every string to every other to test anagram-hood is `O(N² · K)` time. Counting assigns each string to a bucket in `O(K)`, so the whole grouping is `O(N · K)` — the per-pair comparison vanishes into a single hash lookup.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for Cluster Anagrams |
 |---|---|
@@ -75,6 +78,7 @@ The naive approach breaks the time budget. Comparing every string to every other
 | **Q3.** Can the answer be read off the counts after one pass? | **Yes** — each string's frequency signature is its group key. |
 | **Q4.** Is the per-item work `O(1)` amortised? | **Yes** — building the signature is `O(K)`; the bucket insert is amortised `O(1)`. |
 
+</details>
 <details>
 <summary><h2>Approach</h2></summary>
 
@@ -118,8 +122,9 @@ flowchart LR
 <p align="center"><strong>Cluster anagrams — the canonical form (sorted letters or letter-frequency tuple) is the same for every anagram, so anagrams collide into the same hash-map bucket. The buckets <em>are</em> the groups.</strong></p>
 
 </details>
+<details>
+<summary><h2>Approach in Words</h2></summary>
 
-## Approach in Words
 
 Key each string by its letter-count signature, then read the buckets out as groups.
 
@@ -129,6 +134,7 @@ Key each string by its letter-count signature, then read the buckets out as grou
 4. **Collect the groups.** For each bucket, map its stored indices back to the original strings to form one anagram group.
 5. **Return the groups.** The list of buckets is the answer; group order is unspecified.
 
+</details>
 <details>
 <summary><h2>Solution</h2></summary>
 
@@ -296,8 +302,9 @@ public class Main {
 **Complexity:** O(N · K) where N is the number of strings and K is the average length — this implementation builds a 26-element frequency tuple per string, which costs O(K) and avoids the O(K log K) of sorting each string.
 
 </details>
+<details>
+<summary><h2>Dry Run</h2></summary>
 
-## Dry Run
 
 Walk Example 1 — `["abc", "cab", "def", "dfe", "hij"]`. Each signature is the letter-count tuple, shown here as the equivalent sorted form for readability:
 
@@ -317,7 +324,10 @@ result = [["abc","cab"], ["def","dfe"], ["hij"]]
 
 The result matches the expected output — anagrams collide into shared buckets while group order stays unspecified.
 
-## Complexity Analysis
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
+
 
 | Measure | Value | Why |
 |---|---|---|
@@ -326,7 +336,10 @@ The result matches the expected output — anagrams collide into shared buckets 
 
 Building a fixed 26-slot tuple per string avoids the `O(K log K)` cost of sorting each string into a canonical key.
 
-## Edge Cases
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
+
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -336,10 +349,14 @@ Building a fixed 26-slot tuple per string avoids the `O(K log K)` cost of sortin
 | All anagrams | `["abc", "cab", "bca"]` | `[["abc", "cab", "bca"]]` | One shared signature collapses every string into one group. |
 | Mixed groups | `["eat", "tea", "tan", "nat", "bat"]` | `[["eat", "tea"], ["tan", "nat"], ["bat"]]` | Three signatures yield three buckets of differing sizes. |
 
-## Key Takeaway
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
 
 This is the canonical-form-key shape: hash each string on its letter-count signature so anagrams collide into the same bucket, then read the buckets out as groups. The signature replaces all pairwise anagram comparison with one hash lookup per string.
 
+</details>
 <details>
 <summary><h2>Key Takeaway</h2></summary>
 

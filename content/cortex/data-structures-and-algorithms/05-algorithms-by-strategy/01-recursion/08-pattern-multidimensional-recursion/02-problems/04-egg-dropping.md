@@ -118,7 +118,7 @@ flowchart TB
 
 ### The Solution
 
-```python run
+```python run viz=array
 import sys
 
 class Solution:
@@ -170,7 +170,7 @@ print(Solution().egg_drop(2, 6))   # 3
 print(Solution().egg_drop(3, 5))   # 3
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static class Solution {
         public int eggDrop(int eggs, int floors) {

@@ -18,8 +18,7 @@ Circular next-smaller — `arr` is treated as a ring; for each element find the 
 ### Example 2
 > -   **Input:** `arr = [6, 7, 8, 9, 8]` → **Output:** `[-1, 6, 6, 8, 6]`
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -51,9 +50,10 @@ Output: [-1, -1, -1]
 Explanation: Equal values are never strictly smaller, so the pop test removes them all.
 ```
 
-</details>
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The structural property is the same next-smaller query, but the array is now **circular** — a value's nearest strictly-smaller successor may live to its left, reachable only by wrapping past the end. Only the comparison and the loop bound differ from the linear inferior problem; the monotonic stack is untouched.
 
@@ -61,7 +61,10 @@ The trick is to **linearise the ring by iterating `2n` indices** with `i % n` in
 
 The naive circular approach breaks the time budget badly. For each index you would scan up to `n` other positions wrapping around — `O(N²)` time and easy to get wrong at the wrap boundary. The doubled-pass stack keeps the single-sweep `O(N)` guarantee and handles the wrap by construction, never special-casing the seam between the end and the start.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for Succeeding Inferior Element II |
 |---|---|
@@ -70,7 +73,10 @@ The naive circular approach breaks the time budget badly. For each index you wou
 | **Q3.** Is the comparison monotone — strictly greater or smaller? | **Yes** — a strict smaller-than test drives every pop (increasing stack). |
 | **Q4.** Is the per-element work `O(1)` amortised? | **Yes** — `2n` iterations, each value pushed and popped at most once across the doubled pass. |
 
-## Approach in Words
+</details>
+<details>
+<summary><h2>Approach in Words</h2></summary>
+
 
 Run the reverse next-smaller scan over a doubled index range, so each value gets a second lap to find a wrapped successor.
 
@@ -81,6 +87,7 @@ Run the reverse next-smaller scan over a doubled index range, so each value gets
 5. **Always push.** Push `num` onto the stack so it can serve later (including wrapped) elements.
 6. **Return the result.** After `2n` iterations every position with a wrapped or direct successor is filled; the rest stay `-1`.
 
+</details>
 <details>
 <summary><h2>Solution</h2></summary>
 
@@ -198,8 +205,9 @@ public class Main {
 ```
 
 </details>
+<details>
+<summary><h2>Dry Run</h2></summary>
 
-## Dry Run
 
 Walk Example 1 — `arr = [2, 5, 1, 6, 10, 3]`, `n = 6`, so `12` iterations counting *down* from `11`. Increasing stack, pop while the top `≥ num`. The first six steps fill direct answers; the last six wrap and finish the rest:
 
@@ -222,7 +230,10 @@ result = [1, 1, -1, 3, 3, 2]
 
 The result `[1, 1, -1, 3, 3, 2]` matches the expected output. Note `res[2]` stays `-1` because `1` is the global minimum — even the wrap finds nothing strictly smaller.
 
-## Complexity Analysis
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
+
 
 | Measure | Value | Why |
 |---|---|---|
@@ -231,7 +242,10 @@ The result `[1, 1, -1, 3, 3, 2]` matches the expected output. Note `res[2]` stay
 
 Doubling the iteration count multiplies the work by a constant `2`, which `O(N)` absorbs. The space does not double — the stack only ever holds the live candidates of one lap.
 
-## Edge Cases
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
+
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -241,6 +255,11 @@ Doubling the iteration count multiplies the work by a constant `2`, which `O(N)`
 | Wrap-dependent | `arr = [1, 2, 3]` | `[-1, 1, 1]` | `1` is the global minimum → -1; `2` and `3` both wrap to `1`. |
 | All equal | `arr = [5, 5, 5]` | `[-1, -1, -1]` | Equal values are popped by the `≥` test; nothing strictly smaller survives. |
 
-## Key Takeaway
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
 
 What is new here is the combination of *both* twists: circularity (the `2n` doubled pass) and the inferior flip (an increasing stack popped on `≥`). The reverse doubled scan, the modular index, and the `O(N)` time / `O(N)` space bounds match the superior circular problem exactly — only the comparison operator changes.
+
+</details>

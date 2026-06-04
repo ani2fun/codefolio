@@ -220,10 +220,16 @@ export function renderGraph(
     return `M ${px + ux * NODE_RADIUS} ${py + uy * NODE_RADIUS} L ${cx - ux * NODE_RADIUS} ${cy - uy * NODE_RADIUS}`;
   }
 
+  // Edge-label anchor — biased 0.66 toward the child rather than the true
+  // midpoint. At the midpoint a near-vertical parent→child edge (e.g. a
+  // single-child AVL chain, where TREE_DY/2 == NODE_RADIUS+26) drops the label
+  // exactly onto the parent's class / meta sub-labels (`key=… height=…`). 0.66
+  // lands it in the clear gap below those labels and above the child's circle.
   function edgeMid(fromId: string, toId: string): [number, number] {
     const [px, py] = centerOf(fromId);
     const [cx, cy] = centerOf(toId);
-    return [(px + cx) / 2, (py + cy) / 2];
+    const t = 0.66;
+    return [px + (cx - px) * t, py + (cy - py) * t];
   }
 
   function renderStep(index: number, animate: boolean): void {

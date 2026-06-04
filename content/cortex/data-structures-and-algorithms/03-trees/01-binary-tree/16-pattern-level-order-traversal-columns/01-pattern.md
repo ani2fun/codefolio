@@ -92,7 +92,7 @@ It works because **BFS dequeues in nondecreasing depth**: level 0, then level 1,
 
 Vertical order, plus **top view** (first per column) and **bottom view** (last per column) — same BFS, three reducers:
 
-```python run
+```python run viz=binary-tree viz-root=root
 from collections import deque, defaultdict
 
 class TreeNode:
@@ -137,7 +137,7 @@ print(top_view(root))         # [4, 9, 3, 20, 7]
 print(bottom_view(root))      # [4, 9, 15, 20, 7]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 public class Main {
   static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } TreeNode(int v, TreeNode l, TreeNode r){ val=v; left=l; right=r; } }

@@ -72,7 +72,7 @@ Because every triple containing `-3` was fully explored while `-3` was fixed —
 
 The reusable 3Sum — outer loop + inner reduction (real code also skips equal neighbours to dedupe; omitted here for clarity):
 
-```python run
+```python run viz=array
 def three_sum(arr):
     arr = sorted(arr)
     n, out = len(arr), []
@@ -91,7 +91,7 @@ def three_sum(arr):
 print(three_sum([-1, 0, 1, 2, -1, -4]))    # [(-1,-1,2), (-1,0,1), (-1,0,1)] — note the repeat: the dedupe gotcha
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {

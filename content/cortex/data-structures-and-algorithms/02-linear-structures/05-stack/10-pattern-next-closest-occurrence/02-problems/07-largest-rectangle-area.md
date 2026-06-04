@@ -15,8 +15,7 @@ Given an array `histogram` of positive integers (heights of bars of unit width),
 ### Example
 > -   **Input:** `histogram = [2, 4, 3, 3, 5, 2, 4, 3, 2]` → **Output:** `18`
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -47,9 +46,10 @@ Output: 5
 Explanation: A single bar is a rectangle of its own height and width 1.
 ```
 
-</details>
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The structural property that makes this a **monotonic-stack** problem is that the widest rectangle *of a given bar's height* extends from just past the **previous shorter bar** to just before the **next shorter bar**. Those two "nearest strictly-shorter boundary" queries are the next-smaller shape — and resolving the right boundary lets you compute that bar's maximal rectangle.
 
@@ -57,7 +57,10 @@ The stack holds the indices of bars in **increasing** height, each waiting for a
 
 The naive approach fixes each pair of left and right endpoints, takes the minimum height in between, and multiplies by the width — `O(N²)` or `O(N³)` time depending on how the minimum is computed. The stack computes each bar's true left and right boundaries in a single pass, collapsing the work to `O(N)` time and `O(N)` space.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for Largest Rectangle Area |
 |---|---|
@@ -66,6 +69,7 @@ The naive approach fixes each pair of left and right endpoints, takes the minimu
 | **Q3.** Is the comparison monotone — strictly greater or smaller? | **Yes** — an increasing stack pops when a strictly shorter bar arrives. |
 | **Q4.** Is the per-element work `O(1)` amortised? | **Yes** — each index is pushed once and popped at most once; each pop computes one rectangle in `O(1)`. |
 
+</details>
 <details>
 <summary><h2>Approach</h2></summary>
 
@@ -100,8 +104,9 @@ flowchart LR
 <p align="center"><strong>When the increasing-stack invariant is broken, every popped bar represents a rectangle whose height is the popped value and whose horizontal extent runs from one past the new top to one before the current bar. Each pop is one candidate rectangle; the global max wins.</strong></p>
 
 </details>
+<details>
+<summary><h2>Approach in Words</h2></summary>
 
-## Approach in Words
 
 Sweep left to right with an increasing stack of bar indices, scoring one candidate rectangle on every pop, then flush whatever remains.
 
@@ -112,6 +117,7 @@ Sweep left to right with an increasing stack of bar indices, scoring one candida
 5. **Flush the leftovers.** After the loop, pop every remaining bar as if a zero-height bar appeared at index `n`. Its width is `n` if the stack is empty, else `n − stack.top() − 1`. Update `maxArea` each time.
 6. **Return `maxArea`.** It holds the largest rectangle found across all candidates.
 
+</details>
 <details>
 <summary><h2>Solution</h2></summary>
 
@@ -254,8 +260,9 @@ Three lessons:
 > *Coming up — **sequence validation**. The next pattern uses a stack as a "matching memory" — push opening symbols, pop on closing ones, and check that everything pairs up. The canonical applications are bracket matching, palindrome checking, and a few delightful permutation-validation puzzles.*
 
 </details>
+<details>
+<summary><h2>Dry Run</h2></summary>
 
-## Dry Run
 
 Walk the example — `histogram = [2, 4, 3, 3, 5, 2, 4, 3, 2]` (indices `0`–`8`, `n = 9`). The stack holds indices in increasing height; a shorter bar pops every taller bar and scores its rectangle:
 
@@ -282,7 +289,10 @@ max_area = 18
 
 The result `18` matches the expected output. The winning rectangle is found in the flush: bar `0` (height `2`) extends across the full width `9`, since every bar is at least `2` tall, giving `2 × 9 = 18`.
 
-## Complexity Analysis
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
+
 
 | Measure | Value | Why |
 |---|---|---|
@@ -291,7 +301,10 @@ The result `18` matches the expected output. The winning rectangle is found in t
 
 Each pop scores one rectangle in `O(1)`. The forward loop and the flush together perform exactly `N` pushes and `N` pops, so the nested `while` is `O(N)` amortised, not `O(N²)`.
 
-## Edge Cases
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
+
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -303,6 +316,11 @@ Each pop scores one rectangle in `O(1)`. The forward loop and the flush together
 | Flat run | `histogram = [3, 3, 3, 3]` | `12` | Four bars at height 3 → 3 × 4 = 12. |
 | Spike | `histogram = [1, 100, 1]` | `100` | The lone height-100 bar beats the width-3 rectangle of height 1. |
 
-## Key Takeaway
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
 
 What is new here is the **flush** after the main loop: bars still on the stack at the end have no shorter bar to their right, so they extend all the way to index `n`. Like rainwater, this is area aggregation on a monotonic stack — but the stack is *increasing* (next-smaller) and each pop computes `height × width` rather than a trapped strip.
+
+</details>

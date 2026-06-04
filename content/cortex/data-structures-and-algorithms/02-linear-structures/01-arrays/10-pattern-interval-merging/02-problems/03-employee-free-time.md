@@ -22,9 +22,7 @@ meetings = [[1, 5], [2, 4], [5, 9]]                    →  []
 
 ---
 
-<details>
-<summary><h2>Examples</h2></summary>
-
+## Examples
 
 **Example 1**
 ```
@@ -49,7 +47,6 @@ Explanation: There are no time intervals during which all employees are
              simultaneously free.
 ```
 
-</details>
 <details>
 <summary><h2>Intuition</h2></summary>
 

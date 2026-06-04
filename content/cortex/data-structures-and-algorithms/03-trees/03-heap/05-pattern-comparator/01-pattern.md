@@ -17,7 +17,7 @@ A heap doesn't have to order by the element itself — it can order by a **compa
 
 Find the 2 most frequent values in `[1, 1, 1, 2, 2, 3]`. Count frequencies, then run a size-2 heap **ordered by frequency** (not by the value). Run it.
 
-```python run
+```python run viz=array viz-root=heap viz-kind=heap
 import heapq
 
 def k_most_frequent(nums, k):
@@ -76,7 +76,7 @@ A bare-value min-heap compares values, so it would rank `1 < 2 < 3` and evict by
 
 The reusable K-most-frequent:
 
-```python run
+```python run viz=array viz-root=heap viz-kind=heap
 import heapq
 
 def k_most_frequent(nums, k):
@@ -93,7 +93,7 @@ def k_most_frequent(nums, k):
 print(k_most_frequent([4, 4, 4, 5, 5, 6, 6, 6, 6], 2))   # [6, 4]
 ```
 
-```java run
+```java run viz=array viz-root=heap viz-kind=heap
 import java.util.*;
 
 public class Main {

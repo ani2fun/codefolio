@@ -15,7 +15,7 @@ Structurally, this is the [palindrome-partitioning](/cortex/data-structures-and-
 
 `dp[i]` = "can the first `i` characters be segmented?" The empty prefix is trivially yes (`dp[0] = True`). For each end `i`, look for a split point `j` where the prefix `s[0..j-1]` is already segmentable **and** the last chunk `s[j..i-1]` is a dictionary word.
 
-```python run
+```python run viz=array
 def word_break(s, words):
     word_set = set(words)                         # hash set -> O(1) membership
     n = len(s)
@@ -32,7 +32,7 @@ print(word_break("leetcode", ["leet", "code"]))                          # True
 print(word_break("catsandog", ["cats", "dog", "sand", "and", "cat"]))    # False
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static boolean wordBreak(String s, String[] words) {
@@ -84,7 +84,7 @@ Without the table, the natural recursion is "try every first word, recurse on th
 
 **Predict before you run:** on `"aaaaaaaaaaaaaaaaaaaab"` (twenty `a`s, then a `b`) with dictionary `{"a","aa","aaa"}`, the answer is obviously `False` (nothing ever consumes the `b`). But *how many recursive calls* does the naïve version make getting there — dozens, or hundreds of thousands?
 
-```python run
+```python run viz=array
 def make_naive():
     calls = [0]
     def wb(s, word_set):
@@ -125,7 +125,7 @@ The naïve recursion makes **266,079** calls; the memoised version makes **58**.
 
 Same skeleton, third aggregator. **Count** the distinct segmentations instead of asking whether one exists: flip `dp` from booleans to integers, seed `dp[0] = 1`, and **add** the ways instead of OR-ing existence.
 
-```python run
+```python run viz=array
 def count_ways(s, words):
     word_set = set(words)
     n = len(s)
@@ -141,7 +141,7 @@ print(count_ways("aaa", ["a", "aa"]))                  # 3   (a|a|a, a|aa, aa|a)
 print(count_ways("leetcode", ["leet", "code"]))        # 1
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static int countWays(String s, String[] words) {

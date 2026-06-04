@@ -31,6 +31,18 @@ Picture a one-way conga line where every dancer faces the next person's back, an
 
 ## Visual Summary
 
+```mermaid
+flowchart TD
+  s1["save next = curr.next"] --> s2["curr.next = prev  (flip)"]
+  s2 --> s3["prev = curr ; curr = next  (advance)"]
+  s3 -->|"until curr = null"| s1
+  s3 --> done["prev is the new head"]
+  style s2 fill:#c7d2fe,stroke:#4f5bd5
+  style done fill:#bbf7d0,stroke:#16a34a
+```
+
+<p align="center"><strong>Reverse a singly list with three pointers: before flipping each node's next to point back, stash the forward link so the rest isn't lost. One pass, O(n) time, O(1) space.</strong></p>
+
 ---
 
 ## Pattern Recognition Triggers

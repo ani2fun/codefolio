@@ -30,7 +30,7 @@ Output: 3   (1 + 2 + 3 = 6; 1 coin left over, not enough for 4th)
 Binary-search `k` in `[0, n]`. Predicate: `k(k+1)/2 <= n`.
 
 
-```python run
+```python run viz=array
 class Solution:
 
     # Predicate: Checks if mid rows can fit within n blocks
@@ -80,7 +80,7 @@ print(Solution().build_staircase(10))  # 4   (1+2+3+4=10)
 print(Solution().build_staircase(11))  # 4   (11 coins, 5th stair needs 5)
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static class Solution {
 

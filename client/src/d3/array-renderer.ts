@@ -9,7 +9,7 @@
 // Three column-aligned CSS-grid rows (`--n` columns):
 //   1. pointers — each frame index-cursor (left/right/mid/i/…) drawn as a name + down-caret
 //      over the cell it indexes, tinted by its ROLE colour (MarkerColors canon, stamped by
-//      the adapter: left = blue, right = bordeaux, mid/cur = terracotta, …).
+//      the adapter: left = blue, right = bordeaux, mid/cur = indigo, …).
 //   2. cells    — a boxed value per element. A cursor's cell is tinted in the pointer's hue
 //      (`--cursor`); a value that flipped this step rings green (`--changed`).
 //   3. indices  — the 0-based positions.

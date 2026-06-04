@@ -89,7 +89,7 @@ Before you read on: the loop stops when `current` is `null` — so what is `prev
 
 The reusable in-place reversal — returns the new head:
 
-```python run
+```python run viz=linked-list viz-root=head viz-kind=list-single
 class ListNode:
     def __init__(self, val, next=None):
         self.val = val
@@ -113,7 +113,7 @@ while node:
 print(out)                           # [3, 2, 1]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head viz-kind=list-single
 public class Main {
   static class ListNode { int val; ListNode next; ListNode(int v){ val = v; } }
 

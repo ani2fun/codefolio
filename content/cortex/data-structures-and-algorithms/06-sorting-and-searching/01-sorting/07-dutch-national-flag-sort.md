@@ -91,7 +91,7 @@ Because of *where the swapped-in element comes from*. On a `< pivot` swap, `arr[
 
 The reusable three-way partition:
 
-```python run
+```python run viz=array
 def dutch_flag(arr, pivot=1):
     low, mid, high = 0, 0, len(arr) - 1
     while mid <= high:
@@ -109,7 +109,7 @@ print(dutch_flag([2, 0, 2, 1, 1, 0]))        # [0, 0, 1, 1, 2, 2]
 print(dutch_flag([2, 2, 0, 0, 1, 1, 2, 0]))  # [0, 0, 0, 1, 1, 2, 2, 2]
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {

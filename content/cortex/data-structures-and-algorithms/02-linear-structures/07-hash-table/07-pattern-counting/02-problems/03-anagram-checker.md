@@ -24,8 +24,7 @@ Given two strings `s` and `p`, return `true` if `p` is an anagram of `s` (same m
 > -   **Input:** `s = "abcdef", p = "dfecba"`
 > -   **Output:** `true`
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -55,9 +54,10 @@ Output: false
 Explanation: different lengths cannot be anagrams.
 ```
 
-</details>
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The structural property that makes this a **counting** problem is that an anagram is defined by *multiset equality* — `p` is an anagram of `s` exactly when both hold the same characters with the same counts. Order does not matter, only frequency, which is the signal the counting pattern fires on.
 
@@ -65,7 +65,10 @@ The frequency map *is* the multiset. Count `s` into a map, then walk `p` and dec
 
 The naive approach breaks the time budget. Sorting both strings and comparing is `O(N log N)` time, and a per-character search is worse at `O(N²)`. Counting compares the multisets in two linear passes — `O(N)` time — without ever ordering the characters.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for Anagram Checker |
 |---|---|
@@ -74,6 +77,7 @@ The naive approach breaks the time budget. Sorting both strings and comparing is
 | **Q3.** Can the answer be read off the counts after one pass? | **Yes** — count `s`, then decrement over `p` and check the map is empty. |
 | **Q4.** Is the per-item work `O(1)` amortised? | **Yes** — one hash-map update per character in each string. |
 
+</details>
 <details>
 <summary><h2>Approach</h2></summary>
 
@@ -83,8 +87,9 @@ Anagrams have the same length and the same character frequency map. Build the fr
 > *Mental shortcut* — anagram checking is "does the multiset match?". The frequency map *is* the multiset.
 
 </details>
+<details>
+<summary><h2>Approach in Words</h2></summary>
 
-## Approach in Words
 
 Reject on length first, then compare multisets by counting and draining.
 
@@ -94,12 +99,13 @@ Reject on length first, then compare multisets by counting and draining.
 4. **Prune zeros.** When a count hits `0`, remove the key so the map tracks only outstanding characters.
 5. **Check empty.** After walking `p`, an empty map means every character matched — return whether the map is empty.
 
+</details>
 <details>
 <summary><h2>Solution</h2></summary>
 
 
 
-```python run
+```python run viz=array
 from collections import defaultdict
 from typing import Dict
 
@@ -148,7 +154,7 @@ print(Solution().anagram_checker("ab", "a"))                         # False
 print(Solution().anagram_checker("aab", "baa"))                      # True
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {
@@ -208,8 +214,9 @@ public class Main {
 ```
 
 </details>
+<details>
+<summary><h2>Dry Run</h2></summary>
 
-## Dry Run
 
 Walk Example 1 — `s = "codeintuition"`, `p = "cdoenoitiutni"`. Both have length `13`, so count `s` and drain with `p`:
 
@@ -230,7 +237,10 @@ map is empty → return true
 
 The result `true` matches the expected output — `p` holds the same characters as `s` with identical counts.
 
-## Complexity Analysis
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
+
 
 | Measure | Value | Why |
 |---|---|---|
@@ -239,7 +249,10 @@ The result `true` matches the expected output — `p` holds the same characters 
 
 Here `N` is the common string length; mismatched lengths short-circuit before any counting.
 
-## Edge Cases
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
+
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -250,6 +263,11 @@ Here `N` is the common string length; mismatched lengths short-circuit before an
 | Reordered | `s = "aab", p = "baa"` | `true` | Same counts (`a:2, b:1`), different order. |
 | Extra letter | `s = "abc", p = "ade"` | `false` | `p` introduces `'d'`/`'e'` not in `s`. |
 
-## Key Takeaway
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
 
 This is the multiset-equality shape of counting: gate on length, count one string, then drain with the other and check the map empties. The delete-on-zero step keeps the map holding only the characters still unmatched, so emptiness is the verdict.
+
+</details>

@@ -16,7 +16,7 @@ That algorithm is **backtracking**: brute force reshaped as a depth-first walk o
 
 Generate all permutations of `[1, 2, 3]`. The skeleton is **make a choice → recurse → undo the choice** — the undo (`used[i] = False; path.pop()`) is what frees that element for sibling branches.
 
-```python run
+```python run viz=array
 def permutations(nums):
     res, path, used = [], [], [False] * len(nums)
     def backtrack():
@@ -35,7 +35,7 @@ print(perms)
 print("count:", len(perms))
 ```
 
-```java run
+```java run viz=graph viz-kind=graph
 import java.util.*;
 public class Main {
     static void backtrack(int[] nums, List<Integer> path, boolean[] used, List<List<Integer>> res) {
@@ -102,7 +102,7 @@ The undo line looks like cleanup you could skip — the recursion already return
 
 **Predict before you run:** delete the undo (`used[i] = False; path.pop()`) from the permutation generator. How many of the 6 permutations come back?
 
-```python run
+```python run viz=array
 def permutations_noundo(nums):
     res, path, used = [], [], [False] * len(nums)
     def backtrack():
@@ -132,7 +132,7 @@ It returns just **one** permutation, `[[1, 2, 3]]`. The first descent marks `use
 
 **All subsets** of `[1, 2, 3]` — the other canonical enumeration. The choice at each element is binary: *exclude* it or *include* it (then undo the include). `2³ = 8` leaves.
 
-```python run
+```python run viz=array
 def subsets(nums):
     res, path = [], []
     def backtrack(i):
@@ -150,7 +150,7 @@ print(s)
 print("count:", len(s))
 ```
 
-```java run
+```java run viz=graph viz-kind=graph
 import java.util.*;
 public class Main {
     static void sub(int[] nums, int i, List<Integer> path, List<List<Integer>> res) {

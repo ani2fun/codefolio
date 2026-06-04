@@ -313,7 +313,6 @@ public class Main {
 ```
 
 </details>
-
 <details>
 <summary><h2>Key Takeaway</h2></summary>
 

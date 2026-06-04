@@ -16,8 +16,7 @@ If, at the end, the length of the remaining list is less than the required group
 
 ---
 
-<details>
-<summary><h2>Examples</h2></summary>
+## Examples
 
 **Example 1**
 ```
@@ -47,7 +46,6 @@ Output: [1, 3, 2, 6, 5, 4, 10, 9, 8, 7]
 Explanation: Four chunks of sizes 1, 2, 3, 4 partition the list exactly (1 + 2 + 3 + 4 = 10). Each chunk reverses independently.
 ```
 
-</details>
 <details>
 <summary><h2>Intuition</h2></summary>
 

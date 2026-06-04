@@ -72,7 +72,7 @@ One add and one subtract — not three. After the very first window, *every* lat
 
 The reusable shape — slide a fixed window, track the best:
 
-```python run
+```python run viz=array
 def max_window_sum(arr, k):
     window = sum(arr[:k])               # first window
     best = window
@@ -84,7 +84,7 @@ def max_window_sum(arr, k):
 print(max_window_sum([2, 1, 5, 1, 3, 2], 3))   # 9
 ```
 
-```java run
+```java run viz=array
 public class Main {
   static int maxWindowSum(int[] arr, int k) {
     int window = 0;

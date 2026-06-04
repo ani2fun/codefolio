@@ -43,7 +43,7 @@ OR's truth table: `0 OR 0 = 0`, `1 OR 0 = 1`, `0 OR 1 = 1`, `1 OR 1 = 1`. ORing 
 
 
 
-```python run
+```python run viz=array
 class Solution:
     def set_kth_bit(self, num: int, k: int) -> int:
 
@@ -67,7 +67,7 @@ print(Solution().set_kth_bit(16, 1))    # 17
 print(Solution().set_kth_bit(1, 1))     # 1
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static class Solution {
         public int setKthBit(int num, int k) {

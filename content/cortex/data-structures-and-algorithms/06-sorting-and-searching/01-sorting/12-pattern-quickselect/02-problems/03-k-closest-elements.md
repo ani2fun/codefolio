@@ -36,7 +36,7 @@ Output: [10, 8, 12]
 
 Replace the partition's "compare elements directly" with "compare distance-to-target." Everything else is identical.
 
-```python run
+```python run viz=array
 import random
 from typing import List
 
@@ -124,7 +124,7 @@ print(sorted(Solution().k_closest_elements([1, 2], 1, 2)))                 # [2]
 print(sorted(Solution().k_closest_elements([1, 10, 20], 2, 15)))           # [10, 20]
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {

@@ -17,7 +17,7 @@ So graph traversal needs three things a tree walk doesn't: (1) a **sensible visi
 
 The same 5-node graph, walked both ways from node 0. DFS dives deep; BFS ripples outward — watch the orders diverge. Run it.
 
-```python run
+```python run viz=graph viz-kind=graph
 from collections import deque
 
 graph = [[1, 2], [0, 2, 3], [0, 1, 4], [1, 4], [2, 3]]   # undirected adjacency list
@@ -89,7 +89,7 @@ The traversal still *finishes* correctly, but nodes get **enqueued multiple time
 
 DFS and BFS traversal in both languages, on the same graph:
 
-```python run
+```python run viz=array
 from collections import deque
 
 def dfs_traversal(g):
@@ -119,7 +119,7 @@ print(bfs_traversal(g))   # [0, 1, 2, 3, 4]
 print(bfs_traversal([[1], [0], [3], [2]]))   # [0, 1, 2, 3] — two components
 ```
 
-```java run
+```java run viz=graph viz-kind=graph
 import java.util.*;
 public class Main {
   static void dfs(List<List<Integer>> g, int node, boolean[] seen, List<Integer> out) {

@@ -17,7 +17,7 @@ The **LSM tree (Log-Structured Merge tree)** flips the trade-off by *never writi
 
 The defining behavior: writes accumulate newest-on-top, and a read returns the *first* (newest) version it finds. An update doesn't overwrite the old value on disk — it just shadows it.
 
-```python run
+```python run viz=array
 TOMBSTONE = "<deleted>"
 class LSM:
     def __init__(self):
@@ -41,7 +41,7 @@ print("read user:1 ->", db.get("user:1"))
 print("# sstables:", len(db.sstables), "| old value still on disk:", db.sstables[0]["user:1"])
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static final String TOMBSTONE = "<deleted>";
@@ -106,7 +106,7 @@ If an update just shadows the old value, how do you *delete*? There's no random 
 
 **Predict before you run:** a key `k` is written and flushed to an SSTable. Then you delete `k` (which, in an LSM, writes a **tombstone** — a "deleted" marker — into the memtable). A read for `k` follows. Does it return the old value (still sitting in the SSTable), or "not found"?
 
-```python run
+```python run viz=array
 TOMBSTONE = "<deleted>"
 class LSM:
     def __init__(self): self.memtable = {}; self.sstables = []
@@ -139,7 +139,7 @@ Tombstones and shadowed values pile up; **compaction** is the garbage collector 
 
 **Predict:** a newer SSTable deletes `k1` (tombstone) and updates `k2` to `v2new`; an older SSTable holds `k1=v1`, `k2=v2old`, `k3=v3`. After compacting them into one file, which keys survive, and with what values?
 
-```python run
+```python run viz=array
 TOMBSTONE = "<deleted>"
 def compact(sstables):                 # merge newest-first SSTables into one
     merged = {}
@@ -155,7 +155,7 @@ print("before: 2 SSTables, keys per:", [sorted(s) for s in before])
 print("after compaction:", dict(sorted(after.items())))
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static final String TOMBSTONE = "<deleted>";

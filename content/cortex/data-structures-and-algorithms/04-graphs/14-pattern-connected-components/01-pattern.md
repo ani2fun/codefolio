@@ -45,7 +45,7 @@ flowchart LR
 
 Count the components and measure each one's size. The flood-fill (DFS here) absorbs an entire component; the outer loop kicks off a new flood from each still-unvisited node.
 
-```python run
+```python run viz=graph viz-kind=graph
 adj = {0: [1, 2], 1: [0, 2], 2: [1, 0], 3: [4], 4: [3], 5: []}
 
 def components(adj, n):
@@ -66,7 +66,7 @@ print("components:", len(sizes))
 print("sizes:", sizes)
 ```
 
-```java run
+```java run viz=graph viz-kind=graph
 import java.util.*;
 
 public class Main {
@@ -147,7 +147,7 @@ The outer loop is the whole pattern. It's tempting to think "I'll just DFS the g
 
 **Predict before you run:** with a single DFS launched from node 0 (no outer loop), how many components does it count on our 3-component graph?
 
-```python run
+```python run viz=graph viz-kind=graph
 adj = {0: [1, 2], 1: [0, 2], 2: [1, 0], 3: [4], 4: [3], 5: []}
 
 def components_buggy(adj, n):
@@ -174,7 +174,7 @@ It returns **1**, but the graph has **3** components. A single DFS from node 0 o
 
 The most famous instance is a *grid*, where the graph is implicit — each `'1'` cell is a node, neighbours are the four orthogonal cells. **Number of Islands** ([LeetCode 200](https://leetcode.com/problems/number-of-islands/)): count connected groups of land.
 
-```python run
+```python run viz=grid
 def num_islands(grid):
     if not grid: return 0
     R, C = len(grid), len(grid[0])
@@ -195,7 +195,7 @@ g2 = [list("111"), list("010"), list("111")]
 print(num_islands(g2))                                  # 1
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static int R, C;
     static void sink(char[][] g, int r, int c) {        // flood-fill one island, erasing it

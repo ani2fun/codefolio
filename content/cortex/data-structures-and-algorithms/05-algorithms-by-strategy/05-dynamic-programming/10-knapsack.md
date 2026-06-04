@@ -16,7 +16,7 @@ The honest brute force is the [backtracking](/cortex/data-structures-and-algorit
 
 `dp[i][c]` = the best value achievable using the first `i` items within capacity `c`. For each item, take the better of **excluding** it (`dp[i-1][c]`) or **including** it (its value plus the best for the remaining capacity, `dp[i-1][c - weight]`) when it fits.
 
-```python run
+```python run viz=grid
 def knapsack(weights, values, W):
     n = len(weights)
     dp = [[0] * (W + 1) for _ in range(n + 1)]
@@ -30,7 +30,7 @@ def knapsack(weights, values, W):
 print(knapsack([1, 3, 4, 5], [1, 4, 5, 7], 7))   # 9   (items of weight 3 and 4 -> value 4 + 5)
 ```
 
-```java run
+```java run viz=grid
 public class Main {
     static int knapsack(int[] w, int[] v, int W) {
         int n = w.length;
@@ -83,7 +83,7 @@ The 1D space optimisation is where a one-character slip changes the problem. Wit
 
 **Predict before you run:** you own **one** item of weight 2, value 3, and a bag of capacity 6. The 1D update is `dp[c] = max(dp[c], value + dp[c - weight])`. Swept capacity **descending** it gives the 0/1 answer. What does sweeping **ascending** give — still 3, or something else?
 
-```python run
+```python run viz=array
 def knap_1d(weights, values, W, ascending):
     dp = [0] * (W + 1)
     for i in range(len(weights)):
@@ -109,7 +109,7 @@ Sweeping **ascending**, `dp[c - 2]` has *already been updated with this same ite
 
 **Partition Equal Subset Sum** ([LeetCode 416](https://leetcode.com/problems/partition-equal-subset-sum/)) — can the array be split into two subsets with equal sums? That's knapsack with values *equal to* weights and a target of `total/2`: a **boolean** "can we hit exactly this sum?" instead of "maximise value." Same 1D array, same descending sweep for 0/1, `or` instead of `max`.
 
-```python run
+```python run viz=array
 def can_partition(nums):
     total = sum(nums)
     if total % 2:
@@ -126,7 +126,7 @@ print(can_partition([1, 5, 11, 5]))   # True   (11 == 1 + 5 + 5)
 print(can_partition([1, 2, 3, 5]))    # False  (total 11 is odd)
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static boolean canPartition(int[] nums) {
         int total = 0; for (int x : nums) total += x;

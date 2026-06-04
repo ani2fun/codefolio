@@ -32,8 +32,7 @@ The output must:
 ### Example 3
 > -   **Input:** `/a//b/c/../` → **Output:** `/a/b`
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -67,9 +66,10 @@ Explanation: '..' on an empty stack does nothing — you cannot rise
 above root. The stack stays empty, so the result is "/".
 ```
 
-</details>
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 This is a **linear-evaluation** problem because the path is a single sequence of segments you scan once, and a `..` token folds the work built so far by one level. Split on `/` and each segment is a token whose meaning is local: a name is data, `..` is a trigger, and `.` or an empty segment is noise. The stack lets each `..` undo exactly the most recent directory in `O(1)`.
 
@@ -77,7 +77,10 @@ The stack holds **the directory chain accumulated so far**, with the most recent
 
 A naive approach rewrites the string in place — find a `/../`, splice it out, rescan — which re-reads resolved segments and costs `O(N²)` time. It also fumbles the corner cases: a `..` at the root must be a no-op, and runs of `//` must collapse. The stack handles both for free: popping an empty stack does nothing, and empty segments never get pushed. One pass replaces the repeated splicing.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for Canonicalise Path |
 |---|---|
@@ -86,7 +89,10 @@ A naive approach rewrites the string in place — find a `/../`, splice it out, 
 | **Q3.** Does a trigger fold only the *most recent* pending chunk? | **Yes** — `..` pops exactly the top directory, never one buried deeper. |
 | **Q4.** Is the answer read off the stack at end-of-input? | **Yes** — the surviving directory names, joined with `/`, are the canonical path. |
 
-## Approach in Words
+</details>
+<details>
+<summary><h2>Approach in Words</h2></summary>
+
 
 Split on `/`, push names, and let `..` pop the top directory.
 
@@ -97,6 +103,7 @@ Split on `/`, push names, and let `..` pop the top directory.
 5. **`..` → pop if possible.** Rise one level by popping the top directory; if the stack is already empty, do nothing — you cannot go above root.
 6. **After the pass, build the result.** Return `/` if the stack is empty, otherwise `/` followed by the stack joined with `/`.
 
+</details>
 <details>
 <summary><h2>Approach</h2></summary>
 
@@ -250,8 +257,9 @@ public class Main {
 ```
 
 </details>
+<details>
+<summary><h2>Dry Run</h2></summary>
 
-## Dry Run
 
 Walk Example 1 — `path = "/a/b/../c"`. Split on `/` gives the segments `['', 'a', 'b', '..', 'c']`. The stack holds the directory chain; push names, pop on `..`, skip noise:
 
@@ -278,7 +286,10 @@ A trace on `path = "/a/../../b"` shows the root guard — a `..` on an empty sta
 end of input → "/b" ✓
 ```
 
-## Complexity Analysis
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
+
 
 | Measure | Value | Why |
 |---|---|---|
@@ -287,7 +298,10 @@ end of input → "/b" ✓
 
 The time is `O(N)` where `N` is the path length: the split scans the string once, and the segment loop does `O(1)` work per token. The space is `O(N)` in the worst case — a path with no `..`, like `/a/b/c`, pushes every directory and the stack grows with the input. The best case is `O(1)` space when `..` tokens cancel directories as fast as they are pushed, keeping the stack shallow.
 
-## Edge Cases
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
+
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -298,6 +312,11 @@ The time is `O(N)` where `N` is the path length: the split scans the string once
 | Multiple `..` past root | `/a/../../b` | `/b` | `a` is popped, the second `..` no-ops on the empty stack, then `b` is pushed. |
 | Doubled and trailing slashes | `//home//foo/` | `/home/foo` | The empty segments from `//` and the trailing `/` are skipped; only `home` and `foo` push. |
 
-## Key Takeaway
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
 
 Split the path into segments and let a stack of directory names absorb each token — push a name, pop on `..`, skip `.` and empties. The new idea over the generic pattern is the *guarded fold*: popping an empty stack is a deliberate no-op, which is how the root boundary is enforced without a special case.
+
+</details>

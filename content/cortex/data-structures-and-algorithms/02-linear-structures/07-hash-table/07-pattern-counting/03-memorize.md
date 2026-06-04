@@ -31,6 +31,15 @@ Picture sorting a bag of mixed coins by tipping them into labelled trays — one
 
 ## Visual Summary
 
+```mermaid
+flowchart LR
+  scan["scan items once"] --> map["map: item → count<br/>(++ on each)"]
+  map --> use["answer reads the counts:<br/>first unique · anagram · majority"]
+  style map fill:#c7d2fe,stroke:#4f5bd5
+```
+
+<p align="center"><strong>One pass fills a hash map of item → frequency; a second pass reads it. Turns 'how many of each?' questions — first non-repeating char, anagram check, majority — into O(n).</strong></p>
+
 ---
 
 ## Pattern Recognition Triggers

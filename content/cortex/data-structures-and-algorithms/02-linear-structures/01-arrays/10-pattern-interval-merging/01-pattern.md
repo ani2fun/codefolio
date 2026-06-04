@@ -17,7 +17,7 @@ The brute force compares every pair to see if they overlap — `O(n²)`. But ove
 
 Sort by start, then sweep: extend the last merged interval when the next one overlaps it, otherwise begin a new one. Run it and watch four intervals collapse to two.
 
-```python run
+```python run viz=array
 intervals = [[1, 3], [2, 6], [8, 10], [9, 12]]
 intervals.sort()                         # sort by start
 merged = [intervals[0]]
@@ -73,7 +73,7 @@ No. Everything still to come starts at `8` or later (the array is sorted by star
 
 The reusable merge — sort, then sweep:
 
-```python run
+```python run viz=array
 def merge(intervals):
     intervals.sort()                         # by start
     merged = [intervals[0]]
@@ -87,7 +87,7 @@ def merge(intervals):
 print(merge([[1, 3], [2, 6], [8, 10], [9, 12]]))   # [[1, 6], [8, 12]]
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {

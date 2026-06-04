@@ -23,8 +23,7 @@ Given strings `s` and `p`, return all the start indices in `s` of substrings tha
 ### Example 3
 > -   **Input:** `s = "abcdef", p = "gh"` → **Output:** `[]`
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -54,9 +53,10 @@ Output: [0, 6]
 Explanation: "cba" at index 0 and "bac" at index 6 are anagrams of "abc".
 ```
 
-</details>
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The structural property that makes this a **fixed-sized sliding window** problem is that an anagram of `p` has exactly `len(p)` characters — so every candidate substring of `s` is a window of that fixed width. An anagram is a rearrangement, which is the same multiset of characters, and a frequency map captures a multiset exactly.
 
@@ -64,7 +64,10 @@ The window's two pointers each carry a fixed job, and this solution tracks a `co
 
 The naive approach breaks the time budget. For each of the `len(s) − len(p) + 1` windows it builds and compares a fresh map, costing `O(N·K)` time for `O(K)` space where `K = len(p)`. That re-counts the `K − 1` shared characters per slide. The `count`-based window updates in `O(1)` per step, so each window's anagram test is a single `count == 0` check.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for Anagram Finder |
 |---|---|
@@ -73,7 +76,10 @@ The naive approach breaks the time budget. For each of the `len(s) − len(p) + 
 | **Q3.** Is the per-window answer read from an `O(1)`-updatable map? | **Yes** — a `count` derived from `p`'s frequency map signals a match in `O(1)`. |
 | **Q4.** Is the per-step work `O(1)` amortised? | **Yes** — each character adjusts `count` and one map entry on entry and exit. |
 
-## Approach
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
+
 
 Pre-count `p`, then slide a window of size `len(p)` over `s`, recording every start index where the window is an anagram.
 
@@ -83,6 +89,7 @@ Pre-count `p`, then slide a window of size `len(p)` over `s`, recording every st
 4. **Contract from the left.** When the window reaches size `len(p)`, restore `s[start]`'s entry; if that character was genuinely demanded, raise `count` back, then advance `start`.
 5. **Advance and finish.** Increment `end` and continue; return the list of all matching start indices.
 
+</details>
 <details>
 <summary><strong>Anagram finder vs Contains variation</strong></summary>
 
@@ -291,8 +298,9 @@ public class Main {
 ```
 
 </details>
+<details>
+<summary><h2>Dry Run</h2></summary>
 
-## Dry Run
 
 Walk Example 1 — `s = "bacdefecab"`, `p = "abc"`, window size `3`. The target map is `{a:1, b:1, c:1}`, and `count` starts at `3`:
 
@@ -319,7 +327,10 @@ result = [0, 7]
 
 The result `[0, 7]` matches the expected output — the windows `"bac"` (start `0`) and `"cab"` (start `7`) each drive `count` to `0`.
 
-## Complexity Analysis
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
+
 
 | Measure | Value | Why |
 |---|---|---|
@@ -328,7 +339,10 @@ The result `[0, 7]` matches the expected output — the windows `"bac"` (start `
 
 The `count` counter is what keeps this strictly `O(N)`: it replaces the `O(K)` map-equality check of Contains Variation with one `O(1)` comparison.
 
-## Edge Cases
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
+
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -339,6 +353,7 @@ The `count` counter is what keeps this strictly `O(N)`: it replaces the `O(K)` m
 | Scattered matches | `s = "cbaebabacd", p = "abc"` | `[0, 6]` | `"cba"` at `0` and `"bac"` at `6` are anagrams of `"abc"`. |
 | No anagram | `s = "abcdef", p = "gh"` | `[]` | No length-`2` window matches `{g:1, h:1}`. |
 
+</details>
 <details>
 <summary><h2>Key Takeaway</h2></summary>
 
@@ -352,7 +367,10 @@ The fixed-sized sliding window is the **moving** version of the counting pattern
 > *Coming up — what if the window can grow and shrink based on a *condition* rather than a fixed size? That's the **variable-sized sliding window**, and it solves a different family of problems: "longest substring with at most K distinct chars", "smallest subarray with sum ≥ S", "longest substring without repeating characters". Same hash-map summary, but the window flexes — and that flexibility unlocks a much wider class of problems.*
 
 </details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 This is the all-matches shape of the pattern-match window: append every start index where the window is an anagram of `p`, instead of returning on the first. Tracking a single `count` of unmet demands replaces the map-equality check, keeping each window's test at `O(1)`.
+
+</details>

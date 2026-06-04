@@ -26,8 +26,7 @@ Given a case-sensitive string `s`, return the length of the **longest palindrome
 > -   **Input:** `s = "abc"`
 > -   **Output:** `1`
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -58,9 +57,10 @@ Output: 4
 Explanation: a and b both pair fully (+2 each) with no leftover centre → 4.
 ```
 
-</details>
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The structural property that makes this a **counting** problem is that a palindrome is built from *pairs*. Each character used an even number of times mirrors around the centre, and at most one odd character sits alone in the middle. Position in `s` is irrelevant — only each letter's count matters, the signal counting fires on.
 
@@ -68,7 +68,10 @@ The frequency map gives every letter's count in one pass. Each even count contri
 
 The naive approach breaks the time budget. Generating candidate palindromes and measuring them is exponential, and even checking arrangements is far worse than linear. Counting reduces the whole question to summing even parts plus one optional centre — `O(N)` time, no construction needed.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for Build Palindrome |
 |---|---|
@@ -77,6 +80,7 @@ The naive approach breaks the time budget. Generating candidate palindromes and 
 | **Q3.** Can the answer be read off the counts after one pass? | **Yes** — count once, then sum even parts plus one optional centre. |
 | **Q4.** Is the per-item work `O(1)` amortised? | **Yes** — one hash-map increment per character, then one pass over the counts. |
 
+</details>
 <details>
 <summary><h2>Approach</h2></summary>
 
@@ -109,8 +113,9 @@ flowchart LR
 <p align="center"><strong>Build palindrome — every even-frequency character contributes fully; odd-frequency characters contribute (count − 1); a single bonus +1 for the optional middle character.</strong></p>
 
 </details>
+<details>
+<summary><h2>Approach in Words</h2></summary>
 
-## Approach in Words
 
 Count the letters, then add up the pairs and grant one centre if any odd remains.
 
@@ -120,12 +125,13 @@ Count the letters, then add up the pairs and grant one centre if any odd remains
 4. **Add the centre.** If at least one odd count existed, add `1` for the single middle character.
 5. **Return the length.** The accumulated total is the longest buildable palindrome's length.
 
+</details>
 <details>
 <summary><h2>Solution</h2></summary>
 
 
 
-```python run
+```python run viz=array
 from collections import defaultdict
 from typing import Dict
 
@@ -181,7 +187,7 @@ print(Solution().build_palindrome("aabb"))       # 4
 print(Solution().build_palindrome("aaaa"))       # 4
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {
@@ -248,8 +254,9 @@ public class Main {
 ```
 
 </details>
+<details>
+<summary><h2>Dry Run</h2></summary>
 
-## Dry Run
 
 Walk Example 1 — `s = "AaAaBbBbc"`. Letters are case-sensitive, so `'A'` and `'a'` are distinct. Count, then sum even parts plus one optional centre:
 
@@ -269,14 +276,20 @@ odd seen → add 1 centre → 8 + 1 = 9
 
 The result `9` matches the expected output — eight paired letters plus one centre character.
 
-## Complexity Analysis
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
+
 
 | Measure | Value | Why |
 |---|---|---|
 | Time  | **O(N)** | One pass to count, one pass over the distinct counts; each step is amortised `O(1)`. |
 | Space | **O(N)** | The map holds up to `N` distinct characters — `O(1)` for a fixed alphabet, `O(N)` in general. |
 
-## Edge Cases
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
+
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -287,6 +300,11 @@ The result `9` matches the expected output — eight paired letters plus one cen
 | All same, even | `s = "aaaa"` | `4` | One even count of `4` contributes all four. |
 | No repeats | `s = "abc"` | `1` | Three odd counts, but only one centre is allowed → `1`. |
 
-## Key Takeaway
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
 
 This is the count-then-inspect shape: the palindrome length is `sum of even parts + 1 if any odd count exists`. The subtlety is that *many* odd counts still grant only a single centre — the `+1` is capped at one regardless of how many odds appear.
+
+</details>

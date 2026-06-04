@@ -305,7 +305,7 @@ The next lesson is the final pattern in the sorting section: **custom compare**.
 <details>
 <summary><strong>Answer — open after you've thought about it</strong></summary>
 
-```python run
+```python run viz=array
 class Solution:
     def k_smallest_sorted(self, arr, k):
         self._quickselect(arr, 0, len(arr) - 1, k)

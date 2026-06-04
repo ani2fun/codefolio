@@ -17,7 +17,7 @@ Counting sort does. Instead of asking "is `a < b`?", it uses each value **as an 
 
 Sort `[2, 5, 3, 0, 2, 3, 0, 3]` (values in `0..5`) by counting. Run it — notice there's not a single comparison between elements.
 
-```python run
+```python run viz=array
 def counting_sort(arr):
     if not arr:
         return arr
@@ -80,7 +80,7 @@ The single outlier `1{,}000{,}000` forces the `count` array to span `0..1{,}000{
 
 The reusable counting sort:
 
-```python run
+```python run viz=array
 def counting_sort(arr):
     if not arr:
         return arr
@@ -97,7 +97,7 @@ print(counting_sort([5, 2, 8, 1, 9, 3]))             # [1, 2, 3, 5, 8, 9]
 print(counting_sort([2, 5, 3, 0, 2, 3, 0, 3]))       # [0, 0, 2, 2, 3, 3, 3, 5]
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {

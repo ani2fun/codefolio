@@ -106,7 +106,7 @@ The extra two are the **backward** links: `new_head.prev = before` and `after.pr
 
 The reusable doubly reverse-in-groups-of-`k` (`k = 2` is a pairwise swap):
 
-```python run
+```python run viz=linked-list viz-root=head viz-kind=list-double
 class Node:
     def __init__(self, val):
         self.val = val
@@ -145,7 +145,7 @@ while node:
 print(out)                                             # [3, 2, 1, 4, 5]
 ```
 
-```java run
+```java run viz=linked-list viz-root=head viz-kind=list-double
 public class Main {
   static class Node { int val; Node prev, next; Node(int v){ val = v; } }
 

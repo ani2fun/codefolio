@@ -75,7 +75,7 @@ No. `1` needs the nearest *larger* value to its left, and `7` (which now sits on
 
 The reusable previous-greater (flip the comparison for previous-smaller):
 
-```python run
+```python run viz=array viz-kind=stack
 def previous_greater(arr):
     stack, result = [], []
     for x in arr:
@@ -89,7 +89,7 @@ print(previous_greater([2, 5, 3, 7, 1]))     # [None, None, 5, None, 7]
 print(previous_greater([4, 3, 2, 1]))        # [None, 4, 3, 2]
 ```
 
-```java run
+```java run viz=array viz-kind=stack
 import java.util.*;
 
 public class Main {

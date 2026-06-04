@@ -17,7 +17,7 @@ Quickselect reuses quicksort's **partition**, with one insight: after partitioni
 
 Find the 4th smallest of `[7, 2, 1, 6, 8, 5, 3, 4]` (the answer is `4`) without sorting. Run it.
 
-```python run
+```python run viz=array
 def partition(arr, lo, hi):
     pivot = arr[hi]; i = lo - 1
     for j in range(lo, hi):
@@ -87,7 +87,7 @@ Because the two recursive calls aren't equal-cost — they *compound*. Quicksort
 
 The reusable quickselect:
 
-```python run
+```python run viz=array
 def partition(arr, lo, hi):
     pivot = arr[hi]; i = lo - 1
     for j in range(lo, hi):
@@ -112,7 +112,7 @@ vals = [7, 2, 1, 6, 8, 5, 3, 4]
 print(quickselect(vals, 1), quickselect(vals, 4), quickselect(vals, 8))   # 1 4 8
 ```
 
-```java run
+```java run viz=array
 public class Main {
   static int partition(int[] arr, int lo, int hi) {
     int pivot = arr[hi], i = lo - 1;

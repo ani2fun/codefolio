@@ -14,8 +14,7 @@ Given the **head** of a singly linked list and a non-negative integer **k**, wri
 
 You need to reverse the list in place.
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1:**
 ```
@@ -35,11 +34,12 @@ Input:  head = [1, 2, 3, 4, 5], k = 5
 Output: [5, 4, 3, 2, 1]
 ```
 
-</details>
 
 ---
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The **structural property** is that the last `k` nodes form a contiguous suffix segment. The prefix (the first `n − k` nodes) stays in place, and the suffix needs to flip direction. The reversed suffix's new head is the original tail; its new tail is the original `(n − k + 1)`-th node. The stitch is between the prefix and the reversed suffix: the prefix's last node (the `(n − k)`-th node) must point to the reversed suffix's new head.
 
@@ -47,9 +47,10 @@ The **pointer placement** requires one piece of bookkeeping that the prefix vari
 
 What **breaks if you reach for a one-pass approach without measuring length**? You can't tell which suffix is "the last `k`" without knowing the total length. The fast-and-slow-pointers pattern (next chapter) can do this in one pass with two pointers spaced `k` apart, but it solves a different shape of problem; for this section's reversal pattern, the two-pass measure-then-reverse approach is the cleanest fit and stays at `O(n)` time / `O(1)` space.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | Check | Answer for Reverse Last K Nodes |
 |---|---|
@@ -58,19 +59,24 @@ What **breaks if you reach for a one-pass approach without measuring length**? Y
 | **Q3.** Is the work strictly structural (only `next` pointers change)? | **Yes** — the length scan reads no values; the reversal helper only flips `next` pointers; the final stitch is one assignment. |
 | **Q4.** Is `O(1)` extra space required? | **Yes** — the length is an integer, the reversal helper uses three references, and the splice point is one more reference. |
 
----
+</details>
+<details>
+<summary><h2>Brute Force: Collect into an Array</h2></summary>
 
-## Brute Force: Collect into an Array
 
 Walk the list collecting all values into an array. Reverse the last `k` values of the array. Walk the list a second time writing values back into nodes. This is `O(n)` time but `O(n)` extra space, and again confuses value movement with pointer rewiring — the lesson the pattern exists to teach is precisely the opposite.
 
-## Key Insight: Measure, Split, Reverse the Suffix, Stitch
+</details>
+<details>
+<summary><h2>Key Insight: Measure, Split, Reverse the Suffix, Stitch</h2></summary>
+
 
 The pattern reuses the full-list reversal helper, applied to the suffix only. Because reversal needs a head pointer to start from, the algorithm walks to position `n − k` (the splice point) and hands `current.next` (the suffix's original head) to the helper. The helper returns the reversed suffix's new head. The stitch line — `current.next = reversedSuffixHead` — connects the prefix's last node to the new head. The prefix is never re-touched, and the new tail of the reversed suffix (which used to be the suffix's original head) already points to `null` because the helper terminates when `current` becomes `null`.
 
----
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
 
-## Approach
 
 Measure the length, walk to the splice point, reverse the suffix, stitch.
 
@@ -81,8 +87,9 @@ Measure the length, walk to the splice point, reverse the suffix, stitch.
 5. **Reverse the suffix.** Pass `current.next` (the suffix's original head) to the full-list reversal helper. The helper returns the reversed suffix's new head.
 6. **Stitch and return.** Assign `current.next = last_k_reverse_head`. The prefix is intact; the suffix is reversed; the splice connects them. Return the original `head` (which is still the head of the unchanged prefix).
 
+</details>
 <details>
-<summary><strong>Solution &amp; Analysis</strong></summary>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
 ### Solution
 
@@ -364,7 +371,10 @@ Return head (= 5).
 | Two nodes, `k = 2` | `k == length`; full-list reversal via the shortcut. |
 
 </details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 Suffix reversal is full-list reversal applied to a sublist — measure the length, walk to the splice point, hand the suffix to the reversal helper, then stitch. The splice point reference is the only piece of state that survives both the walk and the reversal call.
+
+</details>

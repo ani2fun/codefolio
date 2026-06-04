@@ -87,7 +87,7 @@ It's irrelevant for a **balanced** tree: `h ≈ log n`, so even a billion nodes 
 
 The reusable iterative search:
 
-```python run
+```python run viz=binary-tree viz-root=root
 class TreeNode:
     def __init__(self, val):
         self.val = val
@@ -114,7 +114,7 @@ for v in [5, 3, 8, 1, 4, 7, 9]:
 print(bool(search(root, 1)), bool(search(root, 9)), bool(search(root, 2)))   # True True False
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 public class Main {
   static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } }
   static TreeNode insert(TreeNode r, int v) {

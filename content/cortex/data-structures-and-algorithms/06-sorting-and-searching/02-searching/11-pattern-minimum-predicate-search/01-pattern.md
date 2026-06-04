@@ -17,7 +17,7 @@ There's no array to search — so you binary-search the **answer range** itself.
 
 Koko eats bananas: piles `[3, 6, 7, 11]`, and she must finish within `h = 8` hours. At speed `k` per hour, a pile of `p` takes `⌈p/k⌉` hours. Find the **minimum** speed `k`. Run it.
 
-```python run
+```python run viz=array
 import math
 
 def min_eating_speed(piles, h):
@@ -84,7 +84,7 @@ Monotonicity is what makes "discard half" valid. When `feasible(mid)` is true, t
 
 The reusable minimum-feasible search:
 
-```python run
+```python run viz=array
 import math
 
 def min_eating_speed(piles, h):
@@ -103,7 +103,7 @@ print(min_eating_speed([30, 11, 23, 4, 20], 6))   # 23
 print(min_eating_speed([312884470], 312884469))   # 2
 ```
 
-```java run
+```java run viz=array
 public class Main {
   static boolean feasible(int[] piles, int k, int h) {
     long hours = 0;

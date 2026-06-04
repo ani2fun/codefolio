@@ -14,8 +14,7 @@ Given the **head** of a singly linked list and a positive integer **k**, write a
 
 If the remaining nodes at the end are fewer than `k`, include all of them in the respective group.
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1:**
 ```
@@ -41,11 +40,12 @@ Output: [[1, 2, 3], [4, 5, 6]]
 Explanation: Two full groups of three — first to list 0, second to list 1.
 ```
 
-</details>
 
 ---
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The **structural property** that makes this a split problem is that the destination bucket depends on *position*, not value — specifically, on which group of `k` consecutive nodes the current node belongs to. The classifier is stateful: a counter and a flag. After every `k` nodes pass through the walker, the flag flips, and subsequent nodes route to the other bucket. The locality of "decide per node" still holds; the classifier carries a tiny piece of state across calls.
 
@@ -53,9 +53,10 @@ The **bucket placement** treats each chunk as the unit of work. Rather than call
 
 What **breaks if you reach for a naive approach**? The two-pass version walks the list once to record positions `[0..k-1]` to list 0, `[k..2k-1]` to list 1, alternating, then a second pass to actually build the output chains. That doubles the work and forces the caller to keep `head` reachable across both passes. Worse, a per-node classifier without chunk-severing has to re-decide on every single node and never gets to use the `O(1)` chunk-splice trick — every node becomes its own append. The split template with chunk-level routing reads each node exactly once.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | Check | Answer for Split Alternate Groups |
 |---|---|
@@ -64,9 +65,10 @@ What **breaks if you reach for a naive approach**? The two-pass version walks th
 | **Q3.** Is the work at each step `O(1)`? | **Yes** — each chunk takes `O(k)` to walk and a constant number of pointer assignments to splice; per-node work is `O(1)`. |
 | **Q4.** Can output lists share original nodes (re-linked, not copied)? | **Yes** — the original nodes are re-threaded, and the chunk severing (`previous.next = null`) is what turns the original chain into two independent ones. |
 
----
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
 
-## Approach
 
 Walk the original list in chunks of up to `k` nodes. Splice each chunk onto the current bucket's tail; alternate the bucket after every chunk.
 
@@ -80,8 +82,9 @@ Walk the original list in chunks of up to `k` nodes. Splice each chunk onto the 
    - Flip `add_to_first_list` so the next chunk lands in the other bucket.
 4. **Return the real heads.** Return `[first_list_dummy.next, second_list_dummy.next]` to skip past the placeholders.
 
+</details>
 <details>
-<summary><strong>Solution &amp; Analysis</strong></summary>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
 ### Solution
 
@@ -367,7 +370,10 @@ Two output lists. If `n` and `k` give `q = n // k` full chunks and `r = n % k` t
 | Trailing single node (`[6, 1, 3, 10, 6, 8], k = 5`) | One full chunk of 5 → list 0; one short chunk of 1 → list 1. Return `[6 → 1 → 3 → 10 → 6, 8]`. |
 
 </details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 The split template extends to chunk-level routing — the classifier flips per `k` nodes instead of per node, and the chunk is spliced onto the bucket tail in one assignment. The dummy-and-tails skeleton is unchanged; only the granularity of "what gets appended at once" grew from one node to `k`.
+
+</details>

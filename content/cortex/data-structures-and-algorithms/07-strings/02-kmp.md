@@ -15,7 +15,7 @@ KMP turns that observation into an algorithm. It precomputes, from the **pattern
 
 The failure function `lps[i]` (longest proper prefix that is also a suffix of `P[0..i]`) is the whole trick. Build it once, then scan the text: on a mismatch, fall the pattern index back to `lps[j-1]` instead of 0.
 
-```python run
+```python run viz=array
 def build_lps(p):
     m = len(p)
     lps = [0] * m
@@ -46,7 +46,7 @@ print(build_lps("ababaca"))                          # [0, 0, 1, 2, 3, 0, 1]
 print(kmp_search("abxabcabcaby", "abcaby"))          # [6]
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static int[] buildLps(String p) {
@@ -109,7 +109,7 @@ The failure function is most surprising on the very input that wrecked naive mat
 
 **Predict before you run:** what is the failure function `lps` of `"aaaa"` — is it `[0, 0, 0, 0]` (a single repeated character, "no structure"), or something else?
 
-```python run
+```python run viz=array
 def build_lps(p):
     m = len(p); lps = [0] * m; k = 0
     for i in range(1, m):
@@ -135,7 +135,7 @@ print("lps('aaaab'):", build_lps("aaaab"))
 
 **Repeated Substring Pattern** ([LeetCode 459](https://leetcode.com/problems/repeated-substring-pattern/)) — does the string consist of a smaller substring repeated? The failure function answers it for free: `n - lps[n-1]` is the string's shortest *period*, and the string is a clean repetition iff that period divides `n` (and there's a nontrivial overlap).
 
-```python run
+```python run viz=array
 def build_lps(s):
     m = len(s); lps = [0] * m; k = 0
     for i in range(1, m):
@@ -157,7 +157,7 @@ print(repeated_substring("aba"))         # False
 print(repeated_substring("abcabcabc"))   # True   ("abc" x 3)
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static int[] buildLps(String s) {
         int m = s.length(); int[] lps = new int[m]; int k = 0;

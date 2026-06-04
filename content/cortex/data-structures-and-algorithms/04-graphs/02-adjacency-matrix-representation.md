@@ -17,7 +17,7 @@ Its appeal is raw speed: "is there an edge between `i` and `j`?" is a single arr
 
 The 5-node undirected graph below, built into a matrix. Check an edge in `O(1)`, and list a node's neighbours by scanning its row. Run it.
 
-```python run
+```python run viz=graph viz-kind=graph
 def create_graph(n, edges):
     adj = [[False] * n for _ in range(n)]      # N×N, all false (see the aliasing note!)
     for i, j in edges:
@@ -82,7 +82,7 @@ The matrix allocates `N² = (10⁹)² = 10¹⁸` cells — an **exabyte-scale** 
 
 Build the matrix, query an edge, and list neighbours — in both languages:
 
-```python run
+```python run viz=graph viz-kind=graph
 def create_graph(n, edges):
     adj = [[False] * n for _ in range(n)]       # comprehension avoids the shared-row trap
     for i, j in edges:
@@ -96,7 +96,7 @@ print([j for j in range(5) if m[2][j]])          # [0, 1, 4]
 print(all(m[i][j] == m[j][i] for i in range(5) for j in range(5)))   # True (symmetric)
 ```
 
-```java run
+```java run viz=graph viz-kind=graph
 import java.util.*;
 public class Main {
   static boolean[][] createGraph(int n, int[][] edges) {

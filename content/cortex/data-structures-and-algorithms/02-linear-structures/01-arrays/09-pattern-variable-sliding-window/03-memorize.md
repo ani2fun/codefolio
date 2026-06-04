@@ -29,6 +29,18 @@ Picture a thirsty hiker walking down a long road with a rubber-banded water flas
 
 ## Visual Summary
 
+```mermaid
+flowchart LR
+  grow["expand right<br/>while the rule holds"] --> chk{"rule broken?"}
+  chk -->|"yes"| shrink["shrink left<br/>until valid again"]
+  chk -->|"no"| grow
+  shrink --> upd["update best answer"]
+  upd --> grow
+  style upd fill:#bbf7d0,stroke:#16a34a
+```
+
+<p align="center"><strong>When a condition replaces a fixed size: grow the window on the right; the moment it breaks the rule, shrink from the left until it holds again. Each index enters and leaves once — O(n).</strong></p>
+
 ---
 
 ## Pattern Recognition Triggers

@@ -92,7 +92,7 @@ Because of **which element becomes the root, and when the structure is decided**
 
 The reusable balanced builder:
 
-```python run
+```python run viz=binary-tree viz-root=root
 class TreeNode:
     def __init__(self, val):
         self.val = val
@@ -116,7 +116,7 @@ for n in (7, 15, 31):
     print(n, "elements →  height", h)   # 7→2, 15→3, 31→4 (⌊log2 n⌋)
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 public class Main {
   static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } }
 

@@ -512,8 +512,7 @@ Result: [1, 4, 2, 3] ✓
 | Three | `[1,2,3]` | `[1,3,2]` | Odd split: first=[1,2], second=[3]. Reverse=[3]. Alt-merge → [1,3,2]. |
 
 </details>
-<details>
-<summary><h2>Examples</h2></summary>
+## Examples
 
 **Example 1**
 ```
@@ -543,7 +542,6 @@ Output: [1, 6, 2, 5, 3, 4]
 Explanation: Even-length split: first = 1 ⇄ 2 ⇄ 3; second = 4 ⇄ 5 ⇄ 6. Reverse second: 6 ⇄ 5 ⇄ 4. Alternate-merge → 1 ⇄ 6 ⇄ 2 ⇄ 5 ⇄ 3 ⇄ 4.
 ```
 
-</details>
 <details>
 <summary><h2>Intuition</h2></summary>
 

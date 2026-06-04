@@ -17,7 +17,7 @@ Two two's-complement identities do the core moves in a single operation. Subtrac
 
 For `n = 12` (`0b1100`, lowest set bit is position 3): clear it, isolate it, and use the clear-identity to test "is `n` a power of 2?". Run it.
 
-```python run
+```python run viz=array
 n = 12                              # 0b1100
 
 print(n & (n - 1))                  # 8 — clears the lowest set bit (bit 3)
@@ -80,7 +80,7 @@ Because each iteration clears exactly *one* set bit (the lowest), so the loop bo
 
 The reusable lowest-bit utilities:
 
-```python run
+```python run viz=array
 def lowest_set_bit(n):       return n & -n            # isolate (power of 2)
 def lowest_set_position(n):  return (n & -n).bit_length()   # 1-indexed position
 def is_power_of_two(n):      return n > 0 and (n & (n - 1)) == 0
@@ -95,7 +95,7 @@ print(lowest_set_bit(12), lowest_set_position(12), is_power_of_two(16), popcount
 # 4 3 True 3
 ```
 
-```java run
+```java run viz=array
 public class Main {
   static int lowestSetBit(int n)      { return n & -n; }
   static int lowestSetPosition(int n) { return Integer.numberOfTrailingZeros(n & -n) + 1; }

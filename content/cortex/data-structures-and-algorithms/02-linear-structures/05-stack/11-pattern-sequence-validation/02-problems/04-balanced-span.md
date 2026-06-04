@@ -21,8 +21,7 @@ Given a string `s` of `(` and `)`, return the length of the **longest valid (bal
 ### Example 3
 > -   **Input:** `s = "(((("` → **Output:** `0`
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -55,9 +54,10 @@ Explanation: the leading ')' resets the sentinel; "()" at positions 1..2
 is the longest valid run; the trailing '(' is unmatched.
 ```
 
-</details>
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 This is a **sequence-validation** problem, but the answer is a *length*, not a yes/no — the longest contiguous run of correctly matched brackets. Validity is still decided by matching closers to the most recent openers; the new demand is measuring how far the current valid run stretches. That needs positions, so the stack stores **indices** rather than characters.
 
@@ -65,7 +65,10 @@ The stack holds the index of every unmatched `(`, plus a sentinel index at the b
 
 The naive approach checks every substring for balance — `O(N³)` time across all start/end pairs with an `O(N)` validity test, or `O(N²)` with running counts. Both re-examine overlapping spans repeatedly. The index stack computes the longest valid length in one pass: each closer that matches immediately measures its run against the boundary on top, with no substring re-checking.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for Balanced Span |
 |---|---|
@@ -74,7 +77,10 @@ The naive approach checks every substring for balance — `O(N³)` time across a
 | **Q3.** Is one pass with `O(1)` work per token enough? | **Yes** — each index is pushed once and popped once; the span read is `O(1)`. |
 | **Q4.** Is the answer decided by what the stack holds — here, boundary indices? | **Yes** — the top is "one before the current run", so `i − stack.top()` yields the length. |
 
-## Approach in Words
+</details>
+<details>
+<summary><h2>Approach in Words</h2></summary>
+
 
 Push indices, seed a sentinel, and measure each valid run against the boundary on top.
 
@@ -86,6 +92,7 @@ Push indices, seed a sentinel, and measure each valid run against the boundary o
 6. **Otherwise measure the run.** Set `maxLength = max(maxLength, i − stack.top())`, where the top is one index before the current valid run.
 7. **After the pass, return `maxLength`** — the length of the longest valid substring.
 
+</details>
 <details>
 <summary><h2>Approach — index stack with sentinel</h2></summary>
 
@@ -249,8 +256,9 @@ Three lessons:
 > *Coming up — the **linear evaluation** pattern. The last problem-solving pattern in this section. It's the umbrella term for stack-based algorithms that build up an *answer* one element at a time by repeatedly popping until a condition is met, then pushing. Score-of-parentheses, decode-string, simplified-Unix-paths, and the asteroid collision problem all fall here.*
 
 </details>
+<details>
+<summary><h2>Dry Run</h2></summary>
 
-## Dry Run
 
 Walk Example 1 — `s = "((()()"`. The stack stores indices, seeded with sentinel `-1`; the top is always "one before the current valid run":
 
@@ -270,7 +278,10 @@ return max = 4 ✓
 
 The two leading `(` at indices `0` and `1` are never closed, so they stay on the stack as the run boundary. The valid run `"()()"` spans indices `2..5`, measured as `5 − 1 = 4`.
 
-## Complexity Analysis
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
+
 
 | Measure | Value | Why |
 |---|---|---|
@@ -279,7 +290,10 @@ The two leading `(` at indices `0` and `1` are never closed, so they stay on the
 
 The runtime is `O(N)` time: a single index-walk with `O(1)` push, pop, and span arithmetic per character. The space is `O(N)`: an all-opener input (`"(((("`) pushes every index on top of the sentinel, so the stack grows to `N + 1`. There is no second pass and no substring re-checking.
 
-## Edge Cases
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
+
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -290,6 +304,11 @@ The runtime is `O(N)` time: a single index-walk with `O(1)` push, pop, and span 
 | Incomplete tail | `s = "(()"` | `2` | The inner `"()"` scores `2`; the outer `(` is never closed. |
 | Adjacent runs | `s = "()()"` | `4` | Both pairs share the sentinel boundary, so the run measures across both as `4`. |
 
-## Key Takeaway
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
 
 Storing *indices* with a sentinel `-1` turns validity into measurement: the top is always one position before the current valid run, so `i − stack.top()` reads off its length in `O(1)`. The new idea over the bracket checker is using the stack to compute a span, not just to confirm matching.
+
+</details>

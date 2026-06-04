@@ -131,7 +131,7 @@ flowchart TB
 
 ### The Solution
 
-```python run
+```python run viz=array
 class Solution:
     def fibonacci(self, n: int) -> int:
 
@@ -161,7 +161,7 @@ print(Solution().fibonacci(7))   # 13
 print(Solution().fibonacci(10))  # 55
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static class Solution {
         public int fibonacci(int N) {

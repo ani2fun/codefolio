@@ -36,7 +36,7 @@ table: "Subproblem space for C(n, k)" {
 
 Binomial coefficient, straight from the recurrence. Two base cases — on the `k = 0` edge and the `k = n` diagonal — anchor both boundaries of the grid.
 
-```python run
+```python run viz=array
 def binom(n, k):
     if k == 0 or k == n:                     # base cases on TWO boundaries
         return 1
@@ -45,7 +45,7 @@ def binom(n, k):
 print("C(5,2):", binom(5, 2))
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static int binom(int n, int k) {
         if (k == 0 || k == n) return 1;                  // two boundary base cases
@@ -105,7 +105,7 @@ Because each axis terminates on its own edge, a 2D recursion needs a base case f
 
 **Predict before you run:** does `paths(2, 2)` return `6`, or something else?
 
-```python run
+```python run viz=array
 import sys
 sys.setrecursionlimit(2000)
 
@@ -131,7 +131,7 @@ It raises `RecursionError`. Follow the column edge: `paths(1, 0)` isn't a base c
 
 **Lattice paths:** how many ways from the top-left to the bottom-right of a grid, moving only right or down? Your first move is right (→ a `(r, c-1)` subgrid) or down (→ a `(r-1, c)` subgrid); sum the two. Bases on *both* edges: a single row or column has exactly one path.
 
-```python run
+```python run viz=array
 def paths(r, c):
     if r == 0 or c == 0:                     # base cases on BOTH boundaries
         return 1
@@ -141,7 +141,7 @@ print("paths(2,2):", paths(2, 2))            # 6
 print("paths(3,3):", paths(3, 3))            # 20
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static int paths(int r, int c) {
         if (r == 0 || c == 0) return 1;              // both boundaries

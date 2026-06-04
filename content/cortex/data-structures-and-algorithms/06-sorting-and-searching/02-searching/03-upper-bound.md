@@ -17,7 +17,7 @@ On its own that's the answer to "first element `> x`." But the real power is the
 
 In `[1, 3, 3, 5, 7]`, find the first index `> 3` (it's `3`, where `5` sits — just past the two 3s), and use the pair to count the 3s. Run it.
 
-```python run
+```python run viz=array
 def lower_bound(arr, t):
     lo, hi = 0, len(arr)
     while lo < hi:
@@ -85,7 +85,7 @@ Because the comparison decides what happens when `arr[mid] == target`. In lower 
 
 The reusable upper bound (with a count helper):
 
-```python run
+```python run viz=array
 def lower_bound(arr, t):
     lo, hi = 0, len(arr)
     while lo < hi:
@@ -109,7 +109,7 @@ a = [1, 2, 2, 2, 5, 7]
 print(upper_bound(a, 2), count(a, 2), count(a, 4))   # 4 3 0
 ```
 
-```java run
+```java run viz=array
 public class Main {
   static int lowerBound(int[] a, int t) {
     int lo = 0, hi = a.length;

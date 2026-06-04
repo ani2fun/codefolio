@@ -17,7 +17,7 @@ You could, for every interval, count how many others overlap it — `O(n²)`. Bu
 
 Four meetings; how many rooms do you need at the peak? Turn each into a start/end event, sort, sweep. Run it.
 
-```python run
+```python run viz=array
 intervals = [[1, 4], [2, 5], [7, 9], [3, 6]]
 events = []
 for start, end in intervals:
@@ -77,7 +77,7 @@ Before you read on: the peak of `3` happened at time `3`. Which three meetings w
 
 The reusable peak-overlap (a.k.a. minimum meeting rooms):
 
-```python run
+```python run viz=array
 def max_overlap(intervals):
     events = []
     for start, end in intervals:
@@ -93,7 +93,7 @@ def max_overlap(intervals):
 print(max_overlap([[1, 4], [2, 5], [7, 9], [3, 6]]))   # 3
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {

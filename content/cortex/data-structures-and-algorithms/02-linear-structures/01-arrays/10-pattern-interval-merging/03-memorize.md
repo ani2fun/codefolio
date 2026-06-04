@@ -31,6 +31,17 @@ Imagine running a yellow highlighter along a paper strip of events drawn left to
 
 ## Visual Summary
 
+```mermaid
+flowchart LR
+  sort["sort intervals by start"] --> scan["sweep left → right"]
+  scan --> q{"start ≤ prevEnd?"}
+  q -->|"yes (overlap)"| merge["extend: prevEnd = max(prevEnd, end)"]
+  q -->|"no"| push["open a new interval"]
+  style merge fill:#bbf7d0,stroke:#16a34a
+```
+
+<p align="center"><strong>Sort intervals by start, then sweep once: if the next begins before the current ends, fuse them by stretching the end; otherwise open a new block. Sorting dominates at O(n log n).</strong></p>
+
 ---
 
 ## Pattern Recognition Triggers

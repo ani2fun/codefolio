@@ -50,11 +50,12 @@
         margin: 0 0 40px;
     }
     .cortex-reader-prose__lede em {
-        font-family: var(--font-display);
+        font-family: var(--font-sans);
         font-style: italic;
-        font-size: 1.06em;
-        color: hsl(var(--foreground));
-        letter-spacing: 0.05em;
+        font-weight: 500;
+        font-size: 1em;
+        color: hsl(var(--primary));     /* key term pops in indigo */
+        letter-spacing: 0;
     }
 
     /* ─── Breadcrumb ─────────────────────────────────────────────── */
@@ -80,7 +81,7 @@
 
     /* ─── Pager (prev/next chapter) ──────────────────────────────── */
     /* Two-column even on mobile so prev/next live side-by-side. Cards
-       get a terracotta `::before` rail that scales in on hover plus a
+       get a indigo `::before` rail that scales in on hover plus a
        subtle 1px lift + soft shadow. */
     .cortex-reader-pager {
         @apply mt-16 pt-8 border-t border-border grid grid-cols-2 gap-3 sm:gap-3.5
@@ -313,7 +314,7 @@
         overflow: visible;
         text-overflow: clip;
     }
-    /* Active chapter — soft card surface with shadow + terracotta-tinted
+    /* Active chapter — soft card surface with shadow + indigo-tinted
        number badge (replaces the muted outline). The bg-card token
        handles light/dark; the shadow stack matches the design's --shadow-1. */
     .cortex-reader-sidebar__chapter-link--active {
@@ -1279,7 +1280,7 @@
     }
     /* Headings inside a collapsible <summary> (e.g. the Quick Reference's foldable
        sections, the Memorize <details>) are the fold's toggle control — they must
-       not get the hover deep-link pill, which would otherwise pop up in terracotta
+       not get the hover deep-link pill, which would otherwise pop up in indigo
        right next to the disclosure chevron. The heading keeps its id, so the
        right-rail outline and #-anchor URLs still resolve. */
     .chapter-content summary .cortex-prose-anchor { display: none; }
@@ -1514,9 +1515,12 @@
         font-weight: 500;
     }
     .cortex-reader-type-prefs__seg--family button[data-v="serif"] {
-        font-family: var(--font-display);
-        font-style: italic;
-        font-size: 15px;
+        font-family: var(--font-read);
+        font-size: 14px;
+    }
+    .cortex-reader-type-prefs__seg--family button[data-v="mono"] {
+        font-family: var(--font-code);
+        font-size: 12.5px;
     }
     .cortex-reader-type-prefs__row {
         display: flex;

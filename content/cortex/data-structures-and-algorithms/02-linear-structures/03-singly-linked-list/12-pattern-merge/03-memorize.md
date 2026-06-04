@@ -31,6 +31,16 @@ Picture a stapler at the head of a conveyor belt, with two feeder lines bringing
 
 ## Visual Summary
 
+```mermaid
+flowchart LR
+  la["A: 1 → 4 → 7"] --> pick{"pick smaller head"}
+  lb["B: 2 → 5"] --> pick
+  pick --> merged["1 → 2 → 4 → 5 → 7"]
+  style merged fill:#bbf7d0,stroke:#16a34a
+```
+
+<p align="center"><strong>Weave two sorted lists into one: repeatedly splice off the smaller of the two heads onto the tail of the result. A dummy head keeps the splicing uniform — O(n + m), no copying.</strong></p>
+
 ---
 
 ## Pattern Recognition Triggers

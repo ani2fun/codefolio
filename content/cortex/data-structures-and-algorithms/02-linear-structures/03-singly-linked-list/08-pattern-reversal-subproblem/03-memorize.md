@@ -31,6 +31,15 @@ Picture a row of train cars on a single track and a crew that has been told to f
 
 ## Visual Summary
 
+```mermaid
+flowchart LR
+  prim["full-list reversal primitive"] --> piece["apply to a sub-range:<br/>swap pairs · reverse first k · reverse [i..j]"]
+  piece --> stitch["re-link the reversed piece<br/>to the untouched prefix and suffix"]
+  style stitch fill:#bbf7d0,stroke:#16a34a
+```
+
+<p align="center"><strong>Reuse the three-pointer reversal on a slice, not the whole list — reverse the first k, swap adjacent pairs, flip a middle segment — then stitch the reversed piece back to its neighbours.</strong></p>
+
 ---
 
 ## Pattern Recognition Triggers

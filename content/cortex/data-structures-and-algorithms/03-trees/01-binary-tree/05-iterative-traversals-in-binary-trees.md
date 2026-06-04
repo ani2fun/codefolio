@@ -123,7 +123,7 @@ The single most error-prone line in iterative preorder is the push order. The Se
 
 **Predict before you run:** intuitively, pushing `left` first should visit left first… right? Predict the output of the `left`-then-`right` version on the tree `1 → (2 → 4, 5), (3)`.
 
-```python run
+```python run viz=binary-tree viz-root=root
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
         self.val, self.left, self.right = val, left, right
@@ -161,7 +161,7 @@ Postorder (`left, right, visit` — children before parent) is the order that fr
 
 **Predict:** for the tree `1 → (2 → 4, 5), (3)`, what is the postorder? (It should match the recursive postorder from the previous lesson.)
 
-```python run
+```python run viz=binary-tree viz-root=root
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
         self.val, self.left, self.right = val, left, right
@@ -182,7 +182,7 @@ def postorder_iter(root):
 print("postorder (iterative):", postorder_iter(root))   # [4, 5, 2, 3, 1]
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 public class Main {
     static class TreeNode {

@@ -25,8 +25,7 @@ Output: false
 
 ---
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -56,11 +55,12 @@ Output: true
 Explanation: Even-length palindrome — the pointers never land on the same node; they cross past each other after the inner (2, 2) match passes.
 ```
 
-</details>
 
 ---
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The **structural property** that makes this a two-pointer problem is that a palindrome is defined by *mirror equality* across the centre of the list. Position `i` from the head must equal position `i` from the tail for every valid `i`. A DLL gives both ends in `O(1)` (the caller already passes `head` and `tail`) and a backward step from the tail in `O(1)` via `tail.prev`. The work splits naturally into `n / 2` independent comparisons — exactly the shape a converging two-pointer pass eats for breakfast.
 
@@ -68,9 +68,10 @@ The **pointer placement** is `left = head`, `right = tail`. Each iteration reads
 
 What **breaks if you reach for the naive approach**? Copying the list into an array and comparing `arr[i]` with `arr[n - 1 - i]` works in `O(n)` time but pays `O(n)` extra space for the copy. Reversing a clone of the list and walking both in parallel hits the same `O(n)` space cost. The two-pointer pass keeps the space at `O(1)` and gains an early-exit on the first mismatch — a list like `[1, 2, 3, 4, 5]` rejects after one comparison, not five.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | Check | Answer for Palindrome Number |
 |---|---|
@@ -79,9 +80,10 @@ What **breaks if you reach for the naive approach**? Copying the list into an ar
 | **Q3.** Do both pointers move strictly inward? | **Yes** — on a match, `left = left.next` and `right = right.prev`; neither pointer ever reverses. |
 | **Q4.** Is the per-step work `O(1)`? | **Yes** — one value comparison and two pointer steps per iteration; no inner scan. |
 
----
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
 
-## Approach
 
 Run the converging two-pointer loop until the pointers meet or cross.
 
@@ -92,6 +94,7 @@ Run the converging two-pointer loop until the pointers meet or cross.
 5. **Step both pointers inward.** Set `left = left.next` and `right = right.prev`. The unprocessed span has shrunk by one node on each side.
 6. **Return `true` when the loop exits.** Every pair matched, so the list reads the same forwards and backwards.
 
+</details>
 <details>
 <summary><h2>The Mirror Strategy (Visualised)</h2></summary>
 
@@ -361,7 +364,10 @@ Result: false ✓ (mismatch detected on the very first iteration)
 We've used both pointers symmetrically. Up next: a problem where the *decision* of which pointer to move depends on a computed value.
 
 </details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 The palindrome check is the simplest mirror-equality variant — both pointers always move every iteration because the per-pair decision is binary (match or fail). Early exit on the first mismatch is what beats the array-copy baseline in both time and space.
+
+</details>

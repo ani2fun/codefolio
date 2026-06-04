@@ -105,7 +105,7 @@ Why must one of the two traversals be inorder — why won't preorder + postorder
 
 **Predict before you run:** the left-child tree and the right-child tree — do they have the same preorder? The same postorder? The same inorder?
 
-```python run
+```python run viz=binary-tree viz-root=root
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
         self.val, self.left, self.right = val, left, right
@@ -138,7 +138,7 @@ The twin construction is **postorder + inorder** (LeetCode 106). Postorder's *la
 
 **Predict:** rebuilding from `postorder = [4, 5, 2, 3, 1]` and `inorder = [4, 2, 5, 1, 3]` — what preorder should the result have? (It's the same tree, so it should round-trip.)
 
-```python run
+```python run viz=binary-tree viz-root=root
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
         self.val, self.left, self.right = val, left, right
@@ -162,7 +162,7 @@ root = build_post([4, 5, 2, 3, 1], [4, 2, 5, 1, 3])
 print("rebuilt preorder:", preorder(root))   # [1, 2, 4, 5, 3] — round-trips
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 public class Main {
     static class TreeNode {

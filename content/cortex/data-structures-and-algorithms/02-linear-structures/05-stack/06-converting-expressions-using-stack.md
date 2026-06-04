@@ -18,7 +18,7 @@ The trick is one operator stack plus an output list. Scan the infix left-to-righ
 
 Shunting-yard converting `2 + 3 * 4` — watch it respect precedence, emitting `*` before the lower-precedence `+` even though `+` was read first:
 
-```python run
+```python run viz=array viz-kind=stack
 prec = {"+": 1, "-": 1, "*": 2, "/": 2}
 def infix_to_postfix(tokens):                       # Dijkstra's shunting-yard
     out, ops = [], []
@@ -43,7 +43,7 @@ print("infix:   2 + 3 * 4")
 print("postfix:", " ".join(infix_to_postfix("2 + 3 * 4".split())))
 ```
 
-```java run
+```java run viz=array viz-kind=stack
 import java.util.*;
 public class Main {
     static Map<String,Integer> prec = Map.of("+", 1, "-", 1, "*", 2, "/", 2);
@@ -106,7 +106,7 @@ Precedence handles the default grouping; parentheses exist to *override* it. The
 
 **Predict before you run:** `2 + 3 * 4` converts to `2 3 4 * +` (multiplication binds tighter). What does `( 2 + 3 ) * 4` convert to — the same postfix, or something different?
 
-```python run
+```python run viz=array viz-kind=stack
 prec = {"+": 1, "-": 1, "*": 2, "/": 2}
 def infix_to_postfix(tokens):
     out, ops = [], []
@@ -139,7 +139,7 @@ Convert plus evaluate is a complete calculator: shunting-yard parses the human-f
 
 **Predict:** running both `2 + 3 * 4` and `( 2 + 3 ) * 4` through *convert-then-evaluate*, what two values come out?
 
-```python run
+```python run viz=array viz-kind=stack
 prec = {"+": 1, "-": 1, "*": 2, "/": 2}
 def infix_to_postfix(tokens):
     out, ops = [], []
@@ -169,7 +169,7 @@ for infix in ["2 + 3 * 4", "( 2 + 3 ) * 4"]:
     print(f"{infix:>15}  ->  {' '.join(post):>9}  =  {eval_postfix(post)}")
 ```
 
-```java run
+```java run viz=array viz-kind=stack
 import java.util.*;
 public class Main {
     static Map<String,Integer> prec = Map.of("+", 1, "-", 1, "*", 2, "/", 2);

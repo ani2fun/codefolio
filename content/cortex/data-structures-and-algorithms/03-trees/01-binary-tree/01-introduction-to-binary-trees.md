@@ -16,7 +16,7 @@ A **binary tree** is the simplest branching structure that's still powerful: eac
 
 A binary tree is just nodes with `left`/`right` links, and its core measurements — size and height — fall straight out of the recursive definition:
 
-```python run
+```python run viz=binary-tree viz-root=root
 class Node:
     def __init__(self, val, left=None, right=None):
         self.val = val; self.left = left; self.right = right
@@ -35,7 +35,7 @@ print("node count:", count(tree))
 print("height:", height(tree))
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 public class Main {
     static class Node {
         int val; Node left, right;
@@ -83,7 +83,7 @@ Two trees can hold the *same* values yet differ wildly in performance, and the d
 
 **Predict before you run:** take the seven values `1…7`. Build them two ways — (a) a *degenerate* tree where each value is the right child of the previous (so it's really a chain), and (b) a *balanced/perfect* tree. What height does each have, and what does that imply for searching them?
 
-```python run
+```python run viz=binary-tree viz-root=root
 class Node:
     def __init__(self, val, left=None, right=None):
         self.val = val; self.left = left; self.right = right
@@ -111,7 +111,7 @@ The recursive "node, left, right" template answers most structural questions abo
 
 **Predict:** in the *perfect* binary tree of 7 nodes (root 1; internal 2, 3; leaves 4, 5, 6, 7), how many nodes are **leaves** (no children) and how many are **internal** (at least one child)?
 
-```python run
+```python run viz=binary-tree viz-root=root
 class Node:
     def __init__(self, val, left=None, right=None):
         self.val = val; self.left = left; self.right = right
@@ -127,7 +127,7 @@ tree = Node(1, Node(2, Node(4), Node(5)), Node(3, Node(6), Node(7)))   # perfect
 print("leaves:", leaves(tree), "| internal:", internal(tree))
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 public class Main {
     static class Node {
         int val; Node left, right;

@@ -16,7 +16,7 @@ Redis turns that into policy. Each collection type has a **compact encoding** fo
 
 A Set of integers starts as an `intset` — a sorted packed array with binary-search membership. The moment it outgrows the threshold, Redis converts it to a hash table. The stored data is identical; only the physical encoding changes.
 
-```python run
+```python run viz=array
 import bisect
 class AdaptiveSet:
     THRESHOLD = 4                          # tiny for the demo; Redis default is 512
@@ -47,7 +47,7 @@ s.add(30)                                    # 5th int pushes past THRESHOLD=4
 print("size 5:", s.encoding(), "| contains 40?", s.contains(40))
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static class AdaptiveSet {
@@ -116,7 +116,7 @@ The size threshold isn't the only thing that can force an upgrade. An `intset` h
 
 **Predict before you run:** a Set holds just three integers — `size 3`, nowhere near the 512 threshold, comfortably an `intset`. You add the string `"hello"`. Does it stay an `intset` (it's still tiny), or convert?
 
-```python run
+```python run viz=array
 class IntsetOrHash:
     THRESHOLD = 512
     def __init__(self): self.intset = []; self.hashset = None
@@ -150,7 +150,7 @@ You've seen the Set grow *into* a hash table. Now shrink it back down.
 
 **Predict:** a Set grows to 5 elements and upgrades to `hashtable`. You then delete 3 of them, leaving just 2 — far below the threshold again. Does Redis revert to the compact `intset`, or stay a `hashtable`?
 
-```python run
+```python run viz=array
 class AdaptiveSet:
     THRESHOLD = 4
     def __init__(self): self.intset = []; self.hashset = None
@@ -173,7 +173,7 @@ for x in [1, 2, 3]: s.remove(x)            # shrink back to 2 elements
 print("after shrink:", s.encoding(), "size", s.size())
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static class AdaptiveSet {

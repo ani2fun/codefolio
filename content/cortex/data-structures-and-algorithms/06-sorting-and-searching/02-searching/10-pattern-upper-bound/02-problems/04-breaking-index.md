@@ -30,7 +30,7 @@ Output: -1
 The condition `arr[i] - arr[0] > delta` is `arr[i] > arr[0] + delta`. So `upper_bound(arr, arr[0] + delta)` gives the answer.
 
 
-```python run
+```python run viz=array
 from typing import List
 
 class Solution:
@@ -103,7 +103,7 @@ print(Solution().breaking_index([1, 2, 3, 4, 5], 3))          # 4   (breaking at
 print(Solution().breaking_index([0, 0, 0, 0], 0))             # -1  (all same)
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static class Solution {
         public int upperBound(int[] arr, int target) {

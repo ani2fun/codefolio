@@ -16,7 +16,7 @@ The sketch trades exactness for a *fixed* footprint: a small `d × w` grid of co
 
 Each item hashes to one column per row. `add` increments those `d` cells; `estimate` reads them and returns the smallest. With a wide enough grid (few collisions) the estimate is exact.
 
-```python run
+```python run viz=grid
 MOD = (1 << 31) - 1
 class CountMinSketch:
     BASES = [131, 137, 139]                          # one hash per row (so d = 3 rows)
@@ -42,7 +42,7 @@ print(cms.estimate("banana"))    # 3
 print(cms.estimate("date"))      # 7
 ```
 
-```java run
+```java run viz=grid
 public class Main {
     static final long MOD = (1L << 31) - 1;
     static final int[] BASES = {131, 137, 139};
@@ -106,7 +106,7 @@ Why the *minimum*, specifically — not a single row, not the sum, not the avera
 
 **Predict before you run:** in a narrow `3 × 5` sketch, you add a *rare* key `"aa"` once and a *heavy* key `"bb"` twenty times. It happens that `"aa"` and `"bb"` collide in exactly one of `"aa"`'s three rows. So `"aa"`'s three counters read `[1, 1, 21]`. What does `estimate("aa")` return — and what would summing the cells give?
 
-```python run
+```python run viz=grid
 MOD = (1 << 31) - 1
 class CountMinSketch:
     BASES = [131, 137, 139]
@@ -143,7 +143,7 @@ print("the collided row alone:", max(cms.cells("aa")))
 
 **Heavy hitters** — find the most frequent item in a stream, and confirm the one-sided guarantee. Add a stream with known true counts, then verify every estimate is `≥` its true count (never under) and that the sketch fingers the heaviest key.
 
-```python run
+```python run viz=grid
 MOD = (1 << 31) - 1
 class CountMinSketch:
     BASES = [131, 137, 139]
@@ -167,7 +167,7 @@ heavy = max(truth, key=cms.estimate)
 print("heavy hitter:", heavy, "->", cms.estimate(heavy))                              # x -> 50
 ```
 
-```java run
+```java run viz=grid
 public class Main {
     static final long MOD = (1L << 31) - 1;
     static final int[] BASES = {131, 137, 139};

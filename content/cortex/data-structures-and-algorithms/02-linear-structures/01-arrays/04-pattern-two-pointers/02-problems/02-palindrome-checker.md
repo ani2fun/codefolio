@@ -22,9 +22,7 @@ Input:  s = "This is codeintuition" → Output: False
 
 ---
 
-<details>
-<summary><h2>Examples</h2></summary>
-
+## Examples
 
 **Example 1**
 ```
@@ -53,7 +51,6 @@ Input:  s = "a"
 Output: True   (every single alphanumeric character is trivially a palindrome)
 ```
 
-</details>
 <details>
 <summary><h2>Intuition</h2></summary>
 

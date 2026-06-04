@@ -24,8 +24,7 @@ Given two strings `s1` and `s2`, return `true` if `s1` can be constructed using 
 > -   **Input:** `s1 = "alpha", s2 = "beta"`
 > -   **Output:** `false`
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -55,9 +54,10 @@ Output: false
 Explanation: s1 needs two 'a's but s2 supplies only one → not buildable.
 ```
 
-</details>
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The structural property that makes this a **counting** problem is that order is irrelevant — `s1` is buildable from `s2` only if `s2` supplies *enough copies* of each needed letter. That is a per-letter count comparison, the signal the counting pattern fires on.
 
@@ -65,7 +65,10 @@ The frequency map of `s2` models the available-letters pool. Build it once, then
 
 The naive approach breaks the time budget. For each character of `s1` it scans `s2` for an unused match and marks it, costing `O(|s1| × |s2|)` time. That re-derives the same availability counts repeatedly. Counting builds the pool once in `O(|s2|)`, so each consume step is an `O(1)` decrement-and-check.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for Constructibility Check |
 |---|---|
@@ -74,6 +77,7 @@ The naive approach breaks the time budget. For each character of `s1` it scans `
 | **Q3.** Can the answer be read off the counts after one pass? | **Yes** — count `s2`, then decrement while walking `s1`. |
 | **Q4.** Is the per-item work `O(1)` amortised? | **Yes** — one hash-map update or lookup per character. |
 
+</details>
 <details>
 <summary><h2>Approach</h2></summary>
 
@@ -102,8 +106,9 @@ flowchart LR
 <p align="center"><strong>Constructibility — the s2 frequency map is the "available letters" pool. Walking s1 consumes from the pool. If you ever try to consume a letter that's exhausted, the build fails.</strong></p>
 
 </details>
+<details>
+<summary><h2>Approach in Words</h2></summary>
 
-## Approach in Words
 
 Count the supply, then spend it as you walk the demand.
 
@@ -113,12 +118,13 @@ Count the supply, then spend it as you walk the demand.
 4. **Spend one copy.** Otherwise decrement the letter's count and continue.
 5. **Succeed if `s1` finishes.** Reaching the end of `s1` means every demand was met — return `true`.
 
+</details>
 <details>
 <summary><h2>Solution</h2></summary>
 
 
 
-```python run
+```python run viz=array
 from collections import defaultdict
 from typing import Dict
 
@@ -162,7 +168,7 @@ print(Solution().constructibility_check("a", "a"))                    # True
 print(Solution().constructibility_check("abc", "abc"))                # True
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {
@@ -219,8 +225,9 @@ public class Main {
 **Complexity:** O(|s1| + |s2|) time, O(unique chars in s2) space.
 
 </details>
+<details>
+<summary><h2>Dry Run</h2></summary>
 
-## Dry Run
 
 Walk Example 1 — `s1 = "somenote"`, `s2 = "enetomoselse"`. Build the `s2` pool, then consume one copy per `s1` character:
 
@@ -243,14 +250,20 @@ every character consumed without shortage → return true
 
 The result `true` matches the expected output — `s2` supplies every letter `s1` needs.
 
-## Complexity Analysis
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
+
 
 | Measure | Value | Why |
 |---|---|---|
 | Time  | **O(\|s1\| + \|s2\|)** | One pass to count `s2`, one pass to consume over `s1`; each step is amortised `O(1)`. |
 | Space | **O(k)** | The pool holds `k` distinct characters of `s2` — `O(1)` for a fixed alphabet, `O(\|s2\|)` in general. |
 
-## Edge Cases
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
+
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -261,6 +274,11 @@ The result `true` matches the expected output — `s2` supplies every letter `s1
 | Surplus pool | `s1 = "a", s2 = "aaa"` | `true` | Extra copies are fine — only shortage fails. |
 | Missing letter | `s1 = "alpha", s2 = "beta"` | `false` | `'l'` and `'p'` never appear in the pool. |
 
-## Key Takeaway
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
 
 This is the two-sequence reconcile shape: count the supply (`s2`) once, then decrement it while walking the demand (`s1`), failing the instant a needed letter is exhausted. The directionality matters — the pool is `s2`, and `s1` only spends from it.
+
+</details>

@@ -101,7 +101,7 @@ Because in-order *delivers* the keys already sorted, so the only comparisons tho
 
 k-th smallest plus validate-BST, both on one in-order walk:
 
-```python run
+```python run viz=binary-tree viz-root=root
 class TreeNode:
     def __init__(self, val, left=None, right=None):
         self.val = val; self.left = left; self.right = right
@@ -135,7 +135,7 @@ bad  = TreeNode(5, TreeNode(3, TreeNode(1), TreeNode(6)), TreeNode(8))   # 6 > 5
 print(kth_smallest(good, 2), is_valid_bst(good), is_valid_bst(bad))   # 3 True False
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 
 public class Main {

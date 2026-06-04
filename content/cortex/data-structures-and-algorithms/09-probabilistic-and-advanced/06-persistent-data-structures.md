@@ -16,7 +16,7 @@ The naïve way — copy the whole structure on every update — is `O(n)` per ve
 
 A persistent BST insert returns a *new* root and leaves the old tree completely untouched. Both versions answer queries independently.
 
-```python run
+```python run viz=binary-tree viz-root=root
 class Node:
     __slots__ = ("key", "left", "right")
     def __init__(self, key, left=None, right=None):
@@ -50,7 +50,7 @@ print(o1, "contains 7:", contains(v1, 7))              # [2,3,4,5,8] False  -- v
 print(o2, "contains 7:", contains(v2, 7))              # [2,3,4,5,7,8] True
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 import java.util.*;
 public class Main {
     static class Node {
@@ -118,7 +118,7 @@ The whole efficiency claim rests on "only the path is copied." It's worth provin
 
 **Predict before you run:** you insert *one* new key into a persistent balanced BST that already holds `15` keys. How many brand-new nodes get allocated — all `15` (effectively a fresh tree), or only about `log₂ 15 ≈ 4`?
 
-```python run
+```python run viz=binary-tree viz-root=root
 class Node:
     _count = 0
     __slots__ = ("key", "left", "right")
@@ -160,7 +160,7 @@ Inserting one key allocates just **5** new nodes — the four on the root-to-lea
 
 **Persistent cons-list** — the simplest persistent structure, and the one functional languages use for their default list. `prepend` makes a new head pointing at the *entire* old list as its shared tail: `O(1)` per version, and every old version stays intact.
 
-```python run
+```python run viz=array
 class Cons:
     __slots__ = ("head", "tail")
     def __init__(self, head, tail):
@@ -185,7 +185,7 @@ print(to_list(v2))                                     # [4, 3, 2, 1]
 print("v2.tail is v1 (shared):", v2.tail is v1)        # True
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static class Cons { int head; Cons tail; Cons(int h, Cons t) { head = h; tail = t; } }

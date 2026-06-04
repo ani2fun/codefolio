@@ -22,9 +22,7 @@ intervals = [[1, 5], [5, 7], [7, 8]]            →  0
 
 ---
 
-<details>
-<summary><h2>Examples</h2></summary>
-
+## Examples
 
 **Example 1**
 ```
@@ -50,7 +48,6 @@ Explanation: We don't need to remove any of the intervals since they are
              already non-overlapping (touching counts as non-overlapping).
 ```
 
-</details>
 <details>
 <summary><h2>Intuition</h2></summary>
 

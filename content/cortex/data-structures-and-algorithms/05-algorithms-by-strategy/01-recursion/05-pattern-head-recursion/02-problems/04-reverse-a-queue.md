@@ -284,7 +284,7 @@ You came in with a vague sense that "head recursion does work after the call." Y
 <details>
 <summary><strong>Answer — open after you've written it</strong></summary>
 
-```python run
+```python run viz=array
 class Node:
     def __init__(self, value, nxt=None):
         self.value = value

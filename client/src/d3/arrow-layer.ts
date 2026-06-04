@@ -197,8 +197,8 @@ export function mountArrowLayer(host: HTMLElement): ArrowLayerController {
       path.setAttribute("marker-end", "url(#algolens-arrow-head)");
       // Inline STYLE (not the `stroke` attribute) — `.algolens-arrows__path { stroke: … }`
       // in CSS is a property and would override a presentation attribute, forcing every
-      // arrow to the same --primary terracotta. Inline style wins, so each arrow keeps its
-      // pointer's MarkerColors role colour (head=blue, cur=terracotta, right=bordeaux, …).
+      // arrow to the same --primary indigo. Inline style wins, so each arrow keeps its
+      // pointer's MarkerColors role colour (head=blue, cur=indigo, right=bordeaux, …).
       if (ep.color !== "") path.style.stroke = ep.color;
       svg.appendChild(path);
 

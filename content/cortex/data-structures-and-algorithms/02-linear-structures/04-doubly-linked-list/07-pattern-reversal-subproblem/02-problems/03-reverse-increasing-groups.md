@@ -29,8 +29,7 @@ Explanation: only one group of size 1; reversing it is a no-op.
 
 ---
 
-<details>
-<summary><h2>Examples</h2></summary>
+## Examples
 
 **Example 1**
 ```
@@ -60,7 +59,6 @@ Output: [1, 3, 2, 6, 5, 4, 7]
 Explanation: Three chunks of sizes 1, 2, 3 cover 6 nodes; the trailing node 7 is shorter than the next required size 4 and stays untouched.
 ```
 
-</details>
 <details>
 <summary><h2>Intuition</h2></summary>
 

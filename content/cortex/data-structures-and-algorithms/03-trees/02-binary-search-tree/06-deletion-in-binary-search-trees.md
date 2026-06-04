@@ -114,7 +114,7 @@ No — the successor (or symmetrically, the predecessor) is the *only* value tha
 
 The reusable BST delete (all three cases):
 
-```python run
+```python run viz=binary-tree viz-root=root
 class TreeNode:
     def __init__(self, val):
         self.val = val
@@ -155,7 +155,7 @@ print(inorder(delete(build(), 3)))   # [1, 4, 5, 7, 8, 9]  (two children)
 print(inorder(delete(build(), 8)))   # [1, 3, 4, 5, 7, 9]  (two children)
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 public class Main {
   static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } }
   static TreeNode insert(TreeNode r, int v) {

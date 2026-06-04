@@ -92,7 +92,7 @@ Still one. Indexing doesn't care how big the array is. Now the other side: inser
 
 Reach in, overwrite, and reshape — and feel which operations are cheap:
 
-```python run
+```python run viz=array
 arr = [5, 2, 8, 1, 9, 3]
 print(arr[0], arr[3])     # O(1): jump straight to an index
 arr[3] = 99               # O(1): overwrite in place
@@ -101,7 +101,7 @@ arr.insert(0, 7)          # O(n): everything shifts right
 print(arr)
 ```
 
-```java run
+```java run viz=array
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

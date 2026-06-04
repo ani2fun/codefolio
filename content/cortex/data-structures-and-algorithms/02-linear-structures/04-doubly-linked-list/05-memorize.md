@@ -31,6 +31,18 @@ Picture a conga line where every dancer keeps one hand on the shoulder of the pe
 
 ## Visual Summary
 
+```mermaid
+flowchart LR
+  head(["head"]) --> n1["• 10 •"]
+  tail(["tail"]) --> n3["• 30 •"]
+  n1 <--> n2["• 20 •"]
+  n2 <--> n3
+  style head fill:#c7d2fe,stroke:#4f5bd5
+  style tail fill:#c7d2fe,stroke:#4f5bd5
+```
+
+<p align="center"><strong>Every node links both ways (prev and next), so traversal runs in either direction and deleting a node you already hold is O(1) — no scan to find its predecessor.</strong></p>
+
 ---
 
 ## Key Operations

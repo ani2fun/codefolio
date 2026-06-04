@@ -81,7 +81,7 @@ Because the operation you repeat is "throw away the weakest keeper." The weakest
 
 The reusable Kth-largest and K-largest:
 
-```python run
+```python run viz=array viz-root=heap viz-kind=heap
 import heapq
 
 def kth_largest(nums, k):
@@ -104,7 +104,7 @@ print(kth_largest([3, 2, 3, 1, 2, 4, 5, 5, 6], 4))   # 4
 print(k_largest([3, 2, 1, 5, 6, 4], 2))              # [6, 5]
 ```
 
-```java run
+```java run viz=array viz-root=heap viz-kind=heap
 import java.util.*;
 
 public class Main {

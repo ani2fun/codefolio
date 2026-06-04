@@ -15,7 +15,7 @@ Two threads run `count++` on a shared counter. That's three steps — read, add,
 
 CAS succeeds only if the value is *still* what you expected. (Python has no real CAS — the GIL serialises bytecode — so we *simulate* the semantics with a function; Java's `java.util.concurrent.atomic` gives the genuine hardware-backed operation.)
 
-```python run
+```python run viz=array
 def cas(cell, expected, new):                          # SIMULATED: real CAS is one atomic HW instruction
     if cell[0] == expected:                            # compare...
         cell[0] = new                                  # ...and swap, indivisibly
@@ -35,7 +35,7 @@ def atomic_inc(cell):                                  # lock-free increment: re
 print(atomic_inc(cell))                                # 3
 ```
 
-```java run
+```java run viz=array
 import java.util.concurrent.atomic.AtomicInteger;
 public class Main {
     public static void main(String[] args) {
@@ -86,7 +86,7 @@ CAS feels bulletproof — "it only writes if nothing changed" — but it checks 
 
 **Predict before you run:** a thread reads value `A` and is paused. While it's paused, other threads change the location `A → B → A`. The thread wakes and does `CAS(expected=A, new=X)`. Does the CAS **succeed** — and is succeeding the *correct* behaviour?
 
-```python run
+```python run viz=array
 def cas(cell, expected, new):
     if cell[0] == expected:
         cell[0] = new
@@ -125,7 +125,7 @@ The versioned CAS **fails** (`False`), correctly. By stamping every value with a
 
 **Lock-free update-to-max** — atomically raise a shared value to `x` only if `x` is larger, with no lock. It's the read-compute-CAS-retry loop with a comparison: read the current max, bail if `x` isn't bigger, else CAS it in (retrying if someone else updated first).
 
-```python run
+```python run viz=array
 def cas(cell, expected, new):
     if cell[0] == expected:
         cell[0] = new
@@ -146,7 +146,7 @@ print(atomic_max(cell, 3))     # 5   (3 isn't larger -> no update)
 print(atomic_max(cell, 9))     # 9
 ```
 
-```java run
+```java run viz=array
 import java.util.concurrent.atomic.AtomicInteger;
 public class Main {
     static int atomicMax(AtomicInteger cell, int x) {

@@ -23,8 +23,7 @@ Given a chemical formula consisting of single-uppercase atoms (e.g. `H`, `O`), p
 ### Example 3
 > -   **Input:** `"KH"` → **Output:** `"K:1 H:1"`
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -58,9 +57,10 @@ Explanation: the multiplier is multi-digit. Both digits read as one
 number 10, scaling X:1 and Y:1 to X:10 and Y:10.
 ```
 
-</details>
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 This is a **linear-evaluation** problem because the formula is one sequence and a `)` folds the group of atoms built since its matching `(`. Parentheses nest, so an inner group is multiplied before the outer group scales it again. The stack parks `(name, count)` records and `(` markers until a `)` fires the fold.
 
@@ -70,7 +70,10 @@ A naive approach expands the formula into a flat atom list, then groups and coun
 
 <!-- VERIFY: the baselined Approach <details> claims first-appearance order is kept "by tracking each atom's earliest index in a separate map", but the frozen solution has no such map — order is preserved implicitly because popped groups are re-pushed in original order via reversed(group), and the "no repeated atom" precondition removes any need to merge. Prose here is aligned to the code; the <details> block is left frozen. -->
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for Formula Parsing |
 |---|---|
@@ -79,7 +82,10 @@ A naive approach expands the formula into a flat atom list, then groups and coun
 | **Q3.** Does a trigger fold only the *most recent* pending chunk? | **Yes** — `)` scales the records back to the nearest `(`, which is always on top. |
 | **Q4.** Is the answer read off the stack at end-of-input? | **Yes** — the surviving records, formatted bottom-to-top, are the `ATOM:COUNT` string. |
 
-## Approach in Words
+</details>
+<details>
+<summary><h2>Approach in Words</h2></summary>
+
 
 Push `(name, count)` records and `(` markers; on `)`, scale the popped group by the trailing multiplier.
 
@@ -92,6 +98,7 @@ Push `(name, count)` records and `(` markers; on `)`, scale the popped group by 
 7. **Scale and push back.** Multiply each popped count by the multiplier and push the records back in their original order, so nesting composes.
 8. **After the pass, format the stack** bottom-to-top as space-separated `ATOM:COUNT` and return it.
 
+</details>
 <details>
 <summary><h2>Approach</h2></summary>
 
@@ -348,8 +355,9 @@ Three lessons:
 > *Coming up — the **design** lesson. We've built five problem patterns; the final lesson takes the stack interface and asks: <em>what would it take to extend it with one extra O(1) operation, like <code>min()</code>?</em> Two classic interview questions — Min Stack (push, pop, top, min — all O(1)) and Stack Using Queues — close out the section by demonstrating how to <em>compose stacks with auxiliary structures</em> to add new functionality without losing the original O(1) guarantees.*
 
 </details>
+<details>
+<summary><h2>Dry Run</h2></summary>
 
-## Dry Run
 
 Walk Example 1 — `formula = "(HO)2"`. The stack holds `(name, count)` records and a `(` marker; on `)`, the popped group is scaled by the trailing multiplier:
 
@@ -379,7 +387,10 @@ A trace on `formula = "H(N(KO)2)3"` shows nested scaling — the inner group mul
 end of input → "H:1 N:3 K:6 O:6" ✓
 ```
 
-## Complexity Analysis
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
+
 
 | Measure | Value | Why |
 |---|---|---|
@@ -388,7 +399,10 @@ end of input → "H:1 N:3 K:6 O:6" ✓
 
 The time is `O(N · D)`, where `N` is the formula length and `D` is the maximum parenthesis nesting depth: the scan reads each character once, but an atom inside `D` nested groups is popped and re-pushed once at each enclosing `)`, so a record is touched up to `D` times. The space is `O(N)`: the stack stores at most one `(name, count)` record per atom and one marker per unclosed `(`, both bounded by the number of input characters. With the "no repeated atom" guarantee, the number of distinct records never exceeds the atom count.
 
-## Edge Cases
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
+
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -399,6 +413,11 @@ The time is `O(N · D)`, where `N` is the formula length and `D` is the maximum 
 | Atoms around a group | `A(BC)2D` | `A:1 B:2 C:2 D:1` | `A` and `D` stay at `1`; only the group `BC` is doubled, and order is preserved. |
 | Deeply nested | `H(N(KO)2)3` | `H:1 N:3 K:6 O:6` | Inner `(KO)2` scales first, then the outer `×3` compounds onto `K` and `O`. |
 
-## Key Takeaway
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
 
 Push `(name, count)` records and `(` markers; on `)`, read the trailing multiplier, pop the group back to the marker, and scale every count before pushing the records back in order. The new idea over string expansion is the *record payload* — the fold transforms a whole group of structured items at once, and re-pushing them in original order is what keeps the output in first-appearance sequence.
+
+</details>

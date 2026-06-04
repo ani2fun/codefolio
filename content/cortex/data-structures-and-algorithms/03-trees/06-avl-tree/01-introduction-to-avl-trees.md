@@ -107,7 +107,7 @@ It is **not** — a single right-rotate leaves the tree just as unbalanced, only
 
 AVL insert in both languages — the sorted run stays balanced, and `30,10,20` exercises the LR double rotation:
 
-```python run
+```python run viz=binary-tree viz-root=root
 class Node:
     __slots__ = ("key", "left", "right", "height")
     def __init__(self, key):
@@ -139,7 +139,7 @@ for k in [30, 10, 20]: r = insert(r, k)              # LR case
 print(r.key, r.left.key, r.right.key)                # 20 10 30
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 public class Main {
   static class Node { int key, height = 1; Node left, right; Node(int k){ key = k; } }
   static int h(Node n) { return n == null ? 0 : n.height; }

@@ -20,8 +20,7 @@ Given two arrays `arr1` and `arr2` (where `arr2` is a subset of `arr1` and all e
 > -   **Input:** `arr1 = [5, 9, 7, 8, 1]`, `arr2 = [5, 9, 7]`
 > -   **Output:** `[-1, -1, 9]`
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -54,9 +53,10 @@ Output: [-1]
 Explanation: A single element has no predecessor at all.
 ```
 
-</details>
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The structural property that makes this a **monotonic-stack** problem is the *previous-greater* query — each value in `arr1` wants the nearest strictly-greater value to its left. That "nearest qualifying predecessor" shape is the exact signal the previous-closest pattern fires on. The queries in `arr2` only re-index answers that already exist inside `arr1`.
 
@@ -64,7 +64,10 @@ The stack holds an un-disqualified chain of **previous-greater candidates** in s
 
 The naive approach re-scans for every query and breaks the time budget. For each value in `arr2` it walks `arr1` left to right, tracking the most recent greater value until it reaches the query's position — `O(N × M)` time, quadratic when `arr2` is as long as `arr1`. The stack pass computes every previous-greater in `arr1` once, so each query becomes an `O(1)` index-map lookup.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for Preceding Superior Element |
 |---|---|
@@ -73,6 +76,7 @@ The naive approach re-scans for every query and breaks the time budget. For each
 | **Q3.** Is the comparison monotone — strictly greater or smaller? | **Yes** — a strict greater-than test drives every pop (decreasing stack). |
 | **Q4.** Is the per-element work `O(1)` amortised? | **Yes** — each value is pushed once, popped at most once; the index-map read is `O(1)`. |
 
+</details>
 <details>
 <summary><h2>Approach</h2></summary>
 
@@ -85,8 +89,9 @@ Two passes:
 Total: O(N + M) time, O(N) space.
 
 </details>
+<details>
+<summary><h2>Approach in Words</h2></summary>
 
-## Approach in Words
 
 Solve the all-positions problem on `arr1` first, then answer `arr2` by lookup.
 
@@ -97,6 +102,7 @@ Solve the all-positions problem on `arr1` first, then answer `arr2` by lookup.
 5. **Answer the queries.** For each value in `arr2`, look up its index in the map and append `previousGreater[index]` to the result, using `-1` when the value is absent.
 6. **Return the result.** It holds one previous-greater answer per query, in `arr2` order.
 
+</details>
 <details>
 <summary><h2>Solution</h2></summary>
 
@@ -249,8 +255,9 @@ public class Main {
 ```
 
 </details>
+<details>
+<summary><h2>Dry Run</h2></summary>
 
-## Dry Run
 
 Walk Example 1 — `arr1 = [3, 5, 1, 6, 8, 7]`, `arr2 = [3, 1, 8, 7]`. The stack stays strictly decreasing; pop while the top `≤ num`:
 
@@ -271,7 +278,10 @@ result = [-1, 5, -1, 8]
 
 The result `[-1, 5, -1, 8]` matches the expected output.
 
-## Complexity Analysis
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
+
 
 | Measure | Value | Why |
 |---|---|---|
@@ -280,7 +290,10 @@ The result `[-1, 5, -1, 8]` matches the expected output.
 
 The stack pass is `O(N)` amortised: each value is pushed once and popped at most once across the whole walk, capping stack operations at `2N`.
 
-## Edge Cases
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
+
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -290,6 +303,11 @@ The stack pass is `O(N)` amortised: each value is pushed once and popped at most
 | Query in the middle | `arr1 = [1, 3, 2]`, `arr2 = [3, 2]` | `[-1, 3]` | `3` is the maximum so far → -1; `2` sees `3` as its nearest greater. |
 | Shared predecessor | `arr1 = [4, 1, 2]`, `arr2 = [1, 2]` | `[4, 4]` | `4` precedes and dominates both queries; `2` does not shadow `4` for index 2. |
 
-## Key Takeaway
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
 
 This is the canonical previous-greater problem: build the previous-greater array for the full `arr1` with a decreasing monotonic stack, then resolve each `arr2` query as an `O(1)` index-map lookup. The `arr2`-subset framing is the only twist — the core technique is the unmodified previous-closest skeleton.
+
+</details>

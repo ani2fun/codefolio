@@ -24,9 +24,7 @@ Output: []
 
 ---
 
-<details>
-<summary><h2>Examples</h2></summary>
-
+## Examples
 
 **Example 1**
 ```
@@ -49,7 +47,6 @@ Output: []
 Explanation: Only one element — can't form a pair.
 ```
 
-</details>
 <details>
 <summary><h2>Intuition</h2></summary>
 

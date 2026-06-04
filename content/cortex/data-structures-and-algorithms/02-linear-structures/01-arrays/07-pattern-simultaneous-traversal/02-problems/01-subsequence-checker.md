@@ -23,8 +23,7 @@ s = "abc",  t = ""       →  False  (non-empty s cannot match inside an empty t
 
 ---
 
-<details>
-<summary><h2>Examples</h2></summary>
+## Examples
 
 **Example 1** — `s = "abc"`, `t = "ahbgdc"` → `True`. The characters of `s` map to `t[0]`, `t[2]`, `t[5]` — all in left-to-right order.
 
@@ -32,7 +31,6 @@ s = "abc",  t = ""       →  False  (non-empty s cannot match inside an empty t
 
 **Example 3** — `s = ""`, `t = "anything"` → `True`. An empty `s` has zero characters to match, so the constraint is vacuously satisfied.
 
-</details>
 <details>
 <summary><h2>Intuition &amp; Brute Force</h2></summary>
 
@@ -107,7 +105,7 @@ flowchart TB
 ### The Solution
 
 
-```python run
+```python run viz=array
 class Solution:
     def subsequence_checker(self, s: str, t: str) -> bool:
 
@@ -145,7 +143,7 @@ print(Solution().subsequence_checker("abc", "abc"))         # True — identical
 print(Solution().subsequence_checker("axc", "ahbgdc"))      # False — out-of-order chars
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static class Solution {
         public boolean subsequenceChecker(String s, String t) {

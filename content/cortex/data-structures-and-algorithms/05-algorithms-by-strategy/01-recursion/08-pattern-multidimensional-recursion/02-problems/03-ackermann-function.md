@@ -103,7 +103,7 @@ table: "Ackermann's small values — A(m, n)" {
 
 ### The Solution
 
-```python run
+```python run viz=array
 class Solution:
     def ackerman(self, m: int, n: int) -> int:
 
@@ -137,7 +137,7 @@ print(Solution().ackerman(2, 0))   # 3
 print(Solution().ackerman(2, 3))   # 9
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static class Solution {
         public int ackerman(int M, int N) {

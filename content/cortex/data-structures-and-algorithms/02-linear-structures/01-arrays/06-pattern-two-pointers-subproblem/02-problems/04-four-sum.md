@@ -19,9 +19,7 @@ Output: [[-2, -1, 1, 2], [-2, 0, 0, 2], [-1, 0, 0, 1]]
 
 ---
 
-<details>
-<summary><h2>Examples</h2></summary>
-
+## Examples
 
 **Example 1**
 ```
@@ -49,7 +47,6 @@ Input:  arr = [0, 0, 0, 0],  target = 0
 Output: [[0, 0, 0, 0]]
 ```
 
-</details>
 <details>
 <summary><h2>Intuition</h2></summary>
 

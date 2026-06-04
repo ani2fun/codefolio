@@ -33,7 +33,7 @@ Output: false
 Linear scan over `attempts`; binary-search each one against `recoveryCodes`. Total: `O(N log M)`. Stop on first match.
 
 
-```python run
+```python run viz=array
 from typing import List
 
 class Solution:
@@ -95,7 +95,7 @@ print(Solution().recovery_validation([1, 3, 5, 7], [2, 4, 6]))   # False — all
 print(Solution().recovery_validation([10], [10, 20, 30]))         # True  — first attempt matches
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {

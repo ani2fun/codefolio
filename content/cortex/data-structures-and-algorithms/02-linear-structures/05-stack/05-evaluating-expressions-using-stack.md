@@ -17,7 +17,7 @@ The whole rule is two lines. See an **operand** → push it. See an **operator**
 
 The mechanism is clearest when you watch the stack after every token. Here's the evaluator, tracing `5 1 2 + 4 * + 3 -` (which means `5 + ((1+2)*4) - 3`):
 
-```python run
+```python run viz=array viz-kind=stack
 def eval_postfix_traced(expr):
     st = []
     for t in expr.split():
@@ -33,7 +33,7 @@ print("evaluating postfix: 5 1 2 + 4 * + 3 -")
 print("result:", eval_postfix_traced("5 1 2 + 4 * + 3 -"))
 ```
 
-```java run
+```java run viz=array viz-kind=stack
 import java.util.*;
 public class Main {
     static int evalTraced(String expr) {
@@ -85,7 +85,7 @@ Commutative operators forgive a sloppy pop order; `-` and `/` do not. This is th
 
 **Predict before you run:** evaluating postfix `8 2 /`, the correct convention pops the top (`2`) as the *right* operand and the next (`8`) as the *left*, computing `8 / 2`. What does the correct order give, and what does *swapping* the two pops give? Same question for `10 3 -`.
 
-```python run
+```python run viz=array viz-kind=stack
 def eval_postfix(expr, swap=False):
     st = []
     for t in expr.split():
@@ -114,7 +114,7 @@ Real expressions have multi-digit numbers and all four operators. Tokenizing on 
 
 **Predict:** evaluate the postfix `15 7 1 1 + - / 3 *`. It encodes `(15 / (7 − (1 + 1))) * 3`. What's the result?
 
-```python run
+```python run viz=array viz-kind=stack
 def eval_rpn(tokens):
     st = []
     for t in tokens:
@@ -128,7 +128,7 @@ def eval_rpn(tokens):
 print("'15 7 1 1 + - / 3 *' =", eval_rpn("15 7 1 1 + - / 3 *".split()))
 ```
 
-```java run
+```java run viz=array viz-kind=stack
 import java.util.*;
 public class Main {
     static int evalRpn(String[] tokens) {

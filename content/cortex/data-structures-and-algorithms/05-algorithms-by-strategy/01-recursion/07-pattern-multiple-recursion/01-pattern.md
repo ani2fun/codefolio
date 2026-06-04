@@ -44,7 +44,7 @@ flowchart TB
 
 Naive Fibonacci, instrumented with a call counter so the explosion is visible. Two base cases (`fib(0)=0`, `fib(1)=1`), two recursive calls.
 
-```python run
+```python run viz=array
 calls = 0
 def fib(n):
     global calls; calls += 1
@@ -55,7 +55,7 @@ def fib(n):
 print("fib(10):", fib(10), "in", calls, "calls")
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static int calls = 0;
     static int fib(int n) {
@@ -113,7 +113,7 @@ The `fib(10)` run already cost 177 calls. The growth isn't linear or even polyno
 
 **Predict before you run:** how many calls does naive `fib(30)` make — about 30, a few hundred, or millions? And how many does a *memoised* `fib(30)` make?
 
-```python run
+```python run viz=array
 def count_naive(n):
     c = [0]
     def f(n):
@@ -149,7 +149,7 @@ Naive `fib(30)` makes **2,692,537** calls; memoised `fib(30)` makes **59**. Same
 
 **Climbing Stairs:** you can take 1 or 2 steps; how many distinct ways to climb `n`? From the bottom your first move is 1 step or 2, leaving the same problem on a smaller staircase: `climb(n) = climb(n-1) + climb(n-2)` — Fibonacci in disguise. Base cases: `climb(0) = 1` (one way: stand still), `climb(n<0) = 0` (overshot).
 
-```python run
+```python run viz=array
 def climb(n):
     if n < 0: return 0                      # overshot the top
     if n == 0: return 1                     # one way: do nothing
@@ -159,7 +159,7 @@ print("climb(4):", climb(4))                # 5
 print("climb(5):", climb(5))                # 8
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static int climb(int n) {
         if (n < 0) return 0;                    // overshot

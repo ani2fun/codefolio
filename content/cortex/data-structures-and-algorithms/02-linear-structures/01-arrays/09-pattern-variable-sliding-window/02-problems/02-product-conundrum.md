@@ -20,9 +20,7 @@ arr = [1],            k = 1     →  0
 
 ---
 
-<details>
-<summary><h2>Examples</h2></summary>
-
+## Examples
 
 **Example 1**
 ```
@@ -50,7 +48,6 @@ Output: 0
 Explanation: There are no subarrays whose product is less than k.
 ```
 
-</details>
 <details>
 <summary><h2>Intuition</h2></summary>
 

@@ -31,6 +31,19 @@ Picture proofreaders walking a printed list from opposite ends. One reads top-do
 
 ## Visual Summary
 
+```mermaid
+flowchart LR
+  head(["head →"]) --> na["•"]
+  na <--> nb["•"]
+  nb <--> nc["•"]
+  nc <--> nd["•"]
+  tail(["← tail"]) --> nd
+  style head fill:#c7d2fe,stroke:#4f5bd5
+  style tail fill:#c7d2fe,stroke:#4f5bd5
+```
+
+<p align="center"><strong>The backward links let a doubly list run the array-style converging scan directly: one pointer steps forward from the head, one steps back from the tail via prev, meeting in the middle — O(n), no indices.</strong></p>
+
 ---
 
 ## Pattern Recognition Triggers

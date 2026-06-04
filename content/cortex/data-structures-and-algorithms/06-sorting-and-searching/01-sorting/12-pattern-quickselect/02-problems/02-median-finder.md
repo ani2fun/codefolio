@@ -36,7 +36,7 @@ Output: -3     ((-3 + -4) // 2 = -3 — floor division of negatives rounds towar
 
 The trick: for odd `n`, one quickselect call. For even `n`, two calls — one for `n/2 - 1`, one for `n/2`. Take the floor of their average.
 
-```python run
+```python run viz=array
 import random
 from typing import List
 
@@ -130,7 +130,7 @@ print(Solution().find_median([10, 20, 30, 40]))   # 25 -> truncated to 25
 print(Solution().find_median([7, 7, 7, 7, 7]))    # 7
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 
 public class Main {

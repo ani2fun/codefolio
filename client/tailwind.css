@@ -27,7 +27,7 @@
     --card-foreground: 30 14% 14%;
     --popover: 40 50% 97%;
     --popover-foreground: 30 14% 14%;
-    --primary: 18 55% 52%;
+    --primary: 234 61% 57%;
     --primary-foreground: 36 28% 98%;
     --secondary: 32 22% 90%;
     --secondary-foreground: 30 14% 14%;
@@ -39,7 +39,7 @@
     --destructive-foreground: 36 28% 98%;
     --border: 32 18% 84%;
     --input: 32 18% 84%;
-    --ring: 18 55% 52%;
+    --ring: 234 61% 57%;
     --radius: 0.875rem;
 
     /* Editorial extras: cream + dark-roast literals so components that need
@@ -48,6 +48,14 @@
     --cream: 36 28% 92%;
     --roast: 30 12% 6%;
 
+    /* Syntax-highlighting roles — consumed by the Shiki css-variables theme
+       (aliased onto --shiki-token-* on the code surface). Indigo keyword, teal
+       function, green string, amber number, muted comment. */
+    --syn-kw: var(--primary);
+    --syn-fn: #1F8A7A;
+    --syn-str: #5C8A57;
+    --syn-num: #B9762A;
+    --syn-com: hsl(var(--muted-foreground));
 }
 .dark {
     --background: 30 12% 6%;
@@ -56,7 +64,7 @@
     --card-foreground: 36 32% 92%;
     --popover: 30 10% 9%;
     --popover-foreground: 36 32% 92%;
-    --primary: 18 65% 62%;
+    --primary: 234 67% 70%;
     --primary-foreground: 30 12% 6%;
     --secondary: 30 8% 14%;
     --secondary-foreground: 36 32% 92%;
@@ -68,8 +76,13 @@
     --destructive-foreground: 36 32% 92%;
     --border: 30 8% 18%;
     --input: 30 8% 18%;
-    --ring: 18 65% 62%;
+    --ring: 234 67% 70%;
 
+    /* Syntax — brighter variants for the dark code surface. Keyword + comment
+       inherit :root and resolve against .dark's --primary / --muted-foreground. */
+    --syn-fn: #54B3A1;
+    --syn-str: #84B87D;
+    --syn-num: #D59A55;
 }
 
 /* @theme inline: bake hsl(var(...)) into each utility. Without `inline`,
@@ -110,6 +123,13 @@
     --font-display: "Instrument Serif", ui-serif, Georgia, "Times New Roman", serif;
     --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, Monaco, "Cascadia Mono", monospace;
+
+    /* Cortex reader stack. Literata = reading body, Newsreader = upright chapter
+       headings, JetBrains Mono = code. v4 emits font-read/font-head/font-code
+       utilities from these, and they're usable directly as var(--font-read) etc. */
+    --font-read: "Literata", Georgia, "Times New Roman", serif;
+    --font-head: "Newsreader", ui-serif, Georgia, serif;
+    --font-code: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Monaco, monospace;
 }
 
 /* v4 default-style restoration. Default border color flipped from gray-200

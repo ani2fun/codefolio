@@ -20,7 +20,7 @@ So distributed structures are built to **converge without coordination**: apply 
 
 A **G-Counter** (grow-only CRDT counter): instead of one shared count, each node owns its own slot and only ever increments *its own*. The value is the sum; merging two replicas takes the element-wise **max**. Two replicas count independently, then gossip — and converge, no locks, no coordinator.
 
-```python run
+```python run viz=array
 class GCounter:
     def __init__(self, node_id, num_nodes):
         self.node_id = node_id
@@ -42,7 +42,7 @@ a.merge(b)                                         # merging again changes nothi
 print("merge again -> A sees", a.value())          # ...the merge is IDEMPOTENT
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static class GCounter {
@@ -97,7 +97,7 @@ Vector clocks earn their keep on one question a timestamp can't answer: did thes
 
 **Predict before you run:** node 0 makes an edit, advancing its clock to `[2,1,0]`. Independently, node 1 makes an edit, advancing *its* clock to `[1,2,0]`. Is one of these edits "before" the other — or are they concurrent?
 
-```python run
+```python run viz=array
 def compare(x, y):
     le = all(a <= b for a, b in zip(x, y))   # x <= y componentwise?
     ge = all(a >= b for a, b in zip(x, y))   # x >= y componentwise?
@@ -123,7 +123,7 @@ The first comparison prints `concurrent (neither dominates)`; the second prints 
 
 **Predict:** to pinpoint the one changed record, how many subtree comparisons does the descent need — all 4 leaves, or fewer?
 
-```python run
+```python run viz=array
 def h(s):                                  # deterministic string hash (identical in Java below)
     acc = 0
     for ch in s:
@@ -155,7 +155,7 @@ print("differing leaf index:", idx, "->", A[idx], "vs", B[idx])
 print("subtree checks to localise:", compares, "(not", len(A), "leaf scans)")
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static long h(String s) {

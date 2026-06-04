@@ -105,7 +105,7 @@ The implementation below handles that case by **pouring outStack back into inSta
 
 ### Solution
 
-```python run
+```python run viz=array viz-kind=queue
 from typing import List
 
 class Queue:
@@ -229,7 +229,7 @@ print(q2.dequeue())   # 5
 print(q2.enqueue(7))  # True — enqueue after full drain
 ```
 
-```java run
+```java run viz=array viz-kind=queue
 import java.util.*;
 
 public class Main {

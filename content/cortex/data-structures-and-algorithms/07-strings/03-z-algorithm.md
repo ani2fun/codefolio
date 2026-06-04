@@ -15,7 +15,7 @@ Where KMP's `lps` looks *backward* (longest prefix that's also a suffix *ending*
 
 `z_array(s)` computes the prefix-match lengths; matching a pattern in a text concatenates `P + separator + T` (a separator that appears in neither) and looks for positions where `z[i]` equals the pattern's length.
 
-```python run
+```python run viz=array
 def z_array(s):
     n = len(s)
     z = [0] * n
@@ -40,7 +40,7 @@ print(z_array("aabaab"))                             # [0, 1, 0, 3, 1, 0]
 print(z_search("abxabcabcaby", "abcaby"))            # [6]
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static final char SEP = '\u0000';                // sentinel char absent from inputs
@@ -100,7 +100,7 @@ Z-matching glues the pattern and text together and reads off the Z-array — so 
 
 **Predict before you run:** to find `"ab"` in `"abab"`, you build the Z-array of `"ab" + "abab"` and look for `z[i] == 2`. With a separator (`"ab" + SEP + "abab"`) you correctly get matches at text positions `[0, 2]`. Without the separator — just `"ababab"` — which matches does `z[i] == 2` report?
 
-```python run
+```python run viz=array
 def z_array(s):
     n = len(s); z = [0] * n; l = r = 0
     for i in range(1, n):
@@ -138,7 +138,7 @@ With the separator the answer is `[0, 2]`; without it you get only `[2]` — the
 
 **Count occurrences** of a pattern in a text — the Z-matcher with a `len()` on the hit list. It's how you'd answer "how many times does this motif appear?" in `O(n + m)`.
 
-```python run
+```python run viz=array
 def z_array(s):
     n = len(s); z = [0] * n; l = r = 0
     for i in range(1, n):
@@ -159,7 +159,7 @@ print(z_count("mississippi", "issi"))    # 2
 print(z_count("aaaa", "aa"))             # 3
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static int[] zArray(String s) {
         int n = s.length(); int[] z = new int[n]; int l = 0, r = 0;

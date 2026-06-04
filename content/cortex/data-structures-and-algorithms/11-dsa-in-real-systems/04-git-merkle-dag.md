@@ -21,7 +21,7 @@ This is the same [Merkle tree](/cortex/data-structures-and-algorithms/concurrenc
 
 Git has four object types; the workhorses are **blob** (a file's bytes), **tree** (a directory listing), and **commit** (a snapshot pointing at a tree + parent commits). Every object's id is the SHA-1 of `"<type> <length>\0<content>"`. Here's that exact rule — and the dedup it gives:
 
-```python run
+```python run viz=array
 import hashlib
 def git_hash(obj_type, content):                       # Git's exact object id
     header = f"{obj_type} {len(content)}\0".encode()    # e.g. b"blob 6\x00"
@@ -35,7 +35,7 @@ print("identical content -> same id? ", a == b)        # dedup: stored once
 print("different content -> diff id? ", a != c)
 ```
 
-```java run
+```java run viz=array
 import java.security.MessageDigest;
 public class Main {
     static String gitHash(String type, String content) throws Exception {
@@ -111,7 +111,7 @@ Structural sharing is the claim that a new commit barely allocates anything. Let
 
 **Predict before you run:** a commit has a tree with two files, `README.md` and `main.py`. You edit only `main.py` and commit again. Of the four object ids — README's blob, main.py's blob, the tree, the commit — which change, and which stay the same?
 
-```python run
+```python run viz=array
 import hashlib
 def gid(t, c):                                          # short git object id
     return hashlib.sha1(f"{t} {len(c)}\0".encode() + c.encode()).hexdigest()[:8]
@@ -147,7 +147,7 @@ Now the flip side of structural sharing: because every object is named by a hash
 
 **Predict:** you have a 3-commit chain (`init` → `add feature` → `fix bug`), each commit's content embedding its parent's id. An attacker edits the message of commit #1 (the oldest). How many of the three commit ids change — just the first, or more?
 
-```python run
+```python run viz=array
 import hashlib
 def gid(t, c):
     return hashlib.sha1(f"{t} {len(c)}\0".encode() + c.encode()).hexdigest()[:8]
@@ -166,7 +166,7 @@ print("tampered chain:", tampered)
 print("ids changed:", sum(a != b for a, b in zip(honest, tampered)), "of", len(honest))
 ```
 
-```java run
+```java run viz=array
 import java.security.MessageDigest;
 import java.util.*;
 public class Main {

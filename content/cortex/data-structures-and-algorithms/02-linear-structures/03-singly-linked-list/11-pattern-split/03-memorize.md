@@ -31,6 +31,17 @@ Picture a mail-sorting room. Letters arrive on a single conveyor belt (the input
 
 ## Visual Summary
 
+```mermaid
+flowchart LR
+  whole["1 → 2 → 3 → 4 → 5"] --> cut["walk to each boundary,<br/>sever the next pointer"]
+  cut --> p1["1 → 2"]
+  cut --> p2["3 → 4"]
+  cut --> p3["5"]
+  style cut fill:#c7d2fe,stroke:#4f5bd5
+```
+
+<p align="center"><strong>Cut a list into pieces — k roughly-equal parts, evens vs odds, before/after a pivot — by walking to each boundary and severing the next pointer there. O(n), pointer surgery only.</strong></p>
+
 ---
 
 ## Pattern Recognition Triggers

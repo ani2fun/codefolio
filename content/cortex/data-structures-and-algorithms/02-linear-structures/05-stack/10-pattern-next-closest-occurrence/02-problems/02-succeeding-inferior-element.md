@@ -22,8 +22,7 @@ Given two arrays `arr1` and `arr2` (where `arr2` is a subset of `arr1` and all e
 
 <!-- VERIFY: the Sweep-2 problem statement listed Example 1 as arr1=[3,5,1,6,8,2], arr2=[3,1,8,2] → [1,-1,2,-1]; the frozen Solution code's first example is arr1=[3,5,1,6,8,9], arr2=[3,1,8,9] → [1,-1,-1,-1] (verified by execution). Example 1 was realigned to the frozen code so the statement, Examples, and Dry Run agree with the runnable block. -->
 
-<details>
-<summary><strong>Examples</strong></summary>
+## Examples
 
 **Example 1**
 ```
@@ -55,9 +54,10 @@ Output: [-1, -1]
 Explanation: The array is strictly increasing, so nothing has a smaller value to its right.
 ```
 
-</details>
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 The structural property that makes this a **monotonic-stack** problem is the *next-smaller* query — each value in `arr1` wants the nearest strictly-smaller value to its right. That "nearest qualifying successor" shape is the exact signal the next-closest pattern fires on; only the comparison flips from greater to smaller.
 
@@ -65,7 +65,10 @@ The stack holds the indices of values still *waiting* for a smaller successor, i
 
 The naive approach re-scans for every query and breaks the time budget. For each value in `arr2` it walks `arr1` rightward until a smaller value appears — `O(N × M)` time, quadratic when `arr2` is as long as `arr1`. The stack pass computes every next-smaller in `arr1` once, so each query becomes an `O(1)` index-map lookup.
 
-## Applying the Diagnostic Questions
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | Check | Answer for Succeeding Inferior Element |
 |---|---|
@@ -74,7 +77,10 @@ The naive approach re-scans for every query and breaks the time budget. For each
 | **Q3.** Is the comparison monotone — strictly greater or smaller? | **Yes** — a strict smaller-than test drives every resolve-and-pop (increasing stack). |
 | **Q4.** Is the per-element work `O(1)` amortised? | **Yes** — each index is pushed once, popped at most once; the index-map read is `O(1)`. |
 
-## Approach in Words
+</details>
+<details>
+<summary><h2>Approach in Words</h2></summary>
+
 
 Identical to the superior version with one flip: the stack is increasing, and a value resolves when the current value is *smaller* than the stack top. The scan still runs `arr1` in reverse.
 
@@ -85,6 +91,7 @@ Identical to the superior version with one flip: the stack is increasing, and a 
 5. **Answer the queries.** For each value in `arr2`, look up its index in the map and append `nextSmaller[index]` to the result, using `-1` when the value is absent.
 6. **Return the result.** It holds one next-smaller answer per query, in `arr2` order.
 
+</details>
 <details>
 <summary><h2>Solution</h2></summary>
 
@@ -223,8 +230,9 @@ public class Main {
 ```
 
 </details>
+<details>
+<summary><h2>Dry Run</h2></summary>
 
-## Dry Run
 
 Walk Example 1 — `arr1 = [3, 5, 1, 6, 8, 9]`, `arr2 = [3, 1, 8, 9]`. Scan `arr1` in reverse with a strictly increasing stack; pop while the top `≥ num`:
 
@@ -245,7 +253,10 @@ result = [1, -1, -1, -1]
 
 The result `[1, -1, -1, -1]` matches the expected output.
 
-## Complexity Analysis
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
+
 
 | Measure | Value | Why |
 |---|---|---|
@@ -254,7 +265,10 @@ The result `[1, -1, -1, -1]` matches the expected output.
 
 The stack pass is `O(N)` amortised: each value is pushed once and popped at most once across the whole walk, capping stack operations at `2N`.
 
-## Edge Cases
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
+
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -264,6 +278,11 @@ The stack pass is `O(N)` amortised: each value is pushed once and popped at most
 | Sorted descending | `arr1 = [4, 3, 2, 1]`, `arr2 = [4, 2]` | `[3, 1]` | Each value's next-smaller is its immediate right neighbour. |
 | Sorted ascending | `arr1 = [1, 2, 3, 4]`, `arr2 = [4, 1]` | `[-1, -1]` | A strictly increasing array has no smaller successor anywhere. |
 
-## Key Takeaway
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
+
 
 What is new here versus the superior problem is a single flip: an *increasing* stack popped on `≥`, surfacing the nearest strictly-*smaller* successor instead of the greater one. The reverse scan, the index-map lookup, and the `O(N + M)` time / `O(N)` space bounds are otherwise identical.
+
+</details>

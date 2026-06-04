@@ -17,7 +17,7 @@ Quadratic probing attacks exactly that. Instead of walking one slot at a time, i
 
 The same three keys from the linear-probing lesson — `1, 9, 17`, all hashing to slot `1`. With the quadratic jump they land on slots `1, 2, 5` (not the adjacent `1, 2, 3` linear gave). Run it.
 
-```python run
+```python run viz=array
 EMPTY = None
 DELETED = object()
 
@@ -104,7 +104,7 @@ It fixed **primary** clustering — the problem where a key hashing *near* an oc
 
 The reusable quadratic-probing table:
 
-```python run
+```python run viz=array
 EMPTY = None
 DELETED = object()
 
@@ -138,7 +138,7 @@ t.put(3, "p"); t.put(11, "q")          # both home slot 3 → 3, then 3+1=4
 print(t.get(3), t.get(11), t.get(99))  # p q None
 ```
 
-```java run
+```java run viz=array
 public class Main {
   static final int[] DELETED = new int[0];
   static class QuadraticProbing {

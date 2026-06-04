@@ -93,7 +93,7 @@ Because of **how many children each call recurses into**. Traversal recurses int
 
 The reusable recursive search, plus min and max:
 
-```python run
+```python run viz=binary-tree viz-root=root
 class TreeNode:
     def __init__(self, val):
         self.val = val
@@ -124,7 +124,7 @@ print(bool(search(root, 4)), bool(search(root, 6)))   # True False
 print(find_min(root).val, find_max(root).val)          # 1 9
 ```
 
-```java run
+```java run viz=binary-tree viz-root=root
 public class Main {
   static class TreeNode { int val; TreeNode left, right; TreeNode(int v){ val = v; } }
   static TreeNode insert(TreeNode r, int v) {

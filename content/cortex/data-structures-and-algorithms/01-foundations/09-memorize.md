@@ -35,6 +35,23 @@ Foundations is the *city-map zoom level* of code performance. **Asymptotic analy
 
 ## Visual Summary
 
+```mermaid
+flowchart TD
+  c1["O(1) — constant"] --> clog["O(log n) — halving"]
+  clog --> cn["O(n) — single scan"]
+  cn --> cnl["O(n log n) — sort"]
+  cnl --> cn2["O(n²) — nested loops"]
+  cn2 --> c2n["O(2ⁿ) — subsets"]
+  c2n --> cnf["O(n!) — permutations"]
+  style c1 fill:#bbf7d0,stroke:#16a34a
+  style cn fill:#bbf7d0,stroke:#16a34a
+  style cn2 fill:#fde68a,stroke:#d97706
+  style c2n fill:#fecaca,stroke:#ef4444
+  style cnf fill:#fecaca,stroke:#ef4444
+```
+
+<p align="center"><strong>The complexity ladder — drop constants and lower-order terms, keep the dominant rung. Green scales comfortably; red is intractable past a tiny n.</strong></p>
+
 ---
 
 ## Key Operations

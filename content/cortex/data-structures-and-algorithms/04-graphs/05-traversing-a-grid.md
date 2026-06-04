@@ -17,7 +17,7 @@ The reframe: **every grid is a graph.** Each cell `(r, c)` is a node; its neighb
 
 A 4×5 grid where `1` = walkable, `0` = blocked. DFS visits every walkable cell reachable from each unvisited start — exactly disconnected-graph DFS, where each walkable region is a component ("island"). Run it.
 
-```python run
+```python run viz=grid
 DIRS = [(-1, 0), (0, 1), (1, 0), (0, -1)]      # up, right, down, left — 4 cardinal deltas
 
 def is_valid(grid, r, c):
@@ -83,7 +83,7 @@ The neighbours are **computed, not stored**: you add each direction delta to the
 
 Grid DFS and an island count (how many components), in both languages:
 
-```python run
+```python run viz=grid
 DIRS = [(-1,0), (0,1), (1,0), (0,-1)]
 
 def count_islands(grid):
@@ -108,7 +108,7 @@ print(count_islands([[1,1,1],[1,1,1],[1,1,1]]))                       # 1
 print(count_islands([[1,0,1],[0,0,0],[1,0,1]]))                       # 4
 ```
 
-```java run
+```java run viz=array
 public class Main {
   static final int[][] DIRS = {{-1,0},{0,1},{1,0},{0,-1}};
   static void dfs(int[][] g, int r, int c, boolean[][] seen) {

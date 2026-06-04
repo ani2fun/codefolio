@@ -13,7 +13,7 @@ import scala.util.Try
  *
  *   - **Copy** — plain text to clipboard.
  *   - **Quote** — text wrapped in curly quotes + a `— Aniket Kakde` attribution tail.
- *   - **Highlight** — wraps the selection in a `<mark>` with terracotta accents. `surroundContents` is used
+ *   - **Highlight** — wraps the selection in a `<mark>` with indigo accents. `surroundContents` is used
  *     inside a try/catch — it throws on cross-block selections, which we swallow (the user gets the visual
  *     nothing-happened feedback, no console noise). Highlights are DOM-only by design; persisting them across
  *     reloads is a follow-up.

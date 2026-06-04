@@ -29,6 +29,22 @@ Two people stand at opposite ends of a sorted bookshelf, each holding the cheape
 
 ## Visual Summary
 
+```mermaid
+flowchart LR
+  a0["2"] --- a1["3"] --- a2["5"] --- a3["8"] --- a4["11"]
+  lft(["left"]) --> a0
+  rgt(["right"]) --> a4
+  dec{"sum vs target"}
+  lft --> dec
+  rgt --> dec
+  dec -->|"too small"| up["left++"]
+  dec -->|"too large"| dn["right--"]
+  dec -->|"equal"| hit["found"]
+  style hit fill:#bbf7d0,stroke:#16a34a
+```
+
+<p align="center"><strong>On a sorted array, compare the pair sum to the target: too small → advance left, too large → retreat right. Each step rules out a whole row of pairs, so the search is O(n), not O(n²).</strong></p>
+
 ---
 
 ## Pattern Recognition Triggers

@@ -16,7 +16,7 @@ Two things make it remarkable. It's built **online** — one character at a time
 
 Build the automaton character by character; test a substring by walking transitions. (The construction is intricate — read it as "append a char, splice suffix links, occasionally clone a state"; the next section unpacks why.)
 
-```python run
+```python run viz=array
 class SuffixAutomaton:
     def __init__(self):
         self.trans = [{}]                                  # trans[state][char] -> state
@@ -65,7 +65,7 @@ print(sam.contains("abc"))   # True
 print(sam.contains("cba"))   # False
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static List<Map<Character,Integer>> trans = new ArrayList<>();
@@ -144,7 +144,7 @@ The headline claim deserves a gut check, because it sounds impossible.
 
 **Predict before you run:** the string `"abcde"` (all distinct characters) has `5·6/2 = 15` distinct substrings. How many *states* does its suffix automaton have — around 15 (one per substring), or far fewer?
 
-```python run
+```python run viz=array
 class SuffixAutomaton:
     def __init__(self):
         self.trans = [{}]; self.link = [-1]; self.length = [0]; self.last = 0
@@ -193,7 +193,7 @@ for s in ("abcde", "aaaaa", "abcbc"):
 
 **Count distinct substrings** — and watch the SAM agree with the suffix array. Each state `v` (except the root) contributes `length[v] − length[link[v]]` new substrings (the contiguous length-range its class owns), so the total distinct-substring count is the sum over states.
 
-```python run
+```python run viz=array
 class SuffixAutomaton:
     def __init__(self):
         self.trans = [{}]; self.link = [-1]; self.length = [0]; self.last = 0
@@ -227,7 +227,7 @@ print(distinct_substrings("banana"))   # 15
 print(distinct_substrings("aaa"))      # 3
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static List<Map<Character,Integer>> trans = new ArrayList<>();

@@ -42,7 +42,7 @@ flowchart TB
 
 **N-Queens** — count placements of `n` non-attacking queens. One queen per row; `cols`/`diag`/`anti` sets track threats. Apply (add to the sets), recurse to the next row, **undo** (discard from the sets).
 
-```python run
+```python run viz=array
 def n_queens(n):
     cols, diag, anti = set(), set(), set()
     count = [0]
@@ -62,7 +62,7 @@ print("n=4:", n_queens(4))
 print("n=8:", n_queens(8))
 ```
 
-```java run
+```java run viz=array
 import java.util.*;
 public class Main {
     static int count;
@@ -121,7 +121,7 @@ The discard-after-recurse looks like tidy housekeeping. But the `cols`/`diag`/`a
 
 **Predict before you run:** delete the undo (the three `discard` calls). How many solutions does `n_queens(4)` report — still 2, or something else?
 
-```python run
+```python run viz=array
 def n_queens_noundo(n):
     cols, diag, anti = set(), set(), set()
     count = [0]
@@ -150,7 +150,7 @@ It reports **0** solutions for both — total failure. Without the undo, every q
 
 **Rat in a Maze** — find *any* path from the top-left to the bottom-right through `0` cells (1 = wall). Mark a cell visited (`-1`) on the way in, recurse over the four neighbours, and undo (`0`) on failure. Success returns `true` and bubbles up.
 
-```python run
+```python run viz=array
 def find_path(maze):
     if not maze or not maze[0]: return False
     R, C = len(maze), len(maze[0])
@@ -171,7 +171,7 @@ print(find_path([[0,1,0], [0,0,0], [1,0,0]]))   # True
 print(find_path([[0,1], [1,0]]))                # False — diagonal blocked
 ```
 
-```java run
+```java run viz=array
 public class Main {
     static boolean search(int[][] m, int r, int c) {
         int R = m.length, C = m[0].length;
