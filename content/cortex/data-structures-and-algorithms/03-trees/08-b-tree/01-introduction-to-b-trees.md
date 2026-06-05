@@ -84,7 +84,7 @@ print("search 42:", t.search(42), " search 99999:", t.search(99999))
 
 Now *watch* one grow. This inserts nine keys into a `T=3` tree (2–5 keys per node) and visualises every step — click **Visualise** and scrub through it: keys fill the root, it **splits** (the middle key jumps *up*), and the tree gains a level. Each node is a **row** of keys, not a single value, and a parent with `k` keys has `k+1` children hanging from the gaps between them — that's the whole idea.
 
-```python run viz=graph viz-root=self.root viz-kind=btree viz-case=1
+```python run viz=graph viz-root=tree viz-kind=btree
 T = 3   # each node holds T-1 .. 2T-1 keys → 2..5 keys per node
 
 class BNode:

@@ -42,6 +42,9 @@ function step(over: Partial<VizGraphStep>): VizGraphStep {
 // parent --"children"--> childCell --""--> child BNode.
 function btreeStep(extra: Partial<VizGraphStep> = {}): VizGraphStep {
   const nodes: VizNode[] = [
+    // The container BTree instance + its `root` edge — present when viz-root=tree.
+    // The renderer must ignore this non-BNode node and still find b_root as the root.
+    node("bt", "BTree", "BTree", null),
     node("b_root", "BNode", "BNode", null, false),
     node("a_rk#0", "30", "cell", 0),
     node("a_rc#0", "·", "cell", 0),
@@ -55,6 +58,7 @@ function btreeStep(extra: Partial<VizGraphStep> = {}): VizGraphStep {
     node("a_c2k#2", "60", "cell", 2),
   ];
   const edges: VizEdge[] = [
+    edge("bt", "b_root", "root"), // BTree.root → the root BNode (a non-child link)
     edge("b_root", "a_rk#0", "keys"),
     edge("b_root", "a_rc#0", "children"),
     edge("b_root", "a_rc#1", "children"),
