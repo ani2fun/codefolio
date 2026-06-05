@@ -3,7 +3,7 @@ title: Server Stack — Why Each Library
 summary: ZIO 2, tapir, circe, HikariCP, Lettuce, Mongo sync — what each one buys us, why we picked it over the alternative, and what breaks if you swap it out.
 ---
 
-This chapter is a library-by-library tour of `server/`. The format is the same throughout: a section per decision, each with **what we use**, **why this and not the obvious alternative**, and **what breaks if you change it**. Read it alongside [Repository Tour](./repository-tour) — that one is a map; this one is the legend.
+This chapter is a library-by-library tour of `server/`. The format is the same throughout: a section per decision, each with **what we use**, **why this and not the obvious alternative**, and **what breaks if you change it**. Read it alongside [Repository Tour](/cortex/codefolio-onboarding/start-here-repository-tour) — that one is a map; this one is the legend.
 
 ## Why ZIO 2 at all
 
@@ -69,7 +69,7 @@ val helloEndpoint: ZServerEndpoint[Any, Any] =
 
 This split is intentional. The codegen'd endpoint describes the *contract* (path, body shapes); the wire layer adds the *transport policy* (how a domain failure becomes an HTTP status). If you collapsed the two, every error response would have to be enumerated in `api/openapi.yaml`, and the `mapError` function would become a giant pattern match in the codegen'd file.
 
-**If you remove tapir:** you'd hand-write request/response codecs, hand-wire OpenAPI, and re-derive the same types twice (server + client). Drift becomes inevitable. (See [Shared & Codegen](./shared-and-codegen) for why this matters.)
+**If you remove tapir:** you'd hand-write request/response codecs, hand-wire OpenAPI, and re-derive the same types twice (server + client). Drift becomes inevitable. (See [Shared & Codegen](/cortex/codefolio-onboarding/deep-dive-shared-and-codegen) for why this matters.)
 
 ## The `mapError` boundary — handlers don't know about HTTP
 
@@ -314,7 +314,7 @@ Three things going on:
 
 Worth naming explicitly:
 
-- **No SSR.** The server hands the SPA `index.html` and a string of markdown. React rendering happens in the browser. (See [Markdown Pipeline](./markdown-pipeline) for why.)
+- **No SSR.** The server hands the SPA `index.html` and a string of markdown. React rendering happens in the browser. (See [Markdown Pipeline](/cortex/codefolio-onboarding/how-it-works-markdown-pipeline) for why.)
 - **OIDC auth (Keycloak).** `/api/run` and the Cortex code editor are gated by Keycloak / OIDC (ADR-0013): the server validates JWTs (nimbus-jose-jwt), the SPA signs in via `keycloak-js` (PKCE), and a per-JWT token bucket rate-limits `/api/run`. `AUTH_ENABLED=false` short-circuits the whole gate for local dev (every caller is anonymous, no rate limit). See `config/AppConfig.scala`'s `AuthConfig` and the `/api/auth/config` endpoint.
 - **No write traffic from production.** Postgres / Redis / Mongo are exercised by the Hello demo at `/demo`. The portfolio reads from disk and bundled JSON. This is by design — keeps prod stateless.
 

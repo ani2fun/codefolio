@@ -120,7 +120,7 @@ state: "After step 4 — current=null, previous=10" {
 
 ### The Solution
 
-```python run viz=array viz-root=out
+```python run
 from typing import Optional, List, Any
 
 
@@ -186,7 +186,7 @@ print(to_list(Solution().reverse_a_list(from_list([1, 2, 3]))))        # [3, 2, 
 print(to_list(Solution().reverse_a_list(from_list([1, 1, 1]))))        # [1, 1, 1]
 ```
 
-```java run viz=array viz-root=out
+```java run
 import java.util.*;
 
 public class Main {

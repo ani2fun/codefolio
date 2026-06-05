@@ -59,7 +59,7 @@ def enumerate_all(n, k):
 print(enumerate_all(2, 2))
 ```
 
-```java run viz=graph viz-kind=graph
+```java run viz=array
 import java.util.*;
 public class Main {
     static void helper(int n, int k, List<Integer> state, List<List<Integer>> res) {

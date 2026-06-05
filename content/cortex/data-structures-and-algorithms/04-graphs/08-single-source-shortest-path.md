@@ -110,7 +110,7 @@ print(bellman_ford([[(1,4),(2,5)], [(2,-3),(3,6)], [(3,4)], []], 0))       # [0,
 print(bellman_ford([[(1,1)], [(2,-3)], [(0,1)]], 0))                       # [-1,-1,-1] cycle
 ```
 
-```java run viz=array
+```java run viz=graph viz-kind=graph
 import java.util.*;
 public class Main {
   static int[] bellmanFord(int[][][] g, int src) {

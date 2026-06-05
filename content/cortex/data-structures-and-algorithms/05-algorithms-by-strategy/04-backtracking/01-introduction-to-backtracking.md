@@ -35,7 +35,7 @@ print(perms)
 print("count:", len(perms))
 ```
 
-```java run viz=graph viz-kind=graph
+```java run viz=array
 import java.util.*;
 public class Main {
     static void backtrack(int[] nums, List<Integer> path, boolean[] used, List<List<Integer>> res) {
@@ -150,7 +150,7 @@ print(s)
 print("count:", len(s))
 ```
 
-```java run viz=graph viz-kind=graph
+```java run viz=array
 import java.util.*;
 public class Main {
     static void sub(int[] nums, int i, List<Integer> path, List<List<Integer>> res) {

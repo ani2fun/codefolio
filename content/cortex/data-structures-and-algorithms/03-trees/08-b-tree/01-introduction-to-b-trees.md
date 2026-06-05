@@ -21,7 +21,7 @@ That structure is the **B-tree** (Bayer & McCreight, 1971) — the most-deployed
 
 A B-tree of minimum degree `T=3` (so 2–5 keys per node). Insert keys and watch the height stay tiny and *logarithmic* as `n` grows — that's the whole point. Run it.
 
-```python run viz=binary-tree viz-root=root
+```python run
 import math, random
 
 T = 3   # minimum degree: a node holds T-1 .. 2T-1 keys (root may hold fewer)
@@ -127,7 +127,7 @@ The trick is the **direction of growth**. A BST leaf-insert lengthens *one* root
 
 B-tree insert, search, and height in both languages — the height stays at 4 for 100 keys:
 
-```python run viz=binary-tree viz-root=root
+```python run
 T = 3
 class BNode:
     __slots__ = ("keys", "children", "leaf")
@@ -171,7 +171,7 @@ for k in range(1, 101): t.insert(k)
 print("height:", t.height(), " search 42:", t.search(42), " search 999:", t.search(999))  # 4 True False
 ```
 
-```java run viz=binary-tree viz-root=root
+```java run
 public class Main {
   static final int T = 3;
   static class BNode { int[] keys = new int[2*T-1]; BNode[] children = new BNode[2*T]; int n = 0; boolean leaf = true; }

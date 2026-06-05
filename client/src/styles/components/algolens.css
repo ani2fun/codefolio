@@ -980,6 +980,12 @@
     min-width: 0;
     font-family: var(--font-mono);
     font-size: 12px;
+    /* Render source as literal glyphs. Geist Mono ships contextual alternates /
+       ligatures (on by default) that shape a `--` / `->` digraph into one joined
+       glyph which overhangs the preceding character — the reported `right--`
+       overlapping the `t`. A code readout must read exactly as typed, so opt out. */
+    font-variant-ligatures: none;
+    font-feature-settings: "liga" 0, "calt" 0;
   }
   .algolens-canvas-line__label {
     flex: 0 0 5.5rem;

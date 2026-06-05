@@ -89,7 +89,7 @@ The traversal still *finishes* correctly, but nodes get **enqueued multiple time
 
 DFS and BFS traversal in both languages, on the same graph:
 
-```python run viz=array
+```python run viz=graph viz-kind=graph
 from collections import deque
 
 def dfs_traversal(g):

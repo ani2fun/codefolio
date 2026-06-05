@@ -108,7 +108,7 @@ print(count_islands([[1,1,1],[1,1,1],[1,1,1]]))                       # 1
 print(count_islands([[1,0,1],[0,0,0],[1,0,1]]))                       # 4
 ```
 
-```java run viz=array
+```java run viz=grid
 public class Main {
   static final int[][] DIRS = {{-1,0},{0,1},{1,0},{0,-1}};
   static void dfs(int[][] g, int r, int c, boolean[][] seen) {

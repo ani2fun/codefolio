@@ -219,7 +219,7 @@ It prints `total = 20 from 7 pops`. Without the guard, every stale heap copy get
 
 The classic MST application: **Min Cost to Connect All Points** ([LeetCode 1584](https://leetcode.com/problems/min-cost-to-connect-all-points/)). Given 2D points, the cost to connect two of them is their Manhattan distance. Build the complete graph and run Kruskal.
 
-```python run viz=array
+```python run viz=graph viz-kind=graph
 class DSU:
     def __init__(self, n): self.parent = list(range(n)); self.rank = [0] * n
     def find(self, x):

@@ -36,7 +36,7 @@ The comparator: "compare by distance, descending" (so the farthest is on top of 
 
 
 
-```python run viz=array viz-root=heap
+```python run viz=array viz-root=max_heap
 from typing import List, Optional
 import heapq
 
@@ -142,7 +142,7 @@ t5 = from_level_order([4, 2, 6, 1, None, None, 7])
 print(sorted(Solution().k_closest_values(t5, 4.0, 2)))    # [4, 2] or [4, 6] — ties
 ```
 
-```java run viz=array viz-root=heap
+```java run viz=array viz-root=maxHeap
 import java.util.*;
 
 public class Main {

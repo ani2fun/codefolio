@@ -44,7 +44,7 @@ This is *two* independent top-K queries followed by a linear sum:
 
 
 
-```python run viz=array viz-root=heap viz-kind=heap
+```python run viz=array viz-root=min_heap viz-kind=heap
 from typing import List
 import heapq
 
@@ -140,7 +140,7 @@ print(Solution().k_range_sum([5, 5, 5, 5, 5], 2, 4))         # 15 — all same
 print(Solution().k_range_sum([1, 2, 3, 4, 5], 2, 3))         # 12 — range [3,4], sum=3+4
 ```
 
-```java run viz=array viz-root=heap viz-kind=heap
+```java run viz=array viz-root=minHeap viz-kind=heap
 import java.util.*;
 
 public class Main {

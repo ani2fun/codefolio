@@ -107,7 +107,7 @@ def all_subsets(items):
 print(all_subsets([1, 2]))   # [[], [1], [2], [1, 2]]
 ```
 
-```java run viz=graph viz-kind=graph
+```java run viz=array
 import java.util.*;
 
 public class Main {

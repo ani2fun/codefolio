@@ -40,7 +40,7 @@ Transform: `t(c) = (-frequency[c], c)`. The negative sign reverses the order on 
 <summary><h2>The Solution</h2></summary>
 
 
-```python run viz=array viz-root=frequency
+```python run viz=hashmap viz-root=frequency
 from collections import Counter
 
 class Solution:
@@ -78,7 +78,7 @@ print(Solution().sort_characters_by_frequency("aabb"))        # aabb
 print(Solution().sort_characters_by_frequency("ccbbaa"))      # aabbcc
 ```
 
-```java run viz=array viz-root=frequency
+```java run viz=hashmap viz-root=frequency
 import java.util.*;
 
 public class Main {

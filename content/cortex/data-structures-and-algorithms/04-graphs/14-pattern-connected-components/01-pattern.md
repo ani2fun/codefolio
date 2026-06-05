@@ -195,7 +195,7 @@ g2 = [list("111"), list("010"), list("111")]
 print(num_islands(g2))                                  # 1
 ```
 
-```java run viz=array
+```java run viz=grid
 public class Main {
     static int R, C;
     static void sink(char[][] g, int r, int c) {        // flood-fill one island, erasing it

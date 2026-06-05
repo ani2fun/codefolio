@@ -39,7 +39,7 @@ This is the rawest form of the pattern. After running the loop, the heap's *top*
 
 
 
-```python run viz=array viz-root=heap viz-kind=heap
+```python run viz=array viz-root=min_heap viz-kind=heap
 from typing import List
 import heapq
 
@@ -80,7 +80,7 @@ print(Solution().kth_largest_element([5, 5, 5, 5], 2))        # 5 — all same
 print(Solution().kth_largest_element([10, 1, 2, 9, 3], 3))    # 3 — sorted: [10,9,3,2,1]
 ```
 
-```java run viz=array viz-root=heap viz-kind=heap
+```java run viz=array viz-root=minHeap viz-kind=heap
 import java.util.*;
 
 public class Main {

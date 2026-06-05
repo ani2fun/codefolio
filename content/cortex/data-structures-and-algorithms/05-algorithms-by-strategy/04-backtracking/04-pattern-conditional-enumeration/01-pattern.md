@@ -158,7 +158,7 @@ print(combination_sum([2, 3, 6, 7], 7))             # [[2, 2, 3], [7]]
 print(combination_sum([2, 3, 5], 8))                # [[2, 2, 2, 2], [2, 3, 3], [3, 5]]
 ```
 
-```java run viz=graph viz-kind=graph
+```java run viz=array
 import java.util.*;
 public class Main {
     static void cs(int[] c, int start, int rem, List<Integer> cur, List<List<Integer>> res) {
