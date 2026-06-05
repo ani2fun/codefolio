@@ -11,8 +11,8 @@ codefolio/
 ├── shared/                       ← codegen output: case classes + tapir Endpoints
 ├── server/                       ← ZIO + zio-http backend
 ├── client/                       ← Scala.js + scalajs-react frontend + Vite
-├── content/cortex/            ← markdown books (you're reading this from here)
-├── runner/                       ← local Code Runner (Node + sandboxed exec)
+├── content/cortex/               ← markdown books (you're reading this from here)
+├── runner/go-judge/              ← go-judge sandbox image (Dockerfile + toolchains)
 ├── bin/dev                       ← the dev script you'll run most days
 ├── build.sbt                     ← sbt build, defines the three sbt projects
 ├── Dockerfile, docker-compose.yml
@@ -88,11 +88,10 @@ server/src/main/scala/codefolio/server/
 │   ├── CodeRunPipeline.scala                 /api/run — single CodeExecutionBackend
 │   │                                         seam; public RunFailure ADT (ADR-0004)
 │   ├── Languages.scala                       single source of truth for language
-│   │                                         dispatch — ids, aliases, pistonName,
-│   │                                         effectiveSource (ADR-0011)
-│   ├── PistonWire.scala                      public Piston backend adapter
-│   ├── CodeRunnerWire.scala                  local Judge0-protocol Code Runner adapter
-│   └── JavaSourceRewriter.scala              normalises `public class Foo` for Piston
+│   │                                         dispatch — ids, aliases, goJudge
+│   │                                         (GoJudgeSpec), effectiveSource (ADR-0011)
+│   ├── GoJudgeWire.scala                      go-judge /run request + response mapping
+│   └── JavaSourceRewriter.scala              normalises `public class Foo` to Main
 ├── cortexPipeline/
 │   ├── CortexPipeline.scala                  /api/cortex/* — internal CortexFs seam;
 │   │                                         MtimeCachedIndex cache; CortexFailure type
@@ -191,11 +190,11 @@ content/cortex/                            ← books are auto-discovered (no roo
 
 **Convention over configuration** — the on-disk layout *is* the index. Each immediate subdir of `content/cortex/` is a book; nested directories become sidebar sections (any depth, capped at 6); `.md` files are chapters; numeric prefixes (`01-`, `02-`) drive ordering. To add a chapter you drop a `.md` file in the right directory and reload — that's it. (See [Extending the Project](./extending).)
 
-## What lives in `runner/`
+## What lives in `runner/go-judge/`
 
-A small Node container that speaks the Judge0 `/submissions/?wait=true` wire protocol. It's the local execution backend used by `CODE_RUNNER_URL=http://code-runner:2358`. In production we typically use **Piston** (public) instead, configured via `PISTON_URL`.
+The build context for the **go-judge** sandbox image — a `Dockerfile` that layers the language toolchains (JDK 21, Python, C/C++, Go, Rust, Kotlin, TypeScript, JavaScript, SQLite) onto [`criyle/go-judge`](https://github.com/criyle/go-judge). go-judge runs each submission inside a Linux namespace + cgroup; the server talks to it over its `POST /run` command API on `:5050`. It's the **single** code-execution backend, configured with `EXECUTOR_URL`.
 
-The historical name reason: the project once used Judge0 itself, but Judge0 has no ARM image and is heavy. We kept the wire protocol and reimplemented it ourselves. The class name `CodeRunner` reflects what we actually call; the `Judge0` name has been retired everywhere.
+History (see ADR-0029): the project previously ran two backends — **Piston** (a public service) and a custom Node "Code Runner" that imitated the Judge0 submissions API. Both were retired in favour of one self-hosted go-judge sandbox: cgroup-v2-native, standalone (no extra database/queue), and properly sandboxed (namespaces + cgroups + seccomp).
 
 ## Where to look first for a given task
 
@@ -204,6 +203,6 @@ The historical name reason: the project once used Judge0 itself, but Judge0 has 
 | Change a request/response shape | `api/openapi.yaml`, then chase compile errors |
 | Add a new HTTP endpoint | `api/openapi.yaml` → new `server/<feature>Pipeline/` package → register in `server/http/ApiRoutes.scala` → call from `client/api/ApiClient.scala` |
 | Tweak how a chapter looks | `client/src/markdown/render.ts` (HTML emitted) and/or the relevant component under `client/.../components/cortex/` |
-| Add a runnable language | `server/.../codeRunPipeline/Languages.scala` + Prism grammar in `client/src/markdown/runtime.ts` |
+| Add a runnable language | a `GoJudgeSpec` (compile/run commands) in `server/.../codeRunPipeline/Languages.scala` + the toolchain in `runner/go-judge/Dockerfile` + Prism grammar in `client/src/markdown/runtime.ts` |
 | Fix a routing issue | `client/.../Router.scala` (SPA side) **and** `server/http/StaticRoutes.scala`'s SPA fallback (server side) |
 | Wire a new env var | `server/.../config/AppConfig.scala` + `application.conf` + `docker-compose.yml` |

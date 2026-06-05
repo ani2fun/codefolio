@@ -3,6 +3,8 @@ title: Overview
 summary: What codefolio is, what's running where, and the shape of the system at one glance.
 ---
 
+> 🌱 **New to Scala, Scala.js, React, or ZIO?** Start with **[New to the stack? Read this first](./new-to-the-stack)** — a plain-English primer on every technology here — then **[Hello World, End to End](./hello-world-end-to-end)**, which makes the abstract pieces concrete.
+
 ## What is this?
 
 **Codefolio** is the engine behind `kakde.eu`. It's a single-binary Scala 3 application that serves:
@@ -28,9 +30,8 @@ flowchart LR
     R["Redis<br/>(Hello demo)"]
     M["Mongo<br/>(Hello demo)"]
   end
-  subgraph External["Code execution"]
-    P["Piston<br/>(public)"]
-    CR["Code Runner<br/>(local Docker)"]
+  subgraph Sandbox["Code execution"]
+    GJ["go-judge<br/>(self-hosted sandbox)"]
   end
   FS["content/cortex/<br/>markdown tree<br/>(filesystem-driven)"]
 
@@ -39,8 +40,7 @@ flowchart LR
   Tapir --> PG
   Tapir --> R
   Tapir --> M
-  Tapir --> P
-  Tapir --> CR
+  Tapir --> GJ
   Tapir --> FS
 ```
 
@@ -50,7 +50,7 @@ Every box is something you can grep for in the repo:
 - The **server** is `server/src/main/scala/codefolio/server/`. Entry point: `Main.scala`, then `HttpApp.scala`.
 - The **shared** OpenAPI types live in `shared/` — generated from `api/openapi.yaml`.
 - The **Cortex content** is in `content/cortex/`.
-- The **local Code Runner** is in `runner/` (a small Node container).
+- The **go-judge sandbox** is built from `runner/go-judge/` — a Dockerfile layering the language toolchains onto [`criyle/go-judge`](https://github.com/criyle/go-judge).
 
 ## Tech stack at a glance
 
@@ -93,4 +93,4 @@ The second half is a **deep dive** — a per-library tour of the stack. For each
 | [Shared & Codegen](./shared-and-codegen) | The cross-project, the OpenAPI codegen plugin, what gets generated and how. |
 | [Build Toolchain](./build-toolchain) | sbt plugins, Vite, Tailwind v4, scalafmt, the Dockerfile, and `bin/dev`. |
 
-If you read all nine chapters end-to-end you should be able to make almost any change confidently — and explain *why* the project is the way it is. If something here is wrong or unclear, fix it — this book lives in the same repo as the code it describes.
+If you read all the chapters end-to-end you should be able to make almost any change confidently — and explain *why* the project is the way it is. If something here is wrong or unclear, fix it — this book lives in the same repo as the code it describes.

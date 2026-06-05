@@ -61,7 +61,7 @@ The home page's "Cortex" preview pulls from `/api/cortex/index` which auto-disco
 
 ### Bulk import from another markdown source
 
-For larger imports (e.g. an mdbook tree), [`scripts/import_dsa.py`](https://github.com/ani2fun/codefolio/blob/main/scripts/import_dsa.py) is a worked example: it walks an external source, mirrors the directory structure, rewrites internal cross-links to cortex URLs, and auto-tags Piston-supported fenced code blocks with ` run`. Adapt or copy it.
+For larger imports (e.g. an mdbook tree), write a small script that walks the external source, mirrors the directory structure, rewrites internal cross-links to cortex URLs, and auto-tags supported fenced code blocks (the languages catalogued in `Languages.scala`) with ` run`.
 
 ## Recipe 2: add an API endpoint
 
@@ -166,7 +166,7 @@ client -> component
 
 Touches both server (catalog) and client (Prism syntax highlighting).
 
-1. **Add to `server/.../runner/Languages.scala`.** Each entry has a slug, label, Piston language id, and Code Runner language id (Judge0's numeric ids). Find the right ids on Piston's docs and Judge0's reference.
+1. **Add to `server/.../codeRunPipeline/Languages.scala`.** Each entry has an id, label, aliases, and a `GoJudgeSpec` — the source filename plus the shell `compile` (optional) and `run` commands go-judge executes inside the sandbox, e.g. `GoJudgeSpec(sourceFile = "main.rb", compile = None, run = "ruby main.rb")`. The toolchain for that language must also be installed in the go-judge image (`runner/go-judge/Dockerfile`).
 
 2. **Add to `client/src/markdown/runtime.ts`'s Prism setup.** Prism needs the grammar imported and registered:
 
@@ -178,7 +178,7 @@ Touches both server (catalog) and client (Prism syntax highlighting).
 
 3. **Update the OpenAPI enum, if you use one.** `RunRequest.language` is a free-form string in the spec, but if you've added validation, extend the validator to include the new language.
 
-4. **Smoke test.** Open a chapter, write ` ```elixir run ` ... ``` , and click Run. If Piston is up and the language id matches, output appears. If not, check the network tab — Piston returns a recognisable error JSON for unknown languages.
+4. **Smoke test.** Open a chapter, write ` ```ruby run ` ... ``` , and click Run. If go-judge is up and the `GoJudgeSpec` commands are right, output appears. If not, check the server log and the go-judge container: an unknown alias returns `RunFailure.BadInput` (400); a missing toolchain surfaces as a compile/runtime error in the `RunResult`.
 
 ## Recipe 4: change the look of a chapter
 
@@ -213,4 +213,4 @@ If you forget step 2, the SPA works for in-app navigation but reloads die. That'
 
 When you're not sure where a change should go, **start with the OpenAPI spec or the markdown content**, never with the implementation. Both are pure data, both have schema validation, and both are read by code on multiple sides. If you can express the change as "the contract is now X" or "the content is now Y", the implementation falls out of the codegen and the existing rendering logic.
 
-The places where the codebase becomes complicated are the places where we *can't* push down to data — JS interop, React state in placeholders, the dual-protocol code runner. Treat those as cost centers and keep them small.
+The places where the codebase becomes complicated are the places where we *can't* push down to data — JS interop, React state in placeholders, and the go-judge wire mapping (`GoJudgeWire`). Treat those as cost centers and keep them small.

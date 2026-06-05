@@ -8,7 +8,7 @@ summary: How to run the app, what to expect from `bin/dev`, the env vars that ma
 - **JDK 21+** (the build is happy on 17 but Liquibase is happier on 21).
 - **sbt** (any modern version; `project/build.properties` pins the exact one).
 - **Node 20+** and **npm**.
-- **Docker + docker-compose** for the persistence layer (Postgres / Redis / Mongo) and the local Code Runner.
+- **Docker + docker-compose** for the persistence layer (Postgres / Redis / Mongo) and the local **go-judge** sandbox. (go-judge runs `--privileged` for its cgroup sandbox — Docker Desktop handles this fine.)
 
 A quick check:
 
@@ -21,9 +21,9 @@ java -version && sbt --version && node -v && docker compose version
 ```bash
 git clone <repo> codefolio
 cd codefolio
-docker compose up -d db redis mongo code-runner
+docker compose up -d db redis mongo go-judge   # first go-judge build is ~1.9 GB
 (cd client && npm install)
-sbt compile        # triggers OpenAPI codegen — first run is slow
+sbt compile        # triggers OpenAPI codegen — first run downloads ~1 GB of deps (3–10 min)
 ```
 
 That last `sbt compile` does two important things on first run:
@@ -87,12 +87,11 @@ These are the ones you'll actually touch. Defaults live in `server/src/main/reso
 | `DATABASE_URL`, `DATABASE_USERNAME`, `DATABASE_PASSWORD` | `db/DataSource.scala` | local Postgres | Hello demo storage |
 | `REDIS_URL` | `cache/RedisCache.scala` | `redis://localhost:6379` | Hello demo cache |
 | `MONGO_URL`, `MONGO_DB` | `eventlog/HelloEventLog.scala` | `mongodb://localhost:27017` / `codefolio` | Hello demo event log |
-| `PISTON_URL` | `runner/Piston.scala` | unset | public Piston backend for `/api/run` |
-| `CODE_RUNNER_URL` | `runner/CodeRunner.scala` | `http://code-runner:2358` (compose) | local Judge0-protocol Code Runner |
-| `CODE_RUNNER_AUTHN_TOKEN` | `runner/CodeRunner.scala` | unset | optional auth header for the local runner |
+| `EXECUTOR_URL` | `config/AppConfig.scala` (`RunnerConfig`) | `http://go-judge:5050` (compose) / `http://localhost:5050` (`bin/dev`) | go-judge sandbox for `/api/run` |
+| `EXECUTOR_AUTHN_TOKEN` | `config/AppConfig.scala` (`RunnerConfig`) | unset | optional bearer token (go-judge `ES_AUTH_TOKEN`) |
 | `CORTEX_ROOT` | `CortexHandler.scala` | `./content/cortex` (dev) / `/app/content/cortex` (Docker) | where books live |
 
-If neither `PISTON_URL` nor `CODE_RUNNER_URL` is set, `/api/run` returns 503. That's a feature: it makes the misconfiguration visible immediately rather than silently swallowing executions.
+If `EXECUTOR_URL` is not set, `/api/run` returns 503 (`RunFailure.NotConfigured`). That's a feature: it makes the misconfiguration visible immediately rather than silently swallowing executions.
 
 ## Useful commands
 
@@ -161,7 +160,7 @@ ROOT_LOG_LEVEL=DEBUG ./bin/dev
 
 A quick, in-order checklist:
 
-1. `docker compose ps` — are db / redis / mongo / code-runner all up?
+1. `docker compose ps` — are db / redis / mongo / go-judge all up?
 2. `sbt 'shared/compile'` — did codegen run?
 3. `cd client && rm -rf node_modules && npm install` — broken native deps?
 4. `git clean -ndx | grep target` — stale sbt target dirs sometimes hide compile-cache poisoning; `git clean -fdx` clears them. (Do this only if you're OK losing local target/dist artifacts.)

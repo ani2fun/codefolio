@@ -235,7 +235,7 @@ Three decisions worth understanding:
 `./bin/dev` is what you'll run every day. Read it as a sequence of stages:
 
 1. **Pre-flight** — kills any process holding `:8080` or `:5173`. Without this, a previous session's leftover JVM (sbt-revolver's child) holds the port and the next startup fails with "address already in use".
-2. **Backing stores** — `docker compose up -d db redis mongo code-runner` and waits for healthchecks.
+2. **Backing stores** — `docker compose up -d db redis mongo go-judge` and waits for healthchecks.
 3. **Frontend deps** — `npm install` once on first run.
 4. **sbt watcher** — `sbt -no-colors "~ all server/reStart client/fastLinkJS"` runs in the background. The `~` watches files; `all` runs both tasks per change; `server/reStart` keeps the server running.
 5. **Vite dev server** — `cd client && npm run dev`.

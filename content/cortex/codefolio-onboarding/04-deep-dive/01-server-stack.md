@@ -315,7 +315,7 @@ Three things going on:
 Worth naming explicitly:
 
 - **No SSR.** The server hands the SPA `index.html` and a string of markdown. React rendering happens in the browser. (See [Markdown Pipeline](./markdown-pipeline) for why.)
-- **No auth.** This is a personal site with no logged-in users. If you're forking it, this is the first thing you'll add — and `tapir`'s `securityIn(...)` is the right insertion point.
+- **OIDC auth (Keycloak).** `/api/run` and the Cortex code editor are gated by Keycloak / OIDC (ADR-0013): the server validates JWTs (nimbus-jose-jwt), the SPA signs in via `keycloak-js` (PKCE), and a per-JWT token bucket rate-limits `/api/run`. `AUTH_ENABLED=false` short-circuits the whole gate for local dev (every caller is anonymous, no rate limit). See `config/AppConfig.scala`'s `AuthConfig` and the `/api/auth/config` endpoint.
 - **No write traffic from production.** Postgres / Redis / Mongo are exercised by the Hello demo at `/demo`. The portfolio reads from disk and bundled JSON. This is by design — keeps prod stateless.
 
 ## Where to look first when something on the server breaks
@@ -327,7 +327,7 @@ Worth naming explicitly:
 | Liquibase logs flagged `[ERROR]` | `Main.scala` SLF4JBridge install missing |
 | Static route returns JSON / API returns HTML | `http/StaticRoutes.scala` — wildcard shadowing |
 | `/api/cortex/...` returns 404 on a known chapter | `cortexPipeline/CortexPipeline.scala` slug derivation, or stale mtime cache |
-| `/api/run` returns 503 with both backends configured | `codeRunPipeline/Languages.scala` — language alias missing |
+| `/api/run` returns 503 with `EXECUTOR_URL` set | `codeRunPipeline/Languages.scala` — alias missing, or go-judge unreachable |
 
 ## The one-line summary
 

@@ -154,6 +154,8 @@ This is the spot in the stack where a more conventional setup would have a hand-
 
 The server interprets `Endpoints.getHello` by attaching a ZIO effect to it. Inside [helloPipeline/HelloPipeline.scala](server/src/main/scala/codefolio/server/helloPipeline/HelloPipeline.scala):
 
+> 🧭 **Reading ZIO types — your decoder ring for the rest of the book.** `ZIO[R, E, A]` is an *effect*: a value that *describes* work needing environment `R`, that may fail with error `E`, or succeed with value `A`. Shorthands: **`IO[E, A]`** = no environment needed; **`UIO[A]`** = can't fail; **`Task[A]`** = may fail with any `Throwable`. So `greet: IO[HelloFailure, Greeting]` reads as "work that either fails with a `HelloFailure` or yields a `Greeting`". And the `for { … } yield …` below does **not** loop — it *sequences* effects one after another, like chaining `await` in JavaScript.
+
 ```scala
 trait HelloPipeline:
   def greet:  IO[HelloFailure, Greeting]

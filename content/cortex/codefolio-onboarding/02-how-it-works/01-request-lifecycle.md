@@ -19,8 +19,8 @@ sequenceDiagram
   participant R as RunnableCodeBlock<br/>(scalajs-react)
   participant A as ApiClient.runCode<br/>(client/api/)
   participant S as ZIO server<br/>(/api/run)
-  participant H as CodeRunHandler
-  participant B as Backend<br/>(Piston or Code Runner)
+  participant H as CodeRunPipeline
+  participant B as Backend<br/>(go-judge sandbox)
 
   U->>R: click "Run"
   R->>R: modState(runState=Running, runId+=1)
@@ -28,7 +28,7 @@ sequenceDiagram
   A->>S: POST /api/run<br/>(JSON, same-origin)
   S->>H: tapir decodes RunRequest
   H->>H: validate (size, language)
-  H->>B: POST /execute (Piston shape)<br/>or /submissions (Judge0 shape)
+  H->>B: POST /run (go-judge command API)
   B-->>H: stdout/stderr/status
   H-->>S: RunResponse OR RunFailure
   S-->>A: 200 { result, language }<br/>OR (400|413|503|502, ApiError)
@@ -43,8 +43,8 @@ sequenceDiagram
 3. **The send.** `ApiClient.runCode(req)` is a thin wrapper around a tapir `Request[Either[Unit, RunResponse], Any]` value generated from `Endpoints.runCode`. It encodes the body using the codegen'd circe codecs.
 4. **Same origin.** The base URI is `None` — sttp emits a relative path `/api/run`, and the browser resolves it against `window.location.origin`. In dev, Vite's proxy rewrites it to `http://localhost:8080`; in prod it goes to the same JVM that served `index.html`.
 5. **Tapir decode.** `HttpApp.runEndpoint` is the `Endpoints.runCode` value with `.errorOut(statusCode and jsonBody[ApiError])` bolted on. Tapir validates the JSON and gives the handler a typed `RunRequest`.
-6. **Handler logic.** `CodeRunHandler` decides which backend to hit. If `PISTON_URL` is configured **and** the language is in Piston's catalog, it goes there; else if `CODE_RUNNER_URL` is configured, it falls back; else it returns `RunFailure.NotConfigured` → 503.
-7. **Two protocols, one return type.** `Piston.scala` and `CodeRunner.scala` translate their respective wire shapes into a common `RunResult` (`stdout`, `stderr`, `compileOutput`, `statusId`, `statusDescription`, `time`, `memory`).
+6. **Handler logic.** `CodeRunPipeline` resolves the language alias via `Languages.resolve`, then dispatches to the single `LiveGoJudgeBackend`. If `EXECUTOR_URL` is unset it returns `RunFailure.NotConfigured` → 503. There is **no fallback** — one backend, no runtime failover (ADR-0029).
+7. **One protocol, one return type.** `GoJudgeWire.scala` builds the go-judge `/run` request (an `sh -c` compile-then-run command with per-language limits) and maps the response into a common `RunResult` (`stdout`, `stderr`, `compileOutput`, `statusId`, `statusDescription`, `time`, `memory`).
 8. **Error mapping.** `RunFailure.{BadInput, PayloadTooLarge, NotConfigured, BackendFailure}` ↔ HTTP `{400, 413, 503, 502}`. The mapping lives in `HttpApp.runEndpoint`.
 9. **Back in the browser.** The handler in `RunnableCodeBlock` checks `current.runId == tag` before committing. If it doesn't match, the result is dropped — that's the "ignore late results" path.
 
@@ -52,8 +52,8 @@ sequenceDiagram
 
 | Symptom | Likely file |
 | --- | --- |
-| 503 even with `PISTON_URL` set | `server/.../runner/Languages.scala` (language not in catalog) |
-| Output mangled | `Piston.scala` or `CodeRunner.scala` (mapping bug) |
+| 503 even with `EXECUTOR_URL` set | go-judge unreachable, or alias missing in `server/.../codeRunPipeline/Languages.scala` |
+| Output mangled | `GoJudgeWire.scala` (the `/run` response → `RunResult` mapping) |
 | Run button stuck on "Cancel" | `RunnableCodeBlock.scala` (the `runId` ↔ `tag` consistency) |
 | 400 on a valid-looking request | `Languages.scala` size limits (64KB source, 16KB stdin) |
 

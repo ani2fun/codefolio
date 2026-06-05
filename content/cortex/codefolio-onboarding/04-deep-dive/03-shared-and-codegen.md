@@ -92,9 +92,9 @@ Required fields become non-`Option`; nullable fields become `Option[T]`. JSON ke
 
 ## Why a `String`-typed `language` and not an enum
 
-`RunRequest.language` is a free-form `String` in `api/openapi.yaml`, even though the server only supports 11 specific languages. Two reasons:
+`RunRequest.language` is a free-form `String` in `api/openapi.yaml`, even though the server only supports a fixed catalog of languages. Two reasons:
 
-1. **Validation is server-side.** [server/codeRunPipeline/Languages.scala](server/src/main/scala/codefolio/server/codeRunPipeline/Languages.scala) holds the catalog and validates incoming requests via `findByAlias` — the client doesn't need to know the alias list at compile time.
+1. **Validation is server-side.** `server/.../codeRunPipeline/Languages.scala` holds the catalog and resolves incoming aliases via `Languages.resolve` — the client doesn't need to know the alias list at compile time.
 2. **Codegen and enums are awkward.** OpenAPI `enum` for a string field generates a Scala 3 union of singleton string types, which is technically fine but ugly to pattern-match against. We dodge it.
 
 If the client sends `python3`, the server resolves the alias. If it sends `cobol`, the server returns `RunFailure.BadInput("Unsupported language …")` (mapped to 400). The client doesn't have to maintain its own copy of the language list.
