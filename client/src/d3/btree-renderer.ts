@@ -183,11 +183,14 @@ export const btreeRenderer: RendererFn = defineRenderer({
 
         const newIds = new Set(step.highlight);
         const changedIds = new Set(step.changed);
-        // Locals (cursor + cardCursor) pointing at a BNode → tint + name badge.
+        // Locals (cursor + cardCursor) pointing at a BNode → tint + name badge. A BNode
+        // is both a node AND a card root, so a local pointing at it surfaces in BOTH
+        // sets — dedupe by name so the badge reads "root", not "root, root".
         const cursorsByNode = new Map<string, { name: string; color: string }[]>();
         for (const c of [...step.cursor, ...step.cardCursor]) {
           if (!nodes.has(c.target)) continue;
           const list = cursorsByNode.get(c.target) ?? [];
+          if (list.some((x) => x.name === c.name)) continue;
           list.push({ name: c.name, color: c.color });
           cursorsByNode.set(c.target, list);
         }

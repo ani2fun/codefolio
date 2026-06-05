@@ -104,10 +104,12 @@ describe("btree-renderer — rendering (jsdom)", () => {
   });
 
   it("flashes a freshly-inserted key and tints the node a local points at", () => {
+    // A BNode is both a node and a card root, so a local surfaces in BOTH sets —
+    // the badge must dedupe to "node", not "node, node".
     const cursor: VizCursor = { name: "node", target: "b_c2", color: "#e11" };
     btreeRenderer(
       container,
-      graph(btreeStep({ highlight: ["a_c2k#2"], cardCursor: [cursor] })),
+      graph(btreeStep({ highlight: ["a_c2k#2"], cursor: [cursor], cardCursor: [cursor] })),
       noopLayout,
     );
 
