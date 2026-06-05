@@ -37,7 +37,7 @@ import scala.scalajs.js
  *     compound statement and its wrapped body would otherwise emit at the same line (e.g. `if (cond) return
  *     x;`).
  *   - A quarter-drop truncation loop in `Tracer.buildJson()` reads its budget from
- *     `BackendLimits.codeRunner.maxStdoutBytes` (substituted at Scala compile time).
+ *     `BackendLimits.goJudge.maxStdoutBytes` (substituted at Scala compile time).
  *
  * **Out of scope for Slice 5.** `Collection` / `Map` walking, lambdas / anonymous classes (the synthetic
  * frame noise would crowd out the user-visible algorithm), generic field walking through superclasses, and
@@ -67,7 +67,7 @@ object JvmTracer:
    */
   def wrap(userSource: String): String =
     val encoded    = base64Encode(userSource)
-    val maxPayload = BackendLimits.codeRunner.maxStdoutBytes.toString
+    val maxPayload = BackendLimits.goJudge.maxStdoutBytes.toString
     HarnessTemplate
       .replace("{{USER_SOURCE_B64}}", encoded)
       .replace("{{MAX_PAYLOAD}}", maxPayload)

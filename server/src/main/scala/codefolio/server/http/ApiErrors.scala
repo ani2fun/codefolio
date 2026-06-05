@@ -27,7 +27,7 @@ object ApiErrors:
       StatusCode.ServiceUnavailable -> ApiError(
         error = "Code execution is not configured on this server.",
         detail = None,
-        hint = Some("Set PISTON_URL (production) or CODE_RUNNER_URL (local dev).")
+        hint = Some("Set EXECUTOR_URL to the go-judge sandbox base URL.")
       )
     case RunFailure.BackendFailure(error, detail) =>
       StatusCode.BadGateway -> ApiError(error = error, detail = detail, hint = None)

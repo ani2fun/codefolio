@@ -24,10 +24,9 @@ generation, and everything runs in **Docker Compose**.
   (`client/src/markdown/render.ts`) and is invoked from Scala.js through a
   lazy-loaded gateway, so its multi-MB dependency tree doesn't ship with
   the home page.
-- **Code execution** — `POST /api/run` proxies to a configured Piston
-  server (production) or to the local `code-runner` container (dev). The
-  `RunnableCodeBlock` UI component lives in scalajs-react and exercises
-  this end-to-end.
+- **Code execution** — `POST /api/run` proxies to a self-hosted **go-judge**
+  sandbox (`EXECUTOR_URL`), same image in dev and prod. The `RunnableCodeBlock`
+  UI component lives in scalajs-react and exercises this end-to-end.
 - **Hello demo** — kept at `/demo` (the original codefolio skeleton). Hits
   Postgres/Redis/Mongo end-to-end; useful as an integration smoke test.
 
@@ -38,7 +37,7 @@ generation, and everything runs in **Docker Compose**.
 | **Postgres** | Visit counter for the kept Hello demo (Liquibase migrations, plain JDBC + HikariCP). |
 | **Redis** (Lettuce) | Read-through cache for `/api/hello` (~10s TTL) — response carries a `cached` flag. |
 | **MongoDB** (sync driver) | Append-only log of every `/api/hello` call; surfaced via `/api/recent`. |
-| **code-runner** (local container) | Speaks the Judge0 submissions API; backs `/api/run` for development. Production points `PISTON_URL` at a Piston server instead. |
+| **go-judge** (sandbox) | `criyle/go-judge` + language toolchains; backs `/api/run` via its `/run` command API. Same privileged image in dev and prod (`EXECUTOR_URL`). |
 
 ## Quick start
 
@@ -100,14 +99,13 @@ cd client && npm install && npm run dev
 | `REDIS_URL` | Redis | `redis://localhost:6379` |
 | `REDIS_TTL_SECS` | Cache TTL for the Hello payload | `10` |
 | `MONGO_URI` / `MONGO_DB` | MongoDB | `mongodb://localhost:27017` / `codefolio` |
-| `PISTON_URL` | Piston API base (production); when set, used for languages Piston supports | unset |
-| `CODE_RUNNER_URL` | Local Code Runner base (Judge0 submissions API protocol) | unset (`http://code-runner:2358` in compose) |
-| `CODE_RUNNER_AUTHN_TOKEN` | Optional `X-Auth-Token` for the local runner | unset |
+| `EXECUTOR_URL` | go-judge sandbox base URL | unset (`http://go-judge:5050` in compose; `http://localhost:5050` in bin/dev) |
+| `EXECUTOR_AUTHN_TOKEN` | Optional bearer token (go-judge `ES_AUTH_TOKEN`) | unset |
 | `CORTEX_ROOT` | On-disk root of the Cortex content tree | `./content/cortex` (in the prod image: `/app/content/cortex`) |
 | `CORTEX_AUTO_RELOAD` | Re-walk the content tree on every index request when its mtime changes (drop a folder, refresh the page). Off in prod where content is baked into the image. | `true` |
 
-If neither `PISTON_URL` nor `CODE_RUNNER_URL` is configured, `/api/run`
-returns 503 with a hint to set one of them.
+If `EXECUTOR_URL` is not configured, `/api/run` returns 503 with a hint to
+set it.
 
 ## API surface
 
@@ -116,7 +114,7 @@ returns 503 with a hint to set one of them.
 | `/api/hello` | GET | Increment Postgres counter, cache in Redis, log to Mongo. |
 | `/api/recent` | GET | Last 10 `/api/hello` calls, newest first (from Mongo). |
 | `/api/health` | GET | 200 if all three stores are reachable. |
-| `/api/run` | POST | Execute a code snippet via Piston / Code Runner. |
+| `/api/run` | POST | Execute a code snippet via the go-judge sandbox. |
 | `/api/cortex/index` | GET | List books + chapter refs. |
 | `/api/cortex/{book}/{chapter}` | GET | Frontmatter + raw markdown + prev/next slugs for one chapter. |
 | `/docs` | GET | Swagger UI |

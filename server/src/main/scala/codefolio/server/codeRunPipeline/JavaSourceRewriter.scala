@@ -14,9 +14,9 @@ import java.util.regex.Pattern
  * Anything else — no public class, already named `Main`, or non-Java languages — passes through untouched.
  *
  * Lives in `codeRunPipeline` and is invoked via [[Languages.effectiveSource]] — the wire adapters call that
- * rather than this directly, so neither [[CodeRunnerWire]] nor [[PistonWire]] has to know which language is
- * special. The shape (single static `normalizeEntrypoint`) is small enough to keep beside the table rather
- * than promote to `shared/`.
+ * rather than this directly, so [[GoJudgeWire]] doesn't have to know which language is special. The shape
+ * (single static `normalizeEntrypoint`) is small enough to keep beside the table rather than promote to
+ * `shared/`.
  */
 private[codeRunPipeline] object JavaSourceRewriter:
 

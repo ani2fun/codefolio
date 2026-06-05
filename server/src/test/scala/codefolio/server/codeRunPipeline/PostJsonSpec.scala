@@ -10,9 +10,9 @@ import java.nio.charset.StandardCharsets
 
 /**
  * Pins the user-facing error string emitted by `CodeRunPipeline.postJson` on a non-2xx response. The wire
- * parsers (`PistonWireSpec` / `CodeRunnerWireSpec`) cover JSON ↔ `RunResult` mapping; this spec covers the
- * one user-observable piece of the transport — the message format `"$errorPrefix returned $status: $body"` —
- * which surfaces inside `RunFailure.BackendFailure.detail` and ends up in the API error envelope.
+ * parser (`GoJudgeWireSpec`) covers JSON ↔ `RunResult` mapping; this spec covers the one user-observable
+ * piece of the transport — the message format `"$errorPrefix returned $status: $body"` — which surfaces
+ * inside `RunFailure.BackendFailure.detail` and ends up in the API error envelope.
  */
 object PostJsonSpec extends ZIOSpecDefault:
 
@@ -25,7 +25,7 @@ object PostJsonSpec extends ZIOSpecDefault:
             pathAndQuery = "/run",
             payload = """{"q":1}""",
             parse = (s: String) => s,
-            errorPrefix = "Piston"
+            errorPrefix = "go-judge"
           )
           .map(body => assertTrue(body == """{"echo":"hi"}"""))
       }
@@ -38,11 +38,11 @@ object PostJsonSpec extends ZIOSpecDefault:
             pathAndQuery = "/run",
             payload = "{}",
             parse = (_: String) => (),
-            errorPrefix = "Piston"
+            errorPrefix = "go-judge"
           )
           .either
           .map {
-            case Left(t)  => assertTrue(t.getMessage == "Piston returned 503: Server overloaded")
+            case Left(t)  => assertTrue(t.getMessage == "go-judge returned 503: Server overloaded")
             case Right(_) => assertNever("expected failure on 503")
           }
       }
@@ -55,12 +55,12 @@ object PostJsonSpec extends ZIOSpecDefault:
             pathAndQuery = "/run",
             payload = "{}",
             parse = (_: String) => (),
-            errorPrefix = "Code Runner"
+            errorPrefix = "executor"
           )
           .either
           .map {
             case Left(t) =>
-              assertTrue(t.getMessage == """Code Runner returned 400: {"error":"bad"}""")
+              assertTrue(t.getMessage == """executor returned 400: {"error":"bad"}""")
             case Right(_) => assertNever("expected failure on 400")
           }
       }

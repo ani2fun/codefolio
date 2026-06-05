@@ -32,17 +32,17 @@ object ApiErrorsSpec extends ZIOSpecDefault:
         RunFailure.BadInput("Nope", hint = Some("Choose a supported language."))
       )
       val (_, backend) = ApiErrors.toHttp(
-        RunFailure.BackendFailure("Piston failed", detail = Some("upstream 500"))
+        RunFailure.BackendFailure("go-judge failed", detail = Some("upstream 500"))
       )
 
       assertTrue(
         notConfigured.error == "Code execution is not configured on this server.",
         notConfigured.detail.isEmpty,
-        notConfigured.hint.exists(_.contains("Set PISTON_URL")),
+        notConfigured.hint.exists(_.contains("Set EXECUTOR_URL")),
         badInput.error == "Nope",
         badInput.detail.isEmpty,
         badInput.hint == Some("Choose a supported language."),
-        backend.error == "Piston failed",
+        backend.error == "go-judge failed",
         backend.detail == Some("upstream 500"),
         backend.hint.isEmpty
       )

@@ -38,17 +38,18 @@ services:
       timeout: 5s
       retries: 10
 
-  # Lightweight ARM64-friendly code execution sandbox. Speaks the Judge0
-  # submissions API (`POST /submissions/?base64_encoded=true&wait=true&...`)
-  # so the same handler talks to both this and a hosted Piston instance.
-  # No process-level sandboxing — local development only.
-  code-runner:
+  # go-judge sandbox (criyle/go-judge) + the Languages.scala toolchains (JDK 21,
+  # Python, C/C++, Go, Rust, Kotlin, TS/JS, SQLite). Speaks the /run command API.
+  # Needs `privileged` for its cgroup-v2 namespace sandbox (validated on Docker
+  # Desktop + the homelab k3s nodes). First build is large (~1.9 GB).
+  go-judge:
     build:
-      context: ./runner
+      context: ./runner/go-judge
       dockerfile: Dockerfile
     restart: unless-stopped
+    privileged: true
     ports:
-      - "127.0.0.1:2358:2358"
+      - "127.0.0.1:5050:5050"
 
   # Static SPA built from the co-located workspace.c4 by Dockerfile.likec4
   # (nginx on :8080). Bound to 127.0.0.1 only — local dev convenience, not
@@ -87,7 +88,7 @@ services:
       db:    { condition: service_healthy }
       redis: { condition: service_healthy }
       mongo: { condition: service_healthy }
-      code-runner: { condition: service_started }
+      go-judge: { condition: service_started }
       likec4: { condition: service_started }
       keycloak: { condition: service_started }
     environment:
@@ -99,11 +100,10 @@ services:
       MONGO_DB:    codefolio
       STATIC_DIR:  /app/static
       PORT:        "8080"
-      # Local dev defaults to the code-runner container; override PISTON_URL
-      # in production to a self-hosted Piston (`/api/v2/execute` shape).
-      PISTON_URL:              ${PISTON_URL:-}
-      CODE_RUNNER_URL:         ${CODE_RUNNER_URL:-http://code-runner:2358}
-      CODE_RUNNER_AUTHN_TOKEN: ${CODE_RUNNER_AUTHN_TOKEN:-}
+      # go-judge sandbox for /api/run. bin/dev (JVM on host) overrides to
+      # http://localhost:5050; prod points at the in-cluster go-judge Service.
+      EXECUTOR_URL:            ${EXECUTOR_URL:-http://go-judge:5050}
+      EXECUTOR_AUTHN_TOKEN:    ${EXECUTOR_AUTHN_TOKEN:-}
       # Reach the likec4 nginx via docker compose DNS on its container port.
       # bin/dev (JVM on host) overrides to http://localhost:8090.
       LIKEC4_URL:              http://likec4:8080

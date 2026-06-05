@@ -374,7 +374,7 @@ components:
         hint:
           type: string
           nullable: true
-          example: "Set PISTON_URL or CODE_RUNNER_URL"
+          example: "Set EXECUTOR_URL"
 
     RunRequest:
       type: object

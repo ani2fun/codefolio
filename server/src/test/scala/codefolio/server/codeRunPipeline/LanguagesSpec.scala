@@ -5,8 +5,8 @@ import zio.test.*
 /**
  * Pins the Languages table as the single source of truth for the Code Run pipeline: alias resolution,
  * internal consistency (unique ids, unique aliases), and the per-language source preprocessing the wire
- * adapters delegate here. A duplicated id or alias — the kind of bug that used to hide across `PistonWire` /
- * `CodeRunnerWire` / `JavaSourceRewriter` — fails here instead of at runtime.
+ * adapters delegate here. A duplicated id or alias — the kind of bug that used to hide across `GoJudgeWire` /
+ * `JavaSourceRewriter` — fails here instead of at runtime.
  */
 object LanguagesSpec extends ZIOSpecDefault:
 
@@ -52,6 +52,10 @@ object LanguagesSpec extends ZIOSpecDefault:
             if Languages.resolve(alias).map(_.id) != Some(lang.id)
           yield alias
         assertTrue(mismatches.isEmpty)
+      },
+      test("every language has a runnable go-judge spec") {
+        val bad = Languages.all.filter(l => l.goJudge.sourceFile.isEmpty || l.goJudge.run.isEmpty)
+        assertTrue(bad.isEmpty)
       }
     ),
     suite("effectiveSource")(

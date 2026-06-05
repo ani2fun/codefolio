@@ -25,35 +25,33 @@ object RunFailure:
   /** No execution backend configured. 503. */
   case object NotConfigured extends RunFailure
 
-  /**
-   * Backend itself errored (Piston / Code Runner returned 5xx, network failure, etc.). 502.
-   */
+  /** The execution backend (go-judge) returned a non-2xx status or the request failed. 502. */
   final case class BackendFailure(error: String, detail: Option[String] = None) extends RunFailure
 
 /**
- * Internal seam for `/api/run`. CONTEXT.md term: **Code Execution Backend**. Two adapters in production —
- * Piston (remote public service) and Code Runner (local Judge0-compatible container) — plus the test fakes
- * `FakePiston` / `FakeCodeRunner`. Production wires both via [[CodeRunPipeline.live]]; tests inject lists of
- * fakes via [[CodeRunPipeline.from]].
+ * Internal seam for `/api/run`. CONTEXT.md term: **Code Execution Backend**. One adapter in production —
+ * go-judge (self-hosted sandbox) — plus the test fake `FakeGoJudge`. Production wires it via
+ * [[CodeRunPipeline.live]]; tests inject fakes via [[CodeRunPipeline.from]].
  *
- * The orchestration walks the configured list in priority order and picks the first backend whose
- * `supports(lang)` is true. Code Runner reports `supports = true` unconditionally (universal fallback);
- * Piston reports support only for languages in its protocol map ([[PistonWire.supports]]).
+ * The pipeline resolves the language alias, then runs it on the first configured backend whose
+ * `supports(lang)` is true. The single go-judge backend supports every language in [[Languages]] (`supports =
+ * true`). The list shape is kept so tests can inject fakes and a second backend could be reintroduced without
+ * reshaping the seam.
  */
 private[codeRunPipeline] trait CodeExecutionBackend:
   def supports(lang: Language): Boolean
   def run(source: String, stdin: Option[String], lang: Language): Task[RunResult]
 
 /**
- * Two-backend pipeline for `/api/run`.
+ * Single-backend pipeline for `/api/run`.
  *
  *   - Validates payload size, resolves the language alias.
- *   - Walks the configured backends in priority order; picks the first one whose `supports(lang)` is true.
+ *   - Runs the language on the first configured backend that supports it.
  *   - Wraps backend `Throwable`s as `RunFailure.BackendFailure`.
  *
  * Mirrors the ADR-0003 internal-seams pattern: the [[CodeExecutionBackend]] trait is package-private; the
- * only public surface is `run`. Wire-format mapping (JSON ↔ `RunResult`) lives in [[PistonWire]] /
- * [[CodeRunnerWire]] so it can be unit-tested directly.
+ * only public surface is `run`. Wire-format mapping (JSON ↔ `RunResult`) lives in [[GoJudgeWire]] so it can
+ * be unit-tested directly.
  */
 trait CodeRunPipeline:
   def run(req: RunRequest): IO[RunFailure, RunResponse]
@@ -68,11 +66,9 @@ object CodeRunPipeline:
     CodeRunPipelineLive(backends)
 
   /**
-   * Resource-free layer: builds the configured Piston and Code Runner adapters from `RunnerConfig`. Either
-   * may be absent if its URL is unset; if both are unset, the pipeline returns `NotConfigured` per request.
-   * Code Runner is listed first so it wins when both backends are configured — the self-hosted runner is
-   * preferred because it controls the Java JDK version (needed for `jdk.compiler` tracing) and has a 1 MB
-   * stdout cap versus Piston's 64 KB. Piston remains as the fallback if Code Runner is unreachable.
+   * Resource-free layer: builds the go-judge adapter from `RunnerConfig`. If `executorUrl` is unset, the
+   * pipeline returns `NotConfigured` per request (the misconfiguration is made visible rather than silently
+   * swallowed). There is no runtime failover — a single backend, by design.
    */
   val live: ZLayer[RunnerConfig, Nothing, CodeRunPipeline] =
     ZLayer.fromFunction { (cfg: RunnerConfig) =>
@@ -80,36 +76,18 @@ object CodeRunPipeline:
     }
 
   // ---------------------------------------------------------------------------
-  // Live adapters — thin shells that wrap the protocol-specific wire parsers in
-  // a `postJson` HTTP transport. The wire layer (`PistonWire`, `CodeRunnerWire`)
-  // owns the JSON ↔ RunResult mapping so it can be unit-tested against golden
-  // fixtures without an HTTP server.
+  // Live adapter — a thin shell wrapping GoJudgeWire's JSON ↔ RunResult mapping
+  // in the `postJson` HTTP transport. The wire layer owns the mapping so it can
+  // be unit-tested against golden fixtures without an HTTP server.
   // ---------------------------------------------------------------------------
 
   private def liveBackends(cfg: RunnerConfig): List[CodeExecutionBackend] =
-    val piston: Option[CodeExecutionBackend] =
-      cfg.pistonUrl.filter(_.nonEmpty).map(LivePistonBackend(_))
-    val codeRunner: Option[CodeExecutionBackend] =
-      cfg.codeRunnerUrl
-        .filter(_.nonEmpty)
-        .map(LiveCodeRunnerBackend(_, cfg.codeRunnerAuthToken.filter(_.nonEmpty)))
-    // Code Runner first: preferred over Piston for traced runs (higher stdout cap,
-    // controlled JDK version with jdk.compiler). Piston is the fallback.
-    List(codeRunner, piston).flatten
+    cfg.executorUrl
+      .filter(_.nonEmpty)
+      .map(url => LiveGoJudgeBackend(url, cfg.executorAuthToken.filter(_.nonEmpty)))
+      .toList
 
-  final private class LivePistonBackend(baseUrl: String) extends CodeExecutionBackend:
-
-    override def supports(lang: Language): Boolean = PistonWire.supports(lang)
-
-    override def run(
-        source: String,
-        stdin: Option[String],
-        lang: Language
-    ): Task[RunResult] =
-      val body = PistonWire.buildRequestBody(source, stdin, lang)
-      postJson(baseUrl, "/api/v2/execute", body, PistonWire.parseRunResult, "Piston")
-
-  final private class LiveCodeRunnerBackend(baseUrl: String, authToken: Option[String])
+  final private class LiveGoJudgeBackend(baseUrl: String, authToken: Option[String])
       extends CodeExecutionBackend:
 
     override def supports(lang: Language): Boolean = true
@@ -119,26 +97,26 @@ object CodeRunPipeline:
         stdin: Option[String],
         lang: Language
     ): Task[RunResult] =
-      val body         = CodeRunnerWire.buildRequestBody(source, stdin, lang)
-      val extraHeaders = authToken.fold(Map.empty[String, String])(t => Map("X-Auth-Token" -> t))
+      val body = GoJudgeWire.buildRequestBody(source, stdin, lang)
+      // go-judge uses bearer-token auth (ES_AUTH_TOKEN). Optional — when unset the in-cluster
+      // NetworkPolicy is the access control and no header is sent.
+      val extraHeaders = authToken.fold(Map.empty[String, String])(t => Map("Authorization" -> s"Bearer $t"))
       postJson(
         baseUrl,
-        CodeRunnerWire.PathAndQuery,
+        GoJudgeWire.Path,
         body,
-        CodeRunnerWire.parseRunResult,
-        "Code Runner",
+        GoJudgeWire.parseRunResult(lang.goJudge.compile.isDefined),
+        "go-judge",
         extraHeaders
       )
 
   // ---- Shared HTTP plumbing ----------------------------------------------
 
-  // Force HTTP/1.1: piston (and our Code Runner Judge0 image) is Express
-  // over plaintext, which doesn't speak HTTP/2. Java HttpClient's default
-  // (HTTP_2) sends `Connection: Upgrade, HTTP2-Settings: …` headers on
-  // every plaintext POST as part of h2c discovery, and Express's
-  // body-parser middleware rejects the upgrade-laden request with a
-  // bare-text `400 Bad Request` (no JSON body) before our handler ever
-  // sees it. Pinning HTTP/1.1 sidesteps the h2c handshake entirely.
+  // Force HTTP/1.1: go-judge serves plaintext HTTP/1.1. Java HttpClient's
+  // default (HTTP_2) sends `Connection: Upgrade, HTTP2-Settings: …` h2c
+  // discovery headers on every plaintext POST, which some servers reject with
+  // a bare-text 400 before the handler sees it. Pinning HTTP/1.1 sidesteps the
+  // h2c handshake entirely.
   private val httpClient: HttpClient =
     HttpClient
       .newBuilder()
@@ -149,8 +127,8 @@ object CodeRunPipeline:
   /**
    * POST `payload` (JSON string) to `${baseUrl}${pathAndQuery}` with the standard JSON content type and a
    * 100s timeout, then either parse the response body via `parse` or fail with a `${errorPrefix} returned
-   * <status>: <body>` runtime exception. `extraHeaders` lets a backend add per-request auth (e.g. Code
-   * Runner's `X-Auth-Token`) without rebuilding the whole request flow.
+   * <status>: <body>` runtime exception. `extraHeaders` lets the backend add per-request auth (go-judge's
+   * `Authorization: Bearer …`) without rebuilding the whole request flow.
    *
    * Wraps the entire send + parse in `ZIO.attemptBlocking` so the JDK's blocking HTTP client doesn't pin a
    * platform thread.
@@ -170,9 +148,9 @@ object CodeRunPipeline:
         .uri(URI.create(s"$cleanedBase$pathAndQuery"))
         .header("Content-Type", "application/json")
         .header("Accept", "application/json")
-        // 100 s, not 30: a cold `scala-cli` run in the local Code Runner can
-        // outlast 30 s; its own 90 s per-language budget should fire first so
-        // the failure reads as a clean TLE rather than an opaque HTTP timeout.
+        // 100 s, not 30: a cold `scala-cli` run can outlast 30 s; go-judge's own
+        // per-language clock limit fires first so the failure reads as a clean
+        // TLE rather than an opaque HTTP timeout.
         .timeout(java.time.Duration.ofSeconds(100))
         .POST(HttpRequest.BodyPublishers.ofString(payload, StandardCharsets.UTF_8))
       extraHeaders.foreach { case (k, v) => builder.header(k, v) }
@@ -205,9 +183,8 @@ final private class CodeRunPipelineLive(
     else ZIO.unit
 
   /**
-   * Walk backends in priority order; pick the first whose `supports(lang)` is true. Empty list →
-   * `NotConfigured`; non-empty but no support → `BadInput`. Backend exceptions are wrapped as
-   * [[RunFailure.BackendFailure]].
+   * Run on the first backend whose `supports(lang)` is true. Empty list → `NotConfigured`; non-empty but no
+   * support → `BadInput`. Backend exceptions are wrapped as [[RunFailure.BackendFailure]].
    */
   private def pickAndRun(lang: Language, req: RunRequest): IO[RunFailure, RunResult] =
     if backends.isEmpty then ZIO.fail(RunFailure.NotConfigured)

@@ -37,55 +37,33 @@ object CodeRunPipelineSpec extends ZIOSpecDefault:
         .either
         .map(o => assertTrue(o == Left(RunFailure.NotConfigured)))
     },
-    test("prefers the first backend when both back the same language") {
-      val piston     = FakePiston.succeeding(Set(71), sampleResult)
-      val codeRunner = FakeCodeRunner.succeeding(sampleResult)
-      val pipeline   = CodeRunPipeline.from(List(piston, codeRunner))
+    test("runs on the configured backend and echoes the language") {
+      val backend  = FakeGoJudge.succeeding(sampleResult)
+      val pipeline = CodeRunPipeline.from(List(backend))
       for res <- pipeline.run(RunRequest(language = "python", source = "print('ok')", stdin = None))
       yield assertTrue(
         res.result == sampleResult,
         res.language.id == 71,
-        piston.calls.size == 1,
-        piston.calls.head.source == "print('ok')",
-        codeRunner.calls.isEmpty
+        backend.calls.size == 1,
+        backend.calls.head.source == "print('ok')"
       )
-    },
-    test("falls back to the next backend when the first does not support the language") {
-      val piston     = FakePiston.succeeding(Set(71), sampleResult)
-      val codeRunner = FakeCodeRunner.succeeding(sampleResult)
-      val pipeline   = CodeRunPipeline.from(List(piston, codeRunner))
-      for _ <- pipeline.run(RunRequest(language = "sql", source = "SELECT 1", stdin = None))
-      yield assertTrue(
-        piston.calls.isEmpty,
-        codeRunner.calls.size == 1,
-        codeRunner.calls.head.source == "SELECT 1"
-      )
-    },
-    test("uses the only backend when only one is configured") {
-      val codeRunner = FakeCodeRunner.succeeding(sampleResult)
-      val pipeline   = CodeRunPipeline.from(List(codeRunner))
-      for res <- pipeline.run(RunRequest(language = "python", source = "print('ok')", stdin = None))
-      yield assertTrue(res.result == sampleResult, codeRunner.calls.size == 1)
     },
     test("returns BadInput when no configured backend supports the language") {
-      val piston   = FakePiston.succeeding(Set(71), sampleResult) // python only
-      val pipeline = CodeRunPipeline.from(List(piston))
+      // A backend that only supports python; a SQL request should not reach it.
+      val backend  = FakeGoJudge.supporting(Set(71), sampleResult)
+      val pipeline = CodeRunPipeline.from(List(backend))
       pipeline
         .run(RunRequest(language = "sql", source = "SELECT 1", stdin = None))
         .either
         .map {
           case Left(RunFailure.BadInput(msg, _)) =>
-            assertTrue(
-              msg.contains("SQL"),
-              msg.contains("not supported"),
-              piston.calls.isEmpty
-            )
+            assertTrue(msg.contains("SQL"), msg.contains("not supported"), backend.calls.isEmpty)
           case other => assertNever(s"unexpected outcome: $other")
         }
     },
     test("wraps a backend Throwable as BackendFailure") {
-      val piston   = FakePiston.failing(Set(71), new RuntimeException("boom"))
-      val pipeline = CodeRunPipeline.from(List(piston))
+      val backend  = FakeGoJudge.failing(new RuntimeException("boom"))
+      val pipeline = CodeRunPipeline.from(List(backend))
       pipeline
         .run(RunRequest(language = "python", source = "x", stdin = None))
         .either
