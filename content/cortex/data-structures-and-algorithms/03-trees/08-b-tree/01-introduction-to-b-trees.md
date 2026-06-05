@@ -82,6 +82,53 @@ for n in [100, 1_000, 10_000]:
 print("search 42:", t.search(42), " search 99999:", t.search(99999))
 ```
 
+Now *watch* one grow. This inserts nine keys into a `T=3` tree (2–5 keys per node) and visualises every step — click **Visualise** and scrub through it: keys fill the root, it **splits** (the middle key jumps *up*), and the tree gains a level. Each node is a **row** of keys, not a single value, and a parent with `k` keys has `k+1` children hanging from the gaps between them — that's the whole idea.
+
+```python run viz=graph viz-root=self.root viz-kind=btree
+T = 3   # each node holds T-1 .. 2T-1 keys → 2..5 keys per node
+
+class BNode:
+    def __init__(self, leaf=True):
+        self.keys = []; self.children = []; self.leaf = leaf
+
+class BTree:
+    def __init__(self): self.root = BNode()
+
+    def insert(self, key):
+        root = self.root
+        if len(root.keys) == 2 * T - 1:                  # root full → grow UP a level
+            nr = BNode(leaf=False); nr.children.append(root)
+            self.root = nr; self._split(nr, 0)
+        self._insert_nonfull(self.root, key)
+
+    def _split(self, parent, i):
+        full = parent.children[i]; sib = BNode(leaf=full.leaf)
+        sib.keys = full.keys[T:]                          # upper half → new sibling
+        full.keys, mid = full.keys[:T-1], full.keys[T-1]  # middle key promoted up
+        if not full.leaf:
+            sib.children = full.children[T:]; full.children = full.children[:T]
+        parent.keys.insert(i, mid); parent.children.insert(i + 1, sib)
+
+    def _insert_nonfull(self, node, key):
+        i = len(node.keys) - 1
+        if node.leaf:
+            while i >= 0 and key < node.keys[i]: i -= 1
+            node.keys.insert(i + 1, key)
+        else:
+            while i >= 0 and key < node.keys[i]: i -= 1
+            i += 1
+            if len(node.children[i].keys) == 2 * T - 1:   # split a full child first
+                self._split(node, i)
+                if key > node.keys[i]: i += 1
+            self._insert_nonfull(node.children[i], key)
+
+tree = BTree()
+for k in [10, 20, 30, 40, 50, 60, 70, 80, 90]:
+    tree.insert(k)
+print("root keys:", tree.root.keys)                       # [30, 60] — two keys, three children
+```
+<p align="center"><strong>▶ Run it, then Visualise — nine keys into a T=3 B-tree: the root fills to five keys, splits (30 jumps up), and by the ninth key the root holds [30, 60] over three leaf nodes.</strong></p>
+
 ## How It Works
 
 A B-tree of **order `m`** (minimum degree `T = m/2`) obeys five invariants:

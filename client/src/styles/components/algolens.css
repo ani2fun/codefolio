@@ -1985,6 +1985,115 @@
   }
 
   /* ════════════════════════════════════════════════════════════════════
+     B-tree renderer (ADR-0029, cross-structure) — n-ary multi-key tree.
+     Each node is a BOX of key cells; child pointers (SVG) hang from the gaps
+     between keys (k keys ⇒ k+1 children). Reconstructed whole-graph from the
+     keys/children Arr edges, so `viz=binary-tree`'s no-edges failure is gone.
+     `--new` flashes a freshly-inserted key; `--cursor` tints the node a local
+     points at, in its role colour (`--node-color`).
+     Block prefix: .btree-renderer
+     ════════════════════════════════════════════════════════════════════ */
+
+  .btree-renderer {
+    position: relative;
+    margin: 8px auto;
+    font-family: var(--font-mono);
+  }
+  .btree-renderer__empty {
+    color: hsl(var(--muted-foreground));
+    font-style: italic;
+    font-size: 12px;
+    padding: 40px;
+  }
+  /* Child pointers, behind the boxes. */
+  .btree-renderer__svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+  }
+  .btree-renderer__edge {
+    stroke: hsl(var(--border));
+    stroke-width: 1.5;
+  }
+  /* A node — a horizontal row of key cells, centred on x with its top at y. */
+  .btree-renderer__node {
+    position: absolute;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: stretch;
+    height: 32px;
+    background: hsl(var(--background));
+    border: 1px solid hsl(var(--border));
+    border-radius: 6px;
+    white-space: nowrap;
+    transition:
+      border-color 200ms ease,
+      box-shadow 200ms ease;
+  }
+  .btree-renderer__node--leaf {
+    background: hsl(var(--muted) / 0.35);
+  }
+  /* The node a local (cursor / cardCursor) points at — tinted in its role colour. */
+  .btree-renderer__node--cursor {
+    border-color: var(--node-color, hsl(var(--primary)));
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--node-color, hsl(var(--primary))) 16%, transparent);
+  }
+  /* One key inside the box; --divided draws the separator between adjacent keys. */
+  .btree-renderer__key {
+    min-width: 34px;
+    padding: 0 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    font-size: 13px;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+  }
+  .btree-renderer__key--divided {
+    border-left: 1px solid hsl(var(--border));
+  }
+  .btree-renderer__key--empty {
+    color: hsl(var(--muted-foreground));
+    font-weight: 400;
+  }
+  /* A freshly-inserted key flashes in the canon "added" green. */
+  .btree-renderer__key--new {
+    color: rgb(86, 140, 76);
+    background: color-mix(in oklab, rgb(106, 150, 86) 18%, transparent);
+    animation: btree-key-pop 360ms ease;
+  }
+  .btree-renderer__key--changed {
+    color: hsl(var(--primary));
+  }
+  @keyframes btree-key-pop {
+    from {
+      transform: scale(0.6);
+      opacity: 0.2;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  /* The name(s) of the local(s) pointing at this node, floating above the box. */
+  .btree-renderer__badge {
+    position: absolute;
+    bottom: calc(100% + 3px);
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 1px 6px;
+    border-radius: 999px;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    color: var(--node-color, hsl(var(--primary)));
+    background: color-mix(in oklab, var(--node-color, hsl(var(--primary))) 14%, transparent);
+  }
+
+  /* ════════════════════════════════════════════════════════════════════
      Fenwick / BIT renderer (ADR-0027, renderer #11) — responsibility staircase.
      A column grid `n` wide (one column per 1-based index, set inline). Each cell
      is a bar at `grid-column: (i-lowbit+1) / (i+1)` on its low-bit level's row

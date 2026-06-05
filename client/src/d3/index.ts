@@ -50,6 +50,7 @@ import { fenwickRenderer } from "./fenwick-renderer";
 import { skiplistRenderer } from "./skiplist-renderer";
 import { arrayRenderer } from "./array-renderer";
 import { gridRenderer } from "./grid-renderer";
+import { btreeRenderer } from "./btree-renderer";
 
 export type { WidgetController };
 
@@ -163,6 +164,7 @@ const WHOLE_GRAPH_RENDERERS: Record<string, RendererFn> = {
   hashmap: hashmapRenderer,
   graph: graphRenderer,
   trie: trieRenderer, // prefix tree: parent→child edges composed through the children Dict
+  btree: btreeRenderer, // n-ary multi-key tree: nodes + child links both run THROUGH Arrs
 };
 
 /** The whole-graph renderer for a graph's structureType, or null if none matches. */
