@@ -2077,21 +2077,6 @@
       opacity: 1;
     }
   }
-  /* The name(s) of the local(s) pointing at this node, floating above the box. */
-  .btree-renderer__badge {
-    position: absolute;
-    bottom: calc(100% + 3px);
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 1px 6px;
-    border-radius: 999px;
-    font-size: 9px;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    white-space: nowrap;
-    color: var(--node-color, hsl(var(--primary)));
-    background: color-mix(in oklab, var(--node-color, hsl(var(--primary))) 14%, transparent);
-  }
 
   /* ════════════════════════════════════════════════════════════════════
      Fenwick / BIT renderer (ADR-0027, renderer #11) — responsibility staircase.

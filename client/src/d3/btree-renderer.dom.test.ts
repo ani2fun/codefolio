@@ -108,8 +108,7 @@ describe("btree-renderer — rendering (jsdom)", () => {
   });
 
   it("flashes a freshly-inserted key and tints the node a local points at", () => {
-    // A BNode is both a node and a card root, so a local surfaces in BOTH sets —
-    // the badge must dedupe to "node", not "node, node".
+    // A BNode is both a node and a card root, so a local surfaces in BOTH sets.
     const cursor: VizCursor = { name: "node", target: "b_c2", color: "#e11" };
     btreeRenderer(
       container,
@@ -120,9 +119,13 @@ describe("btree-renderer — rendering (jsdom)", () => {
     const newKey = container.querySelector(".btree-renderer__key--new");
     expect(newKey?.textContent).toBe("60");
 
-    const cursored = container.querySelector(".btree-renderer__node--cursor");
+    // The node a local points at is TINTED in the cursor colour. The NAME is NOT drawn
+    // on the node — the shared ArrowLayer already labels the pointer, and an on-node
+    // badge collided with the arrow's tip (regression guard: no badge element).
+    const cursored = container.querySelector<HTMLElement>(".btree-renderer__node--cursor");
     expect(cursored).not.toBeNull();
-    expect(cursored?.querySelector(".btree-renderer__badge")?.textContent).toBe("node");
+    expect(cursored?.style.getPropertyValue("--node-color")).toBe("#e11");
+    expect(container.querySelector(".btree-renderer__badge")).toBeNull();
   });
 
   it("renders the empty state when a step has no BNodes", () => {

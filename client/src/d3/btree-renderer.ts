@@ -183,16 +183,17 @@ export const btreeRenderer: RendererFn = defineRenderer({
 
         const newIds = new Set(step.highlight);
         const changedIds = new Set(step.changed);
-        // Locals (cursor + cardCursor) pointing at a BNode → tint + name badge. A BNode
-        // is both a node AND a card root, so a local pointing at it surfaces in BOTH
-        // sets — dedupe by name so the badge reads "root", not "root, root".
-        const cursorsByNode = new Map<string, { name: string; color: string }[]>();
+        // A local (cursor / cardCursor) pointing at a BNode tints that node in the
+        // pointer's role colour — same as every other bespoke renderer. The NAME is NOT
+        // drawn on the node: the shared ArrowLayer already routes a labelled pointer from
+        // the stack frame to the node's top-centre, so a target-end badge here collided
+        // with that arrow's tip. First colour wins when several locals (a BNode is both a
+        // node and a card root) point at one node.
+        const cursorColorByNode = new Map<string, string>();
         for (const c of [...step.cursor, ...step.cardCursor]) {
-          if (!nodes.has(c.target)) continue;
-          const list = cursorsByNode.get(c.target) ?? [];
-          if (list.some((x) => x.name === c.name)) continue;
-          list.push({ name: c.name, color: c.color });
-          cursorsByNode.set(c.target, list);
+          if (nodes.has(c.target) && !cursorColorByNode.has(c.target)) {
+            cursorColorByNode.set(c.target, c.color);
+          }
         }
 
         // ── Child pointers (SVG), behind the boxes. Child i hangs from divider i. ──
@@ -233,16 +234,10 @@ export const btreeRenderer: RendererFn = defineRenderer({
           box.style.top = `${p.y}px`;
           box.setAttribute("data-node-id", node.id);
 
-          const cursors = cursorsByNode.get(node.id);
-          if (cursors !== undefined && cursors.length > 0) {
+          const cursorColor = cursorColorByNode.get(node.id);
+          if (cursorColor !== undefined) {
             box.classList.add("btree-renderer__node--cursor");
-            const col = cursors[0].color;
-            if (col !== "") box.style.setProperty("--node-color", col);
-            const badge = document.createElement("span");
-            badge.className = "btree-renderer__badge";
-            badge.textContent = cursors.map((c) => c.name).join(", ");
-            if (col !== "") badge.style.setProperty("--node-color", col);
-            box.appendChild(badge);
+            if (cursorColor !== "") box.style.setProperty("--node-color", cursorColor);
           }
 
           if (node.keys.length === 0) {
