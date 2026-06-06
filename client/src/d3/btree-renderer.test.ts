@@ -51,4 +51,11 @@ describe("btree-renderer — ADR-0029 contract", () => {
     expect(btSrc).toMatch(/--node-color/);
     expect(btSrc).toMatch(/cardCursor/);
   });
+
+  it("tints the cursor'd node but draws NO on-node name badge (the ArrowLayer owns the label)", () => {
+    // The shared ArrowLayer routes a labelled pointer to the node's top-centre; an
+    // on-node badge there collided with the arrow's tip. Keep tint-only — regression guard.
+    expect(btSrc).toMatch(/btree-renderer__node--cursor/);
+    expect(btSrc).not.toMatch(/btree-renderer__badge/);
+  });
 });
