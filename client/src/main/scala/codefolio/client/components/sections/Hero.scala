@@ -63,16 +63,10 @@ object Hero:
             "See selected work"
           ),
           <.a(
-            ^.href      := "/cortex",
+            ^.href      := "https://cortex.kakde.eu",
             ^.className := "hero__cta hero__cta--ghost",
             LucideIcons.BookOpen(LucideIcons.withClass("hero__cta-icon")),
-            "Cortex"
-          ),
-          <.a(
-            ^.href      := "/blogs",
-            ^.className := "hero__cta hero__cta--ghost",
-            LucideIcons.Pencil(LucideIcons.withClass("hero__cta-icon")),
-            "Blog"
+            "Explore Cortex"
           )
         ),
         <.div(

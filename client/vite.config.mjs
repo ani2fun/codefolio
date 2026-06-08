@@ -17,58 +17,22 @@ export default defineConfig({
 
   resolve: {
     alias: {
-      // `@data` → `client/src/data`. Lets the Scala.js client `@JSImport` the
-      // TypeScript bridge and JSON files without brittle relative paths into
-      // the linker output directory.
-      "@data":     path.resolve(import.meta.dirname, "src/data"),
-      // `@markdown` → `client/src/markdown`. Same idea, for the Prism +
-      // markdown-pipeline TS helpers Scala.js calls into.
-      "@markdown": path.resolve(import.meta.dirname, "src/markdown"),
-      // `@d3` → `client/src/d3`. The pure-TypeScript + D3 engine-driven widget
-      // renderers the Scala.js bridge `@JSImport`s. See ADR-0017.
-      "@d3":       path.resolve(import.meta.dirname, "src/d3"),
+      // `@data` → `client/src/data`. Lets the Scala.js client `@JSImport` the portfolio data bridge
+      // (portfolioData.ts + the JSON files) without brittle relative paths into the linker output dir.
+      "@data": path.resolve(import.meta.dirname, "src/data"),
     },
   },
 
   server: {
     port: 5173,
     proxy: {
-      // Forward API calls to the ZIO backend during development.
+      // Forward the health check to the ZIO backend during development.
       "/api": "http://localhost:8080",
-      "/docs": "http://localhost:8080",
-      // /c4/* is reverse-proxied by the ZIO server to the LikeC4 SPA
-      // container (see LikeC4ProxyRoutes + bin/dev's LIKEC4_URL export).
-      "/c4": "http://localhost:8080",
     },
   },
 
   build: {
     outDir: "dist",
     emptyOutDir: true,
-    // Bundle-size hygiene: peel the heavy markdown-pipeline deps into their
-    // own chunks so the home-page entry doesn't ship them. Browsers fetch
-    // them on demand when the chapter page first lands.
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (id.includes("node_modules")) {
-            if (id.includes("/shiki") || id.includes("/@shikijs/")) return "shiki";
-            if (id.includes("/mermaid")) return "mermaid";
-            if (id.includes("/@terrastruct/d2")) return "d2";
-            if (id.includes("/katex")) return "katex";
-            if (id.includes("/prismjs")) return "prismjs";
-            // Monaco core + the React wrapper + any web-worker entry points
-            // ride together. Loaded only when a Cortex chapter mounts a
-            // runnable block (Scala.js imports `@markdown/monaco` from inside
-            // RunnableCodeBlock's render path).
-            if (id.includes("/monaco-editor") || id.includes("/@monaco-editor/")) return "monaco";
-          }
-          return null;
-        },
-      },
-    },
-    // Quiet the warning at 800 KB; the manual-chunked vendor splits above
-    // are intentionally large but lazily loaded.
-    chunkSizeWarningLimit: 800,
   },
 });

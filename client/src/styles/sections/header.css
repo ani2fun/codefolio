@@ -59,6 +59,15 @@
         transition: transform 200ms ease;
     }
     .header__link:hover::after { transform: scaleX(1); }
+    /* External-link affordance on the Cortex sister-site nav link (kakde.eu → cortex.kakde.eu). */
+    .header__link-icon {
+        display: inline-block;
+        width: 0.8em;
+        height: 0.8em;
+        margin-left: 5px;
+        vertical-align: -1px;
+        opacity: 0.55;
+    }
     .header__actions {
         @apply flex items-center gap-3;
     }

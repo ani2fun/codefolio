@@ -18,17 +18,13 @@ COPY project/plugins.sbt    project/plugins.sbt
 COPY build.sbt              build.sbt
 RUN sbt update
 
-# Bring in the full source tree.
-COPY api      api
+# Bring in the source tree. The portfolio is static — no `api/` (OpenAPI codegen) and no `content/`.
 COPY shared   shared
 COPY server   server
 COPY client   client
-# Cortex markdown content. Read by the server at /api/cortex/*.
-COPY content  content
 
-# Build the backend (creates server/target/universal/stage with launcher) and
-# emit the linked Scala.js module. fullLinkJS produces the optimised JS that
-# Vite then imports via the @scala-js/vite-plugin-scalajs plugin.
+# Build the backend (creates server/target/universal/stage with launcher) and emit the linked Scala.js
+# module. fullLinkJS produces the optimised JS that Vite then imports via @scala-js/vite-plugin-scalajs.
 RUN sbt "server/Universal/stage" "client/fullLinkJS"
 
 # Build the frontend bundle.
@@ -45,11 +41,8 @@ WORKDIR /app
 COPY --from=builder /build/server/target/universal/stage /app
 # Frontend bundle: served by the zio-http static fallback.
 COPY --from=builder /build/client/dist /app/static
-# Cortex content: read by the server at /api/cortex/*.
-COPY --from=builder /build/content     /app/content
 
 ENV STATIC_DIR=/app/static
-ENV CORTEX_ROOT=/app/content/cortex
 ENV PORT=8080
 EXPOSE 8080
 

@@ -30,8 +30,7 @@ object StaticRoutes:
       Method.GET / AppRoutes.Assets / trailing       -> trailingFileHandler(AppRoutes.Assets),
       Method.GET / AppRoutes.Images / trailing       -> trailingFileHandler(AppRoutes.Images),
       Method.GET / AppRoutes.Certificates / trailing -> trailingFileHandler(AppRoutes.Certificates),
-      Method.GET / AppRoutes.CvFile                  -> handler(fileServer.serve(AppRoutes.CvFile)),
-      Method.GET / AppRoutes.SilentCheckSso          -> handler(fileServer.serve(AppRoutes.SilentCheckSso))
+      Method.GET / AppRoutes.CvFile                  -> handler(fileServer.serve(AppRoutes.CvFile))
     )
 
     // SPA fallback, derived from AppRoutes.SpaRoutes (single source of truth shared with the client

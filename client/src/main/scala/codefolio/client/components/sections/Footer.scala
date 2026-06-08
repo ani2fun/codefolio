@@ -59,11 +59,9 @@ object Footer:
           ),
           <.div(
             ^.className := "footer__col",
-            <.div(^.className := "footer__col-label", "Read"),
+            <.div(^.className := "footer__col-label", "More"),
             <.div(
               ^.className := "footer__col-list",
-              metaLink("/cortex", "Cortex"),
-              metaLink("/blogs", "Blog"),
               metaLink("/Aniket-Kakde-CV-EN.pdf", "CV (PDF)")
             )
           )

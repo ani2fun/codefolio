@@ -11,44 +11,30 @@ import org.scalajs.dom
 /**
  * Sticky top nav with desktop pill menu and mobile drawer.
  *
- * Hash-link anchors (`/#about`, `/#experience`, …) scroll to the matching `id` if the section is already in
- * the DOM. If we're on a non-home route (e.g. `/cortex/...`), we fall back to a real URL navigation —
- * [[codefolio.client.pages.HomePage]]'s `useEffectOnMountBy` reads the URL fragment after mount and scrolls.
+ * Every entry is an in-page `#section` anchor (Work / About / Experience / Projects). Clicking one scrolls to
+ * the matching `id` if it's in the DOM, otherwise it navigates to the home URL with the fragment so
+ * [[codefolio.client.pages.HomePage]]'s mount effect performs the scroll.
  */
 object Header:
 
   final case class Props(ctl: RouterCtl[Page])
 
-  /**
-   * One nav-bar entry. Two flavours:
-   *
-   *   - [[HashLink]] — `/#about`, `/#cortex`, etc. Scrolls to the matching `id` on the home page; falls back
-   *     to `location.assign` when triggered from a non-home route.
-   *   - [[RouteLink]] — `/blogs`. Real top-level route navigated via `RouterCtl.setRouteEH(page)` so we stay
-   *     SPA-internal (no full reload).
-   */
-  sealed private trait MenuLink:
-    def label: String
+  final private case class HashLink(hash: String, label: String)
 
-  final private case class HashLink(hash: String, label: String)              extends MenuLink
-  final private case class RouteLink(page: Page, href: String, label: String) extends MenuLink
-
-  private val menuLinks: List[MenuLink] = List(
+  private val menuLinks: List[HashLink] = List(
     HashLink("/#work", "Work"),
     HashLink("/#about", "About"),
     HashLink("/#experience", "Experience"),
-    HashLink("/#projects", "Projects"),
-    RouteLink(Page.CortexIndex, "/cortex", "Cortex"),
-    RouteLink(Page.Blogs, "/blogs", "Blog")
+    HashLink("/#projects", "Projects")
   )
+
+  /** Sister-site link — the Cortex book lives at its own domain (the other half of the split). */
+  private val CortexUrl = "https://cortex.kakde.eu"
 
   /**
    * Scroll to the section if its id is in the DOM, otherwise navigate to the home URL with the fragment so
-   * HomePage's mount effect handles the scroll.
-   *
-   * We DON'T use `RouterCtl.set(Page.Home)` here: it computes the canonical URL for `Page.Home` (`/`) and
-   * pushes that, wiping the fragment we want. `replaceState` keeps the fragment in the URL for shareability,
-   * and `location.assign` is the bulletproof fallback for cross-route nav.
+   * HomePage's mount effect handles the scroll. `replaceState` keeps the fragment in the URL for
+   * shareability; `location.assign` is the bulletproof fallback for cross-route nav.
    */
   private def goToAnchor(hash: String): Callback =
     Callback {
@@ -64,58 +50,33 @@ object Header:
     ScalaFnComponent
       .withHooks[Props]
       .useState(false)
-      .render { (props, menuOpenS) =>
+      .render { (_, menuOpenS) =>
         val toggleMenu = menuOpenS.modState(!_)
 
         def linkClick(hash: String): ReactEventFromInput => Callback =
           (e: ReactEventFromInput) => e.preventDefaultCB >> goToAnchor(hash)
 
-        def routeClick(page: Page): ReactEventFromInput => Callback =
-          (e: ReactEventFromInput) => e.preventDefaultCB >> props.ctl.set(page)
+        def desktopLink(link: HashLink): VdomNode =
+          <.a(
+            ^.key       := link.hash,
+            ^.href      := link.hash,
+            ^.className := "header__link",
+            ^.onClick ==> linkClick(link.hash),
+            link.label
+          )
 
-        def desktopLink(link: MenuLink): VdomNode = link match
-          case HashLink(hash, label) =>
+        def mobileLink(link: HashLink): VdomNode =
+          <.li(
+            ^.key := link.hash,
             <.a(
-              ^.key       := hash,
-              ^.href      := hash,
-              ^.className := "header__link",
-              ^.onClick ==> linkClick(hash),
-              label
+              ^.href      := link.hash,
+              ^.className := "header__drawer-link",
+              ^.onClick ==> ((e: ReactEventFromInput) =>
+                e.preventDefaultCB >> menuOpenS.setState(false) >> goToAnchor(link.hash)
+              ),
+              link.label
             )
-          case RouteLink(page, href, label) =>
-            <.a(
-              ^.key       := href,
-              ^.href      := href,
-              ^.className := "header__link",
-              ^.onClick ==> routeClick(page),
-              label
-            )
-
-        def mobileLink(link: MenuLink): VdomNode = link match
-          case HashLink(hash, label) =>
-            <.li(
-              ^.key := hash,
-              <.a(
-                ^.href      := hash,
-                ^.className := "header__drawer-link",
-                ^.onClick ==> ((e: ReactEventFromInput) =>
-                  e.preventDefaultCB >> menuOpenS.setState(false) >> goToAnchor(hash)
-                ),
-                label
-              )
-            )
-          case RouteLink(page, href, label) =>
-            <.li(
-              ^.key := href,
-              <.a(
-                ^.href      := href,
-                ^.className := "header__drawer-link",
-                ^.onClick ==> ((e: ReactEventFromInput) =>
-                  e.preventDefaultCB >> menuOpenS.setState(false) >> props.ctl.set(page)
-                ),
-                label
-              )
-            )
+          )
 
         <.header(
           ^.className := "header",
@@ -130,7 +91,14 @@ object Header:
             ),
             <.div(
               ^.className := "header__menu",
-              menuLinks.toTagMod(desktopLink)
+              menuLinks.toTagMod(desktopLink),
+              <.a(
+                ^.key       := "cortex",
+                ^.href      := CortexUrl,
+                ^.className := "header__link",
+                "Cortex",
+                LucideIcons.ExternalLink(LucideIcons.withClass("header__link-icon"))
+              )
             ),
             <.div(
               ^.className := "header__actions",
@@ -156,7 +124,16 @@ object Header:
               ^.className := "header__drawer",
               <.ul(
                 ^.className := "header__drawer-list",
-                menuLinks.toTagMod(mobileLink)
+                menuLinks.toTagMod(mobileLink),
+                <.li(
+                  ^.key := "cortex",
+                  <.a(
+                    ^.href      := CortexUrl,
+                    ^.className := "header__drawer-link",
+                    "Cortex",
+                    LucideIcons.ExternalLink(LucideIcons.withClass("header__link-icon"))
+                  )
+                )
               )
             )
           else EmptyVdom

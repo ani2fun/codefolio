@@ -10,10 +10,9 @@ import java.nio.file.{Files, Path}
 import scala.jdk.CollectionConverters.*
 
 /**
- * Tests that the production server's SPA index.html fallback is *derived* from `AppRoutes.SpaRoutes` rather
- * than hand-mirrored. A hard reload of any top-level SPA path must return index.html so the client router can
- * re-resolve; this spec runs real requests through `StaticRoutes.from(...).routes` to prove every `SpaRoute`
- * is covered, that nested routes serve index.html for deep paths, and that a leaf-only route does not.
+ * Tests the production static-file server for the single-page portfolio. `/` (and the fixed asset routes)
+ * serve index.html / files; the portfolio has no SPA sub-routes (`AppRoutes.SpaRoutes` is empty), so a deep
+ * unknown path falls through to 404, and no routes mount at all when the dist directory is absent (dev mode).
  */
 object StaticRoutesSpec extends ZIOSpecDefault:
 
@@ -29,36 +28,14 @@ object StaticRoutesSpec extends ZIOSpecDefault:
         yield assertTrue(res.status == Status.Ok, body.contains(IndexMarker))
       }
     },
-    test("serves index.html for every top-level SPA route in AppRoutes.SpaRoutes") {
-      ZIO.scoped {
-        for
-          dir <- tempDist
-          routes = StaticRoutes.from(dir.toString).routes
-          checked <- ZIO.foreach(AppRoutes.SpaRoutes) { spa =>
-            runGet(routes, s"/${spa.segment}").flatMap { res =>
-              res.body.asString.map(body => res.status == Status.Ok && body.contains(IndexMarker))
-            }
-          }
-        yield assertTrue(AppRoutes.SpaRoutes.nonEmpty, checked.forall(identity))
-      }
+    test("the portfolio declares no extra top-level SPA routes") {
+      assertTrue(AppRoutes.SpaRoutes.isEmpty)
     },
-    test("serves index.html for a deep path under a nested SPA route") {
+    test("an unknown deep path is not served (no SPA fallback)") {
       ZIO.scoped {
         for
           dir <- tempDist
-          res <- runGet(
-            StaticRoutes.from(dir.toString).routes,
-            "/cortex/distributed-systems/introduction"
-          )
-          body <- res.body.asString
-        yield assertTrue(res.status == Status.Ok, body.contains(IndexMarker))
-      }
-    },
-    test("does not serve a deep path under a leaf-only SPA route (demo has no nested routes)") {
-      ZIO.scoped {
-        for
-          dir <- tempDist
-          res <- runGet(StaticRoutes.from(dir.toString).routes, "/demo/anything")
+          res <- runGet(StaticRoutes.from(dir.toString).routes, "/anything/deep")
         yield assertTrue(res.status == Status.NotFound)
       }
     },
@@ -67,7 +44,7 @@ object StaticRoutesSpec extends ZIOSpecDefault:
         tmp <- ZIO.attempt(Files.createTempDirectory("codefolio-staticroutes-gone-"))
         _   <- ZIO.attempt(Files.delete(tmp))
         sr = StaticRoutes.from(tmp.toString)
-        res <- runGet(sr.routes, "/cortex")
+        res <- runGet(sr.routes, "/")
       yield assertTrue(res.status == Status.NotFound, sr.startupInfo.contains("dev mode"))
     }
   )
