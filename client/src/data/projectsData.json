@@ -21,25 +21,6 @@
     "featured": true
   },
   {
-    "name": "Codefolio App",
-    "tags": [
-      "Scala 3",
-      "Scala.js",
-      "ZIO",
-      "Tailwind",
-      "Self-hosted"
-    ],
-    "projectUrl": "https://www.kakde.eu/",
-    "githubUrl": "https://github.com/ani2fun/codefolio",
-    "image": {
-      "url": "/img/other/portfolio-webapp.webp",
-      "alt": "Codefolio App"
-    },
-    "description": "You're looking at it. kakde.eu runs on this — same architecture I used at Audi: Scala 3 end-to-end, Scala.js + scalajs-react on the frontend, ZIO 2 + zio-http on the backend over Postgres, Redis, and Mongo. Packaged as a container and deployed to my homelab cluster. The GitHub link below has the code if you want to see how it's built.",
-    "category": "Backend",
-    "metadata": "SCALA.JS · 2024 · ZIO + TAILWIND"
-  },
-  {
     "name": "Sonatype Maven Central Publisher",
     "tags": [
       "Kotlin",
@@ -56,5 +37,44 @@
     "description": "Open-source Gradle plugin I authored and maintain on the official Plugin Portal. Publishes JVM artefacts to Maven Central through Sonatype's Central Portal API. Demo projects: github.com/ani2fun/plugin-demo.",
     "category": "OSS",
     "metadata": "GRADLE PLUGIN · 2023 · KOTLIN"
+  },
+  {
+    "name": "Cortex",
+    "tags": [
+      "Scala 3",
+      "Scala.js",
+      "ZIO",
+      "D3",
+      "Markdown",
+      "Self-hosted"
+    ],
+    "projectUrl": "https://cortex.kakde.eu",
+    "githubUrl": "https://github.com/ani2fun/cortex",
+    "image": {
+      "url": "",
+      "alt": "Cortex interactive knowledge base"
+    },
+    "description": "An interactive, runnable computer-science knowledge base — data-structures, algorithms and system-design books with KaTeX math, mermaid/D2 diagrams, D3 visualisers, and code blocks you can edit and run in-browser against a self-hosted go-judge sandbox. Carved out of this portfolio's old monorepo into its own Scala 3 app: Scala.js + scalajs-react frontend, ZIO 2 + zio-http backend over Postgres, Redis, and Mongo. Lives at cortex.kakde.eu, deployed to the homelab cluster.",
+    "category": "Backend",
+    "metadata": "CORTEX · 2024 · SCALA + D3"
+  },
+  {
+    "name": "Portfolio App",
+    "tags": [
+      "Scala 3",
+      "Scala.js",
+      "scalajs-react",
+      "Tailwind",
+      "Self-hosted"
+    ],
+    "projectUrl": "https://www.kakde.eu/",
+    "githubUrl": "https://github.com/ani2fun/codefolio",
+    "image": {
+      "url": "/img/other/portfolio-webapp.webp",
+      "alt": "Portfolio App"
+    },
+    "description": "You're looking at it. kakde.eu is a fully static Scala portfolio — Scala.js + scalajs-react on the frontend, Tailwind v4 for styling, bundled with Vite. A trivial zio-http server serves the compiled bundle plus a health check; the interactive Cortex it used to ship with now lives at cortex.kakde.eu. Packaged as a container and deployed to my homelab K3s cluster.",
+    "category": "Backend",
+    "metadata": "SCALA.JS · 2024 · STATIC PORTFOLIO"
   }
 ]

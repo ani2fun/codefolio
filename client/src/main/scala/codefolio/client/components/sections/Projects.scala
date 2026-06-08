@@ -62,17 +62,18 @@ object Projects:
       |└──────────────────────────────────────────────────────┘""".stripMargin
 
   /**
-   * Single-deploy three-store layout for the Codefolio app: Scala.js front end calling a zio-http API that
-   * fans out to Postgres (canonical), Redis (read-through cache), and Mongo (append-only event log).
+   * Single-deploy three-store layout for the Cortex app: Scala.js front end (runnable markdown + D3
+   * visualisers) calling a zio-http API that fans out to Postgres (canonical), Redis (read-through cache),
+   * and Mongo (append-only event log). Carved out of the old codefolio monorepo into its own deploy.
    */
-  private val codefolioAscii: String =
+  private val cortexAscii: String =
     """             browser
       |                │
       |                ▼
       |       ┌──────────────────┐
       |       │     Scala.js     │
       |       │  scalajs-react   │
-      |       │   Tailwind v4    │
+      |       │  markdown · D3   │
       |       └────────┬─────────┘
       |                │  /api/*
       |                ▼
@@ -87,6 +88,33 @@ object Projects:
       |       │ PG ││Redis││Mongo│
       |       └────┘└─────┘└─────┘
       |       counter cache events""".stripMargin
+
+  /**
+   * Static-portfolio layout for this site after the codefolio/cortex split: a Scala.js SPA bundled with Vite,
+   * served as plain assets by a trivial zio-http edge (just the `assets` tree plus an `/api/health` check) on
+   * the homelab K3s cluster. No stores — the dynamic three-store app now lives in Cortex.
+   */
+  private val portfolioAscii: String =
+    """             browser
+      |                │
+      |                ▼
+      |       ┌──────────────────┐
+      |       │   Scala.js SPA   │
+      |       │  scalajs-react   │
+      |       │   Tailwind v4    │
+      |       └────────┬─────────┘
+      |                │  vite build
+      |                ▼
+      |       ┌──────────────────┐
+      |       │   zio-http edge  │
+      |       │  serves /assets  │
+      |       │  + /api/health   │
+      |       └────────┬─────────┘
+      |                │  container
+      |                ▼
+      |       ┌──────────────────┐
+      |       │   K3s homelab    │
+      |       └──────────────────┘""".stripMargin
 
   /**
    * Publish flow for the Sonatype Maven Central Publisher Gradle plugin: user's build → plugin assembles +
@@ -126,10 +154,12 @@ object Projects:
     p.name match
       case "Self-hosted homelab on K3s" =>
         Some(AsciiPanel("live · 4 nodes · k3s", k3sAscii))
-      case "Codefolio App" =>
-        Some(AsciiPanel("live · scala 3 · 3 stores", codefolioAscii))
       case "Sonatype Maven Central Publisher" =>
         Some(AsciiPanel("live · plugin portal", sonatypeAscii))
+      case "Cortex" =>
+        Some(AsciiPanel("live · scala 3 · runnable", cortexAscii))
+      case "Portfolio App" =>
+        Some(AsciiPanel("live · static · scala.js", portfolioAscii))
       case _ => None
 
   private def iconLink(href: String, ariaLabel: String, icon: VdomNode): VdomNode =
