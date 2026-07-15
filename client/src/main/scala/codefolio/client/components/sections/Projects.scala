@@ -62,18 +62,18 @@ object Projects:
       |└──────────────────────────────────────────────────────┘""".stripMargin
 
   /**
-   * Single-deploy three-store layout for the Cortex app: Scala.js front end (runnable markdown + D3
-   * visualisers) calling a zio-http API that fans out to Postgres (canonical), Redis (read-through cache),
-   * and Mongo (append-only event log). Carved out of the old codefolio monorepo into its own deploy.
+   * Layout for Synapse, the ground-up all-Scala rebuild of Cortex: a React-free Scala.js + Laminar SPA (with
+   * a Scala visualisation engine) calling a ZIO 2 + tapir + zio-http API, serving markdown books that live in
+   * their own `synapse-content` repo.
    */
-  private val cortexAscii: String =
+  private val synapseAscii: String =
     """             browser
       |                │
       |                ▼
       |       ┌──────────────────┐
       |       │     Scala.js     │
-      |       │  scalajs-react   │
-      |       │  markdown · D3   │
+      |       │     Laminar      │
+      |       │  viz engine · md │
       |       └────────┬─────────┘
       |                │  /api/*
       |                ▼
@@ -81,18 +81,18 @@ object Projects:
       |       │     zio-http     │
       |       │   ZIO 2 · tapir  │
       |       │  OpenAPI codegen │
-      |       └──┬──────┬──────┬─┘
-      |          │      │      │
-      |          ▼      ▼      ▼
-      |       ┌────┐┌─────┐┌─────┐
-      |       │ PG ││Redis││Mongo│
-      |       └────┘└─────┘└─────┘
-      |       counter cache events""".stripMargin
+      |       └────────┬─────────┘
+      |                │
+      |                ▼
+      |       ┌──────────────────┐
+      |       │ synapse-content  │
+      |       │  markdown books  │
+      |       └──────────────────┘""".stripMargin
 
   /**
    * Static-portfolio layout for this site after the codefolio/cortex split: a Scala.js SPA bundled with Vite,
    * served as plain assets by a trivial zio-http edge (just the `assets` tree plus an `/api/health` check) on
-   * the homelab K3s cluster. No stores — the dynamic three-store app now lives in Cortex.
+   * the homelab K3s cluster. No stores — the interactive knowledge base now lives in Synapse.
    */
   private val portfolioAscii: String =
     """             browser
@@ -156,8 +156,8 @@ object Projects:
         Some(AsciiPanel("live · 4 nodes · k3s", k3sAscii))
       case "Sonatype Maven Central Publisher" =>
         Some(AsciiPanel("live · plugin portal", sonatypeAscii))
-      case "Cortex" =>
-        Some(AsciiPanel("live · scala 3 · runnable", cortexAscii))
+      case "Synapse" =>
+        Some(AsciiPanel("live · scala 3 · laminar", synapseAscii))
       case "Portfolio App" =>
         Some(AsciiPanel("live · static · scala.js", portfolioAscii))
       case _ => None
@@ -186,7 +186,8 @@ object Projects:
       .useState("All")
       .render { (_, activeS) =>
         val active        = activeS.value
-        val totalProjects = PortfolioData.projects.length
+        val liveCount     = PortfolioData.projects.count(!_.archived.getOrElse(false))
+        val archivedCount = PortfolioData.projects.length - liveCount
         val visible       = PortfolioData.projects.toList.filter(matchesFilter(_, active))
         // Only an explicitly-featured project gets the wide 2-column slot. Falling back to
         // `headOption` would put whichever project is first in the filtered list (e.g. the
@@ -204,7 +205,8 @@ object Projects:
                 ^.className := "projects__heading",
                 <.div(
                   ^.className := "projects__eyebrow",
-                  s"SIDE PROJECTS · $totalProjects LIVE"
+                  if archivedCount > 0 then s"SIDE PROJECTS · $liveCount LIVE · $archivedCount ARCHIVED"
+                  else s"SIDE PROJECTS · $liveCount LIVE"
                 ),
                 <.h2(
                   ^.className := "projects__title",

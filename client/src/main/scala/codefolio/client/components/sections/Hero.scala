@@ -11,7 +11,7 @@ import japgolly.scalajs.react.vdom.html_<^.*
  * Layout from top:
  *   1. status pill (live "currently at …" mono caption with pulsing green dot) 2. display name in italic
  *      Instrument Serif with tiny "EU" superscript 3. lede paragraph with one editorial italic emphasis 4.
- *      hierarchical CTAs (filled primary / ghost secondary) — Download CV, See selected work, Cortex, Blog 5.
+ *      hierarchical CTAs (filled primary / ghost secondary) — Download CV, See selected work, Synapse 5.
  *      4-column stat strip (numbers in display serif, captions in mono)
  *
  * All copy is hardcoded — these strings change rarely, putting them in JSON trades a grep for a build-time
@@ -22,8 +22,8 @@ object Hero:
   /** Stat strip — short headline number + small mono caption underneath. */
   private val stats: List[(String, String, String)] = List(
     ("10", "yrs", "ON PRODUCTION SYSTEMS"),
-    ("4", "SECTORS", "MOBILITY · AUTOMOTIVE · MEDIA · LOGISTICS"),
-    ("€M", "", "PILOT → FUNDED PROGRAMME"),
+    ("8", "M+", "CUSTOMER ACCOUNTS · IDENTITY PLATFORM"),
+    ("€22", "M+", "DISNEY PILOT → FUNDED PROGRAMME"),
     ("6", " COMPANIES", "Europcar Audi Disneyland-Paris Dassault UPS Bell-Labs")
   )
 
@@ -44,9 +44,9 @@ object Hero:
         <.p(
           ^.className := "hero__lede",
           <.em("Backend-leaning"),
-          " Software Engineer. Currently at Europcar, building the unified B2B/B2C customer identity platform.",
+          " Software Engineer. Currently at Europcar, building the customer identity platform behind 8M+ B2B and B2C accounts.",
           <.br,
-          "Previously: Helped build Audi's in-house video annotation platform and data pipeline used to generate ground-truth training data for autonomous driving models, and helped lead a Disney pilot that became a multi-million-euro replacement of their legacy marketing platform."
+          "Previously: Built Audi's in-house video annotation platform and data pipeline that produced 5M+ ground-truth frames for training autonomous-driving models, and helped lead the Disney pilot that grew into a €22M+ replacement of their legacy marketing platform."
         ),
         <.div(
           ^.className := "hero__cta-row",
@@ -63,10 +63,10 @@ object Hero:
             "See selected work"
           ),
           <.a(
-            ^.href      := "https://cortex.kakde.eu",
+            ^.href      := "https://synapse.kakde.eu",
             ^.className := "hero__cta hero__cta--ghost",
             LucideIcons.BookOpen(LucideIcons.withClass("hero__cta-icon")),
-            "Explore Cortex"
+            "Explore Synapse"
           )
         ),
         <.div(

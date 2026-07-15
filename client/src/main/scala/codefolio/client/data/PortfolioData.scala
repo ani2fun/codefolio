@@ -34,6 +34,9 @@ object PortfolioData:
     val metadata: js.UndefOr[String]  = js.native
     val featured: js.UndefOr[Boolean] = js.native
 
+    /** True for projects kept on the grid but no longer developed (e.g. Cortex after the Synapse rebuild). */
+    val archived: js.UndefOr[Boolean] = js.native
+
   // ---- Experience ---------------------------------------------------------
 
   @js.native

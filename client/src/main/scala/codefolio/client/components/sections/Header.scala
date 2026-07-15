@@ -28,8 +28,8 @@ object Header:
     HashLink("/#projects", "Projects")
   )
 
-  /** Sister-site link — the Cortex book lives at its own domain (the other half of the split). */
-  private val CortexUrl = "https://cortex.kakde.eu"
+  /** Sister-site link — Synapse (the interactive learning platform) lives at its own domain. */
+  private val SynapseUrl = "https://synapse.kakde.eu"
 
   /**
    * Scroll to the section if its id is in the DOM, otherwise navigate to the home URL with the fragment so
@@ -93,10 +93,10 @@ object Header:
               ^.className := "header__menu",
               menuLinks.toTagMod(desktopLink),
               <.a(
-                ^.key       := "cortex",
-                ^.href      := CortexUrl,
+                ^.key       := "synapse",
+                ^.href      := SynapseUrl,
                 ^.className := "header__link",
-                "Cortex",
+                "Synapse",
                 LucideIcons.ExternalLink(LucideIcons.withClass("header__link-icon"))
               )
             ),
@@ -126,11 +126,11 @@ object Header:
                 ^.className := "header__drawer-list",
                 menuLinks.toTagMod(mobileLink),
                 <.li(
-                  ^.key := "cortex",
+                  ^.key := "synapse",
                   <.a(
-                    ^.href      := CortexUrl,
+                    ^.href      := SynapseUrl,
                     ^.className := "header__drawer-link",
-                    "Cortex",
+                    "Synapse",
                     LucideIcons.ExternalLink(LucideIcons.withClass("header__link-icon"))
                   )
                 )

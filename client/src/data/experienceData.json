@@ -7,16 +7,16 @@
       "url": "https://www.europcar.com/"
     },
     "time": "August 2022 – Present",
-    "description": "Working on the customer authentication and account lifecycle for both consumer and partner channels, plus the wider reservation platform around it.",
+    "description": "Working on customer authentication and account lifecycle for 8M+ B2B and B2C customer accounts, built with Kotlin/Spring Boot on Keycloak / Red Hat SSO.",
     "items": [
-      "Built the customer authentication and account lifecycle on Kotlin/Spring Boot with Keycloak / Red Hat SSO - account creation, email verification, password reset, login, logout, account recovery, profile updates, and account deletion.",
-      "Set up Keycloak as the shared identity layer for B2B and B2C, integrating customer profiles into a single source for downstream personalisation and segmentation.",
-      "Worked across the wider reservation platform alongside the auth work.",
-      "Rewrote slow PostgreSQL queries on the auth and account services and added composite indexes where lookups were doing full scans."
+      "Built the customer authentication and account lifecycle services for 8M+ customer accounts (B2B and B2C) — account creation, email verification, password reset, login, logout, recovery, profile updates, and deletion — on Kotlin/Spring Boot with Keycloak / Red Hat SSO.",
+      "Migrated and consolidated B2B and B2C accounts into a single Keycloak layer — one source of truth for customer profiles that downstream personalisation and segmentation services rely on.",
+      "Cut p95 latency by ~20% on the busiest paths (authentication and account lookups) by rewriting the slowest PostgreSQL queries and adding composite indexes.",
+      "Reworked the Gradle build to use multi-level CI caching, cutting build times by ~35%."
     ],
     "results": [
-      "Authored a C4-model architecture POC using Structurizr DSL and presented it to the team as a proposal for living architecture documentation; adopted by individual developers interested in learning the DSL.",
-      "Modernised the team's Gradle build setup with multi-level CI caching, cutting build times and simplifying the architecture pattern - adopted as the internal reference by 3+ adjacent teams."
+      "Wrote a C4-model architecture proof of concept in Structurizr DSL that seeded the team's architecture documentation.",
+      "The Gradle build optimisation was picked up as an internal reference by multiple teams company-wide."
     ],
     "leveragedKnowledgeIn": [
       "Kotlin",
@@ -36,7 +36,7 @@
     "featured": true,
     "roleTag": "Backend / Identity",
     "location": "Paris",
-    "selectedWorkBlurb": "Customer authentication and account lifecycle on Kotlin + Spring Boot with Keycloak — for both consumer and B2B partner organisations.",
+    "selectedWorkBlurb": "Customer authentication and account lifecycle for 8M+ B2B/B2C accounts — Kotlin + Spring Boot on Keycloak / Red Hat SSO.",
     "primaryTech": [
       "Kotlin",
       "Spring Boot",
@@ -90,22 +90,22 @@
     ]
   },
   {
-    "position": "Software Consultant — Backend / Data Pipeline (Remote)",
+    "position": "Full-Stack Engineer (Remote)",
     "company": {
       "short": "Audi AG",
       "name": "Audi AG, Ingolstadt — via Lunatech SAS",
       "url": "https://www.audi.com/"
     },
     "time": "August 2018 – December 2021",
-    "description": "Built Audi's in-house ground-truth labelling platform and data pipeline for autonomous-driving model training. Worked remotely from Paris on a fast-growing team.",
+    "description": "Built Audi's in-house ground-truth labelling platform and data pipeline for training autonomous-driving models. Worked remotely from Paris on a fast-growing team.",
     "items": [
-      "Built Audi's in-house ground-truth labelling platform and data pipeline for autonomous-driving model training — handling vehicle video ingestion, frame extraction, labelling job distribution, and export of finished labels to training systems.",
-      "Orchestrated batch and asynchronous workflows with Argo Workflow, integrated with the cloud platform so model predictions could pre-label data and speed up annotation.",
-      "Streamed labeling and annotation events through Kafka, indexed them into Elasticsearch to power dataset search, slicing, and quality dashboards used by ML and QA teams.",
-      "Set the backend architecture early on so the codebase could absorb fast team growth without re-litigating structure later."
+      "Built Audi's in-house ground-truth labelling platform and data pipeline for training autonomous-driving models — 5M+ labelled frames from 2,000 driving videos, with automated validation keeping label accuracy at 98%+.",
+      "Integrated Argo Workflows for batch and async pipelines that pre-labelled data with model predictions, roughly doubling annotation throughput for the ML teams.",
+      "Streamed labelling and annotation events through Kafka, indexed them into Elasticsearch to power dataset search, slicing, and quality dashboards used by ML and QA teams.",
+      "Invested early in the backend architecture so the codebase held up as the team grew — other engineers could build on top of it and ship features ~40% faster."
     ],
     "results": [
-      "That early architectural call paid off as the team grew — multiple developers came onto the project later and could ship features quickly without spending time fighting the codebase or relitigating structure."
+      "The early architecture held through the entire project — scaling from prototype to 5M+ frames and 10+ engineers with no major rewrite required."
     ],
     "leveragedKnowledgeIn": [
       "Scala",
@@ -122,9 +122,9 @@
       "Argo Workflows"
     ],
     "featured": true,
-    "roleTag": "Backend / Data Pipeline",
+    "roleTag": "Full-stack / Data Pipeline",
     "location": "Remote (via Lunatech)",
-    "selectedWorkBlurb": "Set the early backend architecture for Audi's in-house labeling platform — ground-truth video data feeding autonomous-driving model training.",
+    "selectedWorkBlurb": "Built Audi's in-house labelling platform and data pipeline — 5M+ ground-truth frames at 98%+ accuracy, feeding autonomous-driving model training.",
     "primaryTech": [
       "Scala",
       "Akka-HTTP",
@@ -143,7 +143,7 @@
     ]
   },
   {
-    "position": "Software Consultant — Backend (On-site)",
+    "position": "Full-Stack Engineer (On-site)",
     "company": {
       "short": "Disney",
       "name": "Disneyland Paris — via Lunatech SAS",
@@ -151,14 +151,14 @@
       "displayName": "Disneyland Paris"
     },
     "time": "January 2017 – August 2018",
-    "description": "Helped lead the technical pilot for D4th, the new marketing platform integrating Tridion CMS with the Disneyland Paris public site (~10 million annual visitors).",
+    "description": "Helped lead the technical pilot for the new marketing platform integrating Tridion CMS with the Disneyland Paris public site (~10 million annual visitors).",
     "items": [
-      "Helped lead the technical pilot (internally known as D4th — Disney 4th gen), the new marketing platform integrating Tridion CMS with the Disneyland Paris public site (~10 million annual visitors).",
-      "The pilot landed well enough that Disney funded a multi-million-euro programme on the back of it to fully replace the legacy marketing application.",
-      "Wrote supporting microservices for browser push notifications and the SOAP integration with the older internal systems."
+      "Helped lead the technical pilot for the new marketing platform integrating Tridion CMS with the Disneyland Paris public site (~10 million annual visitors).",
+      "The pilot succeeded well enough that Disney funded D4th (Disney 4th gen) — a €22M+ programme to fully replace the legacy marketing application, scoped off the pilot.",
+      "Built supporting microservices (such as browser push notifications) and a SOAP interface towards legacy internal systems."
     ],
     "results": [
-      "Took on GitLab CI/CD setup and production deployment myself, even though both were outside my original scope — figured out the existing infrastructure, ran the initial deployments, and handed it off cleanly when a more experienced infra engineer joined later."
+      "Took ownership of the pilot's supporting services and built the GitLab CI/CD pipeline that took them live for D4th — later used by a senior infrastructure engineer to deploy the rest of the D4th system."
     ],
     "leveragedKnowledgeIn": [
       "Java",
@@ -170,9 +170,9 @@
       "Microservices"
     ],
     "featured": true,
-    "roleTag": "Backend",
+    "roleTag": "Full-stack",
     "location": "On-site (via Lunatech)",
-    "selectedWorkBlurb": "Helped lead the technical pilot for D4th — the new marketing platform integrating Tridion CMS with the public site (~10M annual visitors). Pilot funded a multi-million-euro replacement of the legacy app.",
+    "selectedWorkBlurb": "Helped lead the technical pilot for the new marketing platform integrating Tridion CMS with the public site (~10M annual visitors). The pilot grew into D4th — a €22M+ replacement of the legacy app.",
     "primaryTech": [
       "Java",
       "Scala",
@@ -186,7 +186,7 @@
     ]
   },
   {
-    "position": "Software Consultant — Full-stack (Remote)",
+    "position": "Full-Stack Engineer (Remote)",
     "company": {
       "short": "UPS",
       "name": "UPS France — via Lunatech SAS",

@@ -23,7 +23,7 @@ object About:
     "BASED"     -> "Paris, France · open to remote (EU) or hybrid",
     "COMPLETED" -> "Diplôme Data Engineer · Liora × Sorbonne (Apr 2026)",
     "EDUCATION" -> "M.Sc. ISEP Paris · B.E. Univ. Mumbai",
-    "LANGUAGES" -> "English · Hindi · Marathi · learning French"
+    "LANGUAGES" -> "English (fluent) · French (B1) · Hindi · Marathi"
   )
 
   val Component = ScalaFnComponent[Unit] { _ =>
@@ -53,7 +53,7 @@ object About:
             ^.className := "about__paragraph",
             "As a Software Engineer / Data Engineer with ",
             <.span(^.className := "about__emphasis", "10+ years of experience"),
-            ", I've worked on services on the JVM (Kotlin, Java, Scala) with Spring Boot, Kafka, PostgreSQL, and cloud delivery on AWS and GCP."
+            ", I've worked on services on the JVM (Kotlin, Java, Scala) with Spring Boot, Kafka, PostgreSQL, Keycloak/OIDC identity, and cloud delivery on AWS and GCP."
           ),
           <.p(
             ^.className := "about__paragraph",
@@ -98,7 +98,7 @@ object About:
             <.span(^.className := "about__emphasis", "Sorbonne University"),
             ". I also maintain a Gradle plugin on Maven Central (",
             <.code(^.className := "about__inline-code", "eu.kakde.gradle.sonatype-maven-central-publisher"),
-            ") and write technical guides at kakde.eu."
+            ") and build Synapse (synapse.kakde.eu), an interactive platform for studying data structures, algorithms, and system design."
           ),
           <.p(
             ^.className := "about__paragraph",
