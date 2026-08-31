@@ -17,12 +17,12 @@ ThisBuild / scalacOptions ++= Seq(
 
 // ---- Versions ------------------------------------------------------------
 
-val zioV          = "2.1.14"
-val zioHttpV      = "3.0.1"
-val zioConfigV    = "4.0.3"
-val scalajsReactV = "3.0.0"
-val logbackV      = "1.5.12"
-val zioLogbackV   = "2.4.0"
+val zioV          = "2.1.19"
+val zioHttpV      = "3.3.3"
+val zioConfigV    = "4.0.4"
+val scalajsReactV = "4.0.0"
+val logbackV      = "1.5.18"
+val zioLogbackV   = "2.5.0"
 
 // ---- shared --------------------------------------------------------------
 //
