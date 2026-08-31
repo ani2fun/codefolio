@@ -7,14 +7,16 @@ import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
 
 /**
- * Projects — featured K3s card with ASCII topology + filterable card grid.
+ * Projects — filterable card grid with inline ASCII architecture diagrams.
  *
  *   - Filter chips at the top: All · Infra · OSS · Backend.
- *   - First entry (where `featured: true` or first in JSON) gets a 2-col span and renders the K3s topology as
- *     an inline `<pre>` instead of a hero image. Replaces the duplicated macbook.webp reuse — substance over
- *     stock photography.
- *   - Other cards: real photo when present (`food-ordering-system`, `gradle-plugin`); otherwise a
- *     tinted-stripe placeholder showing the `metadata` mono caption.
+ *   - Every project marked `featured: true` in the JSON gets a 2-col span; today that's the homelab and
+ *     Synapse. The grid is `grid-auto-flow: dense`, so a narrow card backfills the column a wide one leaves
+ *     over.
+ *   - Cards whose project has a diagram (see `asciiFor`) render it as an inline `<pre>` rather than a hero
+ *     image — substance over stock photography.
+ *   - The rest: a real photo when the project has its own (`gradle-plugin`), otherwise a tinted-stripe
+ *     placeholder showing the `metadata` mono caption.
  */
 object Projects:
 
@@ -28,71 +30,82 @@ object Projects:
   final private case class AsciiPanel(badge: String, art: String)
 
   /**
-   * Inline ASCII topology for the homelab K3s card. Mirrors the actual 4-node cluster: one control-plane +
-   * three workers, all on a single flat home network behind a Pi-hosted ingress.
+   * Inline ASCII topology for the homelab K3s card. Mirrors the actual cluster: a Contabo edge node that
+   * terminates all public traffic, joined over WireGuard to three home machines running the control plane and
+   * the workloads.
    */
   private val k3sAscii: String =
     """                     internet
       |                        │
       |                   ┌─────────┐
-      |                   │   DNS   │   example.com
+      |                   │   DNS   │   kakde.eu · Cloudflare
       |                   └────┬────┘
-      |                        │  80 / 443
+      |                        │  80 / 443 only
       |                        ▼
       |              ┌─────────────────┐
-      |              │    cloud-vm     │   cloud VPS
-      |              │     Traefik     │   edge worker
+      |              │   ctb-edge-1    │   cloud VPS — the only
+      |              │     Traefik     │   public entrypoint
+      |              │  cert-manager   │   TLS via DNS-01
       |              └────────┬────────┘
       |                       │  WireGuard mesh
       |                       │  172.27.15.0/24
       |                       ▼
-      |┌────────────── home LAN  192.168.15.0/24 ─────────────┐
-      |│                                                      │
-      |│   ┌──────────┐                                       │
-      |│   │ server-1 │   k3s server (control plane)          │
-      |│   └──────────┘                                       │
-      |│      ▲                                               │
-      |│      │ k3s api                                       │
-      |│      ▼                                               │
-      |│   ┌──────────┐         ┌──────────┐                  │
-      |│   │ worker-1 │         │ worker-2 │  workers         │
-      |│   └──────────┘         └──────────┘                  │
-      |│    postgres             argo cd                      │
-      |│                                                      │
-      |└──────────────────────────────────────────────────────┘""".stripMargin
+      |┌────────────────────────  home LAN · k3s + Calico ─────┐
+      |│                          192.168.15.0/24              │
+      |│   ┌──────────┐                                        │
+      |│   │   ms-1   │   k3s server (control plane)           │
+      |│   └──────────┘                                        │
+      |│      ▲                                                │
+      |│      │ k3s api                                        │
+      |│      ▼                                                │
+      |│   ┌──────────┐         ┌──────────┐                   │
+      |│   │   wk-1   │         │   wk-2   │   workers         │
+      |│   └──────────┘         └──────────┘                   │
+      |│    postgres             argo cd                       │
+      |│    keycloak             gitops sync                   │
+      |│                                                       │
+      |└───────────────────────────────────────────────────────┘""".stripMargin
 
   /**
-   * Layout for Synapse, the ground-up all-Scala rebuild of Cortex: a React-free Scala.js + Laminar SPA (with
-   * a Scala visualisation engine) calling a ZIO 2 + tapir + zio-http API, serving markdown books that live in
-   * their own `synapse-content` repo.
+   * Runtime layout for Synapse. It is one deployable, not a split frontend and backend: axum is the only
+   * listener, and the Astro SSR process sits beside it on loopback, reachable only through axum's fallback so
+   * `/api` and `/media` always win. Rendering a page is therefore a loop — axum hands the request down, Astro
+   * fetches back up for data. The visualiser is a WebAssembly bundle the browser loads lazily; the d2
+   * renderer and the content sync are further containers in the same pod.
    */
   private val synapseAscii: String =
-    """             browser
-      |                │
-      |                ▼
-      |       ┌──────────────────┐
-      |       │     Scala.js     │
-      |       │     Laminar      │
-      |       │  viz engine · md │
-      |       └────────┬─────────┘
-      |                │  /api/*
-      |                ▼
-      |       ┌──────────────────┐
-      |       │     zio-http     │
-      |       │   ZIO 2 · tapir  │
-      |       │  OpenAPI codegen │
-      |       └────────┬─────────┘
-      |                │
-      |                ▼
-      |       ┌──────────────────┐
-      |       │ synapse-content  │
-      |       │  markdown books  │
-      |       └──────────────────┘""".stripMargin
+    """                      browser
+      |       page HTML · islands · viz-wasm (lazy wasm)
+      |                         │
+      |                         │  https — every request
+      |                         ▼
+      | ┌──── one pod ────────────────────────────────────┐
+      | │  ┌───────────────────────────────────────────┐  │
+      | │  │  axum · tokio · Rust   the only listener  │  │
+      | │  │  /api · /media · headers · compression    │  │
+      | │  └───┬──────────────────────────▲────────────┘  │
+      | │      │ pages (fallback)         │ SSR fetch     │
+      | │      ▼                          │ 127.0.0.1     │
+      | │  ┌──────────────────────┐       │               │
+      | │  │  Astro 7 SSR · node  │       │               │
+      | │  │  loopback :4321      ├───────┘               │
+      | │  └──────────┬───────────┘                       │
+      | │             │ d2 fences                         │
+      | │             ▼                                   │
+      | │  ┌──────────────────┐  ┌──────────────────────┐ │
+      | │  │  d2-render · Go  │  │  git-sync → content  │ │
+      | │  └──────────────────┘  └──────────────────────┘ │
+      | └──────┬───────────────┬──────────────────┬───────┘
+      |        ▼               ▼                  ▼
+      |  ┌──────────┐    ┌──────────┐      ┌──────────┐
+      |  │ go-judge │    │ Postgres │      │ Keycloak │
+      |  │  sandbox │    │   sqlx   │      │   OIDC   │
+      |  └──────────┘    └──────────┘      └──────────┘""".stripMargin
 
   /**
-   * Static-portfolio layout for this site after the codefolio/cortex split: a Scala.js SPA bundled with Vite,
-   * served as plain assets by a trivial zio-http edge (just the `assets` tree plus an `/api/health` check) on
-   * the homelab K3s cluster. No stores — the interactive knowledge base now lives in Synapse.
+   * Layout for this site: a Scala.js SPA bundled with Vite, served as plain assets by a trivial zio-http edge
+   * (just the `assets` tree plus an `/api/health` check) on the homelab K3s cluster. There are no backing
+   * stores — the interactive knowledge base is Synapse, a separate application.
    */
   private val portfolioAscii: String =
     """             browser
@@ -157,7 +170,7 @@ object Projects:
       case "Sonatype Maven Central Publisher" =>
         Some(AsciiPanel("live · plugin portal", sonatypeAscii))
       case "Synapse" =>
-        Some(AsciiPanel("live · scala 3 · laminar", synapseAscii))
+        Some(AsciiPanel("live · rust · astro · wasm", synapseAscii))
       case "Portfolio App" =>
         Some(AsciiPanel("live · static · scala.js", portfolioAscii))
       case _ => None
@@ -189,12 +202,13 @@ object Projects:
         val liveCount     = PortfolioData.projects.count(!_.archived.getOrElse(false))
         val archivedCount = PortfolioData.projects.length - liveCount
         val visible       = PortfolioData.projects.toList.filter(matchesFilter(_, active))
-        // Only an explicitly-featured project gets the wide 2-column slot. Falling back to
-        // `headOption` would put whichever project is first in the filtered list (e.g. the
-        // Sonatype plugin under an "OSS" filter) into the wide slot, which the layout doesn't
-        // intend. ASCII-art selection is per-project (see `asciiFor`) and independent of this.
-        val featured = visible.find(_.featured.getOrElse(false))
-        val rest     = visible.filterNot(p => featured.contains(p))
+        // Only explicitly-featured projects get a wide 2-column slot, and there may be more than
+        // one (the homelab and Synapse both claim it). Selecting by position instead — "whichever
+        // sorts first" — would drop e.g. the Sonatype plugin into the wide slot under an "OSS"
+        // filter, which the layout doesn't intend. ASCII-art selection is per-project (see
+        // `asciiFor`) and independent of this.
+        val featured = visible.filter(_.featured.getOrElse(false))
+        val rest     = visible.filterNot(_.featured.getOrElse(false))
 
         Section("projects", "projects")(
           <.div(

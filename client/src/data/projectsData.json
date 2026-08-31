@@ -15,9 +15,9 @@
       "url": "",
       "alt": "Self-hosted homelab cluster"
     },
-    "description": "Four-node K3s cluster on commodity hardware sitting at home. Hands-on with the full delivery path — packaging, deployment, networking, observability — for the services I actually use, including this site.",
+    "description": "Four Ubuntu nodes — three at home, one cloud edge — joined by a WireGuard mesh and running K3s with Calico. Traefik on the edge node is the only public entrypoint; cert-manager issues TLS over Cloudflare DNS-01, Argo CD syncs every workload from git, and secrets are sealed into the repo. It hosts this site, Synapse, Keycloak and the shared Postgres.",
     "category": "Infra",
-    "metadata": "K3S · 2023 · LINUX · GO",
+    "metadata": "K3S · 2023 · LINUX · GITOPS",
     "featured": true
   },
   {
@@ -34,18 +34,18 @@
       "url": "/img/other/gradle-plugin.webp",
       "alt": "Gradle plugin"
     },
-    "description": "Open-source Gradle plugin I authored and maintain on the official Plugin Portal. Publishes JVM artefacts to Maven Central through Sonatype's Central Portal API. Demo projects: github.com/ani2fun/plugin-demo.",
+    "description": "An open-source Gradle plugin I authored and maintain on the official Plugin Portal. It assembles and PGP-signs a JVM artefact bundle and publishes it to Maven Central through Sonatype's Central Portal API, so a release is one Gradle task. Demo projects: github.com/ani2fun/plugin-demo.",
     "category": "OSS",
     "metadata": "GRADLE PLUGIN · 2023 · KOTLIN"
   },
   {
     "name": "Synapse",
     "tags": [
-      "Scala 3",
-      "Scala.js",
-      "Laminar",
-      "ZIO",
-      "tapir",
+      "Rust",
+      "axum",
+      "Astro",
+      "WebAssembly",
+      "Postgres",
       "Self-hosted"
     ],
     "projectUrl": "https://synapse.kakde.eu",
@@ -54,29 +54,10 @@
       "url": "",
       "alt": "Synapse interactive learning platform"
     },
-    "description": "An interactive platform for studying data structures, algorithms, and system design — markdown-driven books with runnable code and visualisations. A ground-up all-Scala rebuild of Cortex: ZIO 2 + tapir + zio-http on the backend, a React-free Scala.js + Laminar SPA on the frontend, with content living in its own synapse-content repo. Lives at synapse.kakde.eu, deployed to the homelab cluster.",
+    "description": "An interactive platform for learning data structures, algorithms, system design and languages — prose chapters with rendered diagrams, code blocks you can run and edit in the page, and step-through execution visualisations. A Rust front door (axum + tokio) owns every request and renders pages through an Astro SSR process beside it; the visualiser ships to the browser as a lazy WebAssembly bundle, and submitted solutions are judged in a sandboxed executor. Lessons are Markdown in their own git repos, so publishing a chapter is a push, not a redeploy.",
     "category": "Backend",
-    "metadata": "SYNAPSE · 2026 · SCALA + LAMINAR"
-  },
-  {
-    "name": "Cortex",
-    "tags": [
-      "Scala 3",
-      "Scala.js",
-      "ZIO",
-      "D3",
-      "Archived"
-    ],
-    "projectUrl": "https://github.com/ani2fun/cortex",
-    "githubUrl": "https://github.com/ani2fun/cortex",
-    "image": {
-      "url": "",
-      "alt": "Cortex interactive knowledge base (archived)"
-    },
-    "description": "The first version of my interactive CS knowledge base — data-structures, algorithms and system-design books with runnable code blocks, D3 visualisers, and an AI coach, serving several hundred users. Now archived with no active development — superseded by the ground-up Synapse rebuild.",
-    "category": "Backend",
-    "metadata": "CORTEX · 2024 · ARCHIVED",
-    "archived": true
+    "metadata": "SYNAPSE · 2026 · RUST + ASTRO + WASM",
+    "featured": true
   },
   {
     "name": "Portfolio App",
@@ -93,7 +74,7 @@
       "url": "/img/other/portfolio-webapp.webp",
       "alt": "Portfolio App"
     },
-    "description": "You're looking at it. kakde.eu is a fully static Scala portfolio — Scala.js + scalajs-react on the frontend, Tailwind v4 for styling, bundled with Vite. A trivial zio-http server serves the compiled bundle plus a health check; the interactive knowledge base it used to ship with grew into Synapse (synapse.kakde.eu). Packaged as a container and deployed to my homelab K3s cluster.",
+    "description": "You're looking at it. kakde.eu is a fully static Scala portfolio — Scala.js + scalajs-react on the frontend, Tailwind v4 for styling, bundled with Vite. A trivial zio-http server hands over the compiled bundle and a health check, nothing more; the interactive knowledge base it once shipped with grew into Synapse. Packaged as a container and deployed to the homelab K3s cluster by Argo CD.",
     "category": "Backend",
     "metadata": "SCALA.JS · 2024 · STATIC PORTFOLIO"
   }
