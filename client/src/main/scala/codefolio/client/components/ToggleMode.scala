@@ -29,10 +29,11 @@ object ToggleMode:
       .useEffectOnMountBy { (_, mounted, mode) =>
         mode.setState(Theme.current) >> mounted.setState(true)
       }
-      // Resync on every theme change — including ones made by *other* toggle
-      // instances or the Cortex reading-prefs panel. The local `mode` state is
-      // only a render mirror of `<html>`; this listener keeps it from drifting,
-      // which is what made the toggle need two clicks to "catch up".
+      // Resync on every theme change — including ones made by the *other* mounted
+      // instances (the Header renders one for mobile and one for desktop, the
+      // Footer a third). The local `mode` state is only a render mirror of
+      // `<html>`; this listener keeps it from drifting, which is what made the
+      // toggle need two clicks to "catch up".
       .useEffectOnMountBy { (_, _, mode) =>
         Callback {
           val onChange: js.Function1[dom.Event, Unit] = (_: dom.Event) =>

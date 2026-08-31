@@ -8,7 +8,7 @@ import org.scalajs.dom
  * component:
  *
  * {{{
- * .useEffectOnMountBy(_ => PageTitle.set("Cortex — Aniket Kakde"))
+ * .useEffectOnMountBy(_ => PageTitle.set(PageTitle.Default))
  * }}}
  */
 object PageTitle:

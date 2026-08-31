@@ -18,9 +18,10 @@ object Theme:
 
   /**
    * Window event broadcast after every theme change. There is no shared store — the `<html>` class is the
-   * single source of truth — so each mounted theme surface (the header/footer toggles, the Cortex
-   * reading-prefs panel) listens for this and re-reads [[current]] to stay in sync with a change made by a
-   * peer. Without it, a toggle's local state drifts from `<html>` and the next click appears to do nothing.
+   * single source of truth — so each mounted theme surface listens for this and re-reads [[current]] to stay
+   * in sync with a change made by a peer. Three are live at once: the Header mounts a toggle for mobile and
+   * another for desktop, and the Footer a third. Without this event a toggle's local state drifts from
+   * `<html>`, and the next click appears to do nothing.
    */
   val ChangedEvent: String = "theme:changed"
 

@@ -34,9 +34,10 @@ object StaticRoutes:
     )
 
     // SPA fallback, derived from AppRoutes.SpaRoutes (single source of truth shared with the client
-    // Router — see ADR-0009). A hard reload of e.g. /cortex/distributed-systems/introduction must return
-    // index.html so the client-side router can re-resolve the page; routes with nested children also serve
-    // index.html for any deeper path.
+    // Router — see ADR-0009): a hard reload of a client-routed path must return index.html so the router can
+    // re-resolve it, and a route with nested children serves index.html for any deeper path too. SpaRoutes is
+    // currently empty — the portfolio is one page, so this produces no routes — but the derivation stays so
+    // adding a route to AppRoutes is all it takes to make deep links survive a reload.
     //
     // We deliberately don't add a catch-all `/ trailing` wildcard: zio-http's combined routing makes a
     // wildcard greedy enough to swallow all GETs — even ordering tapir ahead doesn't restore precedence —

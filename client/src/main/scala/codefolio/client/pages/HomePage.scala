@@ -8,8 +8,9 @@ import org.scalajs.dom
 
 /**
  * Landing page — composes every portfolio section in order: Hero, SelectedWork, About, Experience, Projects,
- * Certifications. The Cortex and Blog landing pages are reachable via the Hero CTAs (and the Header nav), not
- * as homepage sections. Header and Footer are applied by the Layout, not here.
+ * Certifications. This is the entire site; the router resolves no other page, so every Hero CTA and Header
+ * link either scrolls to a section here, downloads the CV, or leaves the app entirely (Synapse, a mailto:).
+ * Header and Footer are applied by the Layout, not here.
  *
  * On mount, scroll to the URL fragment (e.g. `/#about`) so deep-links work after a hard reload.
  */

@@ -9,10 +9,9 @@ import java.nio.file.Path as NioPath
 /**
  * Serves files from a fixed root directory with path-traversal containment.
  *
- * Two callers in production — [[StaticRoutes]] (the Vite frontend bundle) and [[CortexAssetRoutes]]
- * (chapter-relative binary assets). Each builds its own `FileServer` over its own root; this module owns the
- * security-critical part once: resolve a candidate to its real on-disk path, reject anything that escapes the
- * root (`..` segments, absolute-path inputs, symlinks pointing outside), read the bytes, attach a
+ * One caller in production — [[StaticRoutes]], over the Vite `dist/` root. The security-critical part lives
+ * here rather than in the route set: resolve a candidate to its real on-disk path, reject anything that
+ * escapes the root (`..` segments, absolute-path inputs, symlinks pointing outside), read the bytes, attach a
  * Content-Type from [[ContentTypes]], and 404 on a miss, a directory, or a non-existent root.
  *
  * `exists` is false in dev mode (no Vite `dist/` on disk yet) — every [[serve]] then 404s, and the caller

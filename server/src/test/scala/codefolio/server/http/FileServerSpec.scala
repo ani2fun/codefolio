@@ -10,9 +10,9 @@ import scala.jdk.CollectionConverters.*
 
 /**
  * Tests the security-critical part of static file serving: path-traversal containment, content-type
- * resolution, and the read-or-404 contract. Both [[StaticRoutes]] and [[CortexAssetRoutes]] route through
- * this module, so the `..` / absolute-path / symlink-escape rejections are pinned once here rather than being
- * absent on two separate route sets.
+ * resolution, and the read-or-404 contract. [[StaticRoutes]] routes through this module, so the `..` /
+ * absolute-path / symlink-escape rejections are pinned here, next to the code that enforces them, rather than
+ * in the route set.
  */
 object FileServerSpec extends ZIOSpecDefault:
 
@@ -108,13 +108,14 @@ object FileServerSpec extends ZIOSpecDefault:
           ContentTypes.forName("blob.wasm") == "application/wasm"
         )
       },
-      test("maps Cortex asset extensions") {
+      // The `img/` and `certificates/` trees: webp/jpg photos and the CV.
+      test("maps image and document extensions") {
         assertTrue(
           ContentTypes.forName("diagram.svg") == "image/svg+xml",
           ContentTypes.forName("photo.png") == "image/png",
-          ContentTypes.forName("notes.md").startsWith("text/plain"),
-          ContentTypes.forName("graph.d2").startsWith("text/plain"),
-          ContentTypes.forName("model.dsl").startsWith("text/plain")
+          ContentTypes.forName("shot.webp") == "image/webp",
+          ContentTypes.forName("scan.jpg") == "image/jpeg",
+          ContentTypes.forName("cv.pdf") == "application/pdf"
         )
       },
       test("is case-insensitive and falls back to octet-stream") {
